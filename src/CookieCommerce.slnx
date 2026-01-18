@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/Domains/" />
+  <Folder Name="/Domains/OrderDomain/">
+    <Project Path="CookieCommerce.OrderDomain.Aggregates/CookieCommerce.OrderDomain.Aggregates.csproj" />
+  </Folder>
   <Project Path="CookieCommerce.AppHost/CookieCommerce.AppHost.csproj" />
   <Project Path="CookieCommerce.ServiceDefaults/CookieCommerce.ServiceDefaults.csproj" />
   <Project Path="CookieCommerce/CookieCommerce.csproj" />

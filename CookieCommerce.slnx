@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="CookieCommerce.AppHost/CookieCommerce.AppHost.csproj" />
+  <Project Path="CookieCommerce.ServiceDefaults/CookieCommerce.ServiceDefaults.csproj" />
+  <Project Path="CookieCommerce/CookieCommerce.csproj" />
+</Solution>

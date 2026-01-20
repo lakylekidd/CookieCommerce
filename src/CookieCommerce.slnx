@@ -1,7 +1,18 @@
 <Solution>
   <Folder Name="/Domains/" />
+  <Folder Name="/Domains/CustomerDomain/">
+    <Project Path="CookieCommerce.CustomerDomain.Api/CookieCommerce.CustomerDomain.Api.csproj" />
+    <Project Path="CookieCommerce.CustomerDomain.Application/CookieCommerce.CustomerDomain.Application.csproj" Id="578ef46e-71e9-47df-8247-b5526e94c3bd" />
+    <Project Path="CookieCommerce.CustomerDomain.Domain/CookieCommerce.CustomerDomain.Domain.csproj" Id="59ea0575-75c9-46fb-9470-74fa5978af58" />
+    <Project Path="CookieCommerce.CustomerDomain.Infrastructure/CookieCommerce.CustomerDomain.Infrastructure.csproj" Id="9b4587c6-e952-4265-843f-3928cf9c69a9" />
+    <Project Path="CookieCommerce.CustomerDomain.Tests/CookieCommerce.CustomerDomain.Tests.csproj" Id="14d57c43-988c-459e-b051-7476d947bc4e" />
+  </Folder>
   <Folder Name="/Domains/OrderDomain/">
     <Project Path="CookieCommerce.OrderDomain.Aggregates/CookieCommerce.OrderDomain.Aggregates.csproj" />
+  </Folder>
+  <Folder Name="/Domains/_Library/">
+    <Project Path="CookieCommerce.CookieMassTransit/CookieCommerce.CookieMassTransit.csproj" Id="7b35d62c-8758-4470-9ebb-f50bd87b6a60" />
+    <Project Path="CookieCommerce.DomainBuildingBlocks/CookieCommerce.DomainBuildingBlocks.csproj" Id="9045107f-b82e-4998-a3b8-7efde735428e" />
   </Folder>
   <Project Path="CookieCommerce.AppHost/CookieCommerce.AppHost.csproj" />
   <Project Path="CookieCommerce.ServiceDefaults/CookieCommerce.ServiceDefaults.csproj" />

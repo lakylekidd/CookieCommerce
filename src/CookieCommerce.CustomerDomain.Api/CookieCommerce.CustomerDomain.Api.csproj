@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>9948d063-374b-4c2a-a238-f876e8f1a2e9</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Marten" Version="8.17.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CookieCommerce.CookieMassTransit\CookieCommerce.CookieMassTransit.csproj" />
+    <ProjectReference Include="..\CookieCommerce.CustomerDomain.Application\CookieCommerce.CustomerDomain.Application.csproj" />
+    <ProjectReference Include="..\CookieCommerce.CustomerDomain.Infrastructure\CookieCommerce.CustomerDomain.Infrastructure.csproj" />
+    <ProjectReference Include="..\CookieCommerce.ServiceDefaults\CookieCommerce.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>

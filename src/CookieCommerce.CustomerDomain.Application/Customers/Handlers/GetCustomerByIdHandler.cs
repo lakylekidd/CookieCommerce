@@ -5,7 +5,7 @@ using MediatR;
 
 namespace CookieCommerce.CustomerDomain.Application.Customers.Handlers;
 
-internal class GetCustomerByIdHandler(IQuerySession query) : IRequestHandler<GetCustomerById, CustomerReadModel?>
+public class GetCustomerByIdHandler(IQuerySession query) : IRequestHandler<GetCustomerById, CustomerReadModel?>
 {
     private readonly IQuerySession _query = query;
 

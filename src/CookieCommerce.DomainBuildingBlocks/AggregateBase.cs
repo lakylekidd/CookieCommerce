@@ -13,6 +13,7 @@ public abstract class AggregateBase
     protected void Apply(object domainEvent)
     {
         _uncommittedEvents.Add(domainEvent);
+        When(domainEvent);
     }
 
     protected abstract void When(object @event);

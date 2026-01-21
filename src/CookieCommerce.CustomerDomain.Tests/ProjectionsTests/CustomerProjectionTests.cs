@@ -27,7 +27,8 @@ public class CustomerProjectionTests
         encryption.Decrypt("encrypted-first-name", Arg.Any<byte[]>()).Returns("John");
         encryption.Decrypt("encrypted-last-name", Arg.Any<byte[]>()).Returns("Doe");
         encryption.Decrypt("encrypted-gender", Arg.Any<byte[]>()).Returns("Male");
-        encryption.Decrypt("encrypted-date-of-birth", Arg.Any<byte[]>()).Returns("18/11/1986");
+        // Use ISO date format to avoid culture-specific parsing issues in tests
+        encryption.Decrypt("encrypted-date-of-birth", Arg.Any<byte[]>()).Returns("1986-11-18");
 
 
         var scope = Substitute.For<IServiceScope>();
@@ -51,7 +52,7 @@ public class CustomerProjectionTests
         });
 
         // Act
-        await projection.ApplyAsync(ops, [e], default);
+        await projection.ApplyAsync(ops, new JasperFx.Events.IEvent[] { e }, default);
 
         // Assert
         ops.Received().Store(Arg.Is<CustomerReadModel>(m =>

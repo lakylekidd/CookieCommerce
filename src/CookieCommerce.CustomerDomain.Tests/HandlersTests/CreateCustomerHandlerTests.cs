@@ -25,7 +25,8 @@ public class CreateCustomerHandlerTests
         encryption.Encrypt("John", Arg.Any<byte[]>()).Returns("encrypted-first-name");
         encryption.Encrypt("Doe", Arg.Any<byte[]>()).Returns("encrypted-last-name");
         encryption.Encrypt("Male", Arg.Any<byte[]>()).Returns("encrypted-gender");
-        encryption.Encrypt("18/11/1986", Arg.Any<byte[]>()).Returns("encrypted-date-of-birth");
+        // Handler formats dates using the round-trip format specifier ("O")
+        encryption.Encrypt(DateTime.Parse("18/11/1986").ToString("O"), Arg.Any<byte[]>()).Returns("encrypted-date-of-birth");
 
         var handler = new CreateCustomerHandler(session, keyStore, encryption);
 

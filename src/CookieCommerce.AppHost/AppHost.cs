@@ -13,4 +13,7 @@ var customerApi = builder.AddProject<CookieCommerce_CustomerDomain_Api>("custome
     .WithReference(rabbit);
 
 
+builder.AddProject<Projects.CookieCommerce_Web>("cookiecommerce-web");
+
+
 builder.Build().Run();

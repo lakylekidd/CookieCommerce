@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CookieCommerce.CustomerDomain.Api\CookieCommerce.CustomerDomain.Api.csproj" />
+    <ProjectReference Include="..\CookieCommerce.Web\CookieCommerce.Web.csproj" />
     <ProjectReference Include="..\CookieCommerce\CookieCommerce.csproj" />
   </ItemGroup>
 

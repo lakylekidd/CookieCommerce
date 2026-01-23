@@ -3,6 +3,16 @@ html, body {
     background-color: #f8f1de;
 }
 
+.nocopy {
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+h1:focus {
+    outline: none;
+}
+
 #jumbotron {
     display: flex;
     justify-content: center;
@@ -29,6 +39,10 @@ html, body {
         #jumbotron #postcard #comingsoon img {
             width: 100px;
         }
+        #jumbotron #postcard form {
+            display: flex;
+            flex-direction:column;
+        }
     #jumbotron h1 {
         font-family: 'Comic Neue', cursive;
         color: #50363f;
@@ -45,8 +59,26 @@ input {
     border-color: #50363f;
     border-radius: 30px;
     height: 50px;
-    width: 400px;
     padding: 0 1rem;
+    font-family: 'Comic Neue';
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: #50363f;
+    margin: 0.2rem 0 0.2rem 0;
+}
+
+button {
+    border-color: #50363f;
+    border-radius: 30px;
+    background-color: #50363f;
+    font-family: 'Comic Neue';
+    font-weight: 700;
+    color: #f8f1de;
+    font-size: 1.4rem;
+    padding: 0.3rem;
+    margin: 0.2rem 0 0.2rem 0;
+    width: 200px;
+    align-self: center;
 }
 
 @media (max-width: 768px) {
@@ -70,7 +102,6 @@ input {
 
     input {
         width: 100%; /* Make input fill the postcard width */
-        max-width: 300px; /* Prevent it from getting too huge on small tablets */
     }
 
     #jumbotron #comingsoon img {
@@ -99,8 +130,12 @@ input {
     }
 
     input {
-        width: 100%; /* Make input fill the postcard width */
-        max-width: 300px; /* Prevent it from getting too huge on small tablets */
+        width: 100%;
+        font-size: 1rem;
+    }
+
+    button {
+
     }
 
     #jumbotron #comingsoon img {

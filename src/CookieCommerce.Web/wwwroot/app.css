@@ -1,10 +1,3 @@
-@font-face {
-    font-family: 'MyCustomComic';
-    src: url('/fonts/comic.woff2') format('woff2');
-    font-weight: bold;
-    font-style: normal;
-}
-
 html, body {
     font-family: Arial, sans-serif;
     background-color: #f8f1de;
@@ -37,10 +30,10 @@ html, body {
             width: 100px;
         }
     #jumbotron h1 {
-        font-family: 'MyCustomComic', cursive;
+        font-family: 'Comic Neue', cursive;
         color: #50363f;
-        font-size: 3.5rem;
-        font-weight: bold;
+        font-size: 4rem;
+        font-weight: 900;
         margin-top: 50px;
     }
     #jumbotron h2 {
@@ -58,18 +51,48 @@ input {
 
 @media (max-width: 768px) {
     #jumbotron #postcard {
-        width: 300px; /* Use percentage instead of fixed px */
+        width: 500px; /* Use percentage instead of fixed px */
         padding: 1rem;
         margin: 0 10px;
     }
         #jumbotron #postcard #logo {
-            width: 150px; /* Scale down the logo */
+            width: 300px; /* Scale down the logo */
         }
 
         #jumbotron h1 {
-            font-size: 2rem; /* Shrink the large text */
+            font-size: 3rem; /* Shrink the large text */
             margin-top: 30px;
         }
+
+    #jumbotron h2 {
+        font-size: 2rem;
+    }
+
+    input {
+        width: 100%; /* Make input fill the postcard width */
+        max-width: 300px; /* Prevent it from getting too huge on small tablets */
+    }
+
+    #jumbotron #comingsoon img {
+        width: 70px; /* Scale down the "coming soon" badge */
+    }
+}
+
+@media (max-width: 552px) {
+    #jumbotron #postcard {
+        width: 300px; /* Use percentage instead of fixed px */
+        padding: 1rem;
+        margin: 0 10px;
+    }
+
+        #jumbotron #postcard #logo {
+            width: 150px; /* Scale down the logo */
+        }
+
+    #jumbotron h1 {
+        font-size: 2rem; /* Shrink the large text */
+        margin-top: 30px;
+    }
 
     #jumbotron h2 {
         font-size: 1.5rem;

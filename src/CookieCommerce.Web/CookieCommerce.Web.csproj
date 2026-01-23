@@ -11,4 +11,8 @@
     <ProjectReference Include="..\CookieCommerce.ServiceDefaults\CookieCommerce.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\fonts\" />
+  </ItemGroup>
+
 </Project>

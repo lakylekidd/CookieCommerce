@@ -32,4 +32,15 @@ public static class SiteMapExtensions
             return Results.Content(sb.ToString(), "application/xml");
         });
     }
+
+    public static void AddRobots(this WebApplication? app)
+    {
+        app.MapGet("/robots.txt", () =>
+        {
+            var robots = "User-agent: *\n" +
+                         "Allow: /\n" +
+                         $"Sitemap: https://tigervancookie.nl/sitemap.xml";
+            return Results.Text(robots);
+        });
+    }
 }

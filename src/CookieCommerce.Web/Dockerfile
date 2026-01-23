@@ -4,7 +4,6 @@ WORKDIR /src
 
 # Copy csproj and restore as distinct layers to leverage Docker cache
 COPY CookieCommerce.Web/CookieCommerce.Web.csproj CookieCommerce.Web/
-COPY CookieCommerce.csproj ./
 
 RUN dotnet restore "CookieCommerce.Web/CookieCommerce.Web.csproj"
 

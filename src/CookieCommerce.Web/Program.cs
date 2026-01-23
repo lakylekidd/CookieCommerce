@@ -1,6 +1,7 @@
 using CookieCommerce.Web.Components;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.DataProtection;
+using CookieCommerce.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,5 +44,7 @@ app.MapStaticAssets();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.AddSiteMapOptions();
 
 app.Run();

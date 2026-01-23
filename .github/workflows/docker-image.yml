@@ -34,6 +34,4 @@ jobs:
         push: true
         tags: ghcr.io/lakylekidd/cookiecommerce-web:latest
 
-    - name: Trigger Portainer Webhook
-      run: |
-        curl -X POST "{{ secrets.PORTAINER_WEBHOOK_URL }}"
+    

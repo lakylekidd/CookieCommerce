@@ -1,3 +1,10 @@
+@font-face {
+    font-family: 'MyCustomComic';
+    src: url('/fonts/comic.woff2') format('woff2');
+    font-weight: bold;
+    font-style: normal;
+}
+
 html, body {
     font-family: Arial, sans-serif;
     background-color: #f8f1de;
@@ -30,9 +37,9 @@ html, body {
             width: 100px;
         }
     #jumbotron h1 {
-        font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+        font-family: 'MyCustomComic', cursive;
         color: #50363f;
-        font-size: 4rem;
+        font-size: 3.5rem;
         font-weight: bold;
         margin-top: 50px;
     }

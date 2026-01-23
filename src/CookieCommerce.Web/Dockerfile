@@ -2,6 +2,9 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 # We stay at the root /app or /src
 WORKDIR /build 
 
+# Add this anywhere in your Dockerfile (usually near the top)
+LABEL org.opencontainers.image.source=https://github.com/lakylekidd/CookieCommerce
+
 # 1. Copy the projects into their relative subfolders
 # This mirrors your repo structure exactly
 COPY src/CookieCommerce.Web/CookieCommerce.Web.csproj src/CookieCommerce.Web/

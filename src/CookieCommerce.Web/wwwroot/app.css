@@ -13,6 +13,113 @@ h1:focus {
     outline: none;
 }
 
+/* Floating Cookie Annimations START */
+@keyframes move {
+    100% {
+        transform: translate3d(0, 0, 1px) rotate(360deg);
+    }
+}
+.page {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+}
+.cookie-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0; /* Background layer */
+    pointer-events: none; /* User can click "through" the cookies */
+    overflow: hidden;
+}
+.main-content {
+    position: relative;
+    z-index: 10; /* Higher than cookies */
+    /* If your main content has a background, 
+       make it transparent or remove it to see the cookies */
+    background: transparent;
+}
+.cookie {
+    position: absolute;
+    width: 15vmin;
+    height: 15vmin;
+    border-radius: 50%;
+    backface-visibility: hidden;
+    animation: move linear infinite;
+    background-image: url('/images/cookie.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    filter: blur(10px);
+}
+.cookie:nth-child(odd) {
+    
+}
+.cookie:nth-child(even) {
+    
+}
+    .cookie:nth-child(1) {
+        top: 77%;
+        left: 88%;
+        animation-duration: 40s;
+        animation-delay: -3s;
+        transform-origin: 16vw -2vh;
+    }
+    .cookie:nth-child(2) {
+        top: 42%;
+        left: 2%;
+        animation-duration: 53s;
+        animation-delay: -29s;
+        transform-origin: -19vw 21vh;
+    }
+    .cookie:nth-child(3) {
+        top: 28%;
+        left: 18%;
+        animation-duration: 49s;
+        animation-delay: -8s;
+        transform-origin: -22vw 3vh;
+    }
+    .cookie:nth-child(4) {
+        top: 50%;
+        left: 79%;
+        animation-duration: 26s;
+        animation-delay: -21s;
+        transform-origin: -17vw -6vh;
+    }
+    .cookie:nth-child(5) {
+        top: 46%;
+        left: 15%;
+        animation-duration: 36s;
+        animation-delay: -40s;
+        transform-origin: 4vw 0vh;
+    }
+
+    .cookie:nth-child(6) {
+        top: 77%;
+        left: 16%;
+        animation-duration: 31s;
+        animation-delay: -10s;
+        transform-origin: 18vw 4vh;
+    }
+
+    .cookie:nth-child(7) {
+        top: 22%;
+        left: 17%;
+        animation-duration: 55s;
+        animation-delay: -6s;
+        transform-origin: 1vw -23vh;
+    }
+
+    .cookie:nth-child(8) {
+        top: 41%;
+        left: 47%;
+        animation-duration: 43s;
+        animation-delay: -28s;
+        transform-origin: 25vw -3vh;
+    }
+/* Floating Cookie Annimations END */
+
 #jumbotron {
     display: flex;
     justify-content: center;

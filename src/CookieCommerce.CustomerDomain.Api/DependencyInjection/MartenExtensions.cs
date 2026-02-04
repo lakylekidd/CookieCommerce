@@ -1,4 +1,6 @@
-﻿using JasperFx;
+﻿using CookieCommerce.CustomerDomain.Domain.Aggregates;
+using CookieCommerce.CustomerDomain.Infrastructure.Projections;
+
 using Marten;
 
 namespace CookieCommerce.CustomerDomain.Api.DependencyInjection;
@@ -15,8 +17,12 @@ public static class MartenExtensions
                 throw new InvalidOperationException("Connection string 'CustomerDomain' not found.");
 
             opts.Connection(connectionString);
-            opts.AutoCreateSchemaObjects = AutoCreate.All;
-        });
+
+            opts.Projections.Add(new CustomerProjection(services), JasperFx.Events.Projections.ProjectionLifecycle.Inline);
+
+            opts.AutoCreateSchemaObjects = JasperFx.AutoCreate.All;
+        })
+        .ApplyAllDatabaseChangesOnStartup();
 
         return services;
     }

@@ -9,34 +9,34 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CookieCommerce.CustomerDomain.Infrastructure.Projections;
 
-public class CustomerProjection(IServiceProvider services) : IProjection
+public class CustomerProjection(IServiceCollection services) : EventProjection
 {
-    private readonly IServiceProvider _services = services;
+    private readonly IServiceCollection _services = services;
 
-    public async Task ApplyAsync(IDocumentOperations operations, IReadOnlyList<IEvent> events, CancellationToken cancellation)
+    public override ValueTask ApplyAsync(IDocumentOperations operations, IEvent @event, CancellationToken cancellation)
     {
-        foreach (var @event in events)
+        switch (@event.Data)
         {
-            switch (@event.Data)
-            {
-                case CustomerCreated e:
-                    await Apply(operations, e, cancellation);
-                    break;
-                case CustomerDeleted e:
-                    await Apply(operations, e, cancellation);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unknown event type: {@event.GetType().FullName}");
-            }
+            case CustomerCreated e:
+                Apply(operations, e, cancellation);
+                break;
+            case CustomerDeleted e:
+                Apply(operations, e, cancellation);
+                break;
+            default:
+                throw new InvalidOperationException($"Unknown event type: {@event.GetType().FullName}");
         }
+
+        return new ValueTask();
     }
 
-    private async Task Apply(IDocumentOperations ops, CustomerCreated e, CancellationToken cancellationToken)
+    private void Apply(IDocumentOperations ops, CustomerCreated e, CancellationToken cancellationToken)
     {
-        var keyStore = _services.GetRequiredService<ICustomerKeyStore>();
-        var encryptionService = _services.GetRequiredService<IEncryptionService>();
+        var services = _services.BuildServiceProvider();
+        var keyStore = services.GetRequiredService<ICustomerKeyStore>();
+        var encryptionService = services.GetRequiredService<IEncryptionService>();
 
-        var customerKey = await keyStore.GetKeyAsync(e.CustomerId, cancellationToken);
+        var customerKey = keyStore.GetKeyAsync(e.CustomerId, cancellationToken).Result;
 
         if (customerKey == null) return; // Key shredded -> treat as deleted/anonymized
 
@@ -63,9 +63,8 @@ public class CustomerProjection(IServiceProvider services) : IProjection
         ops.Store(customerReadModel);
     }
 
-    private Task Apply(IDocumentOperations ops, CustomerDeleted e, CancellationToken cancellationToken)
+    private void Apply(IDocumentOperations ops, CustomerDeleted e, CancellationToken cancellationToken)
     {
         ops.DeleteWhere<CustomerReadModel>(c => c.Id == e.CustomerId);
-        return Task.CompletedTask;
     }
 }

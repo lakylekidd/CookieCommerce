@@ -1,5 +1,4 @@
-﻿using CookieCommerce.CustomerDomain.Domain.Aggregates;
-using CookieCommerce.CustomerDomain.Infrastructure.Projections;
+﻿using CookieCommerce.CustomerDomain.Infrastructure.Projections;
 
 using Marten;
 

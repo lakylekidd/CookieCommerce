@@ -20,7 +20,7 @@ public class CustomerProjection(IServiceCollection services) : EventProjection
             case CustomerCreated e:
                 Apply(operations, e, cancellation);
                 break;
-            case CustomerDeleted e:
+            case CustomerForgotten e:
                 Apply(operations, e, cancellation);
                 break;
             default:
@@ -63,7 +63,7 @@ public class CustomerProjection(IServiceCollection services) : EventProjection
         ops.Store(customerReadModel);
     }
 
-    private void Apply(IDocumentOperations ops, CustomerDeleted e, CancellationToken cancellationToken)
+    private void Apply(IDocumentOperations ops, CustomerForgotten e, CancellationToken cancellationToken)
     {
         ops.DeleteWhere<CustomerReadModel>(c => c.Id == e.CustomerId);
     }

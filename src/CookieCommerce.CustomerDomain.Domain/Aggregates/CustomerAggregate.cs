@@ -6,11 +6,15 @@ namespace CookieCommerce.CustomerDomain.Domain.Aggregates;
 
 public class CustomerAggregate : AggregateBase
 {
+    private readonly List<Address> _addresses = [];
+    public IReadOnlyCollection<Address> Addresses => _addresses.AsReadOnly();
+
     public string EncryptedFirstName { get; private set; } = default!;
     public string EncryptedLastName { get; private set; } = default!;
     public string EncryptedGender { get; private set; } = default!;
     public string? EncryptedDateOfBirth { get; private set; } = default!;
     public string EncryptedEmail { get; private set; } = default!;
+    public DateTime? ForgottenDateUtc { get; private set; } = null;
 
     public CustomerAggregate() { }
 
@@ -44,15 +48,11 @@ public class CustomerAggregate : AggregateBase
         });
     }
 
-    public void Delete()
+    public void Forget()
     {
-        Apply(new CustomerDeleted(Id));
+        Apply(new CustomerForgotten(Id));
     }
-
-    #region Addresses
-    private readonly List<Address> _addresses = new();
-    public IReadOnlyCollection<Address> Addresses => _addresses.AsReadOnly();
-
+    
     public void AddAddress(Address address)
     {
         if (_addresses.Any(a => a.Label == address.Label))
@@ -68,13 +68,15 @@ public class CustomerAggregate : AggregateBase
 
         Apply(new CustomerAddressRemoved(Id, label));
     }
-    #endregion
 
     protected override void When(object @event)
     {
         switch (@event)
         {
             case CustomerCreated e:
+                Handle(e);
+                break;
+            case CustomerForgotten e:
                 Handle(e);
                 break;
             case CustomerAddressAdded e:
@@ -96,8 +98,22 @@ public class CustomerAggregate : AggregateBase
         EncryptedDateOfBirth = e.EncryptedDateOfBirth;
     }
 
+    private void Handle(CustomerForgotten e)
+    {
+        ForgottenDateUtc = DateTime.UtcNow;
+    }
+
     private void Handle(CustomerAddressAdded e)
     {
+        if (e.Address.IsPrimary)
+        {
+            foreach (var addr in _addresses)
+            {
+                if (addr.IsPrimary)
+                    addr.UnsetPrimary();
+            }
+        }
+        
         _addresses.Add(e.Address);
     }
 

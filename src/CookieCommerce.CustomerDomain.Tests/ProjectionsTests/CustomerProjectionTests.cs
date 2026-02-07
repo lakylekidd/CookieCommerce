@@ -118,7 +118,7 @@ public class CustomerProjectionTests
 
         var ops = Substitute.For<IDocumentOperations>();
 
-        var deleted = new CustomerDeleted(Guid.NewGuid());
+        var deleted = new CustomerForgotten(Guid.NewGuid());
         var @event = Substitute.For<IEvent>();
         @event.Data.Returns(deleted);
 

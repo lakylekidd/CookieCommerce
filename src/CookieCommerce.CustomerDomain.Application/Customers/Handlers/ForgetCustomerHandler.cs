@@ -25,7 +25,7 @@ public class ForgetCustomerHandler(
         var customer = await _session.Events.AggregateStreamAsync<CustomerAggregate>(request.CustomerId, token: cancellationToken);
         if (customer is null) return;
 
-        customer.Delete();
+        customer.Forget();
 
         _session.Events.Append(request.CustomerId, customer.DomainEvents);
         await _session.SaveChangesAsync(cancellationToken);

@@ -71,7 +71,7 @@ public class ProductAggregateTests
     }
 
     [Fact]
-    public void Rename_ShouldUpdateName_WhenCatalogIsActive()
+    public void Rename_ShouldUpdateName_WhenProductIsActive()
     {
         var agg = new ProductAggregate();
         agg.Create(Guid.NewGuid(), "Old Name", "Description", 10.99m);
@@ -82,7 +82,7 @@ public class ProductAggregateTests
     }
 
     [Fact]
-    public void Rename_ShouldThrow_WhenCatalogIsDeactivated()
+    public void Rename_ShouldThrow_WhenProductIsDeactivated()
     {
         var agg = new ProductAggregate();
         agg.Create(Guid.NewGuid(), "Product", "Description", 10.99m);
@@ -107,7 +107,7 @@ public class ProductAggregateTests
     }
 
     [Fact]
-    public void ChangePrice_ShouldUpdatePrice_WhenCatalogIsActive()
+    public void ChangePrice_ShouldUpdatePrice_WhenProductIsActive()
     {
         var agg = new ProductAggregate();
         agg.Create(Guid.NewGuid(), "Product", "Description", 10.99m);
@@ -143,7 +143,7 @@ public class ProductAggregateTests
     }
 
     [Fact]
-    public void ChangePrice_ShouldThrow_WhenCatalogIsDeactivated()
+    public void ChangePrice_ShouldThrow_WhenProductIsDeactivated()
     {
         var agg = new ProductAggregate();
         agg.Create(Guid.NewGuid(), "Product", "Description", 10.99m);
@@ -216,14 +216,14 @@ public class ProductAggregateTests
         var agg = new ProductAggregate();
         var id = Guid.NewGuid();
 
-        // Act: Create product item
+        // Act: Create product
         agg.Create(id, "Widget", "A useful widget", 19.99m);
 
         agg.Id.Should().Be(id);
         agg.Name.Should().Be("Widget");
         agg.IsActive.Should().BeTrue();
 
-        // Act: Rename product item
+        // Act: Rename product
         agg.Rename("Super Widget");
         agg.Name.Should().Be("Super Widget");
 

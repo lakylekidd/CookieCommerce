@@ -150,7 +150,7 @@ public class CustomerProjection : SingleStreamProjection<CustomerReadModel, Guid
 }
 ```
 
-#### **{Domain}.Tests**
+- **{Domain}.Tests**
 - **Unit tests** in `DomainTests/` and `ApplicationTests/`
 - **Integration tests** in `IntegrationTests/`
 - **Projection tests** in `ProjectionsTests/`

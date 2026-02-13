@@ -33,6 +33,12 @@ public class CustomerController(ISender mediator) : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetAllAsync(CancellationToken ct = default)
+    {
+        return Ok();
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken ct)
     {
@@ -46,11 +52,11 @@ public class CustomerController(ISender mediator) : ControllerBase
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
         var cmd = request.ToCommand(customerId);
-        var addressId = await _mediator.Send(cmd, ct);
-        return CreatedAtAction("GetById", new { id = customerId }, addressId);
+        await _mediator.Send(cmd, ct);
+        return CreatedAtAction("GetById", new { id = customerId }, customerId);
     }
 
-    [HttpDelete("{customerId:guid}/addresses/{label:string}")]
+    [HttpDelete("{customerId:guid}/addresses/{label:alpha}")]
     public async Task<IActionResult> DeleteAddressAsync(Guid customerId, string label, CancellationToken ct)
     {
         await _mediator.Send(new RemoveCustomerAddress(customerId, label), ct);

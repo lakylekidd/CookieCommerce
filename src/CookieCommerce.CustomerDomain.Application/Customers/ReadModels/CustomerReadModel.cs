@@ -10,4 +10,5 @@ public class CustomerReadModel
     public string LastName { get; set; } = null!;
     public Gender Gender { get; set; } = Gender.Unknown;
     public DateTime? DateOfBirth { get; set; }
+    public List<CustomerAddressReadModel> Addresses { get; set; } = new();
 }

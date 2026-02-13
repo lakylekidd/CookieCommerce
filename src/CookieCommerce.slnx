@@ -10,6 +10,10 @@
   <Folder Name="/Domains/OrderDomain/">
     <Project Path="CookieCommerce.OrderDomain.Aggregates/CookieCommerce.OrderDomain.Aggregates.csproj" />
   </Folder>
+  <Folder Name="/Domains/CatalogDomain/">
+    <Project Path="CookieCommerce.CatalogDomain.Domain/CookieCommerce.CatalogDomain.Domain.csproj" />
+    <Project Path="CookieCommerce.CatalogDomain.Tests/CookieCommerce.CatalogDomain.Tests.csproj" />
+  </Folder>
   <Folder Name="/Domains/_Library/">
     <Project Path="CookieCommerce.CookieMassTransit/CookieCommerce.CookieMassTransit.csproj" Id="7b35d62c-8758-4470-9ebb-f50bd87b6a60" />
     <Project Path="CookieCommerce.DomainBuildingBlocks/CookieCommerce.DomainBuildingBlocks.csproj" Id="9045107f-b82e-4998-a3b8-7efde735428e" />

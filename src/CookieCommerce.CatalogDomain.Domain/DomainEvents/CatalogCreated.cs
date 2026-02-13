@@ -1,8 +1,8 @@
-namespace CookieCommerce.ProductDomain.Domain.DomainEvents;
+namespace CookieCommerce.CatalogDomain.Domain.DomainEvents;
 
-public class ProductCreated
+public class CatalogCreated
 {
-    public Guid ProductId { get; init; }
+    public Guid CatalogId { get; init; }
     public string Name { get; init; } = default!;
     public string Description { get; init; } = default!;
     public decimal Price { get; init; }

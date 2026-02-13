@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CookieCommerce.ProductDomain.Domain\CookieCommerce.ProductDomain.Domain.csproj" />
+    <ProjectReference Include="..\CookieCommerce.CatalogDomain.Domain\CookieCommerce.CatalogDomain.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

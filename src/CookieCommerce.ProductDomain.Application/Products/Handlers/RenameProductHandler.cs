@@ -15,10 +15,8 @@ public class RenameProductHandler(IDocumentSession session) : IRequestHandler<Re
     {
         var product = await session.Events.AggregateStreamAsync<ProductAggregate>(
             request.ProductId, 
-            token: cancellationToken);
-
-        if (product == null)
-            throw new ProductNotFoundException(request.ProductId);
+            token: cancellationToken)
+            ?? throw new ProductNotFoundException(request.ProductId);
 
         product.Rename(request.NewName);
 

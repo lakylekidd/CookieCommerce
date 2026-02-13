@@ -1,5 +1,6 @@
 using CookieCommerce.CookieMassTransit;
 using CookieCommerce.CustomerDomain.Api.DependencyInjection;
+using CookieCommerce.CustomerDomain.Api.Middleware;
 using CookieCommerce.CustomerDomain.Application;
 using CookieCommerce.CustomerDomain.Infrastructure;
 using Scalar.AspNetCore;
@@ -21,6 +22,9 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
+// Add domain exception handling middleware
+app.UseDomainExceptionHandler();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -35,3 +39,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class  Program() { }

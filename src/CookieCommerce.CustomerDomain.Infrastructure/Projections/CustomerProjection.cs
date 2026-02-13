@@ -2,69 +2,81 @@
 using CookieCommerce.CustomerDomain.Application.Security;
 using CookieCommerce.CustomerDomain.Domain.DomainEvents;
 using CookieCommerce.CustomerDomain.Domain.ValueObjects;
-using JasperFx.Events;
+using CookieCommerce.CustomerDomain.Infrastructure.Security;
 using Marten;
-using Marten.Events.Projections;
-using Microsoft.Extensions.DependencyInjection;
+using Marten.Events.Aggregation;
 
 namespace CookieCommerce.CustomerDomain.Infrastructure.Projections;
 
-public class CustomerProjection(IServiceCollection services) : EventProjection
+public class CustomerProjection : SingleStreamProjection<CustomerReadModel, Guid>
 {
-    private readonly IServiceCollection _services = services;
+    private readonly IEncryptionService _encryptionService;
 
-    public override ValueTask ApplyAsync(IDocumentOperations operations, IEvent @event, CancellationToken cancellation)
+    public CustomerProjection(IEncryptionService encryptionService)
     {
-        switch (@event.Data)
-        {
-            case CustomerCreated e:
-                Apply(operations, e, cancellation);
-                break;
-            case CustomerDeleted e:
-                Apply(operations, e, cancellation);
-                break;
-            default:
-                throw new InvalidOperationException($"Unknown event type: {@event.GetType().FullName}");
-        }
-
-        return new ValueTask();
+        _encryptionService = encryptionService;
+        
+        // Define inline projection methods
+        DeleteEvent<CustomerForgotten>();
     }
 
-    private void Apply(IDocumentOperations ops, CustomerCreated e, CancellationToken cancellationToken)
+    public async Task<CustomerReadModel> Create(CustomerCreated @event, IQuerySession session)
     {
-        var services = _services.BuildServiceProvider();
-        var keyStore = services.GetRequiredService<ICustomerKeyStore>();
-        var encryptionService = services.GetRequiredService<IEncryptionService>();
+        // Load the encryption key
+        var keyRecord = await session.LoadAsync<CustomerKeyRecord>(@event.CustomerId);
+        
+        if (keyRecord?.Key == null)
+        {
+            // Key doesn't exist or was shredded - return null to skip this projection
+            return null!;
+        }
 
-        var customerKey = keyStore.GetKeyAsync(e.CustomerId, cancellationToken).Result;
-
-        if (customerKey == null) return; // Key shredded -> treat as deleted/anonymized
-
-        var email = encryptionService.Decrypt(e.EncryptedEmail, customerKey);
-        var firstName = encryptionService.Decrypt(e.EncryptedFirstName, customerKey);
-        var lastName = encryptionService.Decrypt(e.EncryptedLastName, customerKey);
-        var gender = encryptionService.Decrypt(e.EncryptedGender, customerKey);
-        var dateOfBirth = e.EncryptedDateOfBirth is not null
-            ? encryptionService.Decrypt(e.EncryptedDateOfBirth, customerKey)
+        var email = _encryptionService.Decrypt(@event.EncryptedEmail, keyRecord.Key);
+        var firstName = _encryptionService.Decrypt(@event.EncryptedFirstName, keyRecord.Key);
+        var lastName = _encryptionService.Decrypt(@event.EncryptedLastName, keyRecord.Key);
+        var gender = _encryptionService.Decrypt(@event.EncryptedGender, keyRecord.Key);
+        var dateOfBirth = @event.EncryptedDateOfBirth is not null
+            ? _encryptionService.Decrypt(@event.EncryptedDateOfBirth, keyRecord.Key)
             : null;
 
-        var customerReadModel = new CustomerReadModel
+        return new CustomerReadModel
         {
-            Id = e.CustomerId,
+            Id = @event.CustomerId,
             Email = email,
             FirstName = firstName,
             LastName = lastName,
             Gender = Enum.Parse<Gender>(gender),
             DateOfBirth = dateOfBirth is not null
                 ? DateTime.Parse(dateOfBirth)
-                : null
+                : null,
+            Addresses = new List<CustomerAddressReadModel>()
         };
-
-        ops.Store(customerReadModel);
     }
-
-    private void Apply(IDocumentOperations ops, CustomerDeleted e, CancellationToken cancellationToken)
+    
+    public CustomerReadModel Apply(CustomerAddressAdded @event, CustomerReadModel current)
     {
-        ops.DeleteWhere<CustomerReadModel>(c => c.Id == e.CustomerId);
+        // Add address to the read model  
+        var address = new CustomerAddressReadModel
+        {
+            Label = @event.Address.Label,
+            Street = @event.Address.Street,
+            City = @event.Address.City,
+            State = "", // Not available in Address value object
+            PostalCode = @event.Address.PostalCode,
+            Country = @event.Address.CountryIso2LetterCode
+        };
+        
+        current.Addresses.Add(address);
+        return current;
+    }
+    
+    public CustomerReadModel Apply(CustomerAddressRemoved @event, CustomerReadModel current)
+    {
+        var addressToRemove = current.Addresses.FirstOrDefault(a => a.Label == @event.Label);
+        if (addressToRemove != null)
+        {
+            current.Addresses.Remove(addressToRemove);
+        }
+        return current;
     }
 }

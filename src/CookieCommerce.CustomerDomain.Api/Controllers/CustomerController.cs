@@ -8,19 +8,21 @@ namespace CookieCommerce.CustomerDomain.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CustomersController(ISender mediator) : ControllerBase
+public class CustomerController(ISender mediator) : ControllerBase
 {
     private readonly ISender _mediator = mediator;
 
-    [HttpPost] // POST api/customers
+    [HttpPost]
     public async Task<IActionResult> CreateAsync([FromBody] CreateCustomerRequest request, CancellationToken ct)
     {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
         var cmd = request.ToCommand();
         var customerId = await _mediator.Send(cmd, ct);
         return CreatedAtAction("GetById", new { id = customerId }, customerId);
     }
 
-    [HttpGet("{id:guid}")] // GET api/customers/{id}
+    [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         var query = new GetCustomerById(id);
@@ -31,10 +33,33 @@ public class CustomersController(ISender mediator) : ControllerBase
         return Ok(result);
     }
 
-    [HttpDelete("{id:guid}")] // DELETE api/customers/{id}
+    [HttpGet]
+    public async Task<IActionResult> GetAllAsync(CancellationToken ct = default)
+    {
+        return Ok();
+    }
+
+    [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken ct)
     {
         await _mediator.Send(new ForgetCustomer(id), ct);
+        return NoContent();
+    }
+
+    [HttpPost("{customerId:guid}/addresses/")]
+    public async Task<IActionResult> AddAddressAsync(Guid customerId, [FromBody] AddCustomerAddressRequest request, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+        var cmd = request.ToCommand(customerId);
+        await _mediator.Send(cmd, ct);
+        return CreatedAtAction("GetById", new { id = customerId }, customerId);
+    }
+
+    [HttpDelete("{customerId:guid}/addresses/{label:alpha}")]
+    public async Task<IActionResult> DeleteAddressAsync(Guid customerId, string label, CancellationToken ct)
+    {
+        await _mediator.Send(new RemoveCustomerAddress(customerId, label), ct);
         return NoContent();
     }
 }

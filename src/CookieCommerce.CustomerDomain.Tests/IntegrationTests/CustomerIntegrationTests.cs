@@ -4,50 +4,78 @@ using CookieCommerce.CustomerDomain.Domain.DomainEvents;
 using FluentAssertions;
 using Marten;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace CookieCommerce.CustomerDomain.Tests.IntegrationTests;
 
-public class CustomerIntegrationTests : IAsyncLifetime
+public class CustomerIntegrationTests : IClassFixture<TestWebApplicationFactory>, IAsyncLifetime
 {
-    private IHost _host;
-    private IQuerySession _query;
-    private IDocumentSession _session;
+    private readonly TestWebApplicationFactory _factory;
+    private IDocumentStore _store = null!;
+    private IDocumentSession _session = null!;
+    private IQuerySession _query = null!;
 
-    [Fact(Skip = "Integration test - requires a running Postgres instance. Skipped in unit test runs.")]
+    public CustomerIntegrationTests(TestWebApplicationFactory factory)
+    {
+        _factory = factory;
+    }
+
+    public async Task InitializeAsync()
+    {
+        // Get the document store from DI
+        _store = _factory.Services.GetRequiredService<IDocumentStore>();
+        
+        // Create sessions for the test
+        _session = _store.LightweightSession();
+        _query = _store.QuerySession();
+        
+        await Task.CompletedTask;
+    }
+
+    public async Task DisposeAsync()
+    {
+        // Clean up sessions
+        _session?.Dispose();
+        _query?.Dispose();
+        await Task.CompletedTask;
+    }
+
+    [Fact]
     public async Task CreatingCustomer_ShouldProjectReadModel()
     {
         // Arrange
         var id = Guid.NewGuid();
+        
+        // Create encryption key and encrypt data for the customer
+        using var scope = _factory.Services.CreateScope();
+        var keyStore = scope.ServiceProvider.GetRequiredService<CookieCommerce.CustomerDomain.Application.Security.ICustomerKeyStore>();
+        var encryptionService = scope.ServiceProvider.GetRequiredService<CookieCommerce.CustomerDomain.Application.Security.IEncryptionService>();
+        
+        var customerKey = await keyStore.CreateKeyForCustomerAsync(id, CancellationToken.None);
+        
         var evt = new CustomerCreated
         {
             CustomerId = id,
-            EncryptedFirstName = "EncryptedFirstName",
-            EncryptedLastName = "EncryptedLastName",
-            EncryptedGender = "EncryptedGender",
-            EncryptedEmail = "EncryptedEmail",
-            EncryptedDateOfBirth = "EncryptedDateOfBirth"
+            EncryptedFirstName = encryptionService.Encrypt("John", customerKey),
+            EncryptedLastName = encryptionService.Encrypt("Doe", customerKey),
+            EncryptedGender = encryptionService.Encrypt("Male", customerKey),
+            EncryptedEmail = encryptionService.Encrypt("john.doe@example.com", customerKey),
+            EncryptedDateOfBirth = encryptionService.Encrypt("1990-01-01", customerKey)
         };
 
         // Act 
         _session.Events.StartStream<CustomerAggregate>(id, evt);
         await _session.SaveChangesAsync();
 
-       var model = await _query.LoadAsync<CustomerReadModel>(id);
+        // Give projections a moment to process (if async projections are enabled)
+        await Task.Delay(100);
+
+        var model = await _query.LoadAsync<CustomerReadModel>(id);
 
         // Assert
         model.Should().NotBeNull();
-    }
-
-    public async Task InitializeAsync()
-    {
-        _host = await TestHostFactory.BuildAsync();
-        _query = _host.Services.GetRequiredService<IQuerySession>();
-        _session = _host.Services.GetRequiredService<IDocumentSession>();
-    }
-    public Task DisposeAsync()
-    {
-        _host.Dispose();
-        return Task.CompletedTask;
+        model!.Id.Should().Be(id);
+        model.Email.Should().Be("john.doe@example.com");
+        model.FirstName.Should().Be("John");
+        model.LastName.Should().Be("Doe");
     }
 }

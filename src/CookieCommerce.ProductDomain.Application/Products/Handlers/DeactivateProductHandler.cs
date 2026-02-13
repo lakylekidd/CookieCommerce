@@ -20,11 +20,10 @@ public class DeactivateProductHandler(IDocumentSession session) : IRequestHandle
 
         product.Deactivate();
 
+        if (!product.DomainEvents.Any()) return;
+
         // Only append and save if domain events were produced
-        if (product.DomainEvents.Any())
-        {
-            session.Events.Append(request.ProductId, product.DomainEvents);
-            await session.SaveChangesAsync(cancellationToken);
-        }
+        session.Events.Append(request.ProductId, product.DomainEvents);
+        await session.SaveChangesAsync(cancellationToken);
     }
 }

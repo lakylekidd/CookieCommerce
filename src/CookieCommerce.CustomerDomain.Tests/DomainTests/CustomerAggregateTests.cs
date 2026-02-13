@@ -1,4 +1,5 @@
 using CookieCommerce.CustomerDomain.Domain.Aggregates;
+using CookieCommerce.CustomerDomain.Domain.Exceptions;
 using FluentAssertions;
 
 namespace CookieCommerce.CustomerDomain.Tests.DomainTests;
@@ -217,12 +218,12 @@ public class CustomerAggregateTests
         agg.Addresses.Should().ContainSingle(a => a.Label == "home");
 
         Action act = () => agg.AddAddress(addr);
-        act.Should().Throw<InvalidOperationException>();
+        act.Should().Throw<DuplicateAddressLabelException>();
 
         agg.RemoveAddress("home");
         agg.Addresses.Should().BeEmpty();
 
         act = () => agg.RemoveAddress("home");
-        act.Should().Throw<InvalidOperationException>();
+        act.Should().Throw<AddressNotFoundException>();
     }
 }

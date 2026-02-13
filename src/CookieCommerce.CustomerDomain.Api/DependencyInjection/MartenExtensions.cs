@@ -17,7 +17,9 @@ public static class MartenExtensions
 
             opts.Connection(connectionString);
 
-            opts.Projections.Add(new CustomerProjection(services), JasperFx.Events.Projections.ProjectionLifecycle.Inline);
+            // Register projection with factory - Marten will use service provider
+            opts.Projections.Add(new CustomerProjection(new Infrastructure.Security.EncryptionService()), 
+                JasperFx.Events.Projections.ProjectionLifecycle.Inline);
 
             opts.AutoCreateSchemaObjects = JasperFx.AutoCreate.All;
         })

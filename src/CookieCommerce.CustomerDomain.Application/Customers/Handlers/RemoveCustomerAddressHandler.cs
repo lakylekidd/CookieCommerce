@@ -1,5 +1,6 @@
 ﻿using CookieCommerce.CustomerDomain.Application.Customers.Commands;
 using CookieCommerce.CustomerDomain.Domain.Aggregates;
+using CookieCommerce.CustomerDomain.Domain.Exceptions;
 using Marten;
 using MediatR;
 
@@ -11,7 +12,7 @@ public class RemoveCustomerAddressHandler(IDocumentSession session) : IRequestHa
     {
         if (await session.Events.AggregateStreamAsync<CustomerAggregate>(request.CustomerId, token: cancellationToken) 
             is not CustomerAggregate customer)
-            throw new Exception($"Customer with ID {request.CustomerId} not found.");
+            throw new CustomerNotFoundException(request.CustomerId);
 
         customer.RemoveAddress(request.Label);
         session.Events.Append(customer.Id, customer.DomainEvents);

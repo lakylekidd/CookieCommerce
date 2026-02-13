@@ -1,14 +1,11 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using CookieCommerce.CustomerDomain.Application.Customers.ReadModels;
+﻿using CookieCommerce.CustomerDomain.Application.Customers.ReadModels;
 using CookieCommerce.CustomerDomain.Application.Security;
 using CookieCommerce.CustomerDomain.Domain.DomainEvents;
 using CookieCommerce.CustomerDomain.Domain.ValueObjects;
 using CookieCommerce.CustomerDomain.Infrastructure.Projections;
-using JasperFx.Events;
+using CookieCommerce.CustomerDomain.Infrastructure.Security;
+using FluentAssertions;
 using Marten;
-using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 
 namespace CookieCommerce.CustomerDomain.Tests.ProjectionsTests;
@@ -16,31 +13,31 @@ namespace CookieCommerce.CustomerDomain.Tests.ProjectionsTests;
 public class CustomerProjectionTests
 {
     [Fact]
-    public async Task ApplyAsync_CustomerCreated_StoresDecryptedReadModel()
+    public async Task Create_CustomerCreated_ReturnsDecryptedReadModel()
     {
         // Arrange
-        var services = new ServiceCollection();
-        var keyStore = Substitute.For<ICustomerKeyStore>();
         var encryption = Substitute.For<IEncryptionService>();
+        var querySession = Substitute.For<IQuerySession>();
 
         var id = Guid.NewGuid();
+        var key = new byte[] { 1, 2, 3 };
+        var keyRecord = new CustomerKeyRecord
+        {
+            Id = id,
+            Key = key,
+            CreatedAt = DateTime.UtcNow
+        };
 
-        keyStore.GetKeyAsync(id, Arg.Any<CancellationToken>()).Returns(Task.FromResult(new byte[] { 1, 2, 3 }));
+        querySession.LoadAsync<CustomerKeyRecord>(id, Arg.Any<CancellationToken>()).Returns(keyRecord);
 
-        // projection will call Decrypt with the encrypted values provided below
-        encryption.Decrypt("encrypted-email", Arg.Any<byte[]>()).Returns("test@example.com");
-        encryption.Decrypt("encrypted-first", Arg.Any<byte[]>()).Returns("John");
-        encryption.Decrypt("encrypted-last", Arg.Any<byte[]>()).Returns("Doe");
-        encryption.Decrypt("encrypted-gender", Arg.Any<byte[]>()).Returns("Male");
+        encryption.Decrypt("encrypted-email", key).Returns("test@example.com");
+        encryption.Decrypt("encrypted-first", key).Returns("John");
+        encryption.Decrypt("encrypted-last", key).Returns("Doe");
+        encryption.Decrypt("encrypted-gender", key).Returns("Male");
         var dob = DateTime.Parse("1986-11-18");
-        encryption.Decrypt("encrypted-dob", Arg.Any<byte[]>()).Returns(dob.ToString("O"));
+        encryption.Decrypt("encrypted-dob", key).Returns(dob.ToString("O"));
 
-        services.AddSingleton(keyStore);
-        services.AddSingleton(encryption);
-
-        var projection = new CustomerProjection(services);
-
-        var ops = Substitute.For<IDocumentOperations>();
+        var projection = new CustomerProjection(encryption);
 
         var created = new CustomerCreated
         {
@@ -52,42 +49,33 @@ public class CustomerProjectionTests
             EncryptedDateOfBirth = "encrypted-dob"
         };
 
-        var @event = Substitute.For<IEvent>();
-        @event.Data.Returns(created);
-
         // Act
-        await projection.ApplyAsync(ops, @event, CancellationToken.None);
+        var result = await projection.Create(created, querySession);
 
         // Assert
-        ops.Received().Store(Arg.Is<CustomerReadModel>(c =>
-            c.Id == id &&
-            c.Email == "test@example.com" &&
-            c.FirstName == "John" &&
-            c.LastName == "Doe" &&
-            c.Gender == Gender.Male &&
-            c.DateOfBirth.HasValue && c.DateOfBirth.Value.Date == dob.Date
-        ));
+        result.Should().NotBeNull();
+        result.Id.Should().Be(id);
+        result.Email.Should().Be("test@example.com");
+        result.FirstName.Should().Be("John");
+        result.LastName.Should().Be("Doe");
+        result.Gender.Should().Be(Gender.Male);
+        result.DateOfBirth.Should().NotBeNull();
+        result.DateOfBirth!.Value.Date.Should().Be(dob.Date);
     }
 
     [Fact]
-    public async Task ApplyAsync_CustomerCreated_KeyMissing_DoesNotStore()
+    public async Task Create_CustomerCreated_KeyMissing_ReturnsNull()
     {
         // Arrange
-        var services = new ServiceCollection();
-        var keyStore = Substitute.For<ICustomerKeyStore>();
         var encryption = Substitute.For<IEncryptionService>();
+        var querySession = Substitute.For<IQuerySession>();
 
         var id = Guid.NewGuid();
 
         // No key -> returns null
-        keyStore.GetKeyAsync(id, Arg.Any<CancellationToken>()).Returns(Task.FromResult<byte[]?>(null));
+        querySession.LoadAsync<CustomerKeyRecord>(id, Arg.Any<CancellationToken>()).Returns((CustomerKeyRecord?)null);
 
-        services.AddSingleton(keyStore);
-        services.AddSingleton(encryption);
-
-        var projection = new CustomerProjection(services);
-
-        var ops = Substitute.For<IDocumentOperations>();
+        var projection = new CustomerProjection(encryption);
 
         var created = new CustomerCreated
         {
@@ -99,33 +87,94 @@ public class CustomerProjectionTests
             EncryptedDateOfBirth = null
         };
 
-        var @event = Substitute.For<IEvent>();
-        @event.Data.Returns(created);
-
         // Act
-        await projection.ApplyAsync(ops, @event, CancellationToken.None);
+        var result = await projection.Create(created, querySession);
 
         // Assert
-        ops.DidNotReceive().Store(Arg.Any<CustomerReadModel>());
+        result.Should().BeNull();
     }
 
     [Fact]
-    public async Task ApplyAsync_CustomerDeleted_DeletesReadModel()
+    public void Apply_CustomerAddressAdded_AddsAddressToReadModel()
     {
         // Arrange
-        var services = new ServiceCollection();
-        var projection = new CustomerProjection(services);
+        var encryption = Substitute.For<IEncryptionService>();
+        var projection = new CustomerProjection(encryption);
 
-        var ops = Substitute.For<IDocumentOperations>();
+        var customerId = Guid.NewGuid();
+        var current = new CustomerReadModel
+        {
+            Id = customerId,
+            Email = "test@example.com",
+            FirstName = "John",
+            LastName = "Doe",
+            Gender = Gender.Male,
+            Addresses = new List<CustomerAddressReadModel>()
+        };
 
-        var deleted = new CustomerForgotten(Guid.NewGuid());
-        var @event = Substitute.For<IEvent>();
-        @event.Data.Returns(deleted);
+        var addressAdded = new CustomerAddressAdded(
+            customerId,
+            new Address("Home", "123 Main St", "Springfield", "62701", "US")
+        );
 
         // Act
-        await projection.ApplyAsync(ops, @event, CancellationToken.None);
+        var result = projection.Apply(addressAdded, current);
 
-        // Assert - ensure DeleteWhere was called for CustomerReadModel
-        ops.Received().DeleteWhere<CustomerReadModel>(Arg.Any<System.Linq.Expressions.Expression<Func<CustomerReadModel, bool>>>());
+        // Assert
+        result.Addresses.Should().HaveCount(1);
+        result.Addresses[0].Label.Should().Be("Home");
+        result.Addresses[0].Street.Should().Be("123 Main St");
+        result.Addresses[0].City.Should().Be("Springfield");
+        result.Addresses[0].PostalCode.Should().Be("62701");
+        result.Addresses[0].Country.Should().Be("US");
+    }
+
+    [Fact]
+    public void Apply_CustomerAddressRemoved_RemovesAddressFromReadModel()
+    {
+        // Arrange
+        var encryption = Substitute.For<IEncryptionService>();
+        var projection = new CustomerProjection(encryption);
+
+        var customerId = Guid.NewGuid();
+        var current = new CustomerReadModel
+        {
+            Id = customerId,
+            Email = "test@example.com",
+            FirstName = "John",
+            LastName = "Doe",
+            Gender = Gender.Male,
+            Addresses = new List<CustomerAddressReadModel>
+            {
+                new CustomerAddressReadModel
+                {
+                    Label = "Home",
+                    Street = "123 Main St",
+                    City = "Springfield",
+                    State = "IL",
+                    PostalCode = "62701",
+                    Country = "US"
+                },
+                new CustomerAddressReadModel
+                {
+                    Label = "Work",
+                    Street = "456 Office Blvd",
+                    City = "Chicago",
+                    State = "IL",
+                    PostalCode = "60601",
+                    Country = "US"
+                }
+            }
+        };
+
+        var addressRemoved = new CustomerAddressRemoved(customerId, "Home");
+
+        // Act
+        var result = projection.Apply(addressRemoved, current);
+
+        // Assert
+        result.Addresses.Should().HaveCount(1);
+        result.Addresses[0].Label.Should().Be("Work");
     }
 }
+

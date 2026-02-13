@@ -28,8 +28,10 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             {
                 opts.Connection(connectionString);
                 
-                // Register projections
-                opts.Projections.Add(new Infrastructure.Projections.CustomerProjection(services), JasperFx.Events.Projections.ProjectionLifecycle.Inline);
+                // Register projections with factory
+                opts.Projections.Add(new Infrastructure.Projections.CustomerProjection(
+                    new Infrastructure.Security.EncryptionService()), 
+                    JasperFx.Events.Projections.ProjectionLifecycle.Inline);
                 
                 opts.AutoCreateSchemaObjects = JasperFx.AutoCreate.All;
             }).ApplyAllDatabaseChangesOnStartup();

@@ -1,4 +1,5 @@
 ﻿using CookieCommerce.CustomerDomain.Domain.DomainEvents;
+using CookieCommerce.CustomerDomain.Domain.Exceptions;
 using CookieCommerce.CustomerDomain.Domain.ValueObjects;
 using CookieCommerce.DomainBuildingBlocks;
 
@@ -56,7 +57,7 @@ public class CustomerAggregate : AggregateBase
     public void AddAddress(Address address)
     {
         if (_addresses.Any(a => a.Label == address.Label))
-            throw new InvalidOperationException($"An address with the label '{address.Label}' already exists for customer ."); // TODO: Better exception and logging
+            throw new DuplicateAddressLabelException(Id, address.Label);
 
         Apply(new CustomerAddressAdded(Id, address));
     }
@@ -64,7 +65,7 @@ public class CustomerAggregate : AggregateBase
     public void RemoveAddress(string label)
     {
         if (_addresses.Any(x => x.Label == label) == false)
-            throw new InvalidOperationException($"Address label '{label}' does not exist.");
+            throw new AddressNotFoundException(Id, label);
 
         Apply(new CustomerAddressRemoved(Id, label));
     }

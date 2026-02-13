@@ -75,7 +75,7 @@ public class DeactivateProductHandlerTests
         session.Events.ClearReceivedCalls();
         session.ClearReceivedCalls();
         
-        // Catalog is already deactivated, but should not throw
+        // Act - Catalog is already deactivated, but should not throw
         await handler.Handle(command, CancellationToken.None);
 
         // Assert - Should still append events and save

@@ -1,15 +1,15 @@
-using CookieCommerce.CatalogDomain.Domain.Aggregates;
-using CookieCommerce.CatalogDomain.Domain.Exceptions;
+using CookieCommerce.ProductDomain.Domain.Aggregates;
+using CookieCommerce.ProductDomain.Domain.Exceptions;
 using FluentAssertions;
 
-namespace CookieCommerce.CatalogDomain.Tests.DomainTests;
+namespace CookieCommerce.ProductDomain.Tests.DomainTests;
 
-public class CatalogAggregateTests
+public class ProductAggregateTests
 {
     [Fact]
     public void Create_ShouldThrow_WhenNameIsEmpty()
     {
-        var agg = new CatalogAggregate();
+        var agg = new ProductAggregate();
 
         Action act = () => agg.Create(Guid.NewGuid(), "", "description", 10.99m);
         
@@ -20,9 +20,9 @@ public class CatalogAggregateTests
     [Fact]
     public void Create_ShouldThrow_WhenDescriptionIsEmpty()
     {
-        var agg = new CatalogAggregate();
+        var agg = new ProductAggregate();
 
-        Action act = () => agg.Create(Guid.NewGuid(), "Catalog Item", "", 10.99m);
+        Action act = () => agg.Create(Guid.NewGuid(), "Product", "", 10.99m);
         
         act.Should().Throw<ArgumentException>()
             .WithMessage("*description*");
@@ -31,22 +31,22 @@ public class CatalogAggregateTests
     [Fact]
     public void Create_ShouldThrow_WhenPriceIsZero()
     {
-        var agg = new CatalogAggregate();
+        var agg = new ProductAggregate();
         var id = Guid.NewGuid();
 
-        Action act = () => agg.Create(id, "Catalog Item", "Description", 0m);
+        Action act = () => agg.Create(id, "Product", "Description", 0m);
         
         act.Should().Throw<InvalidPriceException>()
-            .Which.CatalogId.Should().Be(id);
+            .Which.ProductId.Should().Be(id);
     }
 
     [Fact]
     public void Create_ShouldThrow_WhenPriceIsNegative()
     {
-        var agg = new CatalogAggregate();
+        var agg = new ProductAggregate();
         var id = Guid.NewGuid();
 
-        Action act = () => agg.Create(id, "Catalog Item", "Description", -5.99m);
+        Action act = () => agg.Create(id, "Product", "Description", -5.99m);
         
         act.Should().Throw<InvalidPriceException>()
             .Which.Price.Should().Be(-5.99m);
@@ -55,9 +55,9 @@ public class CatalogAggregateTests
     [Fact]
     public void Create_ShouldSetAllProperties_WhenValidDataProvided()
     {
-        var agg = new CatalogAggregate();
+        var agg = new ProductAggregate();
         var id = Guid.NewGuid();
-        var name = "Test Catalog Item";
+        var name = "Test Product";
         var description = "Test Description";
         var price = 99.99m;
 
@@ -71,9 +71,9 @@ public class CatalogAggregateTests
     }
 
     [Fact]
-    public void Rename_ShouldUpdateName_WhenCatalogIsActive()
+    public void Rename_ShouldUpdateName_WhenProductIsActive()
     {
-        var agg = new CatalogAggregate();
+        var agg = new ProductAggregate();
         agg.Create(Guid.NewGuid(), "Old Name", "Description", 10.99m);
 
         agg.Rename("New Name");
@@ -82,23 +82,23 @@ public class CatalogAggregateTests
     }
 
     [Fact]
-    public void Rename_ShouldThrow_WhenCatalogIsDeactivated()
+    public void Rename_ShouldThrow_WhenProductIsDeactivated()
     {
-        var agg = new CatalogAggregate();
-        agg.Create(Guid.NewGuid(), "Catalog Item", "Description", 10.99m);
+        var agg = new ProductAggregate();
+        agg.Create(Guid.NewGuid(), "Product", "Description", 10.99m);
         agg.Deactivate();
 
         Action act = () => agg.Rename("New Name");
 
-        act.Should().Throw<CannotRenameDeactivatedCatalogException>()
+        act.Should().Throw<CannotRenameDeactivatedProductException>()
             .Which.NewName.Should().Be("New Name");
     }
 
     [Fact]
     public void Rename_ShouldThrow_WhenNameIsEmpty()
     {
-        var agg = new CatalogAggregate();
-        agg.Create(Guid.NewGuid(), "Catalog Item", "Description", 10.99m);
+        var agg = new ProductAggregate();
+        agg.Create(Guid.NewGuid(), "Product", "Description", 10.99m);
 
         Action act = () => agg.Rename("");
 
@@ -107,10 +107,10 @@ public class CatalogAggregateTests
     }
 
     [Fact]
-    public void ChangePrice_ShouldUpdatePrice_WhenCatalogIsActive()
+    public void ChangePrice_ShouldUpdatePrice_WhenProductIsActive()
     {
-        var agg = new CatalogAggregate();
-        agg.Create(Guid.NewGuid(), "Catalog Item", "Description", 10.99m);
+        var agg = new ProductAggregate();
+        agg.Create(Guid.NewGuid(), "Product", "Description", 10.99m);
 
         agg.ChangePrice(15.99m);
 
@@ -120,21 +120,21 @@ public class CatalogAggregateTests
     [Fact]
     public void ChangePrice_ShouldThrow_WhenNewPriceIsZero()
     {
-        var agg = new CatalogAggregate();
+        var agg = new ProductAggregate();
         var id = Guid.NewGuid();
-        agg.Create(id, "Catalog Item", "Description", 10.99m);
+        agg.Create(id, "Product", "Description", 10.99m);
 
         Action act = () => agg.ChangePrice(0m);
 
         act.Should().Throw<InvalidPriceException>()
-            .Which.CatalogId.Should().Be(id);
+            .Which.ProductId.Should().Be(id);
     }
 
     [Fact]
     public void ChangePrice_ShouldThrow_WhenNewPriceIsNegative()
     {
-        var agg = new CatalogAggregate();
-        agg.Create(Guid.NewGuid(), "Catalog Item", "Description", 10.99m);
+        var agg = new ProductAggregate();
+        agg.Create(Guid.NewGuid(), "Product", "Description", 10.99m);
 
         Action act = () => agg.ChangePrice(-5.99m);
 
@@ -143,23 +143,23 @@ public class CatalogAggregateTests
     }
 
     [Fact]
-    public void ChangePrice_ShouldThrow_WhenCatalogIsDeactivated()
+    public void ChangePrice_ShouldThrow_WhenProductIsDeactivated()
     {
-        var agg = new CatalogAggregate();
-        agg.Create(Guid.NewGuid(), "Catalog Item", "Description", 10.99m);
+        var agg = new ProductAggregate();
+        agg.Create(Guid.NewGuid(), "Product", "Description", 10.99m);
         agg.Deactivate();
 
         Action act = () => agg.ChangePrice(15.99m);
 
-        act.Should().Throw<CannotChangePriceOfDeactivatedCatalogException>()
+        act.Should().Throw<CannotChangePriceOfDeactivatedProductException>()
             .Which.NewPrice.Should().Be(15.99m);
     }
 
     [Fact]
     public void Deactivate_ShouldSetIsActiveToFalse()
     {
-        var agg = new CatalogAggregate();
-        agg.Create(Guid.NewGuid(), "Catalog Item", "Description", 10.99m);
+        var agg = new ProductAggregate();
+        agg.Create(Guid.NewGuid(), "Product", "Description", 10.99m);
 
         agg.Deactivate();
 
@@ -169,8 +169,8 @@ public class CatalogAggregateTests
     [Fact]
     public void Deactivate_ShouldBeIdempotent_WhenCalledMultipleTimes()
     {
-        var agg = new CatalogAggregate();
-        agg.Create(Guid.NewGuid(), "Catalog Item", "Description", 10.99m);
+        var agg = new ProductAggregate();
+        agg.Create(Guid.NewGuid(), "Product", "Description", 10.99m);
 
         agg.Deactivate();
         agg.Deactivate();
@@ -183,7 +183,7 @@ public class CatalogAggregateTests
     public void EventSourcing_ShouldReplayEventsCorrectly()
     {
         // Arrange: Create aggregate and perform operations
-        var agg = new CatalogAggregate();
+        var agg = new ProductAggregate();
         var id = Guid.NewGuid();
         agg.Create(id, "Original Name", "Original Description", 10.99m);
         agg.Rename("Updated Name");
@@ -193,10 +193,10 @@ public class CatalogAggregateTests
         var events = agg.DomainEvents.ToList();
 
         // Act: Replay events on a new aggregate
-        var replayedAgg = new CatalogAggregate();
+        var replayedAgg = new ProductAggregate();
         foreach (var evt in events)
         {
-            var whenMethod = typeof(CatalogAggregate).GetMethod("When",
+            var whenMethod = typeof(ProductAggregate).GetMethod("When",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             whenMethod?.Invoke(replayedAgg, new[] { evt });
         }
@@ -213,17 +213,17 @@ public class CatalogAggregateTests
     public void CompleteWorkflow_ShouldWorkCorrectly()
     {
         // Arrange
-        var agg = new CatalogAggregate();
+        var agg = new ProductAggregate();
         var id = Guid.NewGuid();
 
-        // Act: Create catalog item
+        // Act: Create product
         agg.Create(id, "Widget", "A useful widget", 19.99m);
 
         agg.Id.Should().Be(id);
         agg.Name.Should().Be("Widget");
         agg.IsActive.Should().BeTrue();
 
-        // Act: Rename catalog item
+        // Act: Rename product
         agg.Rename("Super Widget");
         agg.Name.Should().Be("Super Widget");
 
@@ -237,18 +237,18 @@ public class CatalogAggregateTests
 
         // Assert: Cannot rename or change price after deactivation
         Action renameAct = () => agg.Rename("New Name");
-        renameAct.Should().Throw<CannotRenameDeactivatedCatalogException>();
+        renameAct.Should().Throw<CannotRenameDeactivatedProductException>();
 
         Action priceAct = () => agg.ChangePrice(29.99m);
-        priceAct.Should().Throw<CannotChangePriceOfDeactivatedCatalogException>();
+        priceAct.Should().Throw<CannotChangePriceOfDeactivatedProductException>();
     }
 
     [Fact]
     public void DomainEvents_ShouldBeTracked()
     {
-        var agg = new CatalogAggregate();
-        agg.Create(Guid.NewGuid(), "Catalog Item", "Description", 10.99m);
-        agg.Rename("New Catalog Item");
+        var agg = new ProductAggregate();
+        agg.Create(Guid.NewGuid(), "Product", "Description", 10.99m);
+        agg.Rename("New Product");
         agg.ChangePrice(15.99m);
 
         agg.DomainEvents.Should().HaveCount(3);

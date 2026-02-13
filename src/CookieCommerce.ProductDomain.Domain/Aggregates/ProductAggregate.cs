@@ -1,32 +1,32 @@
-using CookieCommerce.CatalogDomain.Domain.DomainEvents;
-using CookieCommerce.CatalogDomain.Domain.Exceptions;
+using CookieCommerce.ProductDomain.Domain.DomainEvents;
+using CookieCommerce.ProductDomain.Domain.Exceptions;
 using CookieCommerce.DomainBuildingBlocks;
 
-namespace CookieCommerce.CatalogDomain.Domain.Aggregates;
+namespace CookieCommerce.ProductDomain.Domain.Aggregates;
 
-public class CatalogAggregate : AggregateBase
+public class ProductAggregate : AggregateBase
 {
     public string Name { get; private set; } = default!;
     public string Description { get; private set; } = default!;
     public decimal Price { get; private set; }
     public bool IsActive { get; private set; }
 
-    public CatalogAggregate() { }
+    public ProductAggregate() { }
 
     public void Create(Guid id, string name, string description, decimal price)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Catalog item name is required.", nameof(name));
+            throw new ArgumentException("Product name is required.", nameof(name));
 
         if (string.IsNullOrWhiteSpace(description))
-            throw new ArgumentException("Catalog item description is required.", nameof(description));
+            throw new ArgumentException("Product description is required.", nameof(description));
 
         if (price <= 0)
             throw new InvalidPriceException(id, price);
 
-        Apply(new CatalogCreated
+        Apply(new ProductCreated
         {
-            CatalogId = id,
+            ProductId = id,
             Name = name,
             Description = description,
             Price = price
@@ -36,12 +36,12 @@ public class CatalogAggregate : AggregateBase
     public void Rename(string newName)
     {
         if (string.IsNullOrWhiteSpace(newName))
-            throw new ArgumentException("Catalog item name is required.", nameof(newName));
+            throw new ArgumentException("Product name is required.", nameof(newName));
 
         if (!IsActive)
-            throw new CannotRenameDeactivatedCatalogException(Id, newName);
+            throw new CannotRenameDeactivatedProductException(Id, newName);
 
-        Apply(new CatalogRenamed(Id, newName));
+        Apply(new ProductRenamed(Id, newName));
     }
 
     public void ChangePrice(decimal newPrice)
@@ -50,9 +50,9 @@ public class CatalogAggregate : AggregateBase
             throw new InvalidPriceException(Id, newPrice);
 
         if (!IsActive)
-            throw new CannotChangePriceOfDeactivatedCatalogException(Id, newPrice);
+            throw new CannotChangePriceOfDeactivatedProductException(Id, newPrice);
 
-        Apply(new CatalogPriceChanged(Id, Price, newPrice));
+        Apply(new ProductPriceChanged(Id, Price, newPrice));
     }
 
     public void Deactivate()
@@ -60,48 +60,48 @@ public class CatalogAggregate : AggregateBase
         if (!IsActive)
             return; // Already deactivated
 
-        Apply(new CatalogDeactivated(Id));
+        Apply(new ProductDeactivated(Id));
     }
 
     protected override void When(object @event)
     {
         switch (@event)
         {
-            case CatalogCreated e:
+            case ProductCreated e:
                 Handle(e);
                 break;
-            case CatalogRenamed e:
+            case ProductRenamed e:
                 Handle(e);
                 break;
-            case CatalogPriceChanged e:
+            case ProductPriceChanged e:
                 Handle(e);
                 break;
-            case CatalogDeactivated e:
+            case ProductDeactivated e:
                 Handle(e);
                 break;
         }
     }
 
-    private void Handle(CatalogCreated e)
+    private void Handle(ProductCreated e)
     {
-        Id = e.CatalogId;
+        Id = e.ProductId;
         Name = e.Name;
         Description = e.Description;
         Price = e.Price;
         IsActive = true;
     }
 
-    private void Handle(CatalogRenamed e)
+    private void Handle(ProductRenamed e)
     {
         Name = e.NewName;
     }
 
-    private void Handle(CatalogPriceChanged e)
+    private void Handle(ProductPriceChanged e)
     {
         Price = e.NewPrice;
     }
 
-    private void Handle(CatalogDeactivated e)
+    private void Handle(ProductDeactivated e)
     {
         IsActive = false;
     }

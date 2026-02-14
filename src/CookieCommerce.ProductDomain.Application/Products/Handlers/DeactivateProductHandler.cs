@@ -1,4 +1,6 @@
+using CookieCommerce.DomainBuildingBlocks;
 using CookieCommerce.ProductDomain.Application.Products.Commands;
+using CookieCommerce.ProductDomain.Application.Products.Integration;
 using CookieCommerce.ProductDomain.Domain.Aggregates;
 using CookieCommerce.ProductDomain.Domain.Exceptions;
 using Marten;
@@ -9,7 +11,7 @@ namespace CookieCommerce.ProductDomain.Application.Products.Handlers;
 /// <summary>
 /// Handler for deactivating a product.
 /// </summary>
-public class DeactivateProductHandler(IDocumentSession session) : IRequestHandler<DeactivateProduct>
+public class DeactivateProductHandler(IDocumentSession session, IIntegrationEventPublisher publisher) : IRequestHandler<DeactivateProduct>
 {
     public async Task Handle(DeactivateProduct request, CancellationToken cancellationToken)
     {
@@ -22,8 +24,14 @@ public class DeactivateProductHandler(IDocumentSession session) : IRequestHandle
 
         if (!product.DomainEvents.Any()) return;
 
-        // Only append and save if domain events were produced
+        // Append domain events and save changes atomically
         session.Events.Append(request.ProductId, product.DomainEvents);
+        
+        // Publish integration event via outbox (stored in same transaction)
+        await publisher.PublishAsync(
+            new ProductDeactivatedIntegrationEvent(request.ProductId), 
+            cancellationToken);
+        
         await session.SaveChangesAsync(cancellationToken);
     }
 }

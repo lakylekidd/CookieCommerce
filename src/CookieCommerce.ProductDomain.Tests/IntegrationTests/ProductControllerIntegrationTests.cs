@@ -33,8 +33,8 @@ public class ProductControllerIntegrationTests : IClassFixture<TestWebApplicatio
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         response.Headers.Location.Should().NotBeNull();
-        var location = response.Headers.Location!.ToString();
-        location.Should().Contain("/api/product/", StringComparison.OrdinalIgnoreCase);
+        var location = response.Headers.Location!.ToString().ToLowerInvariant();
+        location.Should().Contain("/api/product/");
     }
 
     [Fact]

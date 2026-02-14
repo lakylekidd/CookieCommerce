@@ -34,7 +34,7 @@ public class ProductControllerIntegrationTests : IClassFixture<TestWebApplicatio
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         response.Headers.Location.Should().NotBeNull();
         var location = response.Headers.Location!.ToString();
-        location.ToLower().Should().Contain("/api/product/");
+        location.Should().Contain("/api/product/", StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

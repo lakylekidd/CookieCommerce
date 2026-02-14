@@ -52,6 +52,8 @@ public class ProductController(ISender mediator) : ControllerBase
 
     /// <summary>
     /// Update an existing product (rename and/or change price)
+    /// Note: This performs two separate commands sequentially. In high-concurrency scenarios,
+    /// consider creating a single UpdateProduct command for atomic updates.
     /// </summary>
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateProductRequest request, CancellationToken ct)

@@ -11,6 +11,7 @@
     <Project Path="CookieCommerce.OrderDomain.Aggregates/CookieCommerce.OrderDomain.Aggregates.csproj" />
   </Folder>
   <Folder Name="/Domains/ProductDomain/">
+    <Project Path="CookieCommerce.ProductDomain.Api/CookieCommerce.ProductDomain.Api.csproj" />
     <Project Path="CookieCommerce.ProductDomain.Application/CookieCommerce.ProductDomain.Application.csproj" />
     <Project Path="CookieCommerce.ProductDomain.Domain/CookieCommerce.ProductDomain.Domain.csproj" />
     <Project Path="CookieCommerce.ProductDomain.Infrastructure/CookieCommerce.ProductDomain.Infrastructure.csproj" />

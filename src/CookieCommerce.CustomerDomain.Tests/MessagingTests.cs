@@ -1,9 +1,9 @@
-﻿using CookieCommerce.CustomerDomain.Application;
-using CookieCommerce.CustomerDomain.Application.Customers.Commands;
+﻿using CookieCommerce.CustomerDomain.Application.Customers.Commands;
 using CookieCommerce.CustomerDomain.Application.Customers.Handlers;
 using CookieCommerce.CustomerDomain.Application.Customers.Integration;
 using CookieCommerce.CustomerDomain.Application.Security;
 using CookieCommerce.CustomerDomain.Domain.Aggregates;
+using CookieCommerce.DomainBuildingBlocks;
 using Marten;
 using NSubstitute;
 

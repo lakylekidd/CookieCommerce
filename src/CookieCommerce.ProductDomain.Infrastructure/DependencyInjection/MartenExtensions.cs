@@ -1,3 +1,4 @@
+using CookieCommerce.ProductDomain.Infrastructure.Projections;
 using Marten;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +17,10 @@ public static class MartenExtensions
                 throw new InvalidOperationException("Connection string 'ProductDomain' not found.");
 
             opts.Connection(connectionString);
+
+            // Register projections for product read models
+            opts.Projections.Add<ProductListItemProjection>(JasperFx.Events.Projections.ProjectionLifecycle.Inline);
+            opts.Projections.Add<ProductDetailsProjection>(JasperFx.Events.Projections.ProjectionLifecycle.Inline);
 
             // Configure event metadata
             // Marten automatically stores event metadata including:

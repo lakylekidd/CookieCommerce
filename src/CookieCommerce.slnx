@@ -13,6 +13,7 @@
   <Folder Name="/Domains/ProductDomain/">
     <Project Path="CookieCommerce.ProductDomain.Application/CookieCommerce.ProductDomain.Application.csproj" />
     <Project Path="CookieCommerce.ProductDomain.Domain/CookieCommerce.ProductDomain.Domain.csproj" />
+    <Project Path="CookieCommerce.ProductDomain.Infrastructure/CookieCommerce.ProductDomain.Infrastructure.csproj" />
     <Project Path="CookieCommerce.ProductDomain.Tests/CookieCommerce.ProductDomain.Tests.csproj" />
   </Folder>
   <Folder Name="/Domains/_Library/">

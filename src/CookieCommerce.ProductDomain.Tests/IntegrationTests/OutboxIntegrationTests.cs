@@ -48,15 +48,13 @@ public class OutboxIntegrationTests : IClassFixture<TestWebApplicationFactory>, 
         product.Should().NotBeNull();
         product!.Name.Should().Be("Test Product");
 
-        // Assert - Verify outbox message was NOT stored (because we're using outbox publisher but CreateProductHandler doesn't call it)
-        // This is expected for now as we haven't wired up the domain event handler to be called automatically
+        // Assert - Verify outbox message was stored atomically with the domain event
         var outboxMessages = await session.Query<OutboxMessage>().ToListAsync();
-        // For now, we expect 0 because CreateProductHandler doesn't use IIntegrationEventPublisher
-        outboxMessages.Should().BeEmpty();
+        outboxMessages.Should().ContainSingle(m => m.EventType!.Contains("ProductSnapshotPublished"));
     }
 
     [Fact]
-    public async Task DeactivateProduct_ShouldRollbackOutboxMessage_WhenTransactionFails()
+    public async Task DeactivateProduct_ShouldStoreOutboxMessage_Atomically()
     {
         // Arrange
         var mediator = _scope!.ServiceProvider.GetRequiredService<ISender>();
@@ -75,8 +73,9 @@ public class OutboxIntegrationTests : IClassFixture<TestWebApplicationFactory>, 
         product.Should().NotBeNull();
         product!.IsActive.Should().BeFalse();
 
-        // For now, outbox messages won't be created because handlers don't automatically publish integration events
-        // This test documents the expected behavior when we wire up automatic publishing
+        // Verify integration event was stored in outbox atomically
+        var outboxMessages = await session.Query<OutboxMessage>().ToListAsync();
+        outboxMessages.Should().Contain(m => m.EventType!.Contains("ProductDeactivatedIntegrationEvent"));
     }
 
     [Fact]

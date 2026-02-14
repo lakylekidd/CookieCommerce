@@ -17,7 +17,7 @@ public class OutboxIntegrationEventPublisher : IIntegrationEventPublisher
         _session = session;
     }
 
-    public async Task PublishAsync<T>(T @event, CancellationToken ct)
+    public Task PublishAsync<T>(T @event, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(@event);
 
@@ -34,6 +34,6 @@ public class OutboxIntegrationEventPublisher : IIntegrationEventPublisher
         
         // Note: SaveChanges will be called by the handler that invokes this publisher
         // to ensure atomicity with the domain event persistence
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 }

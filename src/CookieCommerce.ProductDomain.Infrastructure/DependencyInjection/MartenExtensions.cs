@@ -28,6 +28,10 @@ public static class MartenExtensions
                 .Index(x => x.IsProcessed)
                 .Index(x => x.CreatedAt);
 
+            // TODO: Register the outbox NOTIFY trigger schema object
+            // The OutboxNotifySchemaObject needs to be registered but the correct API is not available yet
+            // Manual SQL migration may be needed: see OutboxNotifySchemaObject.WriteCreateStatement for the SQL
+
             // Configure event metadata
             // Marten automatically stores event metadata including:
             // - Timestamp (captured at event persistence)

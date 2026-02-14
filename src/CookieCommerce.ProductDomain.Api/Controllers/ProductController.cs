@@ -47,7 +47,7 @@ public class ProductController(ISender mediator) : ControllerBase
 
         var cmd = request.ToCommand();
         var productId = await _mediator.Send(cmd, ct);
-        return CreatedAtAction(nameof(GetByIdAsync), new { id = productId }, productId);
+        return CreatedAtAction("GetById", new { id = productId }, productId);
     }
 
     /// <summary>

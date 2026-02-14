@@ -8,14 +8,9 @@ namespace CookieCommerce.ProductDomain.Infrastructure.Outbox;
 /// Integration event publisher that stores events in an outbox table for transactional publishing.
 /// This ensures that integration events are published atomically with domain changes.
 /// </summary>
-public class OutboxIntegrationEventPublisher : IIntegrationEventPublisher
+public class OutboxIntegrationEventPublisher(IDocumentSession session) : IIntegrationEventPublisher
 {
-    private readonly IDocumentSession _session;
-
-    public OutboxIntegrationEventPublisher(IDocumentSession session)
-    {
-        _session = session;
-    }
+    private readonly IDocumentSession _session = session;
 
     public Task PublishAsync<T>(T @event, CancellationToken ct)
     {

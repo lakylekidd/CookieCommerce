@@ -284,6 +284,17 @@ public class CustomerProjection : SingleStreamProjection<CustomerReadModel, Guid
 - Don't store decrypted PII in events - encrypt first
 - Don't use `Task.Result` or `.Wait()` - use `await`
 - Don't forget to add new projects to the solution and register dependencies.
+- Do not use a lot of nesting in methods - keep them flat and focused. This includes if statements, loops, and try/catch blocks. Consider extracting methods if you find yourself nesting more than 2 levels deep. If the nested code can be converted into a one liner, consider doing that instead. For example, instead of:
+```csharp
+if (customer == null)
+{
+    throw new CustomerNotFoundException(customerId);
+}
+``` 
+You could write:
+```csharp
+customer ?? throw new CustomerNotFoundException(customerId);
+```
 
 ### ✅ Do
 - Use custom exceptions with context properties
@@ -296,6 +307,9 @@ public class CustomerProjection : SingleStreamProjection<CustomerReadModel, Guid
 - Encrypt sensitive data before storing in events
 - Use async/await for all I/O operations
 - Use `Guid.CreateVersion7()` for new IDs
+- Use primary constructors whenever possible for DI
+- Keep methods focused and under 20 lines
+- Write tests that clearly express the behavior being tested
 
 ## Key Principles
 

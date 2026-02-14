@@ -283,6 +283,7 @@ public class CustomerProjection : SingleStreamProjection<CustomerReadModel, Guid
 - Don't forget `CancellationToken` parameters in async methods
 - Don't store decrypted PII in events - encrypt first
 - Don't use `Task.Result` or `.Wait()` - use `await`
+- Don't forget to add new projects to the solution and register dependencies.
 
 ### ✅ Do
 - Use custom exceptions with context properties

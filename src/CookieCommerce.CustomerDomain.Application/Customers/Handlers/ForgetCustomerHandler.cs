@@ -3,6 +3,7 @@ using CookieCommerce.CustomerDomain.Application.Customers.Integration;
 using CookieCommerce.CustomerDomain.Application.Customers.ReadModels;
 using CookieCommerce.CustomerDomain.Application.Security;
 using CookieCommerce.CustomerDomain.Domain.Aggregates;
+using CookieCommerce.DomainBuildingBlocks;
 using Marten;
 using MediatR;
 

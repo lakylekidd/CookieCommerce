@@ -1,3 +1,4 @@
+using CookieCommerce.ProductDomain.Infrastructure.Outbox;
 using CookieCommerce.ProductDomain.Infrastructure.Projections;
 using Marten;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +22,15 @@ public static class MartenExtensions
             // Register projections for product read models
             opts.Projections.Add<ProductListItemProjection>(JasperFx.Events.Projections.ProjectionLifecycle.Inline);
             opts.Projections.Add<ProductDetailsProjection>(JasperFx.Events.Projections.ProjectionLifecycle.Inline);
+
+            // Register OutboxMessage as a document
+            opts.Schema.For<OutboxMessage>()
+                .Index(x => x.IsProcessed)
+                .Index(x => x.CreatedAt);
+
+            // TODO: Register the outbox NOTIFY trigger schema object
+            // The OutboxNotifySchemaObject needs to be registered but the correct API is not available yet
+            // Manual SQL migration may be needed: see OutboxNotifySchemaObject.WriteCreateStatement for the SQL
 
             // Configure event metadata
             // Marten automatically stores event metadata including:

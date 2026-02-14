@@ -1,5 +1,7 @@
+using CookieCommerce.DomainBuildingBlocks;
 using CookieCommerce.ProductDomain.Application.Products.Commands;
 using CookieCommerce.ProductDomain.Application.Products.Handlers;
+using CookieCommerce.ProductDomain.Application.Products.Integration;
 using CookieCommerce.ProductDomain.Domain.Aggregates;
 using CookieCommerce.ProductDomain.Domain.Exceptions;
 using FluentAssertions;
@@ -15,7 +17,8 @@ public class CreateProductHandlerTests
     {
         // Arrange
         var session = Substitute.For<IDocumentSession>();
-        var handler = new CreateProductHandler(session);
+        var publisher = Substitute.For<IIntegrationEventPublisher>();
+        var handler = new CreateProductHandler(session, publisher);
         var command = new CreateProduct("Test Product", "Test Description", 99.99m);
 
         // Act
@@ -23,6 +26,14 @@ public class CreateProductHandlerTests
 
         // Assert
         session.Events.Received(1).StartStream<ProductAggregate>(result, Arg.Any<IEnumerable<object>>());
+        await publisher.Received(1).PublishAsync(
+            Arg.Is<ProductSnapshotPublished>(e =>
+                e.ProductId == result &&
+                e.Name == command.Name &&
+                e.Description == command.Description &&
+                e.Price == command.Price &&
+                e.IsActive == true),
+            Arg.Any<CancellationToken>());
         await session.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -31,7 +42,8 @@ public class CreateProductHandlerTests
     {
         // Arrange
         var session = Substitute.For<IDocumentSession>();
-        var handler = new CreateProductHandler(session);
+        var publisher = Substitute.For<IIntegrationEventPublisher>();
+        var handler = new CreateProductHandler(session, publisher);
         var command = new CreateProduct("", "Test Description", 99.99m);
 
         // Act
@@ -47,7 +59,8 @@ public class CreateProductHandlerTests
     {
         // Arrange
         var session = Substitute.For<IDocumentSession>();
-        var handler = new CreateProductHandler(session);
+        var publisher = Substitute.For<IIntegrationEventPublisher>();
+        var handler = new CreateProductHandler(session, publisher);
         var command = new CreateProduct("Test Product", "", 99.99m);
 
         // Act
@@ -63,7 +76,8 @@ public class CreateProductHandlerTests
     {
         // Arrange
         var session = Substitute.For<IDocumentSession>();
-        var handler = new CreateProductHandler(session);
+        var publisher = Substitute.For<IIntegrationEventPublisher>();
+        var handler = new CreateProductHandler(session, publisher);
         var command = new CreateProduct("Test Product", "Test Description", 0m);
 
         // Act
@@ -78,7 +92,8 @@ public class CreateProductHandlerTests
     {
         // Arrange
         var session = Substitute.For<IDocumentSession>();
-        var handler = new CreateProductHandler(session);
+        var publisher = Substitute.For<IIntegrationEventPublisher>();
+        var handler = new CreateProductHandler(session, publisher);
         var command = new CreateProduct("Test Product", "Test Description", -10.50m);
 
         // Act

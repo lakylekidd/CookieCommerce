@@ -1,5 +1,7 @@
+using CookieCommerce.DomainBuildingBlocks;
 using CookieCommerce.ProductDomain.Application.Products.Commands;
 using CookieCommerce.ProductDomain.Application.Products.Handlers;
+using CookieCommerce.ProductDomain.Application.Products.Integration;
 using CookieCommerce.ProductDomain.Domain.Aggregates;
 using CookieCommerce.ProductDomain.Domain.Exceptions;
 using FluentAssertions;
@@ -16,13 +18,14 @@ public class DeactivateProductHandlerTests
         // Arrange
         var productId = Guid.NewGuid();
         var session = Substitute.For<IDocumentSession>();
+        var publisher = Substitute.For<IIntegrationEventPublisher>();
 
         var product = new ProductAggregate();
         product.Create(productId, "Test Product", "Description", 99.99m);
         session.Events.AggregateStreamAsync<ProductAggregate>(productId, token: Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(product));
 
-        var handler = new DeactivateProductHandler(session);
+        var handler = new DeactivateProductHandler(session, publisher);
         var command = new DeactivateProduct(productId);
 
         // Act
@@ -30,6 +33,9 @@ public class DeactivateProductHandlerTests
 
         // Assert
         session.Events.Received(1).Append(productId, Arg.Any<IEnumerable<object>>());
+        await publisher.Received(1).PublishAsync(
+            Arg.Is<ProductDeactivatedIntegrationEvent>(e => e.ProductId == productId),
+            Arg.Any<CancellationToken>());
         await session.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -39,11 +45,12 @@ public class DeactivateProductHandlerTests
         // Arrange
         var productId = Guid.NewGuid();
         var session = Substitute.For<IDocumentSession>();
+        var publisher = Substitute.For<IIntegrationEventPublisher>();
 
         session.Events.AggregateStreamAsync<ProductAggregate>(productId, token: Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<ProductAggregate>(null!));
 
-        var handler = new DeactivateProductHandler(session);
+        var handler = new DeactivateProductHandler(session, publisher);
         var command = new DeactivateProduct(productId);
 
         // Act
@@ -60,13 +67,14 @@ public class DeactivateProductHandlerTests
         // Arrange
         var productId = Guid.NewGuid();
         var session = Substitute.For<IDocumentSession>();
+        var publisher = Substitute.For<IIntegrationEventPublisher>();
 
         var product = new ProductAggregate();
         product.Create(productId, "Test Product", "Description", 99.99m);
         session.Events.AggregateStreamAsync<ProductAggregate>(productId, token: Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(product));
 
-        var handler = new DeactivateProductHandler(session);
+        var handler = new DeactivateProductHandler(session, publisher);
         var command = new DeactivateProduct(productId);
 
         // Act - Call deactivate first time
@@ -78,12 +86,14 @@ public class DeactivateProductHandlerTests
         // Reset call tracking for second call
         session.Events.ClearReceivedCalls();
         session.ClearReceivedCalls();
+        publisher.ClearReceivedCalls();
         
         // Act - Product is already deactivated, but should not throw
         await handler.Handle(command, CancellationToken.None);
 
-        // Assert - Should not append events or save when already deactivated
+        // Assert - Should not append events, publish, or save when already deactivated
         session.Events.Received(0).Append(productId, Arg.Any<IEnumerable<object>>());
+        await publisher.Received(0).PublishAsync(Arg.Any<object>(), Arg.Any<CancellationToken>());
         await session.Received(0).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }

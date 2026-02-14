@@ -3,6 +3,7 @@ using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
 
 namespace CookieCommerce.ProductDomain.Tests;
@@ -50,4 +51,12 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     public async Task InitializeAsync() => await _dbContainer.StartAsync();
 
     public new async Task DisposeAsync() => await _dbContainer.StopAsync();
+
+    public async Task ResetDatabaseAsync()
+    {
+        using var scope = Services.CreateScope();
+        var store = scope.ServiceProvider.GetRequiredService<IDocumentStore>();
+        await store.Advanced.Clean.DeleteAllDocumentsAsync();
+        await store.Advanced.Clean.DeleteAllEventDataAsync();
+    }
 }

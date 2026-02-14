@@ -1,4 +1,4 @@
-﻿using CookieCommerce.CustomerDomain.Application;
+﻿using CookieCommerce.DomainBuildingBlocks;
 using MassTransit;
 
 namespace CookieCommerce.CookieMassTransit;

@@ -1,4 +1,4 @@
-﻿using CookieCommerce.CustomerDomain.Application;
+﻿using CookieCommerce.DomainBuildingBlocks;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CookieCommerce.CustomerDomain.Domain\CookieCommerce.CustomerDomain.Domain.csproj" />
+    <ProjectReference Include="..\CookieCommerce.DomainBuildingBlocks\CookieCommerce.DomainBuildingBlocks.csproj" />
   </ItemGroup>
 
 </Project>

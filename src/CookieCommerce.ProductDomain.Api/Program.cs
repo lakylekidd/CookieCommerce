@@ -1,8 +1,7 @@
 using CookieCommerce.CookieMassTransit;
-using CookieCommerce.ProductDomain.Api.DependencyInjection;
 using CookieCommerce.ProductDomain.Api.Middleware;
 using CookieCommerce.ProductDomain.Application;
-using CookieCommerce.ProductDomain.Infrastructure;
+using CookieCommerce.ProductDomain.Infrastructure.DependencyInjection;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +14,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddCookieMassTransit(builder.Configuration);
 builder.Services.AddMartenConfiguration(builder.Configuration);
+builder.Services.AddOutboxPattern();
 builder.Services.AddApplication();
 
 var app = builder.Build();

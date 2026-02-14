@@ -21,7 +21,8 @@ public class OutboxIntegrationTests : IClassFixture<TestWebApplicationFactory>, 
 
     public async Task InitializeAsync()
     {
-        await _factory.InitializeAsync();
+        // Factory is already initialized by IClassFixture, just reset the database
+        await _factory.ResetDatabaseAsync();
         _scope = _factory.Services.CreateScope();
         _store = _scope.ServiceProvider.GetRequiredService<IDocumentStore>();
     }
@@ -29,7 +30,7 @@ public class OutboxIntegrationTests : IClassFixture<TestWebApplicationFactory>, 
     public async Task DisposeAsync()
     {
         _scope?.Dispose();
-        await _factory.DisposeAsync();
+        // Don't dispose factory here - IClassFixture handles that
     }
 
     [Fact]

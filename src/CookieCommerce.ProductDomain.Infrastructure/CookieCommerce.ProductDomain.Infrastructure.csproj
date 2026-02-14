@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CookieCommerce.CookieMassTransit\CookieCommerce.CookieMassTransit.csproj" />
+    <ProjectReference Include="..\CookieCommerce.ProductDomain.Application\CookieCommerce.ProductDomain.Application.csproj" />
+    <ProjectReference Include="..\CookieCommerce.ProductDomain.Domain\CookieCommerce.ProductDomain.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

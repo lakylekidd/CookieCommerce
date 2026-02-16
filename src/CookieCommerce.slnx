@@ -10,9 +10,6 @@
     <Project Path="CookieCommerce.CustomerDomain.Infrastructure/CookieCommerce.CustomerDomain.Infrastructure.csproj" Id="9b4587c6-e952-4265-843f-3928cf9c69a9" />
     <Project Path="CookieCommerce.CustomerDomain.Tests/CookieCommerce.CustomerDomain.Tests.csproj" Id="14d57c43-988c-459e-b051-7476d947bc4e" />
   </Folder>
-  <Folder Name="/Domains/OrderDomain/">
-    <Project Path="CookieCommerce.OrderDomain.Aggregates/CookieCommerce.OrderDomain.Aggregates.csproj" />
-  </Folder>
   <Folder Name="/Domains/ProductDomain/">
     <Project Path="CookieCommerce.ProductDomain.Api/CookieCommerce.ProductDomain.Api.csproj" />
     <Project Path="CookieCommerce.ProductDomain.Application/CookieCommerce.ProductDomain.Application.csproj" />

@@ -7,6 +7,8 @@ namespace CookieCommerce.OrderDomain.Domain.Aggregates;
 
 public class OrderAggregate : AggregateBase
 {
+    private const decimal TaxRate = 0.10m;
+
     private readonly List<OrderLine> _orderLines = [];
     public IReadOnlyCollection<OrderLine> OrderLines => _orderLines.AsReadOnly();
 
@@ -143,7 +145,7 @@ public class OrderAggregate : AggregateBase
     private void RecalculateTotals()
     {
         SubTotal = _orderLines.Sum(ol => ol.LineTotal);
-        TaxAmount = SubTotal * 0.10m; // 10% tax rate
+        TaxAmount = SubTotal * TaxRate;
         Total = SubTotal + TaxAmount;
     }
 
@@ -187,7 +189,7 @@ public class OrderAggregate : AggregateBase
     {
         _orderLines.Add(e.OrderLine);
         SubTotal = _orderLines.Sum(ol => ol.LineTotal);
-        TaxAmount = SubTotal * 0.10m;
+        TaxAmount = SubTotal * TaxRate;
         Total = SubTotal + TaxAmount;
     }
 
@@ -198,7 +200,7 @@ public class OrderAggregate : AggregateBase
             _orderLines.Remove(orderLine);
 
         SubTotal = _orderLines.Sum(ol => ol.LineTotal);
-        TaxAmount = SubTotal * 0.10m;
+        TaxAmount = SubTotal * TaxRate;
         Total = SubTotal + TaxAmount;
     }
 

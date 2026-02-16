@@ -28,7 +28,7 @@ The `OrderAggregate` is the central entity that enforces all business rules and 
 ### Value Objects
 
 #### OrderLine
-Represents a single product line item in an order.
+Represents a single product line item in an order. This is an immutable value object.
 
 **Properties:**
 - `ProductId` (Guid) - Reference to the product
@@ -39,6 +39,7 @@ Represents a single product line item in an order.
 **Invariants:**
 - Quantity must be greater than 0
 - Unit price must be greater than 0
+- All properties are immutable (init-only)
 
 #### OrderStatus (Enum)
 Defines the possible states of an order:

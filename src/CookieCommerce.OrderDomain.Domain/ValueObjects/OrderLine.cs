@@ -3,7 +3,7 @@ namespace CookieCommerce.OrderDomain.Domain.ValueObjects;
 public class OrderLine
 {
     public Guid ProductId { get; }
-    public int Quantity { get; private set; }
+    public int Quantity { get; }
     public decimal UnitPrice { get; }
     public decimal LineTotal => Quantity * UnitPrice;
 
@@ -18,13 +18,5 @@ public class OrderLine
         ProductId = productId;
         Quantity = quantity;
         UnitPrice = unitPrice;
-    }
-
-    public void UpdateQuantity(int newQuantity)
-    {
-        if (newQuantity <= 0)
-            throw new ArgumentException("Quantity must be greater than 0.", nameof(newQuantity));
-
-        Quantity = newQuantity;
     }
 }

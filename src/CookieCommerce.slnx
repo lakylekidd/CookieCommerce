@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Documentation/">
+    <File Path="../README.md" />
+  </Folder>
   <Folder Name="/Domains/" />
   <Folder Name="/Domains/CustomerDomain/">
     <Project Path="CookieCommerce.CustomerDomain.Api/CookieCommerce.CustomerDomain.Api.csproj" />
@@ -20,6 +23,9 @@
   <Folder Name="/Domains/_Library/">
     <Project Path="CookieCommerce.CookieMassTransit/CookieCommerce.CookieMassTransit.csproj" Id="7b35d62c-8758-4470-9ebb-f50bd87b6a60" />
     <Project Path="CookieCommerce.DomainBuildingBlocks/CookieCommerce.DomainBuildingBlocks.csproj" Id="9045107f-b82e-4998-a3b8-7efde735428e" />
+  </Folder>
+  <Folder Name="/Github/">
+    <File Path="../.github/copilot-instructions.md" />
   </Folder>
   <Project Path="CookieCommerce.AppHost/CookieCommerce.AppHost.csproj" />
   <Project Path="CookieCommerce.ServiceDefaults/CookieCommerce.ServiceDefaults.csproj" />

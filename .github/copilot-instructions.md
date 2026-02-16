@@ -3,6 +3,8 @@
 ## Project Overview
 CookieCommerce is a modular e-commerce system built using **.NET 10**, **Domain-Driven Design (DDD)**, **Event Sourcing**, and **CQRS** patterns. It uses **Marten** for event store/document database, **MediatR** for CQRS, **MassTransit** for messaging, and **Aspire** for orchestration.
 
+For each update, please ensure that the main solution README is updated to reflect any new changes in request/response formats, or architectural decisions. The README should serve as the primary documentation for developers working on the project that documents all the architectural principles.
+
 ## Architecture & Structure
 
 ### Solution Structure
@@ -25,7 +27,7 @@ CookieCommerce/
 
 ### Layer Responsibilities
 
-#### **{Domain}.Api**
+#### **[Domain].Api**
 - ASP.NET Core Web API with **Controllers** (prefer controllers over Minimal APIs)
 - Request/Response models (DTOs) in `Models/{Feature}/` folders
 - Request mapping extensions in `Models/{Feature}/{Feature}Mapper.cs`
@@ -33,6 +35,7 @@ CookieCommerce/
 - OpenAPI/Swagger configuration
 - Endpoint routing: `[Route("api/[controller]")]`
 - Use **ProblemDetails** for error responses
+- Create and update (whenever necessary) the Readme, at the domain level, documenting the API endpoints and their expected request/response formats.
 
 **Conventions:**
 - Controllers use primary constructor: `public CustomerController(ISender mediator) : ControllerBase`
@@ -104,7 +107,7 @@ public class CustomerAggregate : AggregateBase
 }
 ```
 
-#### **{Domain}.Infrastructure**
+#### **[Domain].Infrastructure**
 - **Projections** in `Projections/` (Marten event projections)
 - **Repositories** for read models
 - **External service implementations** (encryption, key storage)
@@ -150,7 +153,7 @@ public class CustomerProjection : SingleStreamProjection<CustomerReadModel, Guid
 }
 ```
 
-- **{Domain}.Tests**
+- **[Domain].Tests**
 - **Unit tests** in `DomainTests/` and `ApplicationTests/`
 - **Integration tests** in `IntegrationTests/`
 - **Projection tests** in `ProjectionsTests/`

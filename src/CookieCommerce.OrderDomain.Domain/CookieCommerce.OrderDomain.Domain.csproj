@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CookieCommerce.DomainBuildingBlocks\CookieCommerce.DomainBuildingBlocks.csproj" />
+  </ItemGroup>
+
 </Project>

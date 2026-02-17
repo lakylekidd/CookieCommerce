@@ -458,7 +458,6 @@ public class OrderDetailsReadModel
 public class OrderLineReadModel
 {
     public Guid ProductId { get; set; }
-    public string ProductDescription { get; set; }
     public int Quantity { get; set; }
     public PriceInfo PriceInfo { get; set; }
     public decimal LineTotal { get; set; }
@@ -481,7 +480,6 @@ public class PriceInfo
   - `TaxType`: Enum indicating Percentage (0.10 = 10%) or Fixed amount
   - `TaxValue`: The tax value (percentage or fixed amount)
   - `IsTaxIncluded`: Whether tax is already included in the base price
-- **ProductDescription**: Product name/description for display purposes
 
 **Usage:**
 ```csharp

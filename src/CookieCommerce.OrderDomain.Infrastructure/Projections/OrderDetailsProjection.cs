@@ -8,6 +8,8 @@ namespace CookieCommerce.OrderDomain.Infrastructure.Projections;
 
 public class OrderDetailsProjection : SingleStreamProjection<OrderDetailsReadModel, Guid>
 {
+    private const decimal TaxRate = 0.10m;
+
     public OrderDetailsProjection()
     {
         // Define inline projection methods - no delete events for orders
@@ -43,7 +45,7 @@ public class OrderDetailsProjection : SingleStreamProjection<OrderDetailsReadMod
             {
                 BasePrice = @event.OrderLine.UnitPrice,
                 TaxType = TaxType.Percentage,
-                TaxValue = 0.10m, // 10% tax
+                TaxValue = TaxRate,
                 IsTaxIncluded = false
             },
             LineTotal = @event.OrderLine.LineTotal
@@ -51,7 +53,7 @@ public class OrderDetailsProjection : SingleStreamProjection<OrderDetailsReadMod
 
         current.OrderLines.Add(orderLine);
         current.SubTotal = current.OrderLines.Sum(ol => ol.LineTotal);
-        current.TaxAmount = current.SubTotal * 0.10m;
+        current.TaxAmount = current.SubTotal * TaxRate;
         current.Total = current.SubTotal + current.TaxAmount;
 
         return current;
@@ -64,7 +66,7 @@ public class OrderDetailsProjection : SingleStreamProjection<OrderDetailsReadMod
         {
             current.OrderLines.Remove(orderLine);
             current.SubTotal = current.OrderLines.Sum(ol => ol.LineTotal);
-            current.TaxAmount = current.SubTotal * 0.10m;
+            current.TaxAmount = current.SubTotal * TaxRate;
             current.Total = current.SubTotal + current.TaxAmount;
         }
 

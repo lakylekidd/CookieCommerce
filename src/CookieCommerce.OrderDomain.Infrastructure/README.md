@@ -37,7 +37,6 @@ Projections use Marten's `SingleStreamProjection` to build read models from even
 **Key Features:**
 - **Status Tracking**: Maintains both current `StatusDate` and complete `StatusHistory` dictionary
 - **PriceInfo**: Each order line includes detailed price information with tax configuration
-- **Product Description**: Order lines include product description for display purposes
 
 **Tax Calculation:**
 - Tax Rate: 10% (0.10m)
@@ -66,7 +65,7 @@ foreach (var (status, timestamp) in order.StatusHistory)
 // Access order line with price info
 foreach (var line in order.OrderLines)
 {
-    Console.WriteLine($"  {line.ProductDescription}: {line.Quantity} x ${line.PriceInfo.BasePrice}");
+    Console.WriteLine($"  Product {line.ProductId}: {line.Quantity} x ${line.PriceInfo.BasePrice}");
     Console.WriteLine($"    Tax: {line.PriceInfo.TaxValue * 100}% ({line.PriceInfo.TaxType})");
 }
 ```
@@ -163,10 +162,10 @@ Projections are registered as **Inline** projections, which means:
 
 ## Dependency Injection
 
-Register infrastructure services in `Startup.cs` or `Program.cs`:
+Register infrastructure services in `Program.cs` of the Order API project:
 
 ```csharp
-// In Order API layer (when created)
+// In Order API Program.cs
 builder.Services.AddInfrastructure(builder.Configuration);
 
 // In MartenExtensions.cs

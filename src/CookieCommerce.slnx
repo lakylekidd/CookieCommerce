@@ -27,6 +27,7 @@
   <Project Path="CookieCommerce.AppHost/CookieCommerce.AppHost.csproj" />
   <Project Path="CookieCommerce.OrderDomain.Application/CookieCommerce.OrderDomain.Application.csproj" />
   <Project Path="CookieCommerce.OrderDomain.Domain/CookieCommerce.OrderDomain.Domain.csproj" />
+  <Project Path="CookieCommerce.OrderDomain.Infrastructure/CookieCommerce.OrderDomain.Infrastructure.csproj" />
   <Project Path="CookieCommerce.ServiceDefaults/CookieCommerce.ServiceDefaults.csproj" />
   <Project Path="CookieCommerce.Web/CookieCommerce.Web.csproj" />
   <Project Path="CookieCommerce/CookieCommerce.csproj" />

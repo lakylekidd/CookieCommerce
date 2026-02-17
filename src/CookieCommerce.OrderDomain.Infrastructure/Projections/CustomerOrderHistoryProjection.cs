@@ -7,6 +7,8 @@ namespace CookieCommerce.OrderDomain.Infrastructure.Projections;
 
 public class CustomerOrderHistoryProjection : SingleStreamProjection<CustomerOrderHistoryReadModel, Guid>
 {
+    private const decimal TaxRate = 0.10m;
+
     public CustomerOrderHistoryProjection()
     {
         // Define inline projection methods
@@ -26,17 +28,18 @@ public class CustomerOrderHistoryProjection : SingleStreamProjection<CustomerOrd
 
     public CustomerOrderHistoryReadModel Apply(OrderLineAdded @event, CustomerOrderHistoryReadModel current)
     {
-        // Recalculate total with tax
-        current.Total += @event.OrderLine.LineTotal;
-        current.Total = current.Total * 1.10m; // Add 10% tax
+        // Add the line total to the running total
+        var subTotal = current.Total / (1 + TaxRate); // Remove tax to get subtotal
+        subTotal += @event.OrderLine.LineTotal;
+        current.Total = subTotal + (subTotal * TaxRate);
         return current;
     }
 
     public CustomerOrderHistoryReadModel Apply(OrderLineRemoved @event, CustomerOrderHistoryReadModel current)
     {
-        // This is simplified - we don't have the line total here
-        // In a real scenario, we might need to store order lines or recalculate
-        // For now, we'll rely on the full OrderDetailsReadModel for accurate totals
+        // Note: We cannot accurately recalculate without knowing the line total
+        // This is a limitation of this simplified read model
+        // For accurate totals, query OrderDetailsReadModel instead
         return current;
     }
 

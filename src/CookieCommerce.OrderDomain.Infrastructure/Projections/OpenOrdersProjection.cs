@@ -7,6 +7,8 @@ namespace CookieCommerce.OrderDomain.Infrastructure.Projections;
 
 public class OpenOrdersProjection : SingleStreamProjection<OpenOrdersReadModel, Guid>
 {
+    private const decimal TaxRate = 0.10m;
+
     public OpenOrdersProjection()
     {
         // Define inline projection methods
@@ -30,15 +32,18 @@ public class OpenOrdersProjection : SingleStreamProjection<OpenOrdersReadModel, 
 
     public OpenOrdersReadModel Apply(OrderLineAdded @event, OpenOrdersReadModel current)
     {
-        // Recalculate total with tax
-        current.Total += @event.OrderLine.LineTotal;
-        current.Total = current.Total * 1.10m; // Add 10% tax
+        // Add the line total to the running total
+        var subTotal = current.Total / (1 + TaxRate); // Remove tax to get subtotal
+        subTotal += @event.OrderLine.LineTotal;
+        current.Total = subTotal + (subTotal * TaxRate);
         return current;
     }
 
     public OpenOrdersReadModel Apply(OrderLineRemoved @event, OpenOrdersReadModel current)
     {
-        // Simplified - rely on OrderDetailsReadModel for accurate totals
+        // Note: We cannot accurately recalculate without knowing the line total
+        // This is a limitation of this simplified read model
+        // For accurate totals, query OrderDetailsReadModel instead
         return current;
     }
 

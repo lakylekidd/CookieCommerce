@@ -1,4 +1,5 @@
 using CookieCommerce.OrderDomain.Application.Orders.ReadModels;
+using CookieCommerce.OrderDomain.Application.Orders.ValueObjects;
 using CookieCommerce.OrderDomain.Domain.DomainEvents;
 using CookieCommerce.OrderDomain.Domain.ValueObjects;
 using Marten.Events.Aggregation;
@@ -14,7 +15,7 @@ public class OrderDetailsProjection : SingleStreamProjection<OrderDetailsReadMod
 
     public OrderDetailsReadModel Create(OrderPlaced @event)
     {
-        return new OrderDetailsReadModel
+        var readModel = new OrderDetailsReadModel
         {
             Id = @event.OrderId,
             CustomerId = @event.CustomerId,
@@ -23,8 +24,13 @@ public class OrderDetailsProjection : SingleStreamProjection<OrderDetailsReadMod
             OrderLines = new List<OrderLineReadModel>(),
             SubTotal = 0,
             TaxAmount = 0,
-            Total = 0
+            Total = 0,
+            StatusDate = @event.PlacedAtUtc
         };
+
+        readModel.StatusHistory[OrderStatus.Pending.ToString()] = @event.PlacedAtUtc;
+
+        return readModel;
     }
 
     public OrderDetailsReadModel Apply(OrderLineAdded @event, OrderDetailsReadModel current)
@@ -33,7 +39,13 @@ public class OrderDetailsProjection : SingleStreamProjection<OrderDetailsReadMod
         {
             ProductId = @event.OrderLine.ProductId,
             Quantity = @event.OrderLine.Quantity,
-            UnitPrice = @event.OrderLine.UnitPrice,
+            PriceInfo = new PriceInfo
+            {
+                BasePrice = @event.OrderLine.UnitPrice,
+                TaxType = TaxType.Percentage,
+                TaxValue = 0.10m, // 10% tax
+                IsTaxIncluded = false
+            },
             LineTotal = @event.OrderLine.LineTotal
         };
 
@@ -62,28 +74,32 @@ public class OrderDetailsProjection : SingleStreamProjection<OrderDetailsReadMod
     public OrderDetailsReadModel Apply(OrderConfirmed @event, OrderDetailsReadModel current)
     {
         current.Status = OrderStatus.Confirmed;
-        current.ConfirmedAtUtc = @event.ConfirmedAtUtc;
+        current.StatusDate = @event.ConfirmedAtUtc;
+        current.StatusHistory[OrderStatus.Confirmed.ToString()] = @event.ConfirmedAtUtc;
         return current;
     }
 
     public OrderDetailsReadModel Apply(OrderPaid @event, OrderDetailsReadModel current)
     {
         current.Status = OrderStatus.Paid;
-        current.PaidAtUtc = @event.PaidAtUtc;
+        current.StatusDate = @event.PaidAtUtc;
+        current.StatusHistory[OrderStatus.Paid.ToString()] = @event.PaidAtUtc;
         return current;
     }
 
     public OrderDetailsReadModel Apply(OrderCancelled @event, OrderDetailsReadModel current)
     {
         current.Status = OrderStatus.Cancelled;
-        current.CancelledAtUtc = @event.CancelledAtUtc;
+        current.StatusDate = @event.CancelledAtUtc;
+        current.StatusHistory[OrderStatus.Cancelled.ToString()] = @event.CancelledAtUtc;
         return current;
     }
 
     public OrderDetailsReadModel Apply(OrderRejected @event, OrderDetailsReadModel current)
     {
         current.Status = OrderStatus.Rejected;
-        current.RejectedAtUtc = @event.RejectedAtUtc;
+        current.StatusDate = @event.RejectedAtUtc;
+        current.StatusHistory[OrderStatus.Rejected.ToString()] = @event.RejectedAtUtc;
         return current;
     }
 }

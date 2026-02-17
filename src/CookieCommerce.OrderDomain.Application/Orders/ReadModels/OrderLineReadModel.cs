@@ -1,9 +1,12 @@
+using CookieCommerce.OrderDomain.Application.Orders.ValueObjects;
+
 namespace CookieCommerce.OrderDomain.Application.Orders.ReadModels;
 
 public class OrderLineReadModel
 {
     public Guid ProductId { get; set; }
+    public string ProductDescription { get; set; } = string.Empty;
     public int Quantity { get; set; }
-    public decimal UnitPrice { get; set; }
+    public PriceInfo PriceInfo { get; set; } = null!;
     public decimal LineTotal { get; set; }
 }

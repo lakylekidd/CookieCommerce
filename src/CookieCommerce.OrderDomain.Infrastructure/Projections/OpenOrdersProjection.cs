@@ -5,7 +5,7 @@ using Marten.Events.Aggregation;
 
 namespace CookieCommerce.OrderDomain.Infrastructure.Projections;
 
-public class OpenOrdersProjection : SingleStreamProjection<OpenOrdersReadModel, Guid>
+public class OpenOrdersProjection : SingleStreamProjection<OpenOrderReadModel, Guid>
 {
     private const decimal TaxRate = 0.10m;
 
@@ -18,9 +18,9 @@ public class OpenOrdersProjection : SingleStreamProjection<OpenOrdersReadModel, 
         DeleteEvent<OrderRejected>();
     }
 
-    public OpenOrdersReadModel Create(OrderPlaced @event)
+    public OpenOrderReadModel Create(OrderPlaced @event)
     {
-        return new OpenOrdersReadModel
+        return new OpenOrderReadModel
         {
             Id = @event.OrderId,
             CustomerId = @event.CustomerId,
@@ -30,14 +30,14 @@ public class OpenOrdersProjection : SingleStreamProjection<OpenOrdersReadModel, 
         };
     }
 
-    public OpenOrdersReadModel Apply(OrderLineAdded @event, OpenOrdersReadModel current)
+    public OpenOrderReadModel Apply(OrderLineAdded @event, OpenOrderReadModel current)
     {
         // Add the line total with tax directly
         current.Total += @event.OrderLine.LineTotal * (1 + TaxRate);
         return current;
     }
 
-    public OpenOrdersReadModel Apply(OrderLineRemoved @event, OpenOrdersReadModel current)
+    public OpenOrderReadModel Apply(OrderLineRemoved @event, OpenOrderReadModel current)
     {
         // Note: We cannot accurately recalculate without knowing the line total
         // This is a limitation of this simplified read model
@@ -45,7 +45,7 @@ public class OpenOrdersProjection : SingleStreamProjection<OpenOrdersReadModel, 
         return current;
     }
 
-    public OpenOrdersReadModel Apply(OrderConfirmed @event, OpenOrdersReadModel current)
+    public OpenOrderReadModel Apply(OrderConfirmed @event, OpenOrderReadModel current)
     {
         current.Status = OrderStatus.Confirmed;
         current.ConfirmedAtUtc = @event.ConfirmedAtUtc;

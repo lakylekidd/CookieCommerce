@@ -3,4 +3,4 @@ using MediatR;
 
 namespace CookieCommerce.OrderDomain.Application.Orders.Queries;
 
-public record GetOpenOrders() : IRequest<IReadOnlyList<OpenOrdersReadModel>>;
+public record GetOpenOrders() : IRequest<IReadOnlyList<OpenOrderReadModel>>;

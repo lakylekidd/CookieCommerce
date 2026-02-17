@@ -2,7 +2,7 @@ using CookieCommerce.OrderDomain.Domain.ValueObjects;
 
 namespace CookieCommerce.OrderDomain.Application.Orders.ReadModels;
 
-public class OpenOrdersReadModel
+public class OpenOrderReadModel
 {
     public Guid Id { get; set; }
     public Guid CustomerId { get; set; }

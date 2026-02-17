@@ -5,14 +5,14 @@ using MediatR;
 
 namespace CookieCommerce.OrderDomain.Application.Orders.Handlers;
 
-public class GetOpenOrdersHandler(IQuerySession query) : IRequestHandler<GetOpenOrders, IReadOnlyList<OpenOrdersReadModel>>
+public class GetOpenOrdersHandler(IQuerySession query) : IRequestHandler<GetOpenOrders, IReadOnlyList<OpenOrderReadModel>>
 {
-    public async Task<IReadOnlyList<OpenOrdersReadModel>> Handle(
+    public async Task<IReadOnlyList<OpenOrderReadModel>> Handle(
         GetOpenOrders request,
         CancellationToken cancellationToken)
     {
         var orders = await query
-            .Query<OpenOrdersReadModel>()
+            .Query<OpenOrderReadModel>()
             .OrderByDescending(o => o.PlacedAtUtc)
             .ToListAsync(cancellationToken);
 

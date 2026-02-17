@@ -1,4 +1,5 @@
 using CookieCommerce.OrderDomain.Application.Orders.ReadModels;
+using CookieCommerce.OrderDomain.Application.Orders.ValueObjects;
 using CookieCommerce.OrderDomain.Domain.DomainEvents;
 using CookieCommerce.OrderDomain.Domain.ValueObjects;
 using CookieCommerce.OrderDomain.Infrastructure.Projections;
@@ -72,7 +73,8 @@ public class OrderDetailsProjectionTests
         result.OrderLines.Should().HaveCount(1);
         result.OrderLines[0].ProductId.Should().Be(productId);
         result.OrderLines[0].Quantity.Should().Be(2);
-        result.OrderLines[0].UnitPrice.Should().Be(10.00m);
+        result.OrderLines[0].PriceInfo.Should().NotBeNull();
+        result.OrderLines[0].PriceInfo.BasePrice.Should().Be(10.00m);
         result.OrderLines[0].LineTotal.Should().Be(20.00m);
         result.SubTotal.Should().Be(20.00m);
         result.TaxAmount.Should().Be(2.00m); // 10% tax
@@ -89,7 +91,12 @@ public class OrderDetailsProjectionTests
             Id = orderId,
             OrderLines = new List<OrderLineReadModel>
             {
-                new() { ProductId = Guid.NewGuid(), Quantity = 1, UnitPrice = 10.00m, LineTotal = 10.00m }
+                new() { 
+                    ProductId = Guid.NewGuid(), 
+                    Quantity = 1, 
+                    PriceInfo = new PriceInfo { BasePrice = 10.00m, TaxType = TaxType.Percentage, TaxValue = 0.10m, IsTaxIncluded = false },
+                    LineTotal = 10.00m 
+                }
             },
             SubTotal = 10.00m,
             TaxAmount = 1.00m,
@@ -126,8 +133,18 @@ public class OrderDetailsProjectionTests
             Id = orderId,
             OrderLines = new List<OrderLineReadModel>
             {
-                new() { ProductId = productId1, Quantity = 2, UnitPrice = 10.00m, LineTotal = 20.00m },
-                new() { ProductId = productId2, Quantity = 1, UnitPrice = 15.00m, LineTotal = 15.00m }
+                new() { 
+                    ProductId = productId1, 
+                    Quantity = 2, 
+                    PriceInfo = new PriceInfo { BasePrice = 10.00m, TaxType = TaxType.Percentage, TaxValue = 0.10m, IsTaxIncluded = false },
+                    LineTotal = 20.00m 
+                },
+                new() { 
+                    ProductId = productId2, 
+                    Quantity = 1, 
+                    PriceInfo = new PriceInfo { BasePrice = 15.00m, TaxType = TaxType.Percentage, TaxValue = 0.10m, IsTaxIncluded = false },
+                    LineTotal = 15.00m 
+                }
             },
             SubTotal = 35.00m,
             TaxAmount = 3.50m,
@@ -174,7 +191,9 @@ public class OrderDetailsProjectionTests
 
         // Assert
         result.Status.Should().Be(OrderStatus.Confirmed);
-        result.ConfirmedAtUtc.Should().Be(confirmedAt);
+        result.StatusDate.Should().Be(confirmedAt);
+        result.StatusHistory.Should().ContainKey(OrderStatus.Confirmed.ToString());
+        result.StatusHistory[OrderStatus.Confirmed.ToString()].Should().Be(confirmedAt);
     }
 
     [Fact]
@@ -200,7 +219,9 @@ public class OrderDetailsProjectionTests
 
         // Assert
         result.Status.Should().Be(OrderStatus.Paid);
-        result.PaidAtUtc.Should().Be(paidAt);
+        result.StatusDate.Should().Be(paidAt);
+        result.StatusHistory.Should().ContainKey(OrderStatus.Paid.ToString());
+        result.StatusHistory[OrderStatus.Paid.ToString()].Should().Be(paidAt);
     }
 
     [Fact]
@@ -227,7 +248,9 @@ public class OrderDetailsProjectionTests
 
         // Assert
         result.Status.Should().Be(OrderStatus.Cancelled);
-        result.CancelledAtUtc.Should().Be(cancelledAt);
+        result.StatusDate.Should().Be(cancelledAt);
+        result.StatusHistory.Should().ContainKey(OrderStatus.Cancelled.ToString());
+        result.StatusHistory[OrderStatus.Cancelled.ToString()].Should().Be(cancelledAt);
     }
 
     [Fact]
@@ -254,6 +277,8 @@ public class OrderDetailsProjectionTests
 
         // Assert
         result.Status.Should().Be(OrderStatus.Rejected);
-        result.RejectedAtUtc.Should().Be(rejectedAt);
+        result.StatusDate.Should().Be(rejectedAt);
+        result.StatusHistory.Should().ContainKey(OrderStatus.Rejected.ToString());
+        result.StatusHistory[OrderStatus.Rejected.ToString()].Should().Be(rejectedAt);
     }
 }

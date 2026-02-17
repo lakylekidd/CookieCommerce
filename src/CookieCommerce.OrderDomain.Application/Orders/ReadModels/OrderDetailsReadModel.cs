@@ -12,8 +12,6 @@ public class OrderDetailsReadModel
     public decimal TaxAmount { get; set; }
     public decimal Total { get; set; }
     public DateTime PlacedAtUtc { get; set; }
-    public DateTime? ConfirmedAtUtc { get; set; }
-    public DateTime? PaidAtUtc { get; set; }
-    public DateTime? CancelledAtUtc { get; set; }
-    public DateTime? RejectedAtUtc { get; set; }
+    public DateTime? StatusDate { get; set; }
+    public Dictionary<string, DateTime> StatusHistory { get; set; } = new();
 }

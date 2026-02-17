@@ -9,11 +9,6 @@ public class CustomerOrderHistoryProjection : SingleStreamProjection<CustomerOrd
 {
     private const decimal TaxRate = 0.10m;
 
-    public CustomerOrderHistoryProjection()
-    {
-        // Define inline projection methods
-    }
-
     public CustomerOrderHistoryReadModel Create(OrderPlaced @event)
     {
         return new CustomerOrderHistoryReadModel

@@ -451,12 +451,37 @@ public class OrderDetailsReadModel
     public decimal TaxAmount { get; set; }
     public decimal Total { get; set; }
     public DateTime PlacedAtUtc { get; set; }
-    public DateTime? ConfirmedAtUtc { get; set; }
-    public DateTime? PaidAtUtc { get; set; }
-    public DateTime? CancelledAtUtc { get; set; }
-    public DateTime? RejectedAtUtc { get; set; }
+    public DateTime? StatusDate { get; set; }
+    public Dictionary<string, DateTime> StatusHistory { get; set; }
+}
+
+public class OrderLineReadModel
+{
+    public Guid ProductId { get; set; }
+    public string ProductDescription { get; set; }
+    public int Quantity { get; set; }
+    public PriceInfo PriceInfo { get; set; }
+    public decimal LineTotal { get; set; }
+}
+
+public class PriceInfo
+{
+    public decimal BasePrice { get; set; }
+    public TaxType TaxType { get; set; }  // Percentage or Fixed
+    public decimal TaxValue { get; set; }
+    public bool IsTaxIncluded { get; set; }
 }
 ```
+
+**Key Features:**
+- **StatusDate**: Timestamp of the current status
+- **StatusHistory**: Dictionary tracking all status transitions with timestamps
+- **PriceInfo**: Encapsulates pricing with tax information
+  - `BasePrice`: The base price before tax
+  - `TaxType`: Enum indicating Percentage (0.10 = 10%) or Fixed amount
+  - `TaxValue`: The tax value (percentage or fixed amount)
+  - `IsTaxIncluded`: Whether tax is already included in the base price
+- **ProductDescription**: Product name/description for display purposes
 
 **Usage:**
 ```csharp
@@ -506,16 +531,16 @@ var orders = await mediator.Send(query);
 Retrieves all open orders (pending or confirmed, not paid/cancelled/rejected).
 
 ```csharp
-public record GetOpenOrders() : IRequest<IReadOnlyList<OpenOrdersReadModel>>;
+public record GetOpenOrders() : IRequest<IReadOnlyList<OpenOrderReadModel>>;
 ```
 
 **Parameters:** None
 
-**Returns:** List of `OpenOrdersReadModel` ordered by `PlacedAtUtc` descending
+**Returns:** List of `OpenOrderReadModel` ordered by `PlacedAtUtc` descending
 
 **Read Model Structure:**
 ```csharp
-public class OpenOrdersReadModel
+public class OpenOrderReadModel
 {
     public Guid Id { get; set; }
     public Guid CustomerId { get; set; }

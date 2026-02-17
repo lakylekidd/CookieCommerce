@@ -26,13 +26,18 @@ Projections use Marten's `SingleStreamProjection` to build read models from even
 
 | Event | Method | Description |
 |-------|--------|-------------|
-| `OrderPlaced` | `Create()` | Initializes the read model with order ID, customer ID, and initial status |
-| `OrderLineAdded` | `Apply()` | Adds order line and recalculates SubTotal, TaxAmount, and Total |
+| `OrderPlaced` | `Create()` | Initializes the read model with order ID, customer ID, and initial status. Populates `StatusHistory` with Pending status |
+| `OrderLineAdded` | `Apply()` | Adds order line with `PriceInfo` and recalculates SubTotal, TaxAmount, and Total |
 | `OrderLineRemoved` | `Apply()` | Removes order line and recalculates totals |
-| `OrderConfirmed` | `Apply()` | Updates status to Confirmed and sets ConfirmedAtUtc |
-| `OrderPaid` | `Apply()` | Updates status to Paid and sets PaidAtUtc |
-| `OrderCancelled` | `Apply()` | Updates status to Cancelled and sets CancelledAtUtc |
-| `OrderRejected` | `Apply()` | Updates status to Rejected and sets RejectedAtUtc |
+| `OrderConfirmed` | `Apply()` | Updates status, `StatusDate`, and adds entry to `StatusHistory` |
+| `OrderPaid` | `Apply()` | Updates status, `StatusDate`, and adds entry to `StatusHistory` |
+| `OrderCancelled` | `Apply()` | Updates status, `StatusDate`, and adds entry to `StatusHistory` |
+| `OrderRejected` | `Apply()` | Updates status, `StatusDate`, and adds entry to `StatusHistory` |
+
+**Key Features:**
+- **Status Tracking**: Maintains both current `StatusDate` and complete `StatusHistory` dictionary
+- **PriceInfo**: Each order line includes detailed price information with tax configuration
+- **Product Description**: Order lines include product description for display purposes
 
 **Tax Calculation:**
 - Tax Rate: 10% (0.10m)
@@ -46,10 +51,24 @@ var order = await session.LoadAsync<OrderDetailsReadModel>(orderId);
 
 // Access complete order details
 Console.WriteLine($"Order {order.Id}: {order.Status}");
+Console.WriteLine($"  Status Date: {order.StatusDate}");
 Console.WriteLine($"  SubTotal: ${order.SubTotal}");
 Console.WriteLine($"  Tax (10%): ${order.TaxAmount}");
 Console.WriteLine($"  Total: ${order.Total}");
 Console.WriteLine($"  Lines: {order.OrderLines.Count}");
+
+// View status history
+foreach (var (status, timestamp) in order.StatusHistory)
+{
+    Console.WriteLine($"  {status}: {timestamp:yyyy-MM-dd HH:mm}");
+}
+
+// Access order line with price info
+foreach (var line in order.OrderLines)
+{
+    Console.WriteLine($"  {line.ProductDescription}: {line.Quantity} x ${line.PriceInfo.BasePrice}");
+    Console.WriteLine($"    Tax: {line.PriceInfo.TaxValue * 100}% ({line.PriceInfo.TaxType})");
+}
 ```
 
 ---
@@ -99,7 +118,7 @@ foreach (var order in orders)
 
 **Purpose:** Provides a list of orders that are still open (not paid, cancelled, or rejected), optimized for operational dashboards and fulfillment workflows.
 
-**Target Read Model:** `OpenOrdersReadModel`
+**Target Read Model:** `OpenOrderReadModel`
 
 **Event Handlers:**
 
@@ -118,7 +137,7 @@ foreach (var order in orders)
 **Usage:**
 ```csharp
 // Query all open orders
-var openOrders = await session.Query<OpenOrdersReadModel>()
+var openOrders = await session.Query<OpenOrderReadModel>()
     .OrderByDescending(o => o.PlacedAtUtc)
     .ToListAsync();
 

@@ -422,19 +422,193 @@ Each command triggers domain events in the aggregate:
 | CancelOrder | `OrderCancelled` |
 | RejectOrder | `OrderRejected` |
 
+## Queries
+
+All queries are immutable records that implement `IRequest<TResult>` from MediatR.
+
+### GetOrderById
+
+Retrieves detailed information about a specific order.
+
+```csharp
+public record GetOrderById(Guid OrderId) : IRequest<OrderDetailsReadModel?>;
+```
+
+**Parameters:**
+- `OrderId`: The ID of the order to retrieve
+
+**Returns:** `OrderDetailsReadModel` or `null` if not found
+
+**Read Model Structure:**
+```csharp
+public class OrderDetailsReadModel
+{
+    public Guid Id { get; set; }
+    public Guid CustomerId { get; set; }
+    public OrderStatus Status { get; set; }
+    public List<OrderLineReadModel> OrderLines { get; set; }
+    public decimal SubTotal { get; set; }
+    public decimal TaxAmount { get; set; }
+    public decimal Total { get; set; }
+    public DateTime PlacedAtUtc { get; set; }
+    public DateTime? ConfirmedAtUtc { get; set; }
+    public DateTime? PaidAtUtc { get; set; }
+    public DateTime? CancelledAtUtc { get; set; }
+    public DateTime? RejectedAtUtc { get; set; }
+}
+```
+
+**Usage:**
+```csharp
+var query = new GetOrderById(orderId);
+var order = await mediator.Send(query);
+```
+
+---
+
+### GetCustomerOrderHistory
+
+Retrieves all orders for a specific customer.
+
+```csharp
+public record GetCustomerOrderHistory(Guid CustomerId) : IRequest<IReadOnlyList<CustomerOrderHistoryReadModel>>;
+```
+
+**Parameters:**
+- `CustomerId`: The ID of the customer
+
+**Returns:** List of `CustomerOrderHistoryReadModel` ordered by `PlacedAtUtc` descending
+
+**Read Model Structure:**
+```csharp
+public class CustomerOrderHistoryReadModel
+{
+    public Guid Id { get; set; }
+    public Guid CustomerId { get; set; }
+    public OrderStatus Status { get; set; }
+    public decimal Total { get; set; }
+    public DateTime PlacedAtUtc { get; set; }
+    public DateTime? ConfirmedAtUtc { get; set; }
+    public DateTime? PaidAtUtc { get; set; }
+}
+```
+
+**Usage:**
+```csharp
+var query = new GetCustomerOrderHistory(customerId);
+var orders = await mediator.Send(query);
+```
+
+---
+
+### GetOpenOrders
+
+Retrieves all open orders (pending or confirmed, not paid/cancelled/rejected).
+
+```csharp
+public record GetOpenOrders() : IRequest<IReadOnlyList<OpenOrdersReadModel>>;
+```
+
+**Parameters:** None
+
+**Returns:** List of `OpenOrdersReadModel` ordered by `PlacedAtUtc` descending
+
+**Read Model Structure:**
+```csharp
+public class OpenOrdersReadModel
+{
+    public Guid Id { get; set; }
+    public Guid CustomerId { get; set; }
+    public OrderStatus Status { get; set; }
+    public decimal Total { get; set; }
+    public DateTime PlacedAtUtc { get; set; }
+    public DateTime? ConfirmedAtUtc { get; set; }
+}
+```
+
+**Usage:**
+```csharp
+var query = new GetOpenOrders();
+var openOrders = await mediator.Send(query);
+```
+
+---
+
+## Projections
+
+Projections are implemented in the **Infrastructure layer** (`CookieCommerce.OrderDomain.Infrastructure`) and use Marten's event projection system to build read models from event streams.
+
+### OrderDetailsProjection
+
+Projects all order events into a detailed read model including all order lines, totals, and status changes.
+
+**Events Handled:**
+- `OrderPlaced` → Creates initial read model
+- `OrderLineAdded` → Adds order line and recalculates totals
+- `OrderLineRemoved` → Removes order line and recalculates totals
+- `OrderConfirmed` → Updates status
+- `OrderPaid` → Updates status
+- `OrderCancelled` → Updates status
+- `OrderRejected` → Updates status
+
+### CustomerOrderHistoryProjection
+
+Projects order events into a simplified read model for customer order history lists.
+
+**Events Handled:**
+- `OrderPlaced` → Creates initial read model
+- `OrderLineAdded` → Updates total
+- `OrderConfirmed` → Updates status
+- `OrderPaid` → Updates status
+- `OrderCancelled` → Updates status
+- `OrderRejected` → Updates status
+
+**Note:** Total calculation is approximate on line removal. For accurate totals, use `OrderDetailsReadModel`.
+
+### OpenOrdersProjection
+
+Projects order events into a read model for open orders, automatically removing closed orders.
+
+**Events Handled:**
+- `OrderPlaced` → Creates initial read model
+- `OrderLineAdded` → Updates total
+- `OrderConfirmed` → Updates status
+- `OrderPaid` → **Deletes read model** (order is closed)
+- `OrderCancelled` → **Deletes read model** (order is closed)
+- `OrderRejected` → **Deletes read model** (order is closed)
+
+### Projection Registration
+
+Projections will be registered when the Order API layer is created:
+
+```csharp
+services.AddMarten(opts =>
+{
+    opts.Connection(connectionString);
+    
+    opts.Projections.Add(new OrderDetailsProjection(), 
+        JasperFx.Events.Projections.ProjectionLifecycle.Inline);
+    opts.Projections.Add(new CustomerOrderHistoryProjection(), 
+        JasperFx.Events.Projections.ProjectionLifecycle.Inline);
+    opts.Projections.Add(new OpenOrdersProjection(), 
+        JasperFx.Events.Projections.ProjectionLifecycle.Inline);
+        
+    opts.AutoCreateSchemaObjects = JasperFx.AutoCreate.All;
+});
+```
+
 ## Future Enhancements
 
-1. **Queries**: Read models and query handlers
-2. **Projections**: Marten projections for optimized reads
-3. **Integration Events**: Publish to other bounded contexts
-4. **Outbox Pattern**: Transactional messaging
-5. **Validation**: FluentValidation for command validation
-6. **API Layer**: REST endpoints and DTOs
-7. **Authorization**: Role-based access for admin operations
+1. **Integration Events**: Publish to other bounded contexts
+2. **Outbox Pattern**: Transactional messaging
+3. **Validation**: FluentValidation for command validation
+4. **API Layer**: REST endpoints and DTOs
+5. **Authorization**: Role-based access for admin operations
 
 ## Related Documentation
 
 - [Order Domain - Domain Layer](../CookieCommerce.OrderDomain.Domain/README.md)
+- [Order Domain - Infrastructure Layer](../CookieCommerce.OrderDomain.Infrastructure/README.md)
 - [Main Solution README](../../README.md)
 - [Customer Domain Application](../CookieCommerce.CustomerDomain.Application/README.md)
 - [Product Domain Application](../CookieCommerce.ProductDomain.Application/README.md)

@@ -7,13 +7,11 @@ namespace CookieCommerce.OrderDomain.Application.Orders.Handlers;
 
 public class GetCustomerOrderHistoryHandler(IQuerySession query) : IRequestHandler<GetCustomerOrderHistory, IReadOnlyList<CustomerOrderHistoryReadModel>>
 {
-    private readonly IQuerySession _query = query;
-
     public async Task<IReadOnlyList<CustomerOrderHistoryReadModel>> Handle(
         GetCustomerOrderHistory request,
         CancellationToken cancellationToken)
     {
-        var orders = await _query
+        var orders = await query
             .Query<CustomerOrderHistoryReadModel>()
             .Where(o => o.CustomerId == request.CustomerId)
             .OrderByDescending(o => o.PlacedAtUtc)

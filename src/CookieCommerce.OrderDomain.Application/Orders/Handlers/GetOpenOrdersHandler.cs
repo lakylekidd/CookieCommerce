@@ -7,13 +7,11 @@ namespace CookieCommerce.OrderDomain.Application.Orders.Handlers;
 
 public class GetOpenOrdersHandler(IQuerySession query) : IRequestHandler<GetOpenOrders, IReadOnlyList<OpenOrdersReadModel>>
 {
-    private readonly IQuerySession _query = query;
-
     public async Task<IReadOnlyList<OpenOrdersReadModel>> Handle(
         GetOpenOrders request,
         CancellationToken cancellationToken)
     {
-        var orders = await _query
+        var orders = await query
             .Query<OpenOrdersReadModel>()
             .OrderByDescending(o => o.PlacedAtUtc)
             .ToListAsync(cancellationToken);

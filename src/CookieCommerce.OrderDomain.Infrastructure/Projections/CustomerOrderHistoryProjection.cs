@@ -28,10 +28,8 @@ public class CustomerOrderHistoryProjection : SingleStreamProjection<CustomerOrd
 
     public CustomerOrderHistoryReadModel Apply(OrderLineAdded @event, CustomerOrderHistoryReadModel current)
     {
-        // Add the line total to the running total
-        var subTotal = current.Total / (1 + TaxRate); // Remove tax to get subtotal
-        subTotal += @event.OrderLine.LineTotal;
-        current.Total = subTotal + (subTotal * TaxRate);
+        // Add the line total with tax directly
+        current.Total += @event.OrderLine.LineTotal * (1 + TaxRate);
         return current;
     }
 

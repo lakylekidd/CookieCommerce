@@ -2,6 +2,7 @@ using CookieCommerce.Web.Components;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.DataProtection;
 using CookieCommerce.Web;
+using CookieCommerce.Web.Services.Products;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,8 @@ builder.AddServiceDefaults();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddScoped<ICookieService, CookieService>();
 
 var app = builder.Build();
 

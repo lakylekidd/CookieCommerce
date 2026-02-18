@@ -94,6 +94,30 @@ public class OrderAggregateTests
     }
 
     [Fact]
+    public void PlaceOrder_WithAddresses_ShouldStoreAddresses()
+    {
+        // Arrange
+        var order = new OrderAggregate();
+        var orderId = Guid.CreateVersion7();
+        var customerId = Guid.CreateVersion7();
+        var shippingAddress = new OrderAddress("123 Main St", "Springfield", "IL", "62701", "USA");
+        var billingAddress = new OrderAddress("456 Elm St", "Springfield", "IL", "62702", "USA");
+
+        // Act
+        order.PlaceOrder(orderId, customerId, null, shippingAddress, billingAddress);
+
+        // Assert
+        order.Id.Should().Be(orderId);
+        order.CustomerId.Should().Be(customerId);
+        order.ShippingAddress.Should().NotBeNull();
+        order.ShippingAddress!.Street.Should().Be("123 Main St");
+        order.ShippingAddress.City.Should().Be("Springfield");
+        order.BillingAddress.Should().NotBeNull();
+        order.BillingAddress!.Street.Should().Be("456 Elm St");
+        order.BillingAddress.City.Should().Be("Springfield");
+    }
+
+    [Fact]
     public void PlaceOrder_ShouldThrow_WhenCustomerIdIsEmpty()
     {
         // Arrange

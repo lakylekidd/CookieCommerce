@@ -32,7 +32,7 @@ public class PlaceOrderHandler(IDocumentSession session) : IRequestHandler<Place
         var orderId = Guid.CreateVersion7();
 
         var order = new OrderAggregate();
-        order.PlaceOrder(orderId, request.CustomerId, customerSnapshot);
+        order.PlaceOrder(orderId, request.CustomerId, customerSnapshot, request.ShippingAddress, request.BillingAddress);
 
         session.Events.StartStream<OrderAggregate>(orderId, order.DomainEvents);
         await session.SaveChangesAsync(cancellationToken);

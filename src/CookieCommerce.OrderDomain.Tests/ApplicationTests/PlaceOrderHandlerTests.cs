@@ -3,6 +3,7 @@ using CookieCommerce.OrderDomain.Application.Orders.Commands;
 using CookieCommerce.OrderDomain.Application.Orders.Handlers;
 using CookieCommerce.OrderDomain.Domain.Aggregates;
 using CookieCommerce.OrderDomain.Domain.Exceptions;
+using CookieCommerce.OrderDomain.Domain.ValueObjects;
 using FluentAssertions;
 using Marten;
 using NSubstitute;
@@ -25,7 +26,9 @@ public class PlaceOrderHandlerTests
     {
         // Arrange
         var customerId = Guid.CreateVersion7();
-        var command = new PlaceOrder(customerId);
+        var shippingAddress = new OrderAddress("123 Main St", "Springfield", "IL", "62701", "USA");
+        var billingAddress = new OrderAddress("456 Elm St", "Springfield", "IL", "62702", "USA");
+        var command = new PlaceOrder(customerId, shippingAddress, billingAddress);
         
         var customer = new CustomerSnapshotReadModel
         {
@@ -52,7 +55,9 @@ public class PlaceOrderHandlerTests
     {
         // Arrange
         var customerId = Guid.CreateVersion7();
-        var command = new PlaceOrder(customerId);
+        var shippingAddress = new OrderAddress("123 Main St", "Springfield", "IL", "62701", "USA");
+        var billingAddress = new OrderAddress("456 Elm St", "Springfield", "IL", "62702", "USA");
+        var command = new PlaceOrder(customerId, shippingAddress, billingAddress);
         
         _session.LoadAsync<CustomerSnapshotReadModel>(customerId, Arg.Any<CancellationToken>())
             .Returns((CustomerSnapshotReadModel?)null);
@@ -70,7 +75,9 @@ public class PlaceOrderHandlerTests
     {
         // Arrange
         var customerId = Guid.CreateVersion7();
-        var command = new PlaceOrder(customerId);
+        var shippingAddress = new OrderAddress("123 Main St", "Springfield", "IL", "62701", "USA");
+        var billingAddress = new OrderAddress("456 Elm St", "Springfield", "IL", "62702", "USA");
+        var command = new PlaceOrder(customerId, shippingAddress, billingAddress);
         
         // Customer hasn't been replicated yet (eventual consistency gap)
         _session.LoadAsync<CustomerSnapshotReadModel>(customerId, Arg.Any<CancellationToken>())
@@ -85,7 +92,9 @@ public class PlaceOrderHandlerTests
     public async Task Handle_EmptyCustomerId_ThrowsArgumentException()
     {
         // Arrange
-        var command = new PlaceOrder(Guid.Empty);
+        var shippingAddress = new OrderAddress("123 Main St", "Springfield", "IL", "62701", "USA");
+        var billingAddress = new OrderAddress("456 Elm St", "Springfield", "IL", "62702", "USA");
+        var command = new PlaceOrder(Guid.Empty, shippingAddress, billingAddress);
         
         var customer = new CustomerSnapshotReadModel
         {
@@ -108,7 +117,9 @@ public class PlaceOrderHandlerTests
     {
         // Arrange
         var customerId = Guid.CreateVersion7();
-        var command = new PlaceOrder(customerId);
+        var shippingAddress = new OrderAddress("123 Main St", "Springfield", "IL", "62701", "USA");
+        var billingAddress = new OrderAddress("456 Elm St", "Springfield", "IL", "62702", "USA");
+        var command = new PlaceOrder(customerId, shippingAddress, billingAddress);
         
         var customer = new CustomerSnapshotReadModel
         {

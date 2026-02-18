@@ -149,6 +149,61 @@ CookieCommerce uses a transactional outbox for reliable integration event publis
 
 ---
 
+## 🔗 Cross-Domain Integration
+
+CookieCommerce domains are designed to be loosely coupled, with clear integration patterns for cross-domain data access.
+
+### Service-to-Service Communication
+
+**HTTP Client Integration (Read-Side Only)**
+
+When one domain needs to read data from another domain, it uses HTTP clients with Aspire service discovery:
+
+```csharp
+// In Infrastructure layer DependencyInjection
+services.AddHttpClient<ICustomerService, CustomerService>(client =>
+{
+    client.BaseAddress = new Uri("http://customerdomainapi");
+});
+```
+
+**Key Principles:**
+- Use service name-based URLs (e.g., `http://customerdomainapi`) for Aspire service discovery
+- Implement graceful failure handling (return null/throw domain exception)
+- Cache sparingly—prefer fresh data from source
+- Use dedicated service interfaces (e.g., `ICustomerService`) in Application layer
+
+**Example: Order → Customer Integration**
+
+The Order domain validates customer existence when placing an order:
+
+1. `PlaceOrderHandler` calls `ICustomerService.GetCustomerByIdAsync()`
+2. If customer not found → throws `CustomerNotFoundException`
+3. If customer found → creates `CustomerSnapshot` with masked/non-PII data
+4. Snapshot stored in `OrderPlaced` event and projected to `OrderDetailsReadModel`
+
+**Customer Snapshot Pattern:**
+- Store only essential, non-PII customer data with orders
+- Email addresses are masked (e.g., `j***@example.com`)
+- Names are denormalized but not considered sensitive in this context
+- Snapshots captured at event time, not queried live
+
+### Integration Events (Async, Future)
+
+For asynchronous cross-domain notifications, use MassTransit with the Outbox pattern:
+
+```csharp
+// Publish integration event
+await _publisher.Publish(new ProductDeactivatedIntegrationEvent(productId));
+```
+
+Integration events are used for:
+- Notifying other domains of state changes
+- Eventual consistency across bounded contexts
+- Avoiding tight coupling between domains
+
+---
+
 # 📚 Resources
 - Marten: https://martendb.io
 - MediatR: https://github.com/jbogard/MediatR

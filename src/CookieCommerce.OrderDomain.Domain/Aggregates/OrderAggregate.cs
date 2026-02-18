@@ -44,7 +44,7 @@ public class OrderAggregate : AggregateBase
         });
     }
 
-    public void AddOrderLine(Guid productId, int quantity, decimal unitPrice)
+    public void AddOrderLine(Guid productId, ProductSnapshot productSnapshot, int quantity, decimal unitPrice)
     {
         if (Status != OrderStatus.Pending)
             throw new CannotModifyNonPendingOrderException(Id, Status.ToString());
@@ -52,7 +52,7 @@ public class OrderAggregate : AggregateBase
         if (_orderLines.Any(ol => ol.ProductId == productId))
             throw new DuplicateOrderLineException(Id, productId);
 
-        var orderLine = new OrderLine(productId, quantity, unitPrice);
+        var orderLine = new OrderLine(productId, productSnapshot, quantity, unitPrice);
 
         Apply(new OrderLineAdded
         {

@@ -140,15 +140,17 @@ public class OrderAggregateTests
         var orderId = Guid.CreateVersion7();
         var customerId = Guid.CreateVersion7();
         var productId = Guid.CreateVersion7();
+        var productSnapshot = new ProductSnapshot(productId, "Test Product", 10.00m);
 
         order.PlaceOrder(orderId, customerId);
 
         // Act
-        order.AddOrderLine(productId, 2, 10.00m);
+        order.AddOrderLine(productId, productSnapshot, 2, 10.00m);
 
         // Assert
         order.OrderLines.Should().HaveCount(1);
         order.OrderLines.First().ProductId.Should().Be(productId);
+        order.OrderLines.First().ProductSnapshot.ProductName.Should().Be("Test Product");
         order.OrderLines.First().Quantity.Should().Be(2);
         order.OrderLines.First().UnitPrice.Should().Be(10.00m);
         order.SubTotal.Should().Be(20.00m);
@@ -167,7 +169,8 @@ public class OrderAggregateTests
         order.PlaceOrder(orderId, customerId);
 
         // Act
-        order.AddOrderLine(productId, 2, 10.00m);
+        var productSnapshot_productId = new ProductSnapshot(productId, "Test Product", 10.00m);
+        order.AddOrderLine(productId, productSnapshot_productId, 2, 10.00m);
 
         // Assert
         order.DomainEvents.Should().HaveCount(2); // OrderPlaced + OrderLineAdded
@@ -187,11 +190,14 @@ public class OrderAggregateTests
         var productId = Guid.CreateVersion7();
 
         order.PlaceOrder(orderId, customerId);
-        order.AddOrderLine(productId, 1, 10.00m);
+        var productSnapshot_productId = new ProductSnapshot(productId, "Test Product", 10.00m);
+        order.AddOrderLine(productId, productSnapshot_productId, 1, 10.00m);
         order.Confirm();
 
         // Act
-        Action act = () => order.AddOrderLine(Guid.CreateVersion7(), 1, 5.00m);
+        var newProductId = Guid.CreateVersion7();
+        var newProductSnapshot = new ProductSnapshot(newProductId, "Another Product", 5.00m);
+        Action act = () => order.AddOrderLine(newProductId, newProductSnapshot, 1, 5.00m);
 
         // Assert
         act.Should().Throw<CannotModifyNonPendingOrderException>()
@@ -206,12 +212,13 @@ public class OrderAggregateTests
         var orderId = Guid.CreateVersion7();
         var customerId = Guid.CreateVersion7();
         var productId = Guid.CreateVersion7();
+        var productSnapshot = new ProductSnapshot(productId, "Test Product", 10.00m);
 
         order.PlaceOrder(orderId, customerId);
-        order.AddOrderLine(productId, 1, 10.00m);
+        order.AddOrderLine(productId, productSnapshot, 1, 10.00m);
 
         // Act
-        Action act = () => order.AddOrderLine(productId, 2, 10.00m);
+        Action act = () => order.AddOrderLine(productId, productSnapshot, 2, 10.00m);
 
         // Assert
         act.Should().Throw<DuplicateOrderLineException>()
@@ -228,7 +235,8 @@ public class OrderAggregateTests
         var productId = Guid.CreateVersion7();
 
         order.PlaceOrder(orderId, customerId);
-        order.AddOrderLine(productId, 2, 10.00m);
+        var productSnapshot_productId = new ProductSnapshot(productId, "Test Product", 10.00m);
+        order.AddOrderLine(productId, productSnapshot_productId, 2, 10.00m);
 
         // Act
         order.RemoveOrderLine(productId);
@@ -249,7 +257,8 @@ public class OrderAggregateTests
         var productId = Guid.CreateVersion7();
 
         order.PlaceOrder(orderId, customerId);
-        order.AddOrderLine(productId, 1, 10.00m);
+        var productSnapshot_productId = new ProductSnapshot(productId, "Test Product", 10.00m);
+        order.AddOrderLine(productId, productSnapshot_productId, 1, 10.00m);
         order.Confirm();
 
         // Act
@@ -288,7 +297,8 @@ public class OrderAggregateTests
         var productId = Guid.CreateVersion7();
 
         order.PlaceOrder(orderId, customerId);
-        order.AddOrderLine(productId, 1, 10.00m);
+        var productSnapshot_productId = new ProductSnapshot(productId, "Test Product", 10.00m);
+        order.AddOrderLine(productId, productSnapshot_productId, 1, 10.00m);
 
         // Act
         order.Confirm();
@@ -309,7 +319,8 @@ public class OrderAggregateTests
         var productId = Guid.CreateVersion7();
 
         order.PlaceOrder(orderId, customerId);
-        order.AddOrderLine(productId, 1, 10.00m);
+        var productSnapshot_productId = new ProductSnapshot(productId, "Test Product", 10.00m);
+        order.AddOrderLine(productId, productSnapshot_productId, 1, 10.00m);
 
         // Act
         order.Confirm();
@@ -442,7 +453,8 @@ public class OrderAggregateTests
         var productId = Guid.CreateVersion7();
 
         order.PlaceOrder(orderId, customerId);
-        order.AddOrderLine(productId, 1, 10.00m);
+        var productSnapshot_productId = new ProductSnapshot(productId, "Test Product", 10.00m);
+        order.AddOrderLine(productId, productSnapshot_productId, 1, 10.00m);
         order.Confirm();
 
         // Act
@@ -463,7 +475,8 @@ public class OrderAggregateTests
         var productId = Guid.CreateVersion7();
 
         order.PlaceOrder(orderId, customerId);
-        order.AddOrderLine(productId, 1, 10.00m);
+        var productSnapshot_productId = new ProductSnapshot(productId, "Test Product", 10.00m);
+        order.AddOrderLine(productId, productSnapshot_productId, 1, 10.00m);
         order.Confirm();
 
         // Act
@@ -595,7 +608,8 @@ public class OrderAggregateTests
 
         // Act
         order.PlaceOrder(orderId, customerId);
-        order.AddOrderLine(productId, 1, 10.00m);
+        var productSnapshot_productId = new ProductSnapshot(productId, "Test Product", 10.00m);
+        order.AddOrderLine(productId, productSnapshot_productId, 1, 10.00m);
         order.Confirm();
 
         // Assert
@@ -613,9 +627,16 @@ public class OrderAggregateTests
         order.PlaceOrder(orderId, customerId);
 
         // Act
-        order.AddOrderLine(Guid.CreateVersion7(), 2, 10.00m);  // 20.00
-        order.AddOrderLine(Guid.CreateVersion7(), 3, 5.00m);   // 15.00
-        order.AddOrderLine(Guid.CreateVersion7(), 1, 25.00m);  // 25.00
+        var product1Id = Guid.CreateVersion7();
+        var product2Id = Guid.CreateVersion7();
+        var product3Id = Guid.CreateVersion7();
+        var snapshot1 = new ProductSnapshot(product1Id, "Product 1", 10.00m);
+        var snapshot2 = new ProductSnapshot(product2Id, "Product 2", 5.00m);
+        var snapshot3 = new ProductSnapshot(product3Id, "Product 3", 25.00m);
+        
+        order.AddOrderLine(product1Id, snapshot1, 2, 10.00m);  // 20.00
+        order.AddOrderLine(product2Id, snapshot2, 3, 5.00m);   // 15.00
+        order.AddOrderLine(product3Id, snapshot3, 1, 25.00m);  // 25.00
         // SubTotal = 60.00, Tax = 6.00, Total = 66.00
 
         // Assert

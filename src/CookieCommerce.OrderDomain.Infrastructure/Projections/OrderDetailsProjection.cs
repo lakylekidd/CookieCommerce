@@ -44,6 +44,7 @@ public class OrderDetailsProjection : SingleStreamProjection<OrderDetailsReadMod
         var orderLine = new OrderLineReadModel
         {
             ProductId = @event.OrderLine.ProductId,
+            ProductName = @event.OrderLine.ProductSnapshot.ProductName,
             Quantity = @event.OrderLine.Quantity,
             PriceInfo = new PriceInfo
             {

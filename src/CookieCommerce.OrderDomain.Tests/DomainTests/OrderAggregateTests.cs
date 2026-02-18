@@ -30,6 +30,31 @@ public class OrderAggregateTests
     }
 
     [Fact]
+    public void PlaceOrder_WithCustomerSnapshot_ShouldEmitOrderPlacedEventWithSnapshot()
+    {
+        // Arrange
+        var order = new OrderAggregate();
+        var orderId = Guid.CreateVersion7();
+        var customerId = Guid.CreateVersion7();
+        var customerSnapshot = new CustomerSnapshot(customerId, "John Doe", "j***@example.com");
+
+        // Act
+        order.PlaceOrder(orderId, customerId, customerSnapshot);
+
+        // Assert
+        var events = order.DomainEvents;
+        var placedEvent = Assert.Single(events) as OrderPlaced;
+
+        placedEvent.Should().NotBeNull();
+        placedEvent!.OrderId.Should().Be(orderId);
+        placedEvent.CustomerId.Should().Be(customerId);
+        placedEvent.CustomerSnapshot.Should().NotBeNull();
+        placedEvent.CustomerSnapshot!.CustomerId.Should().Be(customerId);
+        placedEvent.CustomerSnapshot.CustomerName.Should().Be("John Doe");
+        placedEvent.CustomerSnapshot.MaskedEmail.Should().Be("j***@example.com");
+    }
+
+    [Fact]
     public void PlaceOrder_ShouldInitializeOrder_WithPendingStatus()
     {
         // Arrange
@@ -46,6 +71,26 @@ public class OrderAggregateTests
         order.Status.Should().Be(OrderStatus.Pending);
         order.OrderLines.Should().BeEmpty();
         order.Total.Should().Be(0);
+    }
+
+    [Fact]
+    public void PlaceOrder_WithCustomerSnapshot_ShouldStoreSnapshot()
+    {
+        // Arrange
+        var order = new OrderAggregate();
+        var orderId = Guid.CreateVersion7();
+        var customerId = Guid.CreateVersion7();
+        var customerSnapshot = new CustomerSnapshot(customerId, "Jane Smith", "j***@example.com");
+
+        // Act
+        order.PlaceOrder(orderId, customerId, customerSnapshot);
+
+        // Assert
+        order.Id.Should().Be(orderId);
+        order.CustomerId.Should().Be(customerId);
+        order.CustomerSnapshot.Should().NotBeNull();
+        order.CustomerSnapshot!.CustomerName.Should().Be("Jane Smith");
+        order.CustomerSnapshot.MaskedEmail.Should().Be("j***@example.com");
     }
 
     [Fact]

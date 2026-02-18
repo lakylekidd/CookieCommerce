@@ -215,20 +215,20 @@ The Order domain maintains a local copy of customer data:
 
 **Example: Order → Product Catalog Integration**
 
-The Order domain fetches product details on-demand when adding products to orders:
+The Order domain maintains a local copy of product data via integration events:
 
-1. Client sends `AddOrderLine` command with `OrderId`, `ProductId`, and `Quantity`
-2. `AddOrderLineHandler` calls `IProductCatalogService.GetProductAsync(productId)`
-3. Service makes HTTP request to Product API: `GET /api/product/{productId}`
-4. Product name and price are returned and validated (must be active)
-5. `ProductSnapshot` is created with snapshotted data
-6. Order line is added to the order with the snapshot
+1. Product domain publishes `ProductSnapshotPublished` on create/update
+2. Order domain's `ProductSnapshotPublishedConsumer` receives event
+3. Consumer updates local `ProductSnapshotReadModel` in Order database
+4. `AddOrderLineHandler` queries local read model (no HTTP call needed)
+5. If product doesn't exist locally or is inactive → throws `ProductNotFoundException`
 
 **Product Snapshot Pattern:**
-- Product details (name, price) are fetched and snapshotted at order time
+- Product data replicated to Order domain via integration events
+- Product name and price are snapshotted at order time from local read model
 - Historical orders remain stable even if catalog prices change
-- Products must be active in the catalog to be added to orders
-- Follows the same snapshot pattern as CustomerSnapshot for consistency
+- Products must be active in local snapshot to be added to orders
+- Follows the same eventual consistency pattern as Customer integration
 
 **Future Considerations:**
 > **Note:** In a future PBI, product variants and SKUs will be added. The order line will reference the product variant (not just the product ID).

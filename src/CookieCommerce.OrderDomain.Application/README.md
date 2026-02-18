@@ -13,11 +13,21 @@ The Order Domain Application layer provides the use cases for managing orders th
 
 ### Product Catalog Integration
 
-The Order domain integrates with the Product/Catalog domain to snapshot product information at order time:
-- **IProductCatalogService**: Interface for fetching product details from Catalog
-- **Product Snapshot**: When adding products to orders, name and price are fetched and stored as a snapshot
+The Order domain integrates with the Product/Catalog domain using **eventual consistency** via integration events:
+- **ProductSnapshotPublished**: Integration event consumed from Product domain
+- **ProductSnapshotReadModel**: Local read model maintained via integration events
+- **Product Snapshot**: When adding products to orders, name and price are read from local snapshot
 - **Historical Stability**: Snapshotted product data ensures orders remain stable even if catalog prices change
-- **Availability Validation**: Products must be active in the catalog to be added to orders
+- **Availability Validation**: Products must be active in the local catalog snapshot to be added to orders
+
+**Integration Flow:**
+1. Product domain publishes `ProductSnapshotPublished` events when products are created/updated
+2. Order domain's `ProductSnapshotPublishedConsumer` receives events
+3. Consumer updates local `ProductSnapshotReadModel` in Order database
+4. `AddOrderLineHandler` queries local read model (no HTTP call needed)
+5. If product doesn't exist locally or is inactive → throws `ProductNotFoundException`
+
+This pattern provides eventual consistency without synchronous HTTP calls, following the same approach as Customer integration.
 
 ## Architecture
 
@@ -26,8 +36,7 @@ This layer follows **CQRS** (Command Query Responsibility Segregation) and **Ver
 - **Commands**: Write operations that mutate state
 - **Queries**: Read operations (to be implemented)
 - **Handlers**: Single-responsibility classes that process commands/queries
-- **Services**: External service integrations (e.g., Product Catalog)
-- **Integration**: Events published to other bounded contexts (future)
+- **Integration**: Events consumed from other bounded contexts for eventual consistency
 
 ## Commands
 
@@ -61,7 +70,7 @@ var orderId = await mediator.Send(command);
 ### AddOrderLine
 
 Adds a product line item to a pending order.
-Product details (name and price) are automatically fetched from the Catalog service and snapshotted at the time of adding.
+Product details (name and price) are automatically read from the local product snapshot read model maintained via integration events.
 
 ```csharp
 public record AddOrderLine(
@@ -72,25 +81,27 @@ public record AddOrderLine(
 
 **Parameters:**
 - `OrderId`: The ID of the order to modify
-- `ProductId`: The ID of the product to add (fetched from Catalog)
+- `ProductId`: The ID of the product to add (must exist in local snapshot)
 - `Quantity`: Number of units
 
-**Product Snapshot:**
-- Product name and price are automatically fetched from the Product/Catalog service
-- Creates a snapshot of product details at order time
-- Validates product availability (IsActive check)
+**Product Snapshot via Integration Events:**
+- Product snapshots are maintained locally via `ProductSnapshotPublished` integration events
+- Order domain consumes events when products are created/updated in Product domain
+- Creates a snapshot of product details at order time using local read model
+- Validates product availability (IsActive check) from local snapshot
 - Historical orders remain stable even if catalog prices change
+- **Eventual consistency**: Product data may be slightly stale until next event is consumed
 
 **Business Rules:**
 - Order must exist
 - Order must be in `Pending` status
-- Product must exist in catalog and be active
+- Product must exist in local snapshot and be active
 - Product cannot already exist in the order (use quantity adjustment instead)
 - Quantity must be greater than 0
 
 **Throws:**
 - `OrderNotFoundException`: If the order doesn't exist
-- `ProductNotFoundException`: If the product doesn't exist or is not active
+- `ProductNotFoundException`: If the product doesn't exist locally or is not active
 - `CannotModifyNonPendingOrderException`: If order is not pending
 - `DuplicateOrderLineException`: If product already in order
 

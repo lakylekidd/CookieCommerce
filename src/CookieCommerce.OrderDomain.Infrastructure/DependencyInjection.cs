@@ -1,6 +1,4 @@
-using CookieCommerce.OrderDomain.Application.Services;
 using CookieCommerce.OrderDomain.Infrastructure.Consumers;
-using CookieCommerce.OrderDomain.Infrastructure.Services;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,19 +9,15 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Register product catalog service with named HTTP client
-        services.AddHttpClient<IProductCatalogService, ProductCatalogService>(client =>
-        {
-            // Aspire service discovery will resolve "product-api" to the correct URL
-            client.BaseAddress = new Uri("http://product-api");
-        });
-
         // Register MassTransit consumers for integration events
         services.AddMassTransit(x =>
         {
             // Register consumers for customer integration events
             x.AddConsumer<CustomerSnapshotPublishedConsumer>();
             x.AddConsumer<CustomerDeletedConsumer>();
+            
+            // Register consumers for product integration events
+            x.AddConsumer<ProductSnapshotPublishedConsumer>();
             
             x.SetKebabCaseEndpointNameFormatter();
 

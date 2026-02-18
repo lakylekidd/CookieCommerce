@@ -151,56 +151,87 @@ CookieCommerce uses a transactional outbox for reliable integration event publis
 
 ## 🔗 Cross-Domain Integration
 
-CookieCommerce domains are designed to be loosely coupled, with clear integration patterns for cross-domain data access.
+CookieCommerce domains are designed to be loosely coupled using **event-driven eventual consistency**.
 
-### Service-to-Service Communication
+### Event-Driven Integration (Recommended)
 
-**HTTP Client Integration (Read-Side Only)**
+Domains communicate asynchronously through integration events via MassTransit + RabbitMQ:
 
-When one domain needs to read data from another domain, it uses HTTP clients with Aspire service discovery:
-
+**Publishing Integration Events:**
 ```csharp
-// In Infrastructure layer DependencyInjection
-services.AddHttpClient<ICustomerService, CustomerService>(client =>
+// In Customer domain (CreateCustomerHandler)
+await publisher.PublishAsync(new CustomerSnapshotPublished
 {
-    client.BaseAddress = new Uri("http://customerdomainapi");
-});
+    CustomerId = customerId,
+    FirstName = request.FirstName,
+    LastName = request.LastName,
+    Email = request.Email
+}, cancellationToken);
+```
+
+**Consuming Integration Events:**
+```csharp
+// In Order domain
+public class CustomerSnapshotPublishedConsumer(IDocumentSession session) 
+    : IConsumer<CustomerSnapshotPublished>
+{
+    public async Task Consume(ConsumeContext<CustomerSnapshotPublished> context)
+    {
+        var snapshot = new CustomerSnapshotReadModel 
+        { 
+            Id = context.Message.CustomerId,
+            FirstName = context.Message.FirstName,
+            // ... populate fields
+        };
+        
+        session.Store(snapshot);
+        await session.SaveChangesAsync();
+    }
+}
 ```
 
 **Key Principles:**
-- Use service name-based URLs (e.g., `http://customerdomainapi`) for Aspire service discovery
-- Implement graceful failure handling (return null/throw domain exception)
-- Cache sparingly—prefer fresh data from source
-- Use dedicated service interfaces (e.g., `ICustomerService`) in Application layer
+- **Eventual Consistency**: Read models are updated asynchronously via events
+- **No Runtime Dependencies**: Services don't make synchronous HTTP calls to each other
+- **Local Read Models**: Each domain maintains its own denormalized views
+- **Fault Tolerance**: Services work independently even if others are down
+- **MassTransit**: Handles reliable message delivery with retries
 
 **Example: Order → Customer Integration**
 
-The Order domain validates customer existence when placing an order:
+The Order domain maintains a local copy of customer data:
 
-1. `PlaceOrderHandler` calls `ICustomerService.GetCustomerByIdAsync()`
-2. If customer not found → throws `CustomerNotFoundException`
-3. If customer found → creates `CustomerSnapshot` with masked/non-PII data
-4. Snapshot stored in `OrderPlaced` event and projected to `OrderDetailsReadModel`
+1. Customer domain publishes `CustomerSnapshotPublished` on create/update
+2. Order domain's `CustomerSnapshotPublishedConsumer` receives event
+3. Consumer updates local `CustomerSnapshotReadModel` in Order database
+4. `PlaceOrderHandler` queries local read model (no HTTP call needed)
+5. If customer doesn't exist locally → throws `CustomerNotFoundException`
 
 **Customer Snapshot Pattern:**
-- Store only essential, non-PII customer data with orders
-- Email addresses are masked (e.g., `j***@example.com`)
-- Names are denormalized but not considered sensitive in this context
-- Snapshots captured at event time, not queried live
+- Customer data replicated to Order domain via integration events
+- Email addresses are masked when stored in orders (e.g., `j***@example.com`)
+- Names are denormalized for order context
+- Snapshots captured at event time, providing temporal consistency
 
-### Integration Events (Async, Future)
+### Integration Events (Async, via RabbitMQ)
 
-For asynchronous cross-domain notifications, use MassTransit with the Outbox pattern:
+For cross-domain notifications, domains publish integration events:
 
 ```csharp
-// Publish integration event
-await _publisher.Publish(new ProductDeactivatedIntegrationEvent(productId));
+// Customer domain events
+- CustomerSnapshotPublished (on create/update)
+- CustomerDeletedIntegrationEvent (on forget/delete)
+
+// Product domain events  
+- ProductSnapshotPublished (on create/update)
+- ProductDeactivatedIntegrationEvent (on deactivation)
 ```
 
 Integration events are used for:
-- Notifying other domains of state changes
-- Eventual consistency across bounded contexts
+- Replicating data across bounded contexts
+- Achieving eventual consistency
 - Avoiding tight coupling between domains
+- Building resilient distributed systems
 
 ---
 

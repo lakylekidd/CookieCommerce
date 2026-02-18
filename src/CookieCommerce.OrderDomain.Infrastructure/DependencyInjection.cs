@@ -1,6 +1,4 @@
-using CookieCommerce.OrderDomain.Application.Customers;
 using CookieCommerce.OrderDomain.Infrastructure.Consumers;
-using CookieCommerce.OrderDomain.Infrastructure.Customers;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

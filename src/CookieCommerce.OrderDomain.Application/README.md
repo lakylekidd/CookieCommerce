@@ -11,6 +11,14 @@ The Order Domain Application layer provides the use cases for managing orders th
 - Processing payments
 - Cancelling or rejecting orders
 
+### Product Catalog Integration
+
+The Order domain integrates with the Product/Catalog domain to snapshot product information at order time:
+- **IProductCatalogService**: Interface for fetching product details from Catalog
+- **Product Snapshot**: When adding products to orders, name and price are fetched and stored as a snapshot
+- **Historical Stability**: Snapshotted product data ensures orders remain stable even if catalog prices change
+- **Availability Validation**: Products must be active in the catalog to be added to orders
+
 ## Architecture
 
 This layer follows **CQRS** (Command Query Responsibility Segregation) and **Vertical Slice Architecture**:
@@ -18,6 +26,7 @@ This layer follows **CQRS** (Command Query Responsibility Segregation) and **Ver
 - **Commands**: Write operations that mutate state
 - **Queries**: Read operations (to be implemented)
 - **Handlers**: Single-responsibility classes that process commands/queries
+- **Services**: External service integrations (e.g., Product Catalog)
 - **Integration**: Events published to other bounded contexts (future)
 
 ## Commands
@@ -52,38 +61,47 @@ var orderId = await mediator.Send(command);
 ### AddOrderLine
 
 Adds a product line item to a pending order.
+Product details (name and price) are automatically fetched from the Catalog service and snapshotted at the time of adding.
 
 ```csharp
 public record AddOrderLine(
     Guid OrderId,
     Guid ProductId,
-    int Quantity,
-    decimal UnitPrice) : IRequest;
+    int Quantity) : IRequest;
 ```
 
 **Parameters:**
 - `OrderId`: The ID of the order to modify
-- `ProductId`: The ID of the product to add
+- `ProductId`: The ID of the product to add (fetched from Catalog)
 - `Quantity`: Number of units
-- `UnitPrice`: Price per unit at time of ordering
+
+**Product Snapshot:**
+- Product name and price are automatically fetched from the Product/Catalog service
+- Creates a snapshot of product details at order time
+- Validates product availability (IsActive check)
+- Historical orders remain stable even if catalog prices change
 
 **Business Rules:**
 - Order must exist
 - Order must be in `Pending` status
+- Product must exist in catalog and be active
 - Product cannot already exist in the order (use quantity adjustment instead)
 - Quantity must be greater than 0
-- Unit price must be greater than 0
 
 **Throws:**
 - `OrderNotFoundException`: If the order doesn't exist
+- `ProductNotFoundException`: If the product doesn't exist or is not active
 - `CannotModifyNonPendingOrderException`: If order is not pending
 - `DuplicateOrderLineException`: If product already in order
 
 **Usage:**
 ```csharp
-var command = new AddOrderLine(orderId, productId, quantity: 2, unitPrice: 10.50m);
+var command = new AddOrderLine(orderId, productId, quantity: 2);
 await mediator.Send(command);
 ```
+
+**Future Considerations:**
+> **Note:** In a future PBI, product variants and SKUs will be added. The order line will reference the product variant (not just the product). Keep this in mind when working with product data in orders.
 
 ---
 

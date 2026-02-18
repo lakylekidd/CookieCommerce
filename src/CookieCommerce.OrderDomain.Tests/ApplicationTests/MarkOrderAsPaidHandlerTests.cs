@@ -27,10 +27,11 @@ public class MarkOrderAsPaidHandlerTests
         var orderId = Guid.CreateVersion7();
         var customerId = Guid.CreateVersion7();
         var productId = Guid.CreateVersion7();
+        var productSnapshot = new ProductSnapshot(productId, "Test Product", 10.00m);
         
         var order = new OrderAggregate();
         order.PlaceOrder(orderId, customerId);
-        order.AddOrderLine(productId, 1, 10m);
+        order.AddOrderLine(productId, productSnapshot, 1, 10m);
         order.Confirm();
 
         _session.Events.AggregateStreamAsync<OrderAggregate>(orderId, token: Arg.Any<CancellationToken>())

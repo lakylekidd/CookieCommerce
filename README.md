@@ -213,6 +213,26 @@ The Order domain maintains a local copy of customer data:
 - Names are denormalized for order context
 - Snapshots captured at event time, providing temporal consistency
 
+**Example: Order → Product Catalog Integration**
+
+The Order domain fetches product details on-demand when adding products to orders:
+
+1. Client sends `AddOrderLine` command with `OrderId`, `ProductId`, and `Quantity`
+2. `AddOrderLineHandler` calls `IProductCatalogService.GetProductAsync(productId)`
+3. Service makes HTTP request to Product API: `GET /api/product/{productId}`
+4. Product name and price are returned and validated (must be active)
+5. `ProductSnapshot` is created with snapshotted data
+6. Order line is added to the order with the snapshot
+
+**Product Snapshot Pattern:**
+- Product details (name, price) are fetched and snapshotted at order time
+- Historical orders remain stable even if catalog prices change
+- Products must be active in the catalog to be added to orders
+- Follows the same snapshot pattern as CustomerSnapshot for consistency
+
+**Future Considerations:**
+> **Note:** In a future PBI, product variants and SKUs will be added. The order line will reference the product variant (not just the product ID).
+
 ### Integration Events (Async, via RabbitMQ)
 
 For cross-domain notifications, domains publish integration events:

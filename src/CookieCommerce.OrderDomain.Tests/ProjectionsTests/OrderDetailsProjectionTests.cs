@@ -52,7 +52,8 @@ public class OrderDetailsProjectionTests
         // Arrange
         var orderId = Guid.NewGuid();
         var productId = Guid.NewGuid();
-        var orderLine = new OrderLine(productId, quantity: 2, unitPrice: 10.00m);
+        var productSnapshot = new ProductSnapshot(productId, "Test Product", 10.00m);
+        var orderLine = new OrderLine(productId, productSnapshot, quantity: 2, unitPrice: 10.00m);
         
         var current = new OrderDetailsReadModel
         {
@@ -103,7 +104,9 @@ public class OrderDetailsProjectionTests
             Total = 11.00m
         };
 
-        var orderLine = new OrderLine(Guid.NewGuid(), quantity: 3, unitPrice: 5.00m);
+        var productId = Guid.NewGuid();
+        var productSnapshot = new ProductSnapshot(productId, "Test Product", 5.00m);
+        var orderLine = new OrderLine(productId, productSnapshot, quantity: 3, unitPrice: 5.00m);
         var orderLineAdded = new OrderLineAdded
         {
             OrderId = orderId,

@@ -28,18 +28,41 @@ The `OrderAggregate` is the central entity that enforces all business rules and 
 ### Value Objects
 
 #### OrderLine
-Represents a single product line item in an order. This is an immutable value object.
+Represents a single product line item in an order with snapshotted product information. This is an immutable value object.
 
 **Properties:**
-- `ProductId` (Guid) - Reference to the product
+- `ProductId` (Guid) - Reference to the product in the catalog
+- `ProductSnapshot` (ProductSnapshot) - Snapshotted product details (name, price) at order time
 - `Quantity` (int) - Number of units ordered
 - `UnitPrice` (decimal) - Price per unit at time of order
 - `LineTotal` (decimal) - Calculated total (Quantity × UnitPrice)
 
+**Product Snapshot Pattern:**
+- Product name and price are captured when the line is added
+- Historical orders remain stable even if catalog prices change
+- Follows the same pattern as CustomerSnapshot for consistency
+
 **Invariants:**
 - Quantity must be greater than 0
 - Unit price must be greater than 0
+- ProductSnapshot must not be null
 - All properties are immutable (init-only)
+
+**Future Considerations:**
+> **Note:** In a future PBI, product variants and SKUs will be added. The order line will reference the product variant (not just the product ID). Keep this in mind when working with product data.
+
+#### ProductSnapshot
+Represents a snapshot of product information at the time of order placement.
+
+**Properties:**
+- `ProductId` (Guid) - Product identifier
+- `ProductName` (string) - Product name at order time
+- `Price` (decimal) - Product price at order time
+
+**Purpose:**
+- Ensures historical orders remain accurate even if catalog prices change
+- Provides context for order line items without requiring catalog lookups
+- Will be extended to support product variants in the future
 
 #### OrderStatus (Enum)
 Defines the possible states of an order:

@@ -570,10 +570,12 @@ public class OrderAggregateTests
         var customerId = Guid.CreateVersion7();
         var productId1 = Guid.CreateVersion7();
         var productId2 = Guid.CreateVersion7();
+        var productSnapshot1 = new ProductSnapshot(productId1, "Product 1", 10.00m);
+        var productSnapshot2 = new ProductSnapshot(productId2, "Product 2", 15.00m);
 
         originalOrder.PlaceOrder(orderId, customerId);
-        originalOrder.AddOrderLine(productId1, 2, 10.00m);
-        originalOrder.AddOrderLine(productId2, 1, 15.00m);
+        originalOrder.AddOrderLine(productId1, productSnapshot1, 2, 10.00m);
+        originalOrder.AddOrderLine(productId2, productSnapshot2, 1, 15.00m);
         originalOrder.Confirm();
         originalOrder.MarkAsPaid();
 

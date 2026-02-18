@@ -1,5 +1,6 @@
 using CookieCommerce.OrderDomain.Application.Orders.Commands;
 using CookieCommerce.OrderDomain.Application.Orders.Handlers;
+using CookieCommerce.OrderDomain.Application.Services;
 using CookieCommerce.OrderDomain.Domain.Aggregates;
 using CookieCommerce.OrderDomain.Domain.Exceptions;
 using CookieCommerce.OrderDomain.Domain.ValueObjects;
@@ -12,12 +13,14 @@ namespace CookieCommerce.OrderDomain.Tests.ApplicationTests;
 public class AddOrderLineHandlerTests
 {
     private readonly IDocumentSession _session;
+    private readonly IProductCatalogService _productCatalogService;
     private readonly AddOrderLineHandler _handler;
 
     public AddOrderLineHandlerTests()
     {
         _session = Substitute.For<IDocumentSession>();
-        _handler = new AddOrderLineHandler(_session);
+        _productCatalogService = Substitute.For<IProductCatalogService>();
+        _handler = new AddOrderLineHandler(_session, _productCatalogService);
     }
 
     [Fact]
@@ -27,14 +30,18 @@ public class AddOrderLineHandlerTests
         var orderId = Guid.CreateVersion7();
         var productId = Guid.CreateVersion7();
         var customerId = Guid.CreateVersion7();
+        var productSnapshot = new ProductSnapshot(productId, "Test Product", 10.50m);
         
         var order = new OrderAggregate();
         order.PlaceOrder(orderId, customerId);
 
         _session.Events.AggregateStreamAsync<OrderAggregate>(orderId, token: Arg.Any<CancellationToken>())
             .Returns(order);
+        
+        _productCatalogService.GetProductAsync(productId, Arg.Any<CancellationToken>())
+            .Returns(productSnapshot);
 
-        var command = new AddOrderLine(orderId, productId, 2, 10.50m);
+        var command = new AddOrderLine(orderId, productId, 2);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -54,11 +61,15 @@ public class AddOrderLineHandlerTests
         // Arrange
         var orderId = Guid.CreateVersion7();
         var productId = Guid.CreateVersion7();
+        var productSnapshot = new ProductSnapshot(productId, "Test Product", 10.50m);
         
         _session.Events.AggregateStreamAsync<OrderAggregate>(orderId, token: Arg.Any<CancellationToken>())
             .Returns((OrderAggregate?)null);
+        
+        _productCatalogService.GetProductAsync(productId, Arg.Any<CancellationToken>())
+            .Returns(productSnapshot);
 
-        var command = new AddOrderLine(orderId, productId, 2, 10.50m);
+        var command = new AddOrderLine(orderId, productId, 2);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<OrderNotFoundException>(() =>

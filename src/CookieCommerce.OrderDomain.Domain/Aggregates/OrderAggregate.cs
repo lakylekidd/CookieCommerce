@@ -13,6 +13,9 @@ public class OrderAggregate : AggregateBase
     public IReadOnlyCollection<OrderLine> OrderLines => _orderLines.AsReadOnly();
 
     public Guid CustomerId { get; private set; }
+    public CustomerSnapshot? CustomerSnapshot { get; private set; }
+    public OrderAddress? ShippingAddress { get; private set; }
+    public OrderAddress? BillingAddress { get; private set; }
     public OrderStatus Status { get; private set; }
     public decimal SubTotal { get; private set; }
     public decimal TaxAmount { get; private set; }
@@ -25,7 +28,7 @@ public class OrderAggregate : AggregateBase
 
     public OrderAggregate() { }
 
-    public void PlaceOrder(Guid orderId, Guid customerId)
+    public void PlaceOrder(Guid orderId, Guid customerId, CustomerSnapshot? customerSnapshot = null, OrderAddress? shippingAddress = null, OrderAddress? billingAddress = null)
     {
         if (customerId == Guid.Empty)
             throw new ArgumentException("Customer ID is required.", nameof(customerId));
@@ -34,6 +37,9 @@ public class OrderAggregate : AggregateBase
         {
             OrderId = orderId,
             CustomerId = customerId,
+            CustomerSnapshot = customerSnapshot,
+            ShippingAddress = shippingAddress,
+            BillingAddress = billingAddress,
             PlacedAtUtc = DateTime.UtcNow
         });
     }
@@ -181,6 +187,9 @@ public class OrderAggregate : AggregateBase
     {
         Id = e.OrderId;
         CustomerId = e.CustomerId;
+        CustomerSnapshot = e.CustomerSnapshot;
+        ShippingAddress = e.ShippingAddress;
+        BillingAddress = e.BillingAddress;
         Status = OrderStatus.Pending;
         PlacedAtUtc = e.PlacedAtUtc;
     }

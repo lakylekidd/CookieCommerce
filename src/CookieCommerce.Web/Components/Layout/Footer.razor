@@ -2,18 +2,49 @@
     <div class="container mx-auto px-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
             <div class="space-y-6">
-                <div class="flex items-center gap-3">
-                    <img alt="Tiger van Cookie Logo" class="w-10 h-10 rounded-full border border-amber-200 dark:border-amber-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWBb8G1o1pdGGJ6-BuhBX4wx2csShn0KrE7ab87Dh62dSCejrkpZRQ1ldQg7B9YaCKO1EH1kIS3ru2673JNLL4YQobk6a5bElcjcCcjSkeHgioJuLrUirF55zIUtp2mbcBbKLb22pM-QZpgFxcGVaRHIH6PGkFW4FXQVlOX5lS3qg-tJkw4tc4CVFT13kO-tacpuTEb69AwApKkFWU-7xqkogbm0sUwgFm6gd5Z-bQudrAer5vny7T_6j1U-j0tBDyC8DZeTeRLA" />
-                    <span class="font-display font-bold text-xl tracking-tight">Tiger van Cookie</span>
+                <div class="flex items-center gap-3">                    
+                   <CookieCommerce.Web.Components.Layout._Logo />
                 </div>
                 <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
                     Spreading joy one chunky cookie at a time. Baked with love and a little bit of wild spirit in every bite.
                 </p>
-                <div class="flex gap-4">
-                    <a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="material-icons-round">facebook</span></a>
-                    <a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="material-icons-round">smart_display</span></a>
-                    <a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="material-icons-round">alternate_email</span></a>
+
+                <!-- Our Socials -->
+                <div class="flex gap-6">
+                    <a class="group relative flex flex-col items-center text-gray-400 hover:text-primary transition-colors"
+                       href="https://www.facebook.com/tigervancookie">
+                        <span class="material-icons-round">facebook</span>
+                        <span class="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100 whitespace-nowrap">
+                            Facebook
+                        </span>
+                    </a>
+
+                    <a class="group relative flex flex-col items-center text-gray-400 hover:text-primary transition-colors"
+                       href="https://www.instagram.com/tigervancookie">
+                        <span class="material-icons-round">photo_camera</span>
+                        <span class="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100 whitespace-nowrap">
+                            Instagram
+                        </span>
+                    </a>
+
+                    <a class="group relative flex flex-col items-center text-gray-400 hover:text-primary transition-colors"
+                       href="#">
+                        <span class="material-icons-round">smart_display</span>
+                        <span class="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100 whitespace-nowrap">
+                            YouTube
+                        </span>
+                    </a>
+
+                    <a class="group relative flex flex-col items-center text-gray-400 hover:text-primary transition-colors"
+                       href="mailto:info@tigervancookie.nl">
+                        <span class="material-icons-round">alternate_email</span>
+                        <span class="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100 whitespace-nowrap">
+                            Email
+                        </span>
+                    </a>
                 </div>
+                <!-- Our Socials -->
+
             </div>
             <div>
                 <h4 class="font-display font-bold text-lg mb-6">Shop</h4>

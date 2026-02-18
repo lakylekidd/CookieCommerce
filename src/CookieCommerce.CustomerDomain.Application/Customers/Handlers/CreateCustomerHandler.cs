@@ -1,6 +1,8 @@
 ﻿using CookieCommerce.CustomerDomain.Application.Customers.Commands;
+using CookieCommerce.CustomerDomain.Application.Customers.Integration;
 using CookieCommerce.CustomerDomain.Application.Security;
 using CookieCommerce.CustomerDomain.Domain.Aggregates;
+using CookieCommerce.DomainBuildingBlocks;
 using Marten;
 using MediatR;
 
@@ -9,7 +11,8 @@ namespace CookieCommerce.CustomerDomain.Application.Customers.Handlers;
 public class CreateCustomerHandler(
     IDocumentSession session, 
     ICustomerKeyStore keyStore, 
-    IEncryptionService encryptionService) : IRequestHandler<CreateCustomer, Guid>
+    IEncryptionService encryptionService,
+    IIntegrationEventPublisher publisher) : IRequestHandler<CreateCustomer, Guid>
 {
     public async Task<Guid> Handle(CreateCustomer request, CancellationToken cancellationToken)
     {
@@ -30,6 +33,16 @@ public class CreateCustomerHandler(
 
         session.Events.StartStream<CustomerAggregate>(customerId, customer.DomainEvents);
         await session.SaveChangesAsync(cancellationToken);
+
+        // Publish integration event for other domains to consume
+        await publisher.PublishAsync(new CustomerSnapshotPublished
+        {
+            CustomerId = customerId,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Email = request.Email,
+            DateOfBirth = request.DateOfBirth
+        }, cancellationToken);
 
         return customerId;
     }

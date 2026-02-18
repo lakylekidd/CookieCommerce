@@ -1,4 +1,5 @@
 using CookieCommerce.OrderDomain.Application.Customers;
+using CookieCommerce.OrderDomain.Application.Customers.ReadModels;
 using CookieCommerce.OrderDomain.Application.Orders.Commands;
 using CookieCommerce.OrderDomain.Domain.Aggregates;
 using CookieCommerce.OrderDomain.Domain.Exceptions;
@@ -10,16 +11,14 @@ namespace CookieCommerce.OrderDomain.Application.Orders.Handlers;
 
 /// <summary>
 /// Handler for placing a new order.
-/// Validates that the customer exists before creating the order.
+/// Validates that the customer exists in local read model (eventual consistency).
 /// </summary>
-public class PlaceOrderHandler(
-    IDocumentSession session, 
-    ICustomerService customerService) : IRequestHandler<PlaceOrder, Guid>
+public class PlaceOrderHandler(IDocumentSession session) : IRequestHandler<PlaceOrder, Guid>
 {
     public async Task<Guid> Handle(PlaceOrder request, CancellationToken cancellationToken)
     {
-        // Validate customer exists
-        var customer = await customerService.GetCustomerByIdAsync(request.CustomerId, cancellationToken);
+        // Check if customer exists in local read model (replicated via integration events)
+        var customer = await session.LoadAsync<CustomerSnapshotReadModel>(request.CustomerId, cancellationToken);
         if (customer == null)
             throw new CustomerNotFoundException(request.CustomerId);
 

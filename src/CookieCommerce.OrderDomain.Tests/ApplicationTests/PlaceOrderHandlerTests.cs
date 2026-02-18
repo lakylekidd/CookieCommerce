@@ -1,4 +1,4 @@
-using CookieCommerce.OrderDomain.Application.Customers;
+using CookieCommerce.OrderDomain.Application.Customers.ReadModels;
 using CookieCommerce.OrderDomain.Application.Orders.Commands;
 using CookieCommerce.OrderDomain.Application.Orders.Handlers;
 using CookieCommerce.OrderDomain.Domain.Aggregates;
@@ -12,14 +12,12 @@ namespace CookieCommerce.OrderDomain.Tests.ApplicationTests;
 public class PlaceOrderHandlerTests
 {
     private readonly IDocumentSession _session;
-    private readonly ICustomerService _customerService;
     private readonly PlaceOrderHandler _handler;
 
     public PlaceOrderHandlerTests()
     {
         _session = Substitute.For<IDocumentSession>();
-        _customerService = Substitute.For<ICustomerService>();
-        _handler = new PlaceOrderHandler(_session, _customerService);
+        _handler = new PlaceOrderHandler(_session);
     }
 
     [Fact]
@@ -29,14 +27,15 @@ public class PlaceOrderHandlerTests
         var customerId = Guid.CreateVersion7();
         var command = new PlaceOrder(customerId);
         
-        var customer = new CustomerDto
+        var customer = new CustomerSnapshotReadModel
         {
             Id = customerId,
             Email = "john.doe@example.com",
             FirstName = "John",
-            LastName = "Doe"
+            LastName = "Doe",
+            LastUpdated = DateTime.UtcNow
         };
-        _customerService.GetCustomerByIdAsync(customerId, Arg.Any<CancellationToken>())
+        _session.LoadAsync<CustomerSnapshotReadModel>(customerId, Arg.Any<CancellationToken>())
             .Returns(customer);
 
         // Act
@@ -45,7 +44,7 @@ public class PlaceOrderHandlerTests
         // Assert
         orderId.Should().NotBeEmpty();
         await _session.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
-        await _customerService.Received(1).GetCustomerByIdAsync(customerId, Arg.Any<CancellationToken>());
+        await _session.Received(1).LoadAsync<CustomerSnapshotReadModel>(customerId, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -55,8 +54,8 @@ public class PlaceOrderHandlerTests
         var customerId = Guid.CreateVersion7();
         var command = new PlaceOrder(customerId);
         
-        _customerService.GetCustomerByIdAsync(customerId, Arg.Any<CancellationToken>())
-            .Returns((CustomerDto?)null);
+        _session.LoadAsync<CustomerSnapshotReadModel>(customerId, Arg.Any<CancellationToken>())
+            .Returns((CustomerSnapshotReadModel?)null);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<CustomerNotFoundException>(() =>
@@ -67,15 +66,15 @@ public class PlaceOrderHandlerTests
     }
 
     [Fact]
-    public async Task Handle_CustomerServiceUnavailable_ThrowsCustomerNotFoundException()
+    public async Task Handle_CustomerNotYetReplicated_ThrowsCustomerNotFoundException()
     {
         // Arrange
         var customerId = Guid.CreateVersion7();
         var command = new PlaceOrder(customerId);
         
-        // Service returns null when unavailable
-        _customerService.GetCustomerByIdAsync(customerId, Arg.Any<CancellationToken>())
-            .Returns((CustomerDto?)null);
+        // Customer hasn't been replicated yet (eventual consistency gap)
+        _session.LoadAsync<CustomerSnapshotReadModel>(customerId, Arg.Any<CancellationToken>())
+            .Returns((CustomerSnapshotReadModel?)null);
 
         // Act & Assert
         await Assert.ThrowsAsync<CustomerNotFoundException>(() =>
@@ -88,14 +87,15 @@ public class PlaceOrderHandlerTests
         // Arrange
         var command = new PlaceOrder(Guid.Empty);
         
-        var customer = new CustomerDto
+        var customer = new CustomerSnapshotReadModel
         {
             Id = Guid.Empty,
             Email = "test@example.com",
             FirstName = "Test",
-            LastName = "User"
+            LastName = "User",
+            LastUpdated = DateTime.UtcNow
         };
-        _customerService.GetCustomerByIdAsync(Guid.Empty, Arg.Any<CancellationToken>())
+        _session.LoadAsync<CustomerSnapshotReadModel>(Guid.Empty, Arg.Any<CancellationToken>())
             .Returns(customer);
 
         // Act & Assert
@@ -110,21 +110,22 @@ public class PlaceOrderHandlerTests
         var customerId = Guid.CreateVersion7();
         var command = new PlaceOrder(customerId);
         
-        var customer = new CustomerDto
+        var customer = new CustomerSnapshotReadModel
         {
             Id = customerId,
             Email = "jane.smith@example.com",
             FirstName = "Jane",
-            LastName = "Smith"
+            LastName = "Smith",
+            LastUpdated = DateTime.UtcNow
         };
-        _customerService.GetCustomerByIdAsync(customerId, Arg.Any<CancellationToken>())
+        _session.LoadAsync<CustomerSnapshotReadModel>(customerId, Arg.Any<CancellationToken>())
             .Returns(customer);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
-        // Assert - verify customer service was called
-        await _customerService.Received(1).GetCustomerByIdAsync(customerId, Arg.Any<CancellationToken>());
+        // Assert - verify customer snapshot was loaded from local read model
+        await _session.Received(1).LoadAsync<CustomerSnapshotReadModel>(customerId, Arg.Any<CancellationToken>());
         
         // Verify StartStream was called with customer snapshot
         _session.Events.Received(1).StartStream<OrderAggregate>(

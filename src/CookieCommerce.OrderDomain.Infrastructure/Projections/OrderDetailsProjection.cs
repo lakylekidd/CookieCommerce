@@ -21,6 +21,8 @@ public class OrderDetailsProjection : SingleStreamProjection<OrderDetailsReadMod
         {
             Id = @event.OrderId,
             CustomerId = @event.CustomerId,
+            CustomerName = @event.CustomerSnapshot?.CustomerName,
+            CustomerMaskedEmail = @event.CustomerSnapshot?.MaskedEmail,
             Status = OrderStatus.Pending,
             PlacedAtUtc = @event.PlacedAtUtc,
             OrderLines = new List<OrderLineReadModel>(),

@@ -6,6 +6,8 @@ public class OrderDetailsReadModel
 {
     public Guid Id { get; set; }
     public Guid CustomerId { get; set; }
+    public string? CustomerName { get; set; }
+    public string? CustomerMaskedEmail { get; set; }
     public OrderStatus Status { get; set; }
     public List<OrderLineReadModel> OrderLines { get; set; } = new();
     public decimal SubTotal { get; set; }

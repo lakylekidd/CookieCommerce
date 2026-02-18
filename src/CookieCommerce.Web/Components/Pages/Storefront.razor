@@ -1,0 +1,245 @@
+﻿@page "/storefront"
+@layout Layout.MainLayout
+
+<PageTitle>Storefront - Tiger van Cookie</PageTitle>
+
+<nav class="sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-amber-100 dark:border-amber-900/30">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <a class="flex items-center gap-3 group" href="#">
+            <div class="w-10 h-10 flex items-center justify-center rounded-full bg-primary border-2 border-primary group-hover:rotate-12 transition-transform duration-300 overflow-hidden">
+                <span class="material-icons-round text-white text-2xl">pets</span>
+            </div>
+            <span class="font-display font-bold text-2xl text-primary tracking-tight">Tiger van Cookie</span>
+        </a>
+        <div class="hidden md:flex items-center gap-8 font-semibold">
+            <a class="hover:text-primary transition-colors" href="#">Shop Cookies</a>
+            <a class="hover:text-primary transition-colors" href="#">Our Story</a>
+            <a class="hover:text-primary transition-colors" href="#">Locations</a>
+        </div>
+        <div class="flex items-center gap-4">
+            <button aria-label="Toggle Dark Mode" class="p-2 rounded-full hover:bg-amber-100 dark:hover:bg-white/10 transition-colors" onclick="document.documentElement.classList.toggle('dark')">
+                <span class="material-icons-round text-xl block dark:hidden">dark_mode</span>
+                <span class="material-icons-round text-xl hidden dark:block">light_mode</span>
+            </button>
+            <a aria-label="Cart" class="relative p-2 rounded-full hover:bg-amber-100 dark:hover:bg-white/10 transition-colors" href="#">
+                <span class="material-icons-round text-xl">shopping_bag</span>
+                <span class="absolute top-1 right-0 bg-primary text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full">3</span>
+            </a>
+            <a class="hidden md:block bg-primary hover:bg-amber-700 text-white px-5 py-2 rounded-full font-bold transition-transform active:scale-95 shadow-lg shadow-amber-500/30" href="#">
+                Sign In
+            </a>
+        </div>
+    </div>
+</nav>
+
+<header class="relative overflow-hidden pt-12 pb-24 lg:pt-20 lg:pb-32">
+    <div class="absolute inset-0 pattern-bg pointer-events-none"></div>
+    <div class="container mx-auto px-6 relative z-10">
+        <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+            <div class="lg:w-1/2 text-center lg:text-left">
+                <span class="inline-block py-1 px-3 rounded-full bg-amber-100 dark:bg-amber-900/40 text-primary font-bold text-sm mb-6 tracking-wide uppercase">Freshly Baked Every Morning</span>
+                <h1 class="font-display font-bold text-5xl lg:text-7xl mb-6 leading-[1.1]">
+                    Roar with <br />
+                    <span class="text-primary">Delightful Flavor</span>
+                </h1>
+                <p class="text-lg lg:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+                    Handcrafted, chunky, gooey cookies baked with premium Belgian chocolate and a touch of wild spirit. Get your paws on them today.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                    <a class="w-full sm:w-auto px-8 py-4 bg-primary text-white rounded-full font-bold text-lg hover:shadow-lg hover:shadow-primary/40 transition-all hover:-translate-y-1" href="#featured">
+                        Order Now
+                    </a>
+                    <a class="w-full sm:w-auto px-8 py-4 bg-surface-light dark:bg-surface-dark border-2 border-amber-100 dark:border-amber-800 rounded-full font-bold text-lg hover:border-primary text-text-light dark:text-text-dark transition-colors flex items-center justify-center gap-2" href="#">
+                        <span class="material-icons-round text-primary">play_circle</span>
+                        Watch Baking
+                    </a>
+                </div>
+                <div class="mt-10 flex items-center justify-center lg:justify-start gap-6 opacity-80">
+                    <div class="flex -space-x-3">
+                        <img alt="Customer" class="w-10 h-10 rounded-full border-2 border-white dark:border-background-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmFvN9ue-qiTSQsWDXrxWeVS88MndQlErF1sV2HdoFQQjKzeU7JjuSdYKluEBVjggwICjnjak13QTcNkdds3zAwl_Mgwr1dHiBukgHNDkX8zC6YEqDomoA_8nALuJahSiFWZ40OURy53F98Vt4NimCJupA8FFaYkuL0JKvnjYT8jKgwi09FNYKi0JQ39e6_uvPKkYUy6IFBXWlCX9kZCLHKXE_Wx2orZrCQ_9ROW-VmUDobEbyLGjjbEaxmKB5Q3xsAkv6UR_6cA" />
+                        <img alt="Customer" class="w-10 h-10 rounded-full border-2 border-white dark:border-background-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB9uUxu-B8A9KuNSRgCGQzLicdBnYe1dE3sAn8nHUmQYGvZeQk2C1Z0EJj_Qa8o_NvZCVTktungpn9GxpIBhlBKX43wTBLXH918oSGngtZBh9BgMhBLY2gYMURr-8Z9Vzi8yAlFDFDXcn1czNu3kjkfmBc4tbSIyyPncwQN8D64jruWnnQaMbZNKMf1cEoiYAAfI_ED7G0NiuBDNs5VT9vL9WIyS6dzY9xyngI_FHtWElw8nyEcyJfUV7fA1OCokLFXLMwIl4Gkg" />
+                        <img alt="Customer" class="w-10 h-10 rounded-full border-2 border-white dark:border-background-dark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOW0BrAhfuXJxYTTP7SoOS7oZoMuhOpal0wRQBS61Ue9WhP7oNR7Zu6KqkzbAo7TKFoKe1R-K1Jzyjmab0k8FcveCaNX2JCurHTucDqHb_J1i_61yKpLUQrY5_W4962zLPvKKljg3hIWqyvjSJKDQLuZo9e5EkUZHPMb-5YUvIKd6EIjezxHgN386RQGgOjHFZXaLld-qBX8rPeQGZRRmp3J0QTyOdz5S2ucZVUtHwG-IraBHc_ttboghywcyYyYSPbDwbDWA-9A" />
+                    </div>
+                    <div class="text-sm font-semibold">
+                        <span class="text-primary">5,000+</span> Happy Tigers
+                    </div>
+                </div>
+            </div>
+            <div class="lg:w-1/2 relative">
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-amber-200/50 to-orange-100/30 dark:from-primary/20 dark:to-transparent rounded-full blur-3xl -z-10"></div>
+                <div class="relative floating">
+                    <img alt="Giant Chocolate Chip Cookie Stack" class="w-full h-auto rounded-3xl shadow-2xl rotate-3 transform hover:rotate-0 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAClYDcfzF8RkGpoxGiEPGs_yB2_wxhuAkZQJbkYy2nfV8lspbymSWuMam4IAZX6LWfpLJQXejMTTep4m_e01OLN8XHIFSJBpXtZH4LCoaX-olS5d2RheuLZlIkh4t7sII9WplfYn45q2HyyZKMB9YgGGxmOzx2usigZyyivASTZ6w4pvPSHYtMxzmI4P2xeQl9w6fdN3fTdhM0lMfHP2PCfa_hPggoLqzPOZ85jhj8vv182zOA19GQ-rvqdpF6-2h2e-bvMyfJbg" />
+                    <div class="absolute -bottom-6 -left-6 bg-surface-light dark:bg-surface-dark p-4 rounded-2xl shadow-xl flex items-center gap-3 max-w-xs">
+                        <div class="bg-green-100 dark:bg-green-900/30 p-2 rounded-full text-green-600 dark:text-green-400">
+                            <span class="material-icons-round">eco</span>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">100% Organic</p>
+                            <p class="font-display font-bold text-sm">Locally Sourced Ingredients</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section class="py-20 bg-white dark:bg-surface-dark/50 rounded-t-[3rem] relative" id="featured">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-16">
+            <h2 class="font-display font-bold text-4xl mb-4">Tiger's Favorites</h2>
+            <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Our most roared-about flavors, baked fresh daily just for you.</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="group bg-surface-light dark:bg-surface-dark rounded-2xl p-4 cookie-shadow hover:-translate-y-2 transition-transform duration-300 flex flex-col h-full border border-transparent dark:border-amber-900/50">
+                <div class="relative aspect-square rounded-xl overflow-hidden mb-4 bg-amber-50 dark:bg-black/20">
+                    <img alt="Classic Chocolate Chunk Cookie" class="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeiqI9Umndonm4v80T6b-moERbzC1sTOw7Bkt2035Se6-qfrM2_DMYQQGNpX1q9ZXtCy4qnGBvK2ey2XDPfbCHUE5FlKo4g4qB1toFZlprrm0A4IxtLRGOpqWct-oqOHHFI_HoAeaDf6QXlhJo9ycpxhZ5EqjBcZBfXJGSCIHnPLSEWD6jz9J61WJCH9fPdC2d0sLrGnu0DKvFpXQYnSj5ke_4eG8wKYO_VYMXos8oKzwU2ztEV-PWsIX7qLV2ck1t6YoLjS5B2w" />
+                    <div class="absolute top-3 right-3 bg-white dark:bg-black/60 backdrop-blur text-xs font-bold px-2 py-1 rounded-md shadow-sm">
+                        Best Seller
+                    </div>
+                </div>
+                <div class="flex-grow">
+                    <h3 class="font-display font-bold text-xl mb-1 group-hover:text-primary transition-colors">Chocolate Chunk</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">Loaded with 70% dark Belgian chocolate chunks and a gooey center.</p>
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <span class="font-display font-bold text-lg">$4.50</span>
+                    <button aria-label="Add to cart" class="bg-primary hover:bg-amber-700 text-white p-2 rounded-full transition-colors shadow-md shadow-primary/30">
+                        <span class="material-icons-round text-lg block">add</span>
+                    </button>
+                </div>
+            </div>
+            <div class="group bg-surface-light dark:bg-surface-dark rounded-2xl p-4 cookie-shadow hover:-translate-y-2 transition-transform duration-300 flex flex-col h-full border border-transparent dark:border-amber-900/50">
+                <div class="relative aspect-square rounded-xl overflow-hidden mb-4 bg-amber-50 dark:bg-black/20">
+                    <img alt="Tiger Stripe Cookie" class="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXTbkwJrJ9i2uSNY-6ivy7Id_ZXy61SfjAqYWdmIVkZBmr3Vm8wVqcI78dhf7Fv_1XB2rDlfsBsdvhAJjg6PNOu8dnBTGQ4fxgYagl_uIal69aByjCbq4htnJQdtACMFhc7KXD58W6C7w_94X2Iqmk1PfbwiUSwQu5NaRw2WlqaZ1Vw0z5pdl6SQHxkDRUWgUULNaSkBbV6OSqrfAVJP3vhLa1b9L9-66iRqgsQeYeJZGPUDMWhrNh84jNgxY76-dhg9DR1CLpHQ" />
+                </div>
+                <div class="flex-grow">
+                    <h3 class="font-display font-bold text-xl mb-1 group-hover:text-primary transition-colors">Tiger Stripe</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">A marbled masterpiece of dark cocoa and orange zest vanilla dough.</p>
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <span class="font-display font-bold text-lg">$4.75</span>
+                    <button aria-label="Add to cart" class="bg-primary hover:bg-amber-700 text-white p-2 rounded-full transition-colors shadow-md shadow-primary/30">
+                        <span class="material-icons-round text-lg block">add</span>
+                    </button>
+                </div>
+            </div>
+            <div class="group bg-surface-light dark:bg-surface-dark rounded-2xl p-4 cookie-shadow hover:-translate-y-2 transition-transform duration-300 flex flex-col h-full border border-transparent dark:border-amber-900/50">
+                <div class="relative aspect-square rounded-xl overflow-hidden mb-4 bg-amber-50 dark:bg-black/20">
+                    <img alt="Caramel Sea Salt Cookie" class="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkRv6e69KE5zmgQaikDjAem1lDQ9kqYGJeviSg-mdhcdMYZ2F4md9v_89Jebe4C3rhyVL80LCeyQBzcU2oxozfzqfo1NJK9pvFp0s2Msn2wYH0W0-LrCuenODLcoQmOh7UupEddumk4kyGUJV3fuZ0wB0sEHytq80lCMlSAwiCaJmH86MaowQUmWouVYWW_q_ZljLFPosq7o2EyQw_6RiDBW2OJCrIg8fkJRKGRLEeq2MTdcClgiH7TuGaAMu7iRBRD7aOXt50fg" />
+                </div>
+                <div class="flex-grow">
+                    <h3 class="font-display font-bold text-xl mb-1 group-hover:text-primary transition-colors">Caramel Sea Salt</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">Rich butterscotch dough with a molten caramel heart and sea salt flakes.</p>
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <span class="font-display font-bold text-lg">$4.50</span>
+                    <button aria-label="Add to cart" class="bg-primary hover:bg-amber-700 text-white p-2 rounded-full transition-colors shadow-md shadow-primary/30">
+                        <span class="material-icons-round text-lg block">add</span>
+                    </button>
+                </div>
+            </div>
+            <div class="group bg-surface-light dark:bg-surface-dark rounded-2xl p-4 cookie-shadow hover:-translate-y-2 transition-transform duration-300 flex flex-col h-full border border-transparent dark:border-amber-900/50">
+                <div class="relative aspect-square rounded-xl overflow-hidden mb-4 bg-amber-50 dark:bg-black/20">
+                    <img alt="Matcha White Chocolate Cookie" class="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1otY-IeURut3V7rXt8Wx3JsYP2JYHabwYcofJAN000-6XYjQK-ldkwp8RlBVB-hcZ05QjpB3OVGSeJvS36btsDg5DLjQQxJA6jIXEJAom1XWTs13VuOz5fcdlw4u1F-PJlWR_EUL8zkuykIAq2Y-S6Dk2px1fIUJ1Iz2R-9dauURifu8oEcilnb4TLGbJds7Q2-QViuolXWmJ6m6dUznDKJGuSNWO_X2Wh2QuJJRS-qrPmhTvleYkrYiKEQWfQdpnq5Vva_wcYA" />
+                    <div class="absolute top-3 right-3 bg-white dark:bg-black/60 backdrop-blur text-xs font-bold px-2 py-1 rounded-md shadow-sm">
+                        Limited
+                    </div>
+                </div>
+                <div class="flex-grow">
+                    <h3 class="font-display font-bold text-xl mb-1 group-hover:text-primary transition-colors">Matcha White Choc</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">Premium ceremonial matcha dough with sweet white chocolate chips.</p>
+                </div>
+                <div class="flex items-center justify-between mt-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <span class="font-display font-bold text-lg">$5.00</span>
+                    <button aria-label="Add to cart" class="bg-primary hover:bg-amber-700 text-white p-2 rounded-full transition-colors shadow-md shadow-primary/30">
+                        <span class="material-icons-round text-lg block">add</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="mt-16 text-center">
+            <a class="inline-flex items-center gap-2 font-bold text-primary hover:text-amber-800 dark:hover:text-amber-400 transition-colors border-b-2 border-transparent hover:border-current pb-1" href="#">
+                View All Flavors
+                <span class="material-icons-round text-lg">arrow_forward</span>
+            </a>
+        </div>
+    </div>
+</section>
+<section class="py-12 bg-primary">
+    <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-8 text-white">
+            <div class="flex items-center gap-6">
+                <img alt="Tiger Mascot" class="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-xl transform -rotate-12" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-_kAxzmO8Kcj29nTmME3GwWlGvtZWKXO1zCfvVkDtGKtRwhu4lay5gPf-4p3IvjTkjK3iYVmvTaUcAWFuNfQvnRr8-0vig-muSRiX6xkR7RTiVXQjzvwv1YTKOAEXMF7acDkj79EjY4oVFZIOatzuncvbDAUZ76_AY5qqrLXxNOh2CnOEFRN7bHAfDJfq_4Gn-W1jAMJ_oW627efblLVXeZngivSV3vQbVDD9ilkl1brOns1K_otnfKtvAOOGg12QqhTlQXz_7w" />
+                <div>
+                    <h3 class="font-display font-bold text-2xl md:text-3xl mb-2">Join the Tiger Club!</h3>
+                    <p class="text-amber-100 max-w-md">Get 20% off your first order and exclusive access to limited edition drops.</p>
+                </div>
+            </div>
+            <div class="w-full md:w-auto flex-shrink-0">
+                <form class="flex w-full md:w-96 bg-white rounded-full p-1 shadow-lg overflow-hidden">
+                    <input class="flex-grow bg-transparent border-none focus:ring-0 px-6 py-3 text-gray-800 placeholder-gray-400 rounded-full" placeholder="Enter your email..." type="email" />
+                    <button class="bg-[#2D2115] text-white px-6 py-2 rounded-full font-bold hover:bg-gray-800 transition-colors" type="button">
+                        Subscribe
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+<footer class="bg-surface-light dark:bg-surface-dark pt-16 pb-8 border-t border-amber-100 dark:border-amber-900/30">
+    <div class="container mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+            <div class="space-y-6">
+                <div class="flex items-center gap-3">
+                    <img alt="Tiger van Cookie Logo" class="w-10 h-10 rounded-full border border-amber-200 dark:border-amber-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWBb8G1o1pdGGJ6-BuhBX4wx2csShn0KrE7ab87Dh62dSCejrkpZRQ1ldQg7B9YaCKO1EH1kIS3ru2673JNLL4YQobk6a5bElcjcCcjSkeHgioJuLrUirF55zIUtp2mbcBbKLb22pM-QZpgFxcGVaRHIH6PGkFW4FXQVlOX5lS3qg-tJkw4tc4CVFT13kO-tacpuTEb69AwApKkFWU-7xqkogbm0sUwgFm6gd5Z-bQudrAer5vny7T_6j1U-j0tBDyC8DZeTeRLA" />
+                    <span class="font-display font-bold text-xl tracking-tight">Tiger van Cookie</span>
+                </div>
+                <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+                    Spreading joy one chunky cookie at a time. Baked with love and a little bit of wild spirit in every bite.
+                </p>
+                <div class="flex gap-4">
+                    <a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="material-icons-round">facebook</span></a>
+                    <a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="material-icons-round">smart_display</span></a>
+                    <a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="material-icons-round">alternate_email</span></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-display font-bold text-lg mb-6">Shop</h4>
+                <ul class="space-y-4 text-sm text-gray-600 dark:text-gray-300">
+                    <li><a class="hover:text-primary transition-colors" href="#">All Cookies</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="#">Gift Boxes</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="#">Merchandise</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="#">Catering</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-display font-bold text-lg mb-6">Support</h4>
+                <ul class="space-y-4 text-sm text-gray-600 dark:text-gray-300">
+                    <li><a class="hover:text-primary transition-colors" href="#">Contact Us</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="#">FAQs</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="#">Shipping &amp; Returns</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="#">Track Order</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-display font-bold text-lg mb-6">My Account</h4>
+                <ul class="space-y-4 text-sm text-gray-600 dark:text-gray-300">
+                    <li><a class="hover:text-primary transition-colors" href="#">Login / Register</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="#">My Cart</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="#">Order History</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="#">Tiger Rewards</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-amber-100 dark:border-amber-900/30 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-xs text-gray-400 text-center md:text-left">
+                © 2023 Tiger van Cookie. All rights reserved.
+            </p>
+            <div class="flex gap-6 text-xs text-gray-400">
+                <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+                <a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>

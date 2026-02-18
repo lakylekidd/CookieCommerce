@@ -1,7 +1,8 @@
 ﻿@inherits LayoutComponentBase
 
 <HeadContent>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <meta name="google-site-verification" content="qg_XKjLH1Q-HM5s9K4uKesiQHWIOwF9XdE7iOYomv64" />
     <meta name="google-adsense-account" content="ca-pub-2415952858841772">
 
@@ -14,15 +15,44 @@
 
         gtag('config', 'G-HNS116Q0G5');
     </script>
+    <!-- Google Tag -->
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <script>
+        tailwind = {
+            config: {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: "#D97706", // Amber-600 - Warm cookie brown/tiger orange
+                            secondary: "#FCD34D", // Amber-300 - lighter yellow/cream
+                            "background-light": "#FFFBEB", // Amber-50 - warm cream
+                            "background-dark": "#1F1508", // Very dark brown
+                            "surface-light": "#FFFFFF",
+                            "surface-dark": "#2D2115", // Dark brown surface
+                            "text-light": "#451a03", // Dark cookie brown
+                            "text-dark": "#FEF3C7", // Light cream text
+                        },
+                        fontFamily: {
+                            display: ["Fredoka", "sans-serif"],
+                            body: ["Nunito", "sans-serif"],
+                        },
+                        borderRadius: {
+                            DEFAULT: "1rem",
+                            'xl': "1.5rem",
+                            '2xl': "2rem",
+                            '3xl': "3rem",
+                        },
+                    },
+                },
+            }
+        };
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&amp;family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
 
-    <meta name="description" content="Get ready for the best homemade cookies in Amsterdam! Subscribe now to get an exclusive discount when our Amsterdam shop officially opens.">
-
-    <meta property="og:title" content="Tiget van Cookie is Coming Soon!">
-    <meta property="og:description" content="Fresh, handmade cookies are just around the corner. Sign up for early access!">
     <meta property="og:image" content="https://tigervancookie.nl/images/logo.png">
 
     <!-- Matomo -->
@@ -41,30 +71,6 @@
     </script>
     <!-- End Matomo Code -->
 
-
 </HeadContent>
 
-<div class="page">
-    <main class="main-content">
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-
-    <!-- Floating Cookies -->
-    <div class="cookie-background">
-        <span class="cookie"></span>
-        <span class="cookie"></span>
-        <span class="cookie"></span>
-        <span class="cookie"></span>
-        <span class="cookie"></span>
-        <span class="cookie"></span>
-        <span class="cookie"></span>
-    </div>
-</div>
-
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
-</div>
+@Body

@@ -1,4 +1,5 @@
 ﻿@code {
+    [Parameter] public Guid Id { get; set; }
     [Parameter] public bool IsFeatured { get; set; }
     [Parameter] public bool IsBestSeller { get; set; }
     [Parameter] public bool IsLimitedEdition { get; set; }
@@ -9,32 +10,35 @@
     [Parameter] public decimal Price { get; set; }
 }
 
+
 @if (IsFeatured)
 {
     <div class="group bg-surface-light dark:bg-surface-dark rounded-2xl p-4 cookie-shadow hover:-translate-y-2 transition-transform duration-300 flex flex-col h-full border border-transparent dark:border-amber-900/50">
-        <div class="relative aspect-square rounded-xl overflow-hidden mb-4 bg-amber-50 dark:bg-black/20">
-            <img alt="@CookieTitle"
-                 class="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
-                 src="@ImageUrl" />
-            <div class="absolute top-3 right-3 flex gap-2">
-                @if (IsBestSeller)
-                {
-                    <div class="bg-white dark:bg-black/60 backdrop-blur text-xs font-bold px-2 py-1 rounded-md shadow-sm">
-                        Best Seller
-                    </div>
-                }
-                @if (IsLimitedEdition)
-                {
-                    <div class="bg-white dark:bg-black/60 backdrop-blur text-xs font-bold px-2 py-1 rounded-md shadow-sm">
-                        Limited
-                    </div>
-                }
+        <a href="/shop/cookie/@Id">
+            <div class="relative aspect-square rounded-xl overflow-hidden mb-4 bg-amber-50 dark:bg-black/20">
+                <img alt="@CookieTitle"
+                     class="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
+                     src="@ImageUrl" />
+                <div class="absolute top-3 right-3 flex gap-2">
+                    @if (IsBestSeller)
+                    {
+                        <div class="bg-white dark:bg-black/60 backdrop-blur text-xs font-bold px-2 py-1 rounded-md shadow-sm">
+                            Best Seller
+                        </div>
+                    }
+                    @if (IsLimitedEdition)
+                    {
+                        <div class="bg-white dark:bg-black/60 backdrop-blur text-xs font-bold px-2 py-1 rounded-md shadow-sm">
+                            Limited
+                        </div>
+                    }
+                </div>
             </div>
-        </div>
-        <div class="flex-grow">
-            <h3 class="font-display font-bold text-xl mb-1 group-hover:text-primary transition-colors">@CookieTitle</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">@Description</p>
-        </div>
+            <div class="flex-grow">
+                <h3 class="font-display font-bold text-xl mb-1 group-hover:text-primary transition-colors">@CookieTitle</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">@Description</p>
+            </div>
+        </a>
         <div class="flex items-center justify-between mt-2 pt-4 border-t border-gray-100 dark:border-gray-700">
             <span class="font-display font-bold text-lg">@CurrencySymbol@Price.ToString("F2")</span>
             <button aria-label="Add to cart" class="bg-primary hover:bg-amber-700 text-white p-2 rounded-full transition-colors shadow-md shadow-primary/30">
@@ -67,32 +71,34 @@ else
         btnClassList += " bg-primary hover:bg-amber-700 text-white shadow-primary/20";
     }
     <div class="@standardClassList">
-        @if (IsLimitedEdition)
-        {
-            <div class="rare-find-sash">Rare Find</div>
-        }
-        <div class="relative aspect-square rounded-2xl overflow-hidden mb-6 bg-white/20">
-            <img alt="@CookieTitle"
-                 class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
-                 src="@ImageUrl" />
-            <div class="absolute top-3 left-3 flex gap-2">
-                @if (IsBestSeller)
-                {
-                    <div class="bg-white dark:bg-black/60 backdrop-blur text-xs font-bold px-2 py-1 rounded-md shadow-sm">
-                        Best Seller
-                    </div>
-                }
+        <a href="/shop/cookie/@Id">
+            @if (IsLimitedEdition)
+            {
+                <div class="rare-find-sash">Rare Find</div>
+            }
+            <div class="relative aspect-square rounded-2xl overflow-hidden mb-6 bg-white/20">
+                <img alt="@CookieTitle"
+                     class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
+                     src="@ImageUrl" />
+                <div class="absolute top-3 left-3 flex gap-2">
+                    @if (IsBestSeller)
+                    {
+                        <div class="bg-white dark:bg-black/60 backdrop-blur text-xs font-bold px-2 py-1 rounded-md shadow-sm">
+                            Best Seller
+                        </div>
+                    }
+                </div>
             </div>
-        </div>
-        <div class="flex-grow">
-            <div class="flex justify-between items-start mb-2">
-                <h3 class="@h3ClassList">@CookieTitle</h3>
-                <span class="@spanPriceClassList">@CurrencySymbol@Price.ToString("F2")</span>
+            <div class="flex-grow">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="@h3ClassList">@CookieTitle</h3>
+                    <span class="@spanPriceClassList">@CurrencySymbol@Price.ToString("F2")</span>
+                </div>
+                <p class="@pClassList">
+                    @Description
+                </p>
             </div>
-            <p class="@pClassList">
-                @Description
-            </p>
-        </div>
+        </a>
         <button class="@btnClassList">
             <span class="material-symbols-outlined">add_shopping_cart</span>
             Add to Cart

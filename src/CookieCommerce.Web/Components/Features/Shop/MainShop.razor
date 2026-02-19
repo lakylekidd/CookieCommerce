@@ -44,12 +44,14 @@
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         @foreach (var cookie in favoriteCookies)
         {
-            <CookieCommerce.Web.Components.Features.Products._CookieCard ImageUrl="@cookie.ImageUrl"
-                                                                         CookieTitle="@cookie.Title"
-                                                                         Description="@cookie.Description"
-                                                                         Price="@cookie.Price"
-                                                                         IsBestSeller="@cookie.IsBestSeller"
-                                                                         IsLimitedEdition="@cookie.IsLimitedEdition" />
+            <CookieCommerce.Web.Components.Features.Products._CookieCard 
+                Id="@cookie.Id"    
+                ImageUrl="@cookie.ImageUrl"
+                CookieTitle="@cookie.Title"
+                Description="@cookie.Description"
+                Price="@cookie.Price"
+                IsBestSeller="@cookie.IsBestSeller"
+                IsLimitedEdition="@cookie.IsLimitedEdition" />
         }
     </section>
 </main>

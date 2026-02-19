@@ -59,7 +59,7 @@
 </header>
 
 <!-- Featured Section -->
-<section class="py-20 bg-orange dark:bg-surface-dark/50 rounded-t-[3rem] relative" id="featured">
+<section class="py-20 bg-secondary dark:bg-surface-dark/50 rounded-t-[3rem] relative" id="featured">
     <div class="container mx-auto px-6">
         <div class="text-center mb-16">
             <h2 class="font-display font-bold text-4xl mb-4">Featured</h2>
@@ -69,6 +69,7 @@
             @foreach (var cookie in featuredCookies)
             {
                 <CookieCommerce.Web.Components.Features.Products._CookieCard 
+                    Id="@cookie.Id"    
                     ImageUrl="@cookie.ImageUrl"
                     CookieTitle="@cookie.Title"
                     Description="@cookie.Description"

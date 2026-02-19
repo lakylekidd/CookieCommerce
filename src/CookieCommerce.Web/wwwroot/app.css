@@ -6,10 +6,6 @@
     --my-color: #D97706;
 }
 
-.bg-orange {
-    background-color: #FCD34D;
-}
-
 .dark body {
     background-color: var(--color-bg-dark);
     color: var(--color-text-dark);

@@ -2,6 +2,10 @@
 
 /* CSS Variables */
 
+:root {
+    --my-color: #D97706;
+}
+
 .bg-orange {
     background-color: #FCD34D;
 }
@@ -69,6 +73,12 @@
 
 .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+nav a.active {
+    color: var(--my-color);
+    font-weight: 700;
+    border-bottom: 2px solid var(--my-color);
 }
 
 /* Animations */

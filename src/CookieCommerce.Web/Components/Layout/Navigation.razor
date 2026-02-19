@@ -5,11 +5,10 @@
         </a>
         <div class="hidden md:flex items-center gap-8 font-semibold">
             <!-- Navigate to Main Shop -->
-            <a class="hover:text-primary transition-colors" href="/storefront">Home</a>
-            <a class="hover:text-primary transition-colors" href="/shop">Shop Cookies</a>           
-            
-            <a class="hover:text-primary transition-colors" href="#">Our Story</a>
-            <a class="hover:text-primary transition-colors" href="#">Locations</a>
+            <NavLink class="hover:text-primary transition-colors" href="/storefront" Match="NavLinkMatch.All">Home</NavLink>
+            <NavLink class="hover:text-primary transition-colors" href="/shop" Match="NavLinkMatch.Prefix">Shop Cookies</NavLink>
+            <NavLink class="hover:text-primary transition-colors" href="/our-story" Match="NavLinkMatch.All">Our Story</NavLink>
+            <NavLink class="hover:text-primary transition-colors" href="/locations" Match="NavLinkMatch.All">Locations</NavLink>
         </div>
         <div class="flex items-center gap-4">
             <button aria-label="Toggle Dark Mode" class="p-2 rounded-full hover:bg-amber-100 dark:hover:bg-white/10 transition-colors" onclick="toggleDarkTheme()">

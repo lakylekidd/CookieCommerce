@@ -5,4 +5,5 @@ namespace CookieCommerce.Web.Services.Products;
 public interface ICookieService
 {
     Task<IReadOnlyList<FeaturedCookieDto>> GetFeaturedCookiesAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<FeaturedCookieDto>> GetFavoriteCookiesAsync(CancellationToken cancellationToken = default);
 }

@@ -45,36 +45,55 @@
 }
 else
 {
-    <div class="group bg-surface-light dark:bg-surface-dark rounded-3xl p-6 cookie-shadow transition-all duration-300 hover:-translate-y-2 border border-amber-50 dark:border-amber-900/20 relative overflow-hidden flex flex-col">
-        <div class="relative aspect-square rounded-2xl overflow-hidden mb-6 bg-amber-50 dark:bg-black/20">
+    var standardClassList = "cookie-shadow group rounded-3xl p-6 transition-all duration-300 hover:-translate-y-2 border relative overflow-hidden flex flex-col";
+    var h3ClassList = "font-display font-bold text-2xl";
+    var spanPriceClassList = "font-display font-bold text-xl";
+    var pClassList = "";
+    var btnClassList = "w-full py-4 font-bold rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg";
+
+    if (IsLimitedEdition)
+    {
+        standardClassList += " rare-card  bg-brand-orange  border-orange-400";
+        h3ClassList += " font-display font-bold text-2xl text-white";    
+        spanPriceClassList += " text-white";
+        pClassList += "text-orange-50 leading-relaxed mb-6 opacity-90";
+        btnClassList += " bg-white hover:bg-orange-50 text-brand-orange shadow-black/10";        
+    }
+    else
+    {
+        standardClassList += " bg-surface-light dark:bg-surface-dark border-amber-50 dark:border-amber-900/20";
+        h3ClassList += " group-hover:text-primary transition-colors";
+        pClassList += "text-gray-500 dark:text-gray-400 leading-relaxed mb-6";
+        btnClassList += " bg-primary hover:bg-amber-700 text-white shadow-primary/20";
+    }
+    <div class="@standardClassList">
+        @if (IsLimitedEdition)
+        {
+            <div class="rare-find-sash">Rare Find</div>
+        }
+        <div class="relative aspect-square rounded-2xl overflow-hidden mb-6 bg-white/20">
             <img alt="@CookieTitle"
-                 class="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
+                 class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
                  src="@ImageUrl" />
-            <div class="absolute top-3 right-3 flex gap-2">
+            <div class="absolute top-3 left-3 flex gap-2">
                 @if (IsBestSeller)
                 {
                     <div class="bg-white dark:bg-black/60 backdrop-blur text-xs font-bold px-2 py-1 rounded-md shadow-sm">
                         Best Seller
                     </div>
                 }
-                @if (IsLimitedEdition)
-                {
-                    <div class="bg-white dark:bg-black/60 backdrop-blur text-xs font-bold px-2 py-1 rounded-md shadow-sm">
-                        Limited
-                    </div>
-                }
             </div>
         </div>
         <div class="flex-grow">
             <div class="flex justify-between items-start mb-2">
-                <h3 class="font-display font-bold text-2xl group-hover:text-primary transition-colors">@CookieTitle</h3>
-                <span class="font-display font-bold text-xl">@CurrencySymbol@Price.ToString("F2")</span>
+                <h3 class="@h3ClassList">@CookieTitle</h3>
+                <span class="@spanPriceClassList">@CurrencySymbol@Price.ToString("F2")</span>
             </div>
-            <p class="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
+            <p class="@pClassList">
                 @Description
             </p>
         </div>
-        <button class="w-full bg-primary hover:bg-amber-700 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary/20">
+        <button class="@btnClassList">
             <span class="material-symbols-outlined">add_shopping_cart</span>
             Add to Cart
         </button>

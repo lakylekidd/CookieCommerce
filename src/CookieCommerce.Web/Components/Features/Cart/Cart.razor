@@ -1,0 +1,197 @@
+﻿@page "/shop/cart"
+@layout Layout.MainLayout
+@using CookieCommerce.Web.Models.Cart
+@using CookieCommerce.Web.Services
+@inject ICartService CartService
+
+@code {
+    // Change property to nullable to resolve CS8618
+    private CartDto? CurrentCart { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentCart = await CartService.GetCartAsync();
+    }
+}
+
+@if (CurrentCart == null)
+{
+    <p>Loading cart...</p>
+}
+else
+{
+    <main class="flex-grow container mx-auto px-6 py-12">
+        <div class="mb-10 text-center md:text-left">
+            <h1 class="font-display font-bold text-4xl mb-6 flex items-center gap-3 justify-center md:justify-start">
+                Your Cookie Jar
+                <span class="text-xl font-medium text-amber-900/40 dark:text-amber-100/40">(@CurrentCart.Items.Count() items)</span>
+            </h1>
+            <_FreeShippingMeter Cart="CurrentCart" />
+        </div>
+        <div class="bg-white dark:bg-surface-dark rounded-3xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-amber-50/50 dark:bg-black/20 text-left border-b border-amber-100 dark:border-amber-900/30">
+                            <th class="px-8 py-6 font-display font-bold text-lg">Product</th>
+                            <th class="px-8 py-6 font-display font-bold text-lg text-center">Price</th>
+                            <th class="px-8 py-6 font-display font-bold text-lg text-center">Quantity</th>
+                            <th class="px-8 py-6 font-display font-bold text-lg text-right">Total</th>
+                            <th class="px-8 py-6"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-amber-100/50 dark:divide-amber-900/20">
+                        @foreach(var item in CurrentCart.Items)
+                        {
+                            var trClass = item.IsLimitedEdition? "bg-orange-50/50 dark:bg-primary/5" : "";
+
+                            <tr class="@trClass">
+                                <td class="px-8 py-6">
+                                    <div class="flex items-center gap-6">
+                                        @if(item.IsLimitedEdition)
+                                        {
+                                            <div class="relative">
+                                                <img alt="@item.ProductName"
+                                                     class="w-20 h-20 rounded-xl object-cover"
+                                                     src="@item.ProductImageUrl" />
+                                                <span class="absolute -top-2 -left-2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                                                    Rare Find
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <h3 class="font-display font-bold text-lg">Matcha White Chocolate</h3>
+                                                <p class="text-sm text-primary font-semibold">Seasonal Limited Batch</p>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <img alt="@item.ProductName"
+                                                 class="w-20 h-20 rounded-xl object-cover"
+                                                 src="@item.ProductImageUrl" />
+                                            <div>
+                                                <h3 class="font-display font-bold text-lg">@item.ProductName</h3>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400">@item.ProductVariantName</p>
+                                            </div>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="px-8 py-6 text-center font-semibold">@item.CurrencySymbol@item.UnitPrice.ToString("F2")</td>
+                                <td class="px-8 py-6">
+                                    <div class="flex items-center justify-center">
+                                        <div class="inline-flex items-center bg-amber-50 dark:bg-black/20 rounded-full p-1 border border-amber-100 dark:border-amber-900/30">
+                                            <button @onclick="() => CartService.UpdateQuantityAsync(item.CartItemId, item.Quantity - 1)" class="w-8 h-8 flex items-center justify-center hover:bg-white dark:hover:bg-amber-900/50 rounded-full transition-colors">
+                                                <span class="material-icons-round text-sm">remove</span>
+                                            </button>
+                                            <span class="w-10 text-center font-bold">@item.Quantity</span>
+                                            <button @onclick="() => CartService.UpdateQuantityAsync(item.CartItemId, item.Quantity + 1)" class="w-8 h-8 flex items-center justify-center hover:bg-white dark:hover:bg-amber-900/50 rounded-full transition-colors">
+                                                <span class="material-icons-round text-sm">add</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-6 text-right font-display font-bold text-lg">@item.CurrencySymbol@item.TotalPrice.ToString("F2")</td>
+                                <td class="px-8 py-6 text-right">
+                                    <button @onclick="() => CartService.RemoveItemAsync(item.CartItemId)" class="text-gray-400 hover:text-red-500 transition-colors">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Join The Tiger Club -->
+                <div class="bg-amber-50/60 dark:bg-amber-900/10 border-2 border-dashed border-amber-200 dark:border-amber-900/40 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center gap-6">
+                        <div class="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/20 flex-shrink-0">
+                            <span class="material-symbols-outlined text-white text-3xl md:text-4xl"
+                                  style="font-variation-settings: 'FILL' 1">sell</span>
+                        </div>
+                        <div>
+                            <h2 class="font-display font-bold text-xl md:text-2xl text-text-light dark:text-text-dark">
+                                Join the Tiger Club
+                            </h2>
+                            <p class="text-gray-600 dark:text-gray-400 font-medium">
+                                First timers get 20% off! <a class="text-primary underline hover:text-amber-700 decoration-2 underline-offset-2"
+                                                             href="#">Login or sign up</a>
+                            </p>
+                        </div>
+                    </div>
+                    <a class="px-8 py-3 rounded-full border-2 border-primary text-primary font-bold hover:bg-primary hover:text-white transition-all bg-white dark:bg-surface-dark whitespace-nowrap"
+                       href="#">
+                        Claim Discount
+                    </a>
+                </div>
+                <!-- Join The Tiger Club -->
+
+                <!-- Add A Note -->
+                <div class="bg-white dark:bg-surface-dark p-8 rounded-3xl border border-amber-100 dark:border-amber-900/30">
+                    <h4 class="font-display font-bold text-xl mb-4">Add a Note</h4>
+                    <textarea class="w-full bg-amber-50/50 dark:bg-black/20 border-amber-100 dark:border-amber-900/30 rounded-2xl focus:ring-primary focus:border-primary p-6 text-sm min-h-[120px]"
+                          placeholder="Gift message or delivery instructions..." rows="4"></textarea>
+                    <p class="text-xs text-gray-400 mt-4 italic">
+                        Is this a gift? Add your personalized message here and
+                        we'll handwrite it on a Tiger card!
+                    </p>
+                </div>
+                <!-- Add A Note -->
+                
+                <!-- Continue Shopping -->
+                <div class="px-2">
+                    <a class="inline-flex items-center gap-2 text-primary font-bold hover:underline transition-all"
+                       href="#">
+                        <span class="material-icons-round text-sm">arrow_back</span>
+                        Continue Shopping
+                    </a>
+                </div>
+                <!-- Continue Shopping -->
+
+            </div>
+            <div class="lg:col-span-1 lg:sticky lg:top-28">
+                <div class="bg-white dark:bg-surface-dark p-8 rounded-3xl border border-amber-100 dark:border-amber-900/30 cookie-shadow">
+                    <h3 class="font-display font-bold text-2xl mb-6 pb-6 border-b border-amber-100 dark:border-amber-900/30">
+                        Order Summary
+                    </h3>
+                    <div class="space-y-4 mb-8">
+                        <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                            <span>Subtotal</span>
+                            <span class="font-bold text-text-light dark:text-text-dark">@CurrentCart.CurrencySymbol@CurrentCart.SubTotalPrice.ToString("F2")</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                            <span>Shipping</span>
+                            <span class="font-bold text-text-light dark:text-text-dark">@CurrentCart.CurrencySymbol@CurrentCart.Shipping.ToString("F2")</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                            <span>Tax</span>
+                            <span class="font-bold text-text-light dark:text-text-dark">@CurrentCart.CurrencySymbol@CurrentCart.Tax.ToString("F2")</span>
+                        </div>
+                        <div class="pt-4 border-t border-amber-100 dark:border-amber-900/30 flex justify-between items-center">
+                            <span class="font-display font-bold text-xl">Total</span>
+                            <span class="font-display font-bold text-3xl text-primary">@CurrentCart.CurrencySymbol@CurrentCart.TotalPrice.ToString("F2")</span>
+                        </div>
+                    </div>
+                    <a class="block w-full bg-primary hover:bg-amber-700 text-white text-center py-5 rounded-2xl font-bold text-xl transition-all shadow-xl shadow-primary/30 hover:-translate-y-1 active:scale-95 mb-6"
+                       href="#">
+                        Proceed to Checkout
+                    </a>
+                    <div class="pt-6 border-t border-amber-100/50 dark:border-amber-900/30">
+                        <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                            <span class="material-symbols-outlined text-xl text-primary">local_shipping</span>
+                            <span class="text-sm">
+                                Estimated arrival: <span class="font-bold text-gray-700 dark:text-gray-200">Oct 24 - Oct 26</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex items-center justify-center gap-4 text-gray-400">
+                        <span class="material-symbols-outlined text-sm">lock</span>
+                        <span class="text-xs font-semibold uppercase tracking-widest">Secure Checkout</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+}

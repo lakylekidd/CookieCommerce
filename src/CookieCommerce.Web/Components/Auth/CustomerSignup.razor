@@ -1,0 +1,124 @@
+﻿@page "/auth/signup"
+@layout Layout.MainLayout
+@using CookieCommerce.Web.Components.Layout
+
+<PageTitle>Sign Up - Tiger van Cookie</PageTitle>
+
+<main class="flex-grow relative flex items-center justify-center py-12 px-6 overflow-hidden">
+    <div class="absolute inset-0 pattern-bg pointer-events-none"></div>
+    <div class="absolute top-20 left-10 opacity-20 -rotate-12 hidden lg:block">
+        <span class="material-symbols-outlined text-8xl text-primary">cookie</span>
+    </div>
+    <div class="absolute bottom-20 right-10 opacity-20 rotate-12 hidden lg:block">
+        <span class="material-symbols-outlined text-9xl text-primary">bakery_dining</span>
+    </div>
+    <div class="w-full max-w-2xl relative">
+        <div class="absolute -top-16 -right-8 w-32 h-32 md:w-40 md:h-40 z-20 drop-shadow-2xl">
+            <img alt="Baby Tiger Mascot eating cookie" class="w-full h-full object-contain"
+                 src="/images/logo.png" />
+        </div>
+        <div class="bg-white dark:bg-surface-dark p-8 md:p-12 rounded-3xl cookie-shadow border border-amber-50 dark:border-amber-900/20 relative z-10 overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-amber-50 dark:bg-amber-900/10 rounded-bl-full -mr-16 -mt-16">
+            </div>
+            <div class="text-center mb-10">
+                <h1 class="font-display font-bold text-4xl text-text-light dark:text-text-dark mb-2">
+                    Join the Tiger
+                    Club!
+                </h1>
+                <p class="text-gray-500 dark:text-gray-400">
+                    Become a member for exclusive treats and early access.
+                </p>
+            </div>
+            <form class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-text-light dark:text-text-dark ml-1"
+                               for="first-name">First Name</label>
+                        <input class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none"
+                               id="first-name" placeholder="Tiger" type="text" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-text-light dark:text-text-dark ml-1"
+                               for="last-name">Last Name</label>
+                        <input class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none"
+                               id="last-name" placeholder="Woods" type="text" />
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-bold text-text-light dark:text-text-dark ml-1" for="dob">
+                        Date of Birth
+                    </label>
+                    <input class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none"
+                           id="dob" type="date" />
+                    <p class="text-xs text-amber-600 dark:text-amber-400 italic ml-1">
+                        Optional. Fill this in if you'd like to receive a special gift on your birthday! 🎁
+                    </p>
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-bold text-text-light dark:text-text-dark ml-1"
+                           for="email">Email Address</label>
+                    <input class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none"
+                           id="email" placeholder="roar@tiger.com" type="email" />
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-text-light dark:text-text-dark ml-1"
+                               for="password">Password</label>
+                        <input class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none"
+                               id="password" placeholder="••••••••" type="password" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-text-light dark:text-text-dark ml-1"
+                               for="confirm-password">Confirm Password</label>
+                        <input class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none"
+                               id="confirm-password" placeholder="••••••••" type="password" />
+                    </div>
+                </div>
+                <div class="space-y-4 py-2">
+                    <div class="flex items-start gap-3">
+                        <input class="mt-1 h-5 w-5 rounded border-amber-200 text-primary focus:ring-primary cursor-pointer"
+                               id="newsletter" type="checkbox" />
+                        <label class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer" for="newsletter">
+                            I'd love to receive the secret Tiger newsletter for exclusive treats and early access.
+                        </label>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <input class="mt-1 h-5 w-5 rounded border-amber-200 text-primary focus:ring-primary cursor-pointer"
+                               id="terms" required="" type="checkbox" />
+                        <label class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer" for="terms">
+                            I agree to the 
+                            <a class="text-primary font-bold hover:underline" href="/legal/terms">
+                                Terms and Conditions
+                            </a> 
+                            and 
+                            <a class="text-primary font-bold hover:underline" href="/legal/privacy">
+                                Privacy Policy
+                            </a>.
+                        </label>
+                    </div>
+                </div>
+                <button class="w-full py-4 bg-primary hover:bg-amber-700 text-white rounded-2xl font-bold text-lg shadow-lg shadow-amber-500/30 transition-all hover:-translate-y-1 active:translate-y-0"
+                        type="submit">
+                    Create Account
+                </button>
+            </form>
+            <div class="mt-8 text-center">
+                <p class="text-gray-600 dark:text-gray-400">
+                    Already a Tiger? <a class="text-primary font-bold hover:underline ml-1" href="/auth/signin">Sign-in</a>
+                </p>
+            </div>
+        </div>
+        <div class="mt-8 flex justify-center items-center gap-8 opacity-50 grayscale">
+            <div class="flex items-center gap-1">
+                <span class="material-icons-round text-sm">verified_user</span>
+                <span class="text-xs font-bold uppercase tracking-widest">Secure Signup</span>
+            </div>
+            <div class="flex items-center gap-1">
+                <span class="material-icons-round text-sm">local_shipping</span>
+                <span class="text-xs font-bold uppercase tracking-widest">Fast Delivery</span>
+            </div>
+        </div>
+    </div>
+</main>
+
+<Footer />

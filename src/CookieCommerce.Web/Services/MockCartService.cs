@@ -34,8 +34,8 @@ public class MockCartService : ICartService
             UnitPrice = product.Price,
             IsLimitedEdition = product.IsLimitedEdition
         });
-        
-        OnCartUpdated?.Invoke();
+
+        NotifyStateChanged();
     }
 
     public Task<CartDto> GetCartAsync()
@@ -51,7 +51,7 @@ public class MockCartService : ICartService
     public Task RemoveItemAsync(Guid itemId)
     {
         _cart.Items.RemoveAll(i => i.CartItemId == itemId);
-        OnCartUpdated?.Invoke();
+        NotifyStateChanged();
         return Task.CompletedTask;
     }
 
@@ -61,8 +61,10 @@ public class MockCartService : ICartService
         if (item != null)
         {
             item.Quantity = quantity;
-            OnCartUpdated?.Invoke();
+            NotifyStateChanged();
         }
         return Task.CompletedTask;
     }
+
+    private void NotifyStateChanged() => OnCartUpdated?.Invoke();
 }

@@ -13,6 +13,21 @@
 
     protected override async Task OnInitializedAsync()
     {
+        CartService.OnCartUpdated += HandleCartChanged;
+        await LoadCartAsync();
+    }
+
+    private async void HandleCartChanged()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadCartAsync();
+            StateHasChanged();
+        });
+    }
+
+    private async Task LoadCartAsync()
+    {
         CurrentCart = await CartService.GetCartAsync();
     }
 
@@ -20,25 +35,21 @@
     {
         if (newQuantity < 1)
         {
-            await RemoveItem(itemId);
-            await Refresh();
+            await CartService.RemoveItemAsync(itemId);
             return;
         }
 
         await CartService.UpdateQuantityAsync(itemId, newQuantity);
-        await Refresh();
     }
 
     private async Task RemoveItem(Guid itemId)
     {
         await CartService.RemoveItemAsync(itemId);
-        await Refresh();
     }
 
-    private async Task Refresh()
+    public void Dispose()
     {
-        CurrentCart = await CartService.GetCartAsync();
-        StateHasChanged();
+        CartService.OnCartUpdated -= HandleCartChanged;
     }
 }
 

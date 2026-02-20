@@ -15,14 +15,17 @@
 
     protected override async Task OnInitializedAsync()
     {
-        CartService.OnCartUpdated += HandleCartUpdated;
+        CartService.OnCartUpdated += HandleCartChanged;
         await LoadCartCountAsync();
     }
 
-    private async void HandleCartUpdated()
+    private async void HandleCartChanged()
     {
-        await LoadCartCountAsync();
-        await InvokeAsync(StateHasChanged);
+        await InvokeAsync(async () =>
+        {
+            await LoadCartCountAsync();
+            StateHasChanged();
+        });
     }
 
     private async Task LoadCartCountAsync()
@@ -32,6 +35,6 @@
 
     public void Dispose()
     {
-        CartService.OnCartUpdated -= HandleCartUpdated;
+        CartService.OnCartUpdated -= HandleCartChanged;
     }
 }

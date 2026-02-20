@@ -18,6 +18,7 @@ public static class StaticCookieList
             IsLimitedEdition = false,
             Rating = 4.8f,
             ReviewCount = 128,
+            TopSeller = true,
             Ingredients = ["Organic wheat flour", "70% Belgian dark chocolate", "Unsalted butter", "Brown sugar", "Free-range eggs", "Vanilla extract", "Maldon sea salt", "Baking soda"]
         },
         new CookieDto

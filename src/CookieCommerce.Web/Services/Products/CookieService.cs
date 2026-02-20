@@ -56,4 +56,10 @@ public class CookieService : ICookieService
         };
         return reviews;
     }
+
+    public Task<IReadOnlyList<CookieDto>> GetTopRatedAsync()
+    {
+        var topRated = StaticCookieList.Cookies.OrderByDescending(c => c.Rating).Take(4).ToList();
+        return Task.FromResult<IReadOnlyList<CookieDto>>(topRated);
+    }
 }

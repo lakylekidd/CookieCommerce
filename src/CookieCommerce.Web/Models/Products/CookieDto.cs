@@ -15,4 +15,5 @@ public class CookieDto
     public string[] Ingredients { get; init; } = [];
     public float Rating { get; init; } = 0.0f;
     public int ReviewCount { get; init; } = 0;
+    public bool TopSeller { get; init; } = false;
 }

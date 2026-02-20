@@ -1,6 +1,8 @@
 ﻿@page "/shop/cart"
 @rendermode InteractiveServer
 @layout Layout.MainLayout
+@using CookieCommerce.Web.Components.Features.Products
+@using CookieCommerce.Web.Components.Shared
 @using CookieCommerce.Web.Models.Cart
 @using CookieCommerce.Web.Services
 @inject ICartService CartService
@@ -40,9 +42,50 @@
     }
 }
 
-@if (CurrentCart == null)
+@if (CurrentCart == null || CurrentCart.Items.Count == 0)
 {
-    <p>Loading cart...</p>
+    <main class="flex-grow flex flex-col items-center justify-center py-16 px-6">
+        <div class="max-w-2xl w-full text-center space-y-8">
+            <div class="relative inline-block">
+                <div class="w-64 h-64 mx-auto bg-amber-100 dark:bg-surface-dark rounded-full flex items-center justify-center relative overflow-hidden cookie-shadow">
+                    <span class="material-symbols-outlined text-amber-900/10 dark:text-amber-100/10 absolute -bottom-4 left-1/2 -translate-x-1/2"
+                          style="font-size: 120px !important; line-height: 1;">
+                        pets
+                    </span>
+
+                    <div class="relative z-10 flex flex-col items-center">
+                        <span class="material-symbols-outlined text-primary/40"
+                            style="font-variation-settings: 'FILL' 1; font-size: 96px !important; line-height: 1;">
+                            sentiment_dissatisfied
+                        </span>    
+                        <span class="material-symbols-outlined text-amber-900/20 dark:text-white/20 -mt-2"
+                            style="font-size: 60px !important; line-height: 1;">
+                            kitchen
+                        </span>
+                    </div>
+                </div>
+                <div class="absolute -bottom-2 left-1/4 w-3 h-3 bg-amber-800 rounded-full opacity-20"></div>
+                <div class="absolute bottom-4 right-1/4 w-2 h-2 bg-amber-800 rounded-full opacity-10"></div>
+            </div>
+            <div class="space-y-4">
+                <h1 class="font-display font-bold text-4xl md:text-5xl text-text-light dark:text-text-dark">
+                    Your Cookie Jar is empty!
+                </h1>
+                <p class="text-lg text-gray-600 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
+                    It looks like you haven't added any treats yet. Let's find something delicious to fill it up!
+                </p>
+            </div>
+            <div>
+                <a class="inline-block bg-primary hover:bg-amber-700 text-white px-10 py-4 rounded-full font-display font-bold text-xl transition-all shadow-xl shadow-amber-500/30 hover:-translate-y-1 active:scale-95"
+                    href="/shop">
+                    Start Shopping
+                </a>
+            </div>
+        </div>
+        <TopRatedCookies />
+    </main>
+
+    <Footer />
 }
 else
 {
@@ -254,6 +297,6 @@ else
             </div>
         </div>
     </main>
-}
 
-<CookieCommerce.Web.Components.Layout.SmallerFooter />
+    <CookieCommerce.Web.Components.Layout.SmallerFooter />
+}

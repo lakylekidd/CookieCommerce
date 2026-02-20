@@ -1,6 +1,6 @@
 ﻿@import "tailwindcss";
 
-@source "../Components"; /* This tells Tailwind to look at the whole project for classes */
+@source "../Components";
 
 @variant dark (&:where(.dark, .dark *));
 
@@ -29,9 +29,9 @@
     --radius-xl: 1.5rem;
     --radius-2xl: 2rem;
     --radius-3xl: 3rem;
-    --background-image-rainbow-glow: linear-gradient( to right, #D97706, #FCD34D, #10B981, #3B82F6, #F472B6 );
-
-    --keyframes-pop: {
+    --background-image-rainbow-glow: linear-gradient(to right, #D97706, #FCD34D, #10B981, #3B82F6, #F472B6);
+    /* V4 Keyframes syntax - No extra brackets/semicolons */
+    @keyframes pop {
         0% {
             transform: scale(1);
         }
@@ -44,28 +44,34 @@
             transform: scale(1);
         }
     }
+}
 
-    ;
-    --animation-pop: pop 0.4s ease-out forwards;
+/* Layer Base for Global Overrides */
+@layer base {
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        font-size: inherit !important;
+        display: inline-block;
+        line-height: 1;
+        width: 1em;
+        height: 1em;
+    }
 }
 
 @utility animate-pop {
-    animation: var(--animation-pop);
+    animation: pop 0.4s ease-out forwards;
 }
 
+/* Custom Components */
 .celebration-glow {
     background-image: var(--background-image-rainbow-glow);
     box-shadow: 0 0 20px rgba(217, 119, 6, 0.5);
 }
 
-:root {
-    --my-color: #D97706;
-}
-
 nav a.active {
-    color: var(--my-color);
-    font-weight: 700; 
-    border-bottom: 2px solid var(--my-color);
+    color: var(--color-primary);
+    font-weight: 700;
+    border-bottom: 2px solid var(--color-primary);
 }
 
 .cookie-shadow {
@@ -76,50 +82,14 @@ nav a.active {
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
 }
 
-.pattern-bg {
-    background-image: radial-gradient(#F59E0B 1px, transparent 1px);
-    background-size: 20px 20px;
-    opacity: 0.1;
-}
-
-.dark .pattern-bg {
-    opacity: 0.05;
-}
-
-.rare-find-sash {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: #F97316;
-    color: white;
-    padding: 4px 30px;
-    transform: rotate(45deg) translate(30%, -40%);
-    font-weight: 800;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    z-index: 10;
-}
-
-.rare-card .rare-find-sash {
-    background: white;
-    color: #F97316;
-}
-
-.material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-
 @layer utilities {
     .pattern-bg {
-        background-image: radial-gradient(#D97706 1px, transparent 1px);
+        background-image: radial-gradient(var(--color-primary) 1px, transparent 1px);
         background-size: 24px 24px;
-        opacity: 0.95;
+        opacity: 0.1;
     }
 
     .dark .pattern-bg {
-        background-image: radial-gradient(#FCD34D 1px, transparent 1px);
-        opacity: 0.1;
+        opacity: 0.05;
     }
 }

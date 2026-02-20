@@ -1,6 +1,10 @@
 ﻿@page "/auth/signin"
 @layout Layout.MainLayout
+@rendermode InteractiveServer
 @using CookieCommerce.Web.Components.Layout
+@using CookieCommerce.Web.Services
+@inject IAuthService Auth
+@inject NavigationManager Nav
 
 <PageTitle>Sign In - Tiger van Cookie</PageTitle>
 
@@ -18,23 +22,36 @@
                         Your fresh cookies are just a login away.
                     </p>
                 </div>
-                <form class="space-y-6">
+                <form class="space-y-6" @onsubmit="HandleLogin" @onsubmit:preventDefault>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 px-1"
                                for="email">Email Address</label>
-                        <input class="w-full px-6 py-4 rounded-2xl bg-white dark:bg-surface-dark/50 border border-amber-100 dark:border-amber-800 focus:ring-primary focus:border-primary text-gray-800 dark:text-white placeholder-gray-400 transition-all"
-                               id="email" placeholder="tiger@forest.com" type="email" />
+                        @* Bound to Email variable *@
+                        <input @bind="Email"
+                               class="w-full px-6 py-4 rounded-2xl bg-white dark:bg-surface-dark/50 border border-amber-100 dark:border-amber-800 focus:ring-primary focus:border-primary text-gray-800 dark:text-white placeholder-gray-400 transition-all"
+                               id="email" placeholder="tiger@forest.com" type="email" required />
                     </div>
+
                     <div>
                         <div class="flex justify-between items-center mb-2 px-1">
                             <label class="block text-sm font-bold text-gray-700 dark:text-gray-300"
                                    for="password">Password</label>
                             <a class="text-xs text-primary font-bold hover:underline" href="/auth/forgot-password">Forgot password?</a>
                         </div>
-                        <input class="w-full px-6 py-4 rounded-2xl bg-white dark:bg-surface-dark/50 border border-amber-100 dark:border-amber-800 focus:ring-primary focus:border-primary text-gray-800 dark:text-white placeholder-gray-400 transition-all"
-                               id="password" placeholder="••••••••" type="password" />
+                        @* Bound to Password variable *@
+                        <input @bind="Password"
+                               class="w-full px-6 py-4 rounded-2xl bg-white dark:bg-surface-dark/50 border border-amber-100 dark:border-amber-800 focus:ring-primary focus:border-primary text-gray-800 dark:text-white placeholder-gray-400 transition-all"
+                               id="password" placeholder="••••••••" type="password" required />
                     </div>
-                    <button class="w-full bg-primary hover:bg-amber-700 text-white font-display font-bold text-xl py-5 rounded-2xl shadow-xl shadow-primary/30 transition-all hover:-translate-y-1 active:scale-95"
+
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-4 rounded-xl border border-red-100 dark:border-red-900/30">
+                            @ErrorMessage
+                        </div>
+                    }
+
+                    <button class="cursor-pointer w-full bg-primary hover:bg-amber-700 text-white font-display font-bold text-xl py-5 rounded-2xl shadow-xl shadow-primary/30 transition-all hover:-translate-y-1 active:scale-95"
                             type="submit">
                         Let's Go!
                     </button>
@@ -67,3 +84,25 @@
 </main>
 
 <Footer />
+
+@code {
+    private string Email { get; set; } = "";
+    private string Password { get; set; } = "";
+    private string ErrorMessage { get; set; } = "";
+
+    private async Task HandleLogin()
+    {
+        ErrorMessage = "";
+
+        bool success = await Auth.SignInAsync(Email, Password);
+
+        if (success)
+        {
+            Nav.NavigateTo("/storefront");
+        }
+        else
+        {
+            ErrorMessage = "Oops! Those details don't match our records.";
+        }
+    }
+}

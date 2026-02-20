@@ -1,5 +1,7 @@
 @using CookieCommerce.Web.Components.Layout
 @using CookieCommerce.Web.Components.Features.Cart
+@using CookieCommerce.Web.Services
+@inject IAuthService Auth
 
 <nav class="sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-amber-100 dark:border-amber-900/30">
     <div class="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -21,9 +23,20 @@
                 <span class="material-icons-round text-xl hidden dark:block">light_mode</span>
             </button>
             <ShoppingBag />
-            <a class="hidden md:block bg-primary hover:bg-amber-700 text-white px-5 py-2 rounded-full font-bold transition-transform active:scale-95 shadow-lg shadow-amber-500/30" href="#">
-                Sign In
-            </a>
+            @if(Auth.IsLoggedIn)
+            {
+                <span class="px-6 py-2 text-xs font-bold uppercase opacity-50">Welcome, @Auth.CurrentUser!.FirstName</span>
+                <button @onclick="Auth.Logout" class="cursor-pointer bg-primary-subtle flex items-center gap-3 px-6 py-4 rounded-2xl text-red-500 hover:bg-red-50">
+                    <span class="material-symbols-outlined">logout</span>
+                    Sign Out
+                </button>
+            }
+            else
+            {
+                <a class="hidden md:block bg-primary hover:bg-amber-700 text-white px-5 py-2 rounded-full font-bold transition-transform active:scale-95 shadow-lg shadow-amber-500/30" href="/auth/signin">
+                    Sign In
+                </a>
+            }
         </div>
     </div>
 </nav>

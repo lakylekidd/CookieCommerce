@@ -1,6 +1,7 @@
 @using CookieCommerce.Web.Components.Layout
 @using CookieCommerce.Web.Components.Features.Cart
 @using CookieCommerce.Web.Services
+@rendermode InteractiveServer
 @inject IAuthService Auth
 
 <nav class="sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-amber-100 dark:border-amber-900/30">
@@ -17,10 +18,16 @@
         </div>
         <div class="flex items-center gap-4">
             <button aria-label="Toggle Dark Mode"
-                    class="p-2 rounded-full hover:bg-amber-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                    onclick="document.documentElement.classList.toggle('dark')">
-                <span class="material-icons-round text-xl block dark:hidden">dark_mode</span>
-                <span class="material-icons-round text-xl hidden dark:block">light_mode</span>
+                    class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-amber-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                    @onclick="ToggleDarkMode">
+                @if (isDarkMode)
+                {
+                    <span class="material-icons-round text-xl">light_mode</span>
+                }
+                else
+                {
+                    <span class="material-icons-round text-xl">dark_mode</span>
+                }
             </button>
             <ShoppingBag />
             @if(Auth.IsLoggedIn)
@@ -40,3 +47,16 @@
         </div>
     </div>
 </nav>
+
+@code {
+    private bool isDarkMode = false;
+
+    // Use JS Interop to actually toggle the class on the HTML tag
+    [Inject] IJSRuntime JS { get; set; } = default!;
+
+    private async Task ToggleDarkMode()
+    {
+        isDarkMode = !isDarkMode;
+        await JS.InvokeVoidAsync("eval", "document.documentElement.classList.toggle('dark')");
+    }
+}

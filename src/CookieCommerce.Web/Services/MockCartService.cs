@@ -5,31 +5,37 @@ namespace CookieCommerce.Web.Services;
 
 public class MockCartService : ICartService
 {
-    private List<CartItemDto> _cartItems = [];
     private CartDto _cart;
+    
+    public event Action? OnCartUpdated;
 
     public MockCartService()
     {
-        var randomCookies = StaticCookieList.Cookies
-            .OrderBy(_ => Random.Shared.Next())
-            .Take(3)
-            .ToList();
-
        _cart = new CartDto
         {
-            Items = randomCookies.Select(cookie => new CartItemDto
-            {
-                CartItemId = Guid.NewGuid(),
-                CurrencySymbol = "$",
-                ProductId = cookie.Id,
-                ProductImageUrl = cookie.ImageUrls[0],
-                ProductName = cookie.Title,
-                IsLimitedEdition = cookie.IsLimitedEdition,
-                ProductVariantName = "Box of 3",
-                UnitPrice = cookie.Price,
-                Quantity = 1
-            }).ToList()
+           CartId = Guid.NewGuid(),
+           Items = []
         };
+    }
+
+    public async Task AddToCartAsync(Guid productId, int quantity)
+    {
+        var product = StaticCookieList.Cookies.FirstOrDefault(p => p.Id == productId);
+        if (product == null) return;
+        
+        _cart.Items.Add(new CartItemDto
+        {
+            CartItemId = Guid.NewGuid(),
+            ProductImageUrl = product.ImageUrls[0],
+            ProductId = product.Id,
+            ProductName = product.Title,
+            ProductVariantName = "1 item",
+            Quantity = quantity,
+            UnitPrice = product.Price,
+            IsLimitedEdition = product.IsLimitedEdition
+        });
+        
+        OnCartUpdated?.Invoke();
     }
 
     public Task<CartDto> GetCartAsync()
@@ -37,9 +43,15 @@ public class MockCartService : ICartService
         return Task.FromResult(_cart);
     }
 
+    public Task<int> GetCartItemCountAsync()
+    {
+        return Task.FromResult(_cart.Items.Count);
+    }
+
     public Task RemoveItemAsync(Guid itemId)
     {
         _cart.Items.RemoveAll(i => i.CartItemId == itemId);
+        OnCartUpdated?.Invoke();
         return Task.CompletedTask;
     }
 
@@ -49,6 +61,7 @@ public class MockCartService : ICartService
         if (item != null)
         {
             item.Quantity = quantity;
+            OnCartUpdated?.Invoke();
         }
         return Task.CompletedTask;
     }

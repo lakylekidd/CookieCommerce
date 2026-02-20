@@ -4,7 +4,10 @@ namespace CookieCommerce.Web.Services;
 
 public interface ICartService
 {
+    event Action? OnCartUpdated;
+    Task<int> GetCartItemCountAsync();
     Task<CartDto> GetCartAsync();
     Task UpdateQuantityAsync(Guid itemId, int quantity);
     Task RemoveItemAsync(Guid itemId);
+    Task AddToCartAsync(Guid productId, int quantity);
 }

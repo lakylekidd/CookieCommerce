@@ -103,6 +103,27 @@ nav a.active {
     color: #F97316;
 }
 
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #D97706;
+    border-radius: 10px;
+}
+
+.legal-content h2 {
+    @apply font-display text-2xl font-bold mt-12 mb-4 text-primary;
+}
+
+.legal-content p {
+    @apply mb-6 leading-relaxed text-amber-900/80 dark:text-amber-100/80;
+}
+
 @layer utilities {
     .pattern-bg {
         background-image: radial-gradient(var(--color-primary) 1px, transparent 1px);

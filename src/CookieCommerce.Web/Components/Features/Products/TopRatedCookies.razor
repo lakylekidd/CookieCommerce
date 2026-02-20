@@ -63,7 +63,7 @@
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="font-display font-bold text-xl">@cookie.CurrencySymbol@cookie.Price.ToString("F2")</span>
-                    <button @onclick="async () => await AddToCartAsync(cookie.Id)" class="cursor-pointer bg-amber-100 dark:bg-white/10 text-primary p-2 rounded-xl hover:bg-primary hover:text-white transition-colors">
+                    <button @onclick="async () => await AddToCartAsync(cookie.Id)" class="flex items-center justify-center p-2 cursor-pointer bg-amber-100 dark:bg-white/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-colors">
                         <span class="material-icons-round">add_shopping_cart</span>
                     </button>
                 </div>

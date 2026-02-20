@@ -82,6 +82,27 @@ nav a.active {
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
 }
 
+.rare-find-sash {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #F97316;
+    color: white;
+    padding: 4px 30px;
+    transform: rotate(45deg) translate(30%, -40%);
+    font-weight: 800;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.rare-card .rare-find-sash {
+    background: white;
+    color: #F97316;
+}
+
 @layer utilities {
     .pattern-bg {
         background-image: radial-gradient(var(--color-primary) 1px, transparent 1px);

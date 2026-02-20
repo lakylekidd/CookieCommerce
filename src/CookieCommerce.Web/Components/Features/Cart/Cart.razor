@@ -131,7 +131,7 @@ else
                         <div class="flex-1 min-w-0">
                             <div class="flex justify-between items-start">
                                 <h3 class="font-display font-bold text-base truncate">@item.ProductName</h3>
-                                <button @onclick="async () => await RemoveItem(item.CartItemId)" class="text-gray-500 pr-3">
+                                <button @onclick="async () => await RemoveItem(item.CartItemId)" class="flex text-gray-500 items-center justify-center p-4 cursor-pointer bg-amber-100 dark:bg-white/10 text-primary rounded-xl hover:text-red-900 hover:bg-primary transition-colors">
                                     <span class="material-symbols-outlined text-xl">delete</span>
                                 </button>
                             </div>
@@ -202,7 +202,9 @@ else
                             </td>
                             <td class="px-8 py-6 text-right font-display font-bold text-lg">@item.CurrencySymbol@item.TotalPrice.ToString("F2")</td>
                             <td class="px-8 py-6 text-right">
-                                <button @onclick="async () => await RemoveItem(item.CartItemId)" class="text-gray-400 hover:text-red-500 transition-colors cursor-pointer">
+                                <!-- flex items-center justify-center p-2 cursor-pointer bg-amber-100 dark:bg-white/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-colors -->
+                                <!-- text-gray-400 hover:text-red-500 transition-colors cursor-pointe -->
+                                <button @onclick="async () => await RemoveItem(item.CartItemId)" class="flex items-center justify-center p-4 cursor-pointer bg-amber-100 dark:bg-white/10 text-primary rounded-xl hover:text-red-900 hover:bg-primary transition-colors">
                                     <span class="material-symbols-outlined">delete</span>
                                 </button>
                             </td>

@@ -1,5 +1,6 @@
 ﻿@page "/shop/cookie/{id:guid}"
 @layout Layout.MainLayout
+@rendermode InteractiveServer
 @using CookieCommerce.Web.Services.Products
 @using CookieCommerce.Web.Models.Products
 @inject ICookieService CookieService
@@ -20,20 +21,20 @@ else
                         <div class="absolute -inset-4 bg-primary/10 rounded-3xl blur-2xl group-hover:bg-primary/20 transition-colors">
                         </div>
                         <div class="relative bg-surface-light dark:bg-surface-dark rounded-3xl overflow-hidden shadow-2xl border border-amber-100 dark:border-amber-900/30">
-                            <img alt="@_cookie.Title" 
-                                class="w-full h-auto aspect-square object-cover"
-                                src="@_cookie.ImageUrl" />
+                            <img alt="@_cookie.Title"                                 
+                                class="w-full h-auto aspect-square object-cover transition-all duration-300"
+                                 src="@_currentMainImage" />
                         </div>
                     </div>
                     <div class="grid grid-cols-4 gap-4 mt-6">
-                        <div class="aspect-square rounded-xl overflow-hidden border-2 border-primary">
-                            <img alt="@_cookie.Title" class="w-full h-full object-cover"
-                                 src="@_cookie.ImageUrl" />
-                        </div>
-                        <div class="aspect-square rounded-xl overflow-hidden bg-amber-100 dark:bg-amber-900/20 opacity-50 hover:opacity-100 cursor-pointer transition-opacity">
-                            <img alt="@_cookie.Title" class="w-full h-full object-cover"
-                                 src="@_cookie.ImageUrl" />
-                        </div>
+                        @foreach(var photo in _cookie.ImageUrls)
+                        {
+                            <div @onclick="() => SelectImage(photo)"
+                                 class="aspect-square rounded-xl overflow-hidden border-2 cursor-pointer transition-transform hover:scale-105 @(photo == _currentMainImage ? "border-primary" : "border-transparent")">
+                                <img alt="@_cookie.Title" class="w-full h-full object-cover"
+                                     src="@photo" />
+                            </div>
+                        }
                     </div>
                 </div>
                 <div class="w-full lg:w-1/2 flex flex-col">
@@ -134,14 +135,21 @@ else
 }
 
 @code {
-    [Parameter]
-    public Guid Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
+    private string _currentMainImage = string.Empty;
     private CookieDto? _cookie;
 
     protected override async Task OnInitializedAsync()
     {
         _cookie = await CookieService.GetCookieByIdAsync(Id);
+        ArgumentNullException.ThrowIfNull(_cookie, nameof(_cookie));
+        _currentMainImage = _cookie.ImageUrls[0];
+    }
+
+    private void SelectImage(string imageUrl)
+    {
+        _currentMainImage = imageUrl;
     }
 }
 

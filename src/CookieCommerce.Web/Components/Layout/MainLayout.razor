@@ -36,73 +36,12 @@
             <!-- End Matomo Code -->
         </environment>
     }
-
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
-    <script>
-        tailwind = {
-            config: {
-                darkMode: "class", 
-                theme: {
-                    extend: {
-                        colors: {
-                            primary: "#D97706", // Amber-600 - Warm cookie brown/tiger orange
-                            secondary: "#FCD34D", // Amber-300 - lighter yellow/cream
-                            "background-light": "#FFFBEB", // Amber-50 - warm cream
-                            "background-dark": "#1F1508", // Very dark brown
-                            "surface-light": "#FFFFFF",
-                            "surface-dark": "#2D2115", // Dark brown surface
-                            "text-light": "#451a03", // Dark cookie brown
-                            "text-dark": "#FEF3C7", // Light cream text
-
-                            "brand-orange": "#F97316",
-                            "rare-peach": "#FFF1E6",
-                            "rare-peach-dark": "#3D2B1F",
-                        },
-                        fontFamily: {
-                            display: ["Fredoka", "sans-serif"],
-                            body: ["Nunito", "sans-serif"],
-                        },
-                        borderRadius: {
-                            DEFAULT: "1rem",
-                            'xl': "1.5rem",
-                            '2xl': "2rem",
-                            '3xl': "3rem",
-                        },
-                    },
-                },
-            }
-        };
-    </script>
     
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&amp;family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
 
     <meta property="og:image" content="https://tigervancookie.nl/images/logo.png">
-    
-    <script>
-        var toggleDarkTheme = function () {
-                const savedTheme = localStorage.getItem("theme");
-                if (savedTheme) {
-                    document.documentElement.classList.remove(savedTheme);
-                    localStorage.removeItem("theme");
-                    console.log("Removed saved theme:", savedTheme);
-                } else {
-                    document.documentElement.classList.add("dark");
-                    localStorage.setItem("theme", "dark");
-                    console.log("Saved theme: dark");
-                }
-             };
-
-        document.addEventListener("DOMContentLoaded", function() {
-            toggleDarkTheme();
-        });
-
-        window.addEventListener('hashchange', function() {
-            toggleDarkTheme();
-        });
-
-    </script>
 
 </HeadContent>
 

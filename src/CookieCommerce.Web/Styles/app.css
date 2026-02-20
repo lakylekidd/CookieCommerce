@@ -1,0 +1,44 @@
+﻿@import "tailwindcss";
+
+@source "../Components"; /* This tells Tailwind to look at the whole project for classes */
+
+@variant dark (&:where(.dark, .dark *));
+
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/container-queries";
+
+@theme {
+    /* Your Custom Colors */
+    --color-primary: #D97706;
+    --color-secondary: #FCD34D;
+    --color-background-light: #FFFBEB;
+    --color-background-dark: #1F1508;
+    --color-surface-light: #FFFFFF;
+    --color-surface-dark: #2D2115;
+    --color-text-light: #451a03;
+    --color-text-dark: #FEF3C7;
+    --color-brand-orange: #F97316;
+    --color-rare-peach: #FFF1E6;
+    --color-rare-peach-dark: #3D2B1F;
+
+    /* Your Custom Fonts */
+    --font-display: "Fredoka", sans-serif;
+    --font-body: "Nunito", sans-serif;
+
+    /* Your Custom Border Radius */
+    --radius-default: 1rem;
+    --radius-xl: 1.5rem;
+    --radius-2xl: 2rem;
+    --radius-3xl: 3rem;
+}
+
+:root {
+    --my-color: #D97706;
+}
+
+nav a.active {
+    color: var(--my-color);
+    font-weight: 700; 
+    border-bottom: 2px solid var(--my-color);
+}

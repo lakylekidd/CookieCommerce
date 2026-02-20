@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -12,7 +12,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\css\" />
     <Folder Include="wwwroot\fonts\" />
   </ItemGroup>
+
+  <Target Name="Tailwind" BeforeTargets="Build">
+    <Message Importance="high" Text="Building Tailwind CSS..." />
+    <Exec Command="cmd /c npx @tailwindcss/cli -i ./Styles/app.css -o ./wwwroot/css/app.min.css --minify" WorkingDirectory="$(ProjectDir)" />
+  </Target>
 
 </Project>

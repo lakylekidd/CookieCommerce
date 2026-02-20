@@ -19,6 +19,7 @@ public class MockCartService : ICartService
         {
             Items = randomCookies.Select(cookie => new CartItemDto
             {
+                CartItemId = Guid.NewGuid(),
                 CurrencySymbol = "$",
                 ProductId = cookie.Id,
                 ProductImageUrl = cookie.ImageUrls[0],
@@ -38,13 +39,13 @@ public class MockCartService : ICartService
 
     public Task RemoveItemAsync(Guid itemId)
     {
-        _cart.Items.RemoveAll(i => i.ProductId == itemId);
+        _cart.Items.RemoveAll(i => i.CartItemId == itemId);
         return Task.CompletedTask;
     }
 
     public Task UpdateQuantityAsync(Guid itemId, int quantity)
     {
-        var item = _cart.Items.FirstOrDefault(i => i.ProductId == itemId);
+        var item = _cart.Items.FirstOrDefault(i => i.CartItemId == itemId);
         if (item != null)
         {
             item.Quantity = quantity;

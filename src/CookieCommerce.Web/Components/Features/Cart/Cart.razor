@@ -1,4 +1,5 @@
 ﻿@page "/shop/cart"
+@rendermode InteractiveServer
 @layout Layout.MainLayout
 @using CookieCommerce.Web.Models.Cart
 @using CookieCommerce.Web.Services
@@ -11,6 +12,31 @@
     protected override async Task OnInitializedAsync()
     {
         CurrentCart = await CartService.GetCartAsync();
+    }
+
+    private async Task UpdateQuantity(Guid itemId, int newQuantity)
+    {
+        if (newQuantity < 1)
+        {
+            await RemoveItem(itemId);
+            await Refresh();
+            return;
+        }
+
+        await CartService.UpdateQuantityAsync(itemId, newQuantity);
+        await Refresh();
+    }
+
+    private async Task RemoveItem(Guid itemId)
+    {
+        await CartService.RemoveItemAsync(itemId);
+        await Refresh();
+    }
+
+    private async Task Refresh()
+    {
+        CurrentCart = await CartService.GetCartAsync();
+        StateHasChanged();
     }
 }
 
@@ -79,11 +105,11 @@ else
                                 <td class="px-8 py-6">
                                     <div class="flex items-center justify-center">
                                         <div class="inline-flex items-center bg-amber-50 dark:bg-black/20 rounded-full p-1 border border-amber-100 dark:border-amber-900/30">
-                                            <button @onclick="() => CartService.UpdateQuantityAsync(item.CartItemId, item.Quantity - 1)" class="w-8 h-8 flex items-center justify-center hover:bg-white dark:hover:bg-amber-900/50 rounded-full transition-colors">
+                                            <button @onclick="async () => await UpdateQuantity(item.CartItemId, item.Quantity - 1)" class="w-8 h-8 flex items-center justify-center hover:bg-white dark:hover:bg-amber-900/50 rounded-full transition-colors">
                                                 <span class="material-icons-round text-sm">remove</span>
                                             </button>
                                             <span class="w-10 text-center font-bold">@item.Quantity</span>
-                                            <button @onclick="() => CartService.UpdateQuantityAsync(item.CartItemId, item.Quantity + 1)" class="w-8 h-8 flex items-center justify-center hover:bg-white dark:hover:bg-amber-900/50 rounded-full transition-colors">
+                                            <button @onclick="async () => await UpdateQuantity(item.CartItemId, item.Quantity + 1)" class="w-8 h-8 flex items-center justify-center hover:bg-white dark:hover:bg-amber-900/50 rounded-full transition-colors">
                                                 <span class="material-icons-round text-sm">add</span>
                                             </button>
                                         </div>
@@ -91,7 +117,7 @@ else
                                 </td>
                                 <td class="px-8 py-6 text-right font-display font-bold text-lg">@item.CurrencySymbol@item.TotalPrice.ToString("F2")</td>
                                 <td class="px-8 py-6 text-right">
-                                    <button @onclick="() => CartService.RemoveItemAsync(item.CartItemId)" class="text-gray-400 hover:text-red-500 transition-colors">
+                                    <button @onclick="async () => await RemoveItem(item.CartItemId)" class="text-gray-400 hover:text-red-500 transition-colors">
                                         <span class="material-symbols-outlined">delete</span>
                                     </button>
                                 </td>

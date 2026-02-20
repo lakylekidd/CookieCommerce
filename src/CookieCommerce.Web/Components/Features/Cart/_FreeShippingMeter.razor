@@ -5,26 +5,52 @@
 @code {
     [Parameter] public CartDto? Cart { get; set; } = default;
 
-    private int Progress => Cart == null || Cart.ToGoUntilFreeShipping <= 0
-        ? 0
-        : (int)((Cart.SubTotalPrice / Cart.ToGoUntilFreeShipping) * 100);
+    private int CalculatePercentage()
+    {
+        if (Cart == null || Cart.ToGoUntilFreeShipping <= 0)
+            return 0;
+
+        var maxValue = 100;
+        var currValue = (int)((Cart.SubTotalPrice / CartDto.FREE_SHIPPING_THRESHOLD) * 100);
+
+        return currValue > maxValue
+            ? maxValue
+            : currValue;
+    }
 
 }
 
-@Progress this
-
-<div class="max-w-2xl bg-white dark:bg-surface-dark p-6 rounded-2xl border border-amber-100 dark:border-amber-900/30 shadow-sm">
-    <div class="flex justify-between items-center mb-3">
-        <span class="text-sm font-bold flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">local_shipping</span>
-            Free Shipping Progress
-        </span>
-        <span class="text-sm font-bold text-primary">@Cart.CurrencySymbol@Cart.SubTotalPrice to go!</span>
-    </div>
-    <div class="w-full bg-amber-50 dark:bg-amber-950 rounded-full h-3">
-        <div class="bg-primary h-3 rounded-full" style="width: @Progress%"></div>
-    </div>
-    <p class="text-xs text-gray-500 dark:text-gray-400 mt-3 italic">
-        @Cart.FreeShippingMessage
-    </p>
-</div>
+@if (Cart != null)
+{
+    if (Cart.ToGoUntilFreeShipping > 0)
+    {
+        <div class="max-w-2xl bg-white dark:bg-surface-dark p-6 rounded-2xl border border-amber-100 dark:border-amber-900/30 shadow-sm">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-sm font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">local_shipping</span>
+                    Free Shipping Progress
+                </span>
+                <span class="text-sm font-bold text-primary">@Cart.CurrencySymbol@Cart.ToGoUntilFreeShipping to go!</span>
+            </div>
+            <div class="w-full bg-amber-50 dark:bg-amber-950 rounded-full h-3 overflow-hidden">
+                <div class="bg-primary h-3 rounded-full transition-all duration-700 ease-out bg-amber-linear animate-shimmer"
+                     style="width: @CalculatePercentage()%; background-size: 200% 100%;">
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-3 italic">
+                @Cart.FreeShippingMessage
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="max-w-2xl bg-white dark:bg-surface-dark p-6 rounded-2xl border border-amber-100 dark:border-amber-900/30 shadow-sm">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">local_shipping</span>
+                    Congradulations! @Cart.FreeShippingMessage
+                </span>
+            </div>
+        </div>
+    }
+}

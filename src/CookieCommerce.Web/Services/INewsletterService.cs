@@ -1,0 +1,9 @@
+﻿namespace CookieCommerce.Web.Services;
+
+/// <summary>
+/// The newsletter service interface defines the contract for managing newsletter subscriptions.
+/// </summary>
+public interface INewsletterService
+{
+
+}

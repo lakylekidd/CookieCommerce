@@ -21,16 +21,41 @@
     --color-brand-orange: #F97316;
     --color-rare-peach: #FFF1E6;
     --color-rare-peach-dark: #3D2B1F;
-
     /* Your Custom Fonts */
     --font-display: "Fredoka", sans-serif;
     --font-body: "Nunito", sans-serif;
-
     /* Your Custom Border Radius */
     --radius-default: 1rem;
     --radius-xl: 1.5rem;
     --radius-2xl: 2rem;
     --radius-3xl: 3rem;
+    --background-image-rainbow-glow: linear-gradient( to right, #D97706, #FCD34D, #10B981, #3B82F6, #F472B6 );
+
+    --keyframes-pop: {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    ;
+    --animation-pop: pop 0.4s ease-out forwards;
+}
+
+@utility animate-pop {
+    animation: var(--animation-pop);
+}
+
+.celebration-glow {
+    background-image: var(--background-image-rainbow-glow);
+    box-shadow: 0 0 20px rgba(217, 119, 6, 0.5);
 }
 
 :root {

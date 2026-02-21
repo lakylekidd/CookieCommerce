@@ -1,6 +1,11 @@
 ﻿@page "/auth/signup"
 @layout Layout.MainLayout
+@rendermode InteractiveServer
+@inject IAuthService Auth
+@inject NavigationManager Nav
 @using CookieCommerce.Web.Components.Layout
+@using CookieCommerce.Web.Models.Auth
+@using CookieCommerce.Web.Services
 
 <PageTitle>Sign Up - Tiger van Cookie</PageTitle>
 
@@ -29,79 +34,101 @@
                     Become a member for exclusive treats and early access.
                 </p>
             </div>
-            <form class="space-y-6">
+
+            <!-- Signup Form -->
+            <EditForm Model="registerData" OnValidSubmit="HandleRegistration" class="space-y-6">
+                <DataAnnotationsValidator />
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
-                        <label class="block text-sm font-bold text-text-light dark:text-text-dark ml-1"
-                               for="first-name">First Name</label>
-                        <input class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none"
-                               id="first-name" placeholder="Tiger" type="text" />
+                        <label class="block text-sm font-bold ml-1">First Name</label>
+                        <InputText @bind-Value="registerData.FirstName"
+                                   placeholder="Tiger"
+                                   class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none" />
+                        <ValidationMessage For="@(() => registerData.FirstName)" class="text-red-500 text-xs ml-1" />
                     </div>
                     <div class="space-y-2">
-                        <label class="block text-sm font-bold text-text-light dark:text-text-dark ml-1"
-                               for="last-name">Last Name</label>
-                        <input class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none"
-                               id="last-name" placeholder="Woods" type="text" />
+                        <label class="block text-sm font-bold ml-1">Last Name</label>
+                        <InputText @bind-Value="registerData.LastName"
+                                   placeholder="Woods"
+                                   class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none" />
+                        <ValidationMessage For="@(() => registerData.LastName)" class="text-red-500 text-xs ml-1" />
                     </div>
                 </div>
+
                 <div class="space-y-2">
-                    <label class="block text-sm font-bold text-text-light dark:text-text-dark ml-1" for="dob">
-                        Date of Birth
-                    </label>
-                    <input class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none"
-                           id="dob" type="date" />
+                    <label class="block text-sm font-bold ml-1">Date of Birth</label>
+                    <InputDate @bind-Value="registerData.DateOfBirth"
+                               class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none" />
                     <p class="text-xs text-amber-600 dark:text-amber-400 italic ml-1">
                         Optional. Fill this in if you'd like to receive a special gift on your birthday! 🎁
                     </p>
                 </div>
+
                 <div class="space-y-2">
-                    <label class="block text-sm font-bold text-text-light dark:text-text-dark ml-1"
-                           for="email">Email Address</label>
-                    <input class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none"
-                           id="email" placeholder="roar@tiger.com" type="email" />
+                    <label class="block text-sm font-bold ml-1">Email Address</label>
+                    <InputText @bind-Value="registerData.Email"
+                               type="email" placeholder="roar@tiger.com"
+                               class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none" />
+                    <ValidationMessage For="@(() => registerData.Email)" class="text-red-500 text-xs ml-1" />
                 </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
-                        <label class="block text-sm font-bold text-text-light dark:text-text-dark ml-1"
-                               for="password">Password</label>
-                        <input class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none"
-                               id="password" placeholder="••••••••" type="password" />
+                        <label class="block text-sm font-bold ml-1">Password</label>
+                        <InputText @bind-Value="registerData.Password"
+                                   type="password" placeholder="••••••••"
+                                   class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none" />
+                        <ValidationMessage For="@(() => registerData.Password)" class="text-red-500 text-xs ml-1" />
                     </div>
                     <div class="space-y-2">
-                        <label class="block text-sm font-bold text-text-light dark:text-text-dark ml-1"
-                               for="confirm-password">Confirm Password</label>
-                        <input class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none"
-                               id="confirm-password" placeholder="••••••••" type="password" />
+                        <label class="block text-sm font-bold ml-1">Confirm Password</label>
+                        <InputText @bind-Value="registerData.ConfirmPassword"
+                                   type="password" placeholder="••••••••"
+                                   class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none" />
+                        <ValidationMessage For="@(() => registerData.ConfirmPassword)" class="text-red-500 text-xs ml-1" />
                     </div>
                 </div>
+
                 <div class="space-y-4 py-2">
                     <div class="flex items-start gap-3">
-                        <input class="mt-1 h-5 w-5 rounded border-amber-200 text-primary focus:ring-primary cursor-pointer"
-                               id="newsletter" type="checkbox" />
+                        <InputCheckbox @bind-Value="registerData.SubscribeNewsletter" id="newsletter"
+                                       class="mt-1 h-5 w-5 rounded border-amber-200 text-primary focus:ring-primary cursor-pointer" />
                         <label class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer" for="newsletter">
                             I'd love to receive the secret Tiger newsletter for exclusive treats and early access.
                         </label>
                     </div>
                     <div class="flex items-start gap-3">
-                        <input class="mt-1 h-5 w-5 rounded border-amber-200 text-primary focus:ring-primary cursor-pointer"
-                               id="terms" required="" type="checkbox" />
+                        <InputCheckbox @bind-Value="registerData.AgreeToTerms" id="terms"
+                                       class="mt-1 h-5 w-5 rounded border-amber-200 text-primary focus:ring-primary cursor-pointer" />
                         <label class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer" for="terms">
-                            I agree to the 
-                            <a class="text-primary font-bold hover:underline" href="/legal/terms">
-                                Terms and Conditions
-                            </a> 
-                            and 
-                            <a class="text-primary font-bold hover:underline" href="/legal/privacy">
-                                Privacy Policy
-                            </a>.
+                            I agree to the Terms and Privacy Policy.
                         </label>
                     </div>
+                    <ValidationMessage For="@(() => registerData.AgreeToTerms)" class="text-red-500 text-xs ml-1" />
                 </div>
-                <button class="w-full py-4 bg-primary hover:bg-amber-700 text-white rounded-2xl font-bold text-lg shadow-lg shadow-amber-500/30 transition-all hover:-translate-y-1 active:translate-y-0"
-                        type="submit">
-                    Create Account
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-500 text-sm font-bold border border-red-100 dark:border-red-900/30">
+                        @errorMessage
+                    </div>
+                }
+
+                <button type="submit" disabled="@isSubmitting"
+                        class="w-full py-4 bg-primary hover:bg-amber-700 text-white rounded-2xl font-bold text-lg shadow-lg shadow-amber-500/30 transition-all hover:-translate-y-1 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0">
+                    @if (isSubmitting)
+                    {
+                        <span class="animate-pulse">Creating Account...</span>
+                    }
+                    else
+                    {
+                        <span>Create Account</span>
+                    }
                 </button>
-            </form>
+            </EditForm>
+            <!-- Signup Form -->
+
             <div class="mt-8 text-center">
                 <p class="text-gray-600 dark:text-gray-400">
                     Already a Tiger? <a class="text-primary font-bold hover:underline ml-1" href="/auth/signin">Sign-in</a>
@@ -122,3 +149,38 @@
 </main>
 
 <Footer />
+
+@code {
+    private SignupDto registerData = new();
+    private string? errorMessage;
+    private bool isSubmitting;
+
+    private async Task HandleRegistration()
+    {
+        isSubmitting = true;
+        errorMessage = null;
+
+        try
+        {
+            // Using the Auth service we created previously
+            var result = await Auth.SignUpAsync(registerData);
+
+            if (result.Success)
+            {
+                Nav.NavigateTo("/storefront");
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage;
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Something went wrong in the jungle. Please try again.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

@@ -27,17 +27,17 @@ public class FakeAuthService : IAuthService
         return false;
     }
 
-    public async Task<bool> SignUpAsync(string firstName, string lastName, string email, string password)
+    public async Task<AuthResult> SignUpAsync(SignupDto signupForm)
     {
-        if (_users.Any(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase)))
+        if (_users.Any(u => u.Email.Equals(signupForm.Email, StringComparison.OrdinalIgnoreCase)))
         {
-            return false; // User already exists
+            return AuthResult.Failed("User already exists");
         }
 
-        var newUser = new UserDto { FirstName = firstName, LastName = lastName, Email = email, Password = password };
+        var newUser = new UserDto { FirstName = signupForm.FirstName, LastName = signupForm.LastName, Email = signupForm.Email, Password = signupForm.Password };
         _users.Add(newUser);
-        CurrentUser = newUser; // Auto-login after signup
-        return true;
+        CurrentUser = newUser;
+        return AuthResult.Succeeded();
     }
 
     public void Logout()

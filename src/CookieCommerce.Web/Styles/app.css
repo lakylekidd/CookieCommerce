@@ -50,11 +50,10 @@
 @layer base {
     .material-symbols-outlined {
         font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        font-size: inherit !important;
         display: inline-block;
         line-height: 1;
-        width: 1em;
-        height: 1em;
+        width: auto;
+        height: auto;
     }
 }
 
@@ -161,6 +160,32 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .dark input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(1) sepia(1) saturate(5) hue-rotate(0deg);
 }
+
+.polaroid {
+    background: white;
+    padding: 1rem 1rem 3rem 1rem;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+}
+
+.timeline-line::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    @apply bg-amber-200 dark:bg-amber-900/40;
+    transform: translateX(-50%);
+    z-index: 0;
+}
+
+.dotted-line {
+    background-image: linear-gradient(to right, #D97706 50%, rgba(255,255,255,0) 0%);
+    background-position: bottom;
+    background-size: 8px 1px;
+    background-repeat: repeat-x;
+}
+
 
 @layer utilities {
     .pattern-bg {

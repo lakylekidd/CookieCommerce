@@ -1,5 +1,6 @@
 ﻿@page "/auth/signin"
-@layout Layout.MainLayout
+
+@layout AuthLayout
 @rendermode InteractiveServer
 @using CookieCommerce.Web.Components.Layout
 @using CookieCommerce.Web.Services
@@ -82,8 +83,6 @@
         </div>
     </div>
 </main>
-
-<Footer />
 
 @code {
     private string Email { get; set; } = "";

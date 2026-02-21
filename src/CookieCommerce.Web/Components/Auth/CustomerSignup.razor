@@ -1,5 +1,6 @@
 ﻿@page "/auth/signup"
-@layout Layout.MainLayout
+
+@layout AuthLayout
 @rendermode InteractiveServer
 @inject IAuthService Auth
 @inject NavigationManager Nav
@@ -147,8 +148,6 @@
         </div>
     </div>
 </main>
-
-<Footer />
 
 @code {
     private SignupDto registerData = new();

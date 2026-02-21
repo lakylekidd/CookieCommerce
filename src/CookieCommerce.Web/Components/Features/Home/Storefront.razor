@@ -1,5 +1,6 @@
 ﻿@page "/storefront"
-@layout Layout.MainLayout
+@using CookieCommerce.Web.Components.Features.Shop
+@layout ShopLayout
 @using CookieCommerce.Web.Services.Products
 @using CookieCommerce.Web.Models.Products
 @inject ICookieService CookieService
@@ -90,8 +91,6 @@
 
 <!-- Subscribe Section -->
 <CookieCommerce.Web.Components.Shared.SubscribeSection />
-
-<CookieCommerce.Web.Components.Layout.Footer />
 
 @code {
     private IReadOnlyList<CookieDto> featuredCookies = [];

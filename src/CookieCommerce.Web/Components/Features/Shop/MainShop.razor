@@ -1,5 +1,7 @@
 ﻿@page "/shop"
-@layout Layout.MainLayout
+@layout ShopLayout
+
+@using CookieCommerce.Web.Components.Shared
 @using CookieCommerce.Web.Services.Products
 @using CookieCommerce.Web.Models.Products
 @inject ICookieService CookieService
@@ -56,6 +58,4 @@
     </section>
 </main>
 
-<CookieCommerce.Web.Components.Shared.SubscribeSection />
-
-<CookieCommerce.Web.Components.Layout.Footer />
+<SubscribeSection />

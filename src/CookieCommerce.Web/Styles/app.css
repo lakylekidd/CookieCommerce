@@ -145,6 +145,14 @@ input:focus {
     @apply ring-primary border-primary;
 }
 
+details > summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq-category-title {
+    @apply font-display text-2xl font-bold mt-12 mb-6 text-primary flex items-center gap-3;
+}
+
 input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(0.5) sepia(1) saturate(5) hue-rotate(0deg);
     cursor: pointer;

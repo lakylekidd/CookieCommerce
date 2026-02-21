@@ -1,135 +1,131 @@
 ﻿@page "/legal/faq"
+@using CookieCommerce.Web.Models.Content
+@using CookieCommerce.Web.Services
 @layout Legal.LegalMain
+@rendermode InteractiveServer
+@inject IContentService ContentService
+@inject NavigationManager Nav
 
 <div class="lg:w-[70%] bg-surface-light dark:bg-surface-dark rounded-[2.5rem] shadow-xl shadow-amber-900/5 border border-amber-100 dark:border-amber-900/30 overflow-hidden relative">
     <div class="absolute inset-0 pattern-bg pointer-events-none"></div>
     <div class="p-8 lg:p-16 relative z-10">
+
         <div class="mb-12">
-            <div class="relative group">
-                <span class="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-primary">search</span>
-                <input class="w-full bg-amber-50/50 dark:bg-amber-900/10 border-2 border-amber-100 dark:border-amber-900/30 rounded-2xl py-5 pl-14 pr-6 focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none transition-all text-lg font-medium placeholder:text-amber-900/30 dark:placeholder:text-amber-100/30"
-                       placeholder="How can we help you, Tiger?" type="text" />
+            <div class="relative group max-w-2xl mx-auto">
+                <span class="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-primary z-10">search</span>
+
+                @* We bind to a local string and trigger navigation on 'Enter' or button click *@
+                <input class="w-full bg-amber-50/50 dark:bg-amber-900/10 border-2 border-amber-100 dark:border-amber-900/30 rounded-2xl py-5 pl-14 pr-32 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-lg font-medium"
+                       placeholder="How can we help you, Tiger?"
+                       type="text"
+                       @bind="localSearchTerm"
+                       @onkeyup="HandleKeyUp" />
+
+                <button @onclick="TriggerSearch"
+                        class="absolute right-2 top-2 bottom-2 px-6 bg-primary hover:bg-amber-700 text-white rounded-xl font-bold transition-all active:scale-95">
+                    Search
+                </button>
             </div>
         </div>
+
         <div class="space-y-12">
-            <section>
-                <h2 class="faq-category-title mt-0 flex items-center gap-4">
-                    <span class="inline-flex items-center justify-center bg-amber-100 dark:bg-amber-900/40 w-12 h-12 rounded-xl text-primary shrink-0">
-                        <span class="material-symbols-outlined text-2xl">shopping_basket</span>
-                    </span>
-                    Ordering &amp; Payment
-                </h2>
-                <div class="space-y-3">
-                    <details class="group bg-amber-50/30 dark:bg-white/5 rounded-2xl border border-amber-100/50 dark:border-amber-900/20 overflow-hidden">
-                        <summary class="flex items-center justify-between p-6 cursor-pointer list-none list-inside">
-                            <span class="font-bold text-amber-900 dark:text-amber-100">
-                                How do I place a bulk
-                                order for events?
-                            </span>
-                            <span class="material-symbols-outlined text-primary transition-transform group-open:rotate-45">add_circle</span>
-                        </summary>
-                        <div class="px-6 pb-6 text-amber-900/70 dark:text-amber-100/70 leading-relaxed">
-                            For orders larger than 5 dozen, please contact our catering team at
-                            events@tigervancookie.com. We require at least 7 days' notice for large event orders
-                            to ensure everything is baked to perfection.
-                        </div>
-                    </details>
-                    <details class="group bg-amber-50/30 dark:bg-white/5 rounded-2xl border border-amber-100/50 dark:border-amber-900/20 overflow-hidden">
-                        <summary class="flex items-center justify-between p-6 cursor-pointer list-none">
-                            <span class="font-bold text-amber-900 dark:text-amber-100">
-                                Which payment methods do
-                                you accept?
-                            </span>
-                            <span class="material-symbols-outlined text-primary transition-transform group-open:rotate-45">add_circle</span>
-                        </summary>
-                        <div class="px-6 pb-6 text-amber-900/70 dark:text-amber-100/70 leading-relaxed">
-                            We accept all major credit cards (Visa, Mastercard, American Express), Apple Pay,
-                            and Google Pay. All transactions are securely processed and encrypted.
-                        </div>
-                    </details>
+            @if (!string.IsNullOrWhiteSpace(Search))
+            {
+                @* --- SEARCH RESULTS VIEW --- *@
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-2xl font-bold">Search Results for "@Search"</h2>
+                    <button @onclick="ClearSearch" class="text-primary hover:underline font-medium text-sm">Clear Results</button>
                 </div>
-            </section>
-            <section>
-                <h2 class="faq-category-title  mt-0 flex items-center gap-4">
-                    <span class="inline-flex items-center justify-center bg-amber-100 dark:bg-amber-900/40 w-12 h-12 rounded-xl text-primary shrink-0">
-                        <span class="material-symbols-outlined text-2xl">local_shipping</span>
-                    </span>
-                    Shipping
-                </h2>
-                <div class="space-y-3">
-                    <details class="group bg-amber-50/30 dark:bg-white/5 rounded-2xl border border-amber-100/50 dark:border-amber-900/20 overflow-hidden">
-                        <summary class="flex items-center justify-between p-6 cursor-pointer list-none">
-                            <span class="font-bold text-amber-900 dark:text-amber-100">
-                                How long will it take for
-                                my cookies to arrive?
+
+                @if (SearchResults.Any())
+                {
+                    <div class="grid gap-4">
+                        @foreach (var faq in SearchResults)
+                        {
+                            <details open class="group bg-amber-50/30 dark:bg-white/5 rounded-2xl border border-amber-100/50 dark:border-amber-900/20 overflow-hidden">
+                                <summary class="flex items-center justify-between p-6 cursor-pointer list-none">
+                                    <span class="font-bold text-amber-900 dark:text-amber-100">@faq.Description</span>
+                                    <span class="material-symbols-outlined text-primary transition-transform group-open:rotate-45">add_circle</span>
+                                </summary>
+                                <div class="px-6 pb-6 text-amber-900/70 dark:text-amber-100/70 leading-relaxed">@faq.Content</div>
+                            </details>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-12">
+                        <span class="material-symbols-outlined text-6xl opacity-20">sentiment_dissatisfied</span>
+                        <p class="mt-4 opacity-50">No matches found for your search.</p>
+                    </div>
+                }
+            }
+            else
+            {
+                @* --- STANDARD FAQ VIEW --- *@
+                @foreach (var category in FaqCategories)
+                {
+                    <section>
+                        <h2 class="faq-category-title mt-0 flex items-center gap-4">
+                            <span class="inline-flex items-center justify-center bg-amber-100 dark:bg-amber-900/40 w-12 h-12 rounded-xl text-primary shrink-0">
+                                <span class="material-symbols-outlined text-2xl">@category.Icon</span>
                             </span>
-                            <span class="material-symbols-outlined text-primary transition-transform group-open:rotate-45">add_circle</span>
-                        </summary>
-                        <div class="px-6 pb-6 text-amber-900/70 dark:text-amber-100/70 leading-relaxed">
-                            We bake and ship within 48 hours of your order. Standard shipping typically takes
-                            2-3 business days. We recommend selecting Express Shipping if you're in a hurry for
-                            that fresh-baked taste!
+                            @category.Title
+                        </h2>
+                        <div class="space-y-3 mt-6">
+                            @foreach (var faq in category.Items)
+                            {
+                                <details class="group bg-amber-50/30 dark:bg-white/5 rounded-2xl border border-amber-100/50 dark:border-amber-900/20 overflow-hidden">
+                                    <summary class="flex items-center justify-between p-6 cursor-pointer list-none">
+                                        <span class="font-bold text-amber-900 dark:text-amber-100">@faq.Description</span>
+                                        <span class="material-symbols-outlined text-primary transition-transform group-open:rotate-45">add_circle</span>
+                                    </summary>
+                                    <div class="px-6 pb-6 text-amber-900/70 dark:text-amber-100/70 leading-relaxed">@faq.Content</div>
+                                </details>
+                            }
                         </div>
-                    </details>
-                    <details class="group bg-amber-50/30 dark:bg-white/5 rounded-2xl border border-amber-100/50 dark:border-amber-900/20 overflow-hidden">
-                        <summary class="flex items-center justify-between p-6 cursor-pointer list-none">
-                            <span class="font-bold text-amber-900 dark:text-amber-100">
-                                Do you ship
-                                internationally?
-                            </span>
-                            <span class="material-symbols-outlined text-primary transition-transform group-open:rotate-45">add_circle</span>
-                        </summary>
-                        <div class="px-6 pb-6 text-amber-900/70 dark:text-amber-100/70 leading-relaxed">
-                            Currently, we only ship within the continental United States and Canada to ensure
-                            our cookies reach you while they're still fresh and delicious.
-                        </div>
-                    </details>
-                </div>
-            </section>
-            <section>
-                <h2 class="faq-category-title">
-                    <span class="inline-flex items-center justify-center bg-amber-100 dark:bg-amber-900/40 w-12 h-12 rounded-xl text-primary shrink-0">
-                        <span class="material-symbols-outlined text-2xl">nutrition</span>
-                    </span>
-                    Ingredients &amp; Allergens
-                </h2>
-                <div class="space-y-3">
-                    <details class="group bg-amber-50/30 dark:bg-white/5 rounded-2xl border border-amber-100/50 dark:border-amber-900/20 overflow-hidden">
-                        <summary class="flex items-center justify-between p-6 cursor-pointer list-none">
-                            <span class="font-bold text-amber-900 dark:text-amber-100">
-                                Are there gluten-free or
-                                vegan options?
-                            </span>
-                            <span class="material-symbols-outlined text-primary transition-transform group-open:rotate-45">add_circle</span>
-                        </summary>
-                        <div class="px-6 pb-6 text-amber-900/70 dark:text-amber-100/70 leading-relaxed">
-                            Yes! We have a dedicated "Wild &amp; Free" line that includes both vegan and
-                            gluten-free cookies. Please note that while we take every precaution, all cookies
-                            are baked in a facility that handles wheat, dairy, and nuts.
-                        </div>
-                    </details>
-                    <details class="group bg-amber-50/30 dark:bg-white/5 rounded-2xl border border-amber-100/50 dark:border-amber-900/20 overflow-hidden">
-                        <summary class="flex items-center justify-between p-6 cursor-pointer list-none">
-                            <span class="font-bold text-amber-900 dark:text-amber-100">
-                                How should I store my
-                                cookies?
-                            </span>
-                            <span class="material-symbols-outlined text-primary transition-transform group-open:rotate-45">add_circle</span>
-                        </summary>
-                        <div class="px-6 pb-6 text-amber-900/70 dark:text-amber-100/70 leading-relaxed">
-                            For the best experience, keep them in an airtight container at room temperature for
-                            up to 5 days. For that "just-out-of-the-oven" feel, pop them in the microwave for
-                            10-15 seconds!
-                        </div>
-                    </details>
-                </div>
-            </section>
-        </div>
-        <div class="mt-16 pt-8 border-t border-amber-100 dark:border-amber-800/30 text-center">
-            <p class="text-xs uppercase tracking-widest opacity-50">
-                Still have questions? Chat with a human at
-                support@tigervancookie.com
-            </p>
+                    </section>
+                }
+            }
         </div>
     </div>
 </div>
+@code {
+
+    [SupplyParameterFromQuery(Name = "search")]
+    public string? Search { get; set; }
+
+    private string localSearchTerm = "";
+    private IReadOnlyList<FaqCategoryDto> FaqCategories { get; set; } = [];
+    private IReadOnlyList<FaqCategoryItemDto> SearchResults { get; set; } = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(Search))
+        {
+            localSearchTerm = Search;
+            SearchResults = await ContentService.SearchAsync(Search);
+        }
+        else
+        {
+            FaqCategories = await ContentService.GetFaqsAsync();
+        }
+    }
+
+    private void TriggerSearch()
+    {
+        if (!string.IsNullOrWhiteSpace(localSearchTerm))
+            Nav.NavigateTo($"/legal/faq?search={Uri.EscapeDataString(localSearchTerm)}");
+    }
+
+    private void HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") TriggerSearch();
+    }
+
+    private void ClearSearch()
+    {
+        localSearchTerm = "";
+        Nav.NavigateTo("/legal/faq");
+    }
+}

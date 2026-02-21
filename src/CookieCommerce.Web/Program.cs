@@ -29,6 +29,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped<ICookieService, CookieService>();
 builder.Services.AddSingleton<ICartService, MockCartService>();
 builder.Services.AddSingleton<IAuthService, FakeAuthService>();
+builder.Services.AddSingleton<IContentService, FakeContentService>();
 
 var app = builder.Build();
 

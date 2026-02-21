@@ -124,6 +124,18 @@ nav a.active {
     @apply mb-6 leading-relaxed text-amber-900/80 dark:text-amber-100/80;
 }
 
+.cookie-table {
+    @apply w-full text-left border-collapse mb-8 rounded-xl overflow-hidden;
+}
+
+.cookie-table th {
+    @apply bg-amber-100 dark:bg-amber-900/40 p-4 text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-100;
+}
+
+.cookie-table td {
+    @apply p-4 text-sm border-b border-amber-50 dark:border-amber-900/20;
+}
+
 .dark .pattern-bg {
     opacity: 0.05;
     background-image: radial-gradient(#FEF3C7 1px, transparent 1px);

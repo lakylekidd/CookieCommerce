@@ -1,0 +1,347 @@
+﻿@page "/shop/checkout"
+@rendermode InteractiveServer
+@layout CheckoutLayout
+
+<main class="container mx-auto px-6 py-12">
+    <div class="flex flex-col lg:flex-row gap-6">
+
+        <div class="lg:w-2/3 space-y-6">
+            <!-- Customer Information -->
+            <div class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
+            <div class="p-6 flex items-center gap-4 border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
+                <span class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">1</span>
+                <h2 class="font-display font-bold text-xl dark:text-amber-50">Customer Information</h2>
+            </div>
+    
+            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-12 relative">
+                <div class="hidden md:block absolute left-1/2 top-12 bottom-12 w-px bg-amber-100 dark:bg-amber-900/30"></div>
+        
+                <div class="space-y-4">
+                    <h3 class="font-display font-bold text-xl text-text-light dark:text-amber-100">New Customer?</h3>
+                    <p class="text-sm text-gray-500 dark:text-amber-100/50">Checkout as a guest or create an account.</p>
+            
+                    <div class="space-y-4 pt-2">
+                        <div>
+                            <label class="block text-xs font-bold text-primary mb-1 uppercase tracking-wider">
+                                Email Address *
+                            </label>
+                            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                   placeholder="roar@tiger.nl" required type="email" />
+                        </div>
+
+                        <div class="space-y-4">
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <input class="w-5 h-5 rounded-full border-amber-200 dark:border-amber-900/50 text-primary focus:ring-primary cursor-pointer bg-transparent"
+                                       type="checkbox" 
+                                       @bind="shouldCreateAccount" />
+                                <span class="text-sm font-semibold text-gray-600 dark:text-amber-100/70 group-hover:text-primary transition-colors">
+                                    Create an account?
+                                </span>
+                            </label>
+
+                            @if (shouldCreateAccount)
+                            {
+                                <div class="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 dark:text-amber-100/40 mb-1 uppercase tracking-wider">Password</label>
+                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                               placeholder="••••••••" type="password" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 dark:text-amber-100/40 mb-1 uppercase tracking-wider">Confirm Password</label>
+                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                               placeholder="••••••••" type="password" />
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="font-display font-bold text-xl text-text-light dark:text-amber-100">Already a Tiger?</h3>
+                    <p class="text-sm text-gray-500 dark:text-amber-100/50">Log in to speed up your checkout.</p>
+                    <div class="pt-2">
+                        <button class="cursor-pointer w-full py-3 px-6 rounded-full border-2 border-primary font-bold text-primary hover:bg-amber-50 dark:hover:bg-primary/10 transition-colors text-lg">
+                            Sign In
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+            <!-- Customer Information -->
+
+            <!-- Contact & Shipping -->
+            <div class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
+                <div class="p-6 flex items-center justify-between border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
+                    <div class="flex items-center gap-4">
+                        <span class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">2</span>
+                        <h2 class="font-display font-bold text-xl dark:text-amber-50">Contact &amp; Shipping</h2>
+                    </div>
+                    <span class="material-symbols-outlined text-primary">expand_more</span>
+                </div>
+
+                <div class="p-8 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">First Name</label>
+                            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                   placeholder="Roary" type="text" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Last Name</label>
+                            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                   placeholder="Tiger" type="text" />
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Shipping Address</label>
+                            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                   placeholder="123 Jungle Road" type="text" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">City</label>
+                            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                   placeholder="Amsterdam" type="text" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Postal Code</label>
+                            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                   placeholder="1011 AB" type="text" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Contact & Shipping -->
+
+            <!-- Delivery Method -->
+            <div class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
+                <div class="p-6 flex items-center justify-between border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
+                    <div class="flex items-center gap-4">
+                        <span class="w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">3</span>
+                        <h2 class="font-display font-bold text-xl dark:text-amber-50">Delivery Method</h2>
+                    </div>
+                    <span class="material-symbols-outlined dark:text-amber-100/50">expand_more</span>
+                </div>
+
+                <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <label class="relative flex p-4 cursor-pointer rounded-2xl border-2 transition-all duration-200
+                            @(selectedDelivery == "standard"
+                                           ? "border-primary bg-amber-50/50 dark:bg-primary/10 shadow-md"
+                                           : "border-amber-100 dark:border-amber-900/30 hover:border-amber-200 dark:hover:border-primary/40")">
+
+                        <input type="radio" name="delivery" value="standard"
+                               class="mt-1 w-4 h-4 text-primary focus:ring-primary dark:bg-surface-dark border-amber-300 dark:border-amber-700"
+                               checked="@(selectedDelivery == "standard")"
+                               @onchange="@(() => selectedDelivery = "standard")" />
+
+                        <div class="ml-4">
+                            <span class="block font-bold dark:text-amber-50">Standard Shipping</span>
+                            <span class="block text-sm text-gray-500 dark:text-amber-100/50">3-5 business days</span>
+                        </div>
+                        <span class="ml-auto font-bold dark:text-amber-50">$4.95</span>
+                    </label>
+
+                    <label class="relative flex p-4 cursor-pointer rounded-2xl border-2 transition-all duration-200
+                            @(selectedDelivery == "express"
+                                           ? "border-primary bg-amber-50/50 dark:bg-primary/10 shadow-md"
+                                           : "border-amber-100 dark:border-amber-900/30 hover:border-amber-200 dark:hover:border-primary/40")">
+
+                        <input type="radio" name="delivery" value="express"
+                               class="mt-1 w-4 h-4 text-primary focus:ring-primary dark:bg-surface-dark border-amber-300 dark:border-amber-700"
+                               checked="@(selectedDelivery == "express")"
+                               @onchange="@(() => selectedDelivery = "express")" />
+
+                        <div class="ml-4">
+                            <span class="block font-bold dark:text-amber-50">Express Roar</span>
+                            <span class="block text-sm text-gray-500 dark:text-amber-100/50">Next day delivery</span>
+                        </div>
+                        <span class="ml-auto font-bold dark:text-amber-50">$12.50</span>
+                    </label>
+
+                </div>
+            </div>
+            <!-- Delivery Method -->
+
+            <!-- Payment Method -->
+            <div class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
+                <div class="p-6 flex items-center justify-between border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
+                    <div class="flex items-center gap-4">
+                        <span class="w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">4</span>
+                        <h2 class="font-display font-bold text-xl dark:text-amber-50">Payment Method</h2>
+                    </div>
+                    <span class="material-symbols-outlined dark:text-amber-100/50">expand_more</span>
+                </div>
+
+                <div class="p-8 space-y-6">
+                    <div class="flex gap-4 mb-6">
+                        <button @onclick='() => paymentMethod = "card"' type="button"
+                                class="cursor-pointer flex-1 py-3 px-6 rounded-full border-2 transition-all flex items-center justify-center gap-2 font-bold
+                                    @(paymentMethod == "card"
+                                                    ? "border-primary text-primary bg-amber-50 dark:bg-primary/10"
+                                                    : "border-amber-100 dark:border-amber-900/30 text-gray-400 dark:text-gray-500 hover:border-amber-200")">
+                            <span class="material-symbols-outlined">credit_card</span> Credit Card
+                        </button>
+
+                        <button @onclick='() => paymentMethod = "paypal"' type="button"
+                                class="cursor-pointer flex-1 py-3 px-6 rounded-full border-2 transition-all flex items-center justify-center gap-2 font-bold
+                                    @(paymentMethod == "paypal"
+                                                    ? "border-primary text-primary bg-amber-50 dark:bg-primary/10"
+                                                    : "border-amber-100 dark:border-amber-900/30 text-gray-400 dark:text-gray-500 hover:border-amber-200")">
+                            <span class="material-symbols-outlined">payments</span> PayPal
+                        </button>
+                    </div>
+
+                    @if (paymentMethod == "card")
+                    {
+                        <div class="space-y-4 animate-in fade-in duration-300">
+                            @* NOTE: If using Stripe, you'd replace these manual inputs 
+                               with a single <div id="payment-element"></div> 
+                            *@
+                        <div>
+                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Card Number</label>
+                                <div class="relative">
+                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                           placeholder="0000 0000 0000 0000" type="text" />
+                                    <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 dark:text-amber-100/30">lock</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Expiry Date</label>
+                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                           placeholder="MM/YY" type="text" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">CVC</label>
+                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                           placeholder="123" type="text" />
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-8 border-2 border-dashed border-amber-100 dark:border-amber-900/30 rounded-2xl text-center animate-in fade-in duration-300">
+                            <p class="text-gray-500 dark:text-amber-100/50">You will be redirected to PayPal to complete your purchase safely.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+            <!-- Payment Method -->
+        </div>
+
+        <div class="lg:w-1/3 space-y-6">
+            <div class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 p-8 cookie-shadow">
+                <div class="flex items-center gap-3 mb-10">
+                    <span class="material-symbols-outlined text-primary text-3xl">shopping_basket</span>
+                    <h2 class="font-display font-bold text-3xl text-text-light dark:text-amber-50">Your Cookie Jar</h2>
+                </div>
+
+                <div class="space-y-8 mb-10">
+                    <div class="flex items-center gap-5">
+                        <div class="relative w-20 h-20">
+                            <div class="w-full h-full rounded-2xl overflow-hidden border-2 border-amber-50 dark:border-amber-900/30 shadow-sm">
+                                <img alt="Chocolate Chunk" class="w-full h-full object-cover"
+                                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeiqI9Umndonm4v80T6b-moERbzC1sTOw7Bkt2035Se6-qfrM2_DMYQQGNpX1q9ZXtCy4qnGBvK2ey2XDPfbCHUE5FlKo4g4qB1toFZlprrm0A4IxtLRGOpqWct-oqOHHFI_HoAeaDf6QXlhJo9ycpxhZ5EqjBcZBfXJGSCIHnPLSEWD6jz9J61WJCH9fPdC2d0sLrGnu0DKvFpXQYnSj5ke_4eG8wKYO_VYMXos8oKzwU2ztEV-PWsIX7qLV2ck1t6YoLjS5B2w" />
+                            </div>
+                            <span class="absolute -top-2 -right-2 w-7 h-7 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-surface-dark">2</span>
+                        </div>
+                        <div class="flex-grow">
+                            <h4 class="font-bold text-lg text-text-light dark:text-amber-100 leading-tight">Chocolate Chunk</h4>
+                            <p class="text-sm text-gray-400 dark:text-amber-100/40">Original / Chunky</p>
+                        </div>
+                        <span class="font-bold text-lg text-text-light dark:text-amber-50">$18.00</span>
+                    </div>
+
+                    <div class="flex items-center gap-5">
+                        <div class="relative w-20 h-20">
+                            <div class="w-full h-full rounded-2xl overflow-hidden border-2 border-amber-50 dark:border-amber-900/30 shadow-sm bg-white dark:bg-white/10">
+                                <img alt="Tiger Stripe" class="w-full h-full object-contain p-1"
+                                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXTbkwJrJ9i2uSNY-6ivy7Id_ZXy61SfjAqYWdmIVkZBmr3Vm8wVqcI78dhf7Fv_1XB2rDlfsBsdvhAJjg6PNOu8dnBTGQ4fxgYagl_uIal69aByjCbq4htnJQdtACMFhc7KXD58W6C7w_94X2Iqmk1PfbwiUSwQu5NaRw2WlqaZ1Vw0z5pdl6SQHxkDRUWgUULNaSkBbV6OSqrfAVJP3vhLa1b9L9-66iRqgsQeYeJZGPUDMWhrNh84jNgxY76-dhg9DR1CLpHQ" />
+                            </div>
+                            <span class="absolute -top-2 -right-2 w-7 h-7 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-surface-dark">1</span>
+                        </div>
+                        <div class="flex-grow">
+                            <h4 class="font-bold text-lg text-text-light dark:text-amber-100 leading-tight">Tiger Stripe</h4>
+                            <p class="text-sm text-gray-400 dark:text-amber-100/40">Cocoa & Zest</p>
+                        </div>
+                        <span class="font-bold text-lg text-text-light dark:text-amber-50">$9.50</span>
+                    </div>
+                </div>
+
+                <div class="border-t border-amber-50 dark:border-amber-900/20 pt-8 space-y-4 mb-10">
+                    <div class="flex justify-between text-gray-500 dark:text-amber-100/60 font-semibold">
+                        <span>Subtotal</span>
+                        <span class="text-text-light dark:text-amber-100">$27.50</span>
+                    </div>
+                    <div class="flex justify-between text-gray-500 dark:text-amber-100/60 font-semibold items-center">
+                        <span>Shipping</span>
+                        <span class="text-text-light dark:text-amber-100">$4.95</span>
+                    </div>
+                    <div class="flex justify-between text-gray-500 dark:text-amber-100/60 font-semibold">
+                        <span>Taxes</span>
+                        <span class="text-text-light dark:text-amber-100">$2.48</span>
+                    </div>
+            
+                    <div class="pt-6 flex justify-between items-end border-t border-amber-50 dark:border-amber-900/20">
+                        <div>
+                            <span class="block text-gray-400 dark:text-amber-100/40 text-sm font-bold uppercase tracking-wider">Total</span>
+                            <span class="text-xs text-gray-400 dark:text-amber-100/40 font-bold">USD</span>
+                        </div>
+                        <span class="text-4xl font-display font-bold text-primary">$34.93</span>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <div class="relative flex items-center border-2 border-dashed border-amber-200 dark:border-amber-900/30 rounded-2xl p-4 bg-amber-50/20 dark:bg-amber-900/10 group focus-within:border-primary transition-colors">
+                        <span class="material-symbols-outlined text-primary mr-3">sell</span>
+                        <input class="bg-transparent border-none focus:ring-0 p-0 flex-grow text-text-light dark:text-white placeholder-gray-400 dark:placeholder-amber-100/30 font-semibold"
+                               placeholder="Promo code" type="text" />
+                        <button class="text-primary font-bold hover:text-amber-700 dark:hover:text-amber-400 px-2">Apply</button>
+                    </div>
+                </div>
+
+                <button class="w-full bg-primary hover:bg-amber-700 text-white py-5 rounded-full font-bold text-xl shadow-xl shadow-amber-500/30 dark:shadow-primary/10 transition-all flex items-center justify-center gap-3">
+                    Complete Order
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+
+                <p class="text-center text-[10px] text-gray-400 dark:text-amber-100/30 mt-6 flex items-center justify-center gap-2 uppercase tracking-widest font-bold">
+                    <span class="material-symbols-outlined text-sm">security</span>
+                    Secure Encrypted Checkout
+                </p>
+            </div>
+
+            <div class="border-2 border-dashed border-amber-300 dark:border-amber-900/40 rounded-3xl p-6 bg-amber-50/50 dark:bg-amber-900/10 flex items-center gap-4">
+                <div class="flex-shrink-0 w-14 h-14 rounded-full bg-white dark:bg-surface-dark border-2 border-amber-100 dark:border-amber-900/30 flex items-center justify-center shadow-sm">
+                    <span class="material-symbols-outlined text-primary text-2xl">headset_mic</span>
+                </div>
+                <div>
+                    <h3 class="font-display font-bold text-lg text-text-light dark:text-amber-50">Roar-worthy Service</h3>
+                    <p class="text-xs text-gray-500 dark:text-amber-100/50 mb-2">Need help with your order? We're here for you.</p>
+                    <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-primary">
+                        <a class="flex items-center gap-1 hover:underline" href="tel:+1800TIGER">
+                            <span class="material-symbols-outlined text-sm">call</span>
+                            +1 800-TIGER
+                        </a>
+                        <a class="flex items-center gap-1 hover:underline" href="#">
+                            <span class="material-symbols-outlined text-sm">chat_bubble</span>
+                            Live Chat
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+@code {
+    private bool shouldCreateAccount = false;
+    private string selectedDelivery = "standard";
+    private string paymentMethod = "card";
+}

@@ -37,29 +37,29 @@
             </div>
 
             <!-- Signup Form -->
-            <EditForm Model="registerData" OnValidSubmit="HandleRegistration" class="space-y-6">
+            <EditForm Model="RegistrationForm" OnValidSubmit="HandleRegistration" class="space-y-6">
                 <DataAnnotationsValidator />
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
                         <label class="block text-sm font-bold ml-1">First Name</label>
-                        <InputText @bind-Value="registerData.FirstName"
+                        <InputText @bind-Value="RegistrationForm.FirstName"
                                    placeholder="Tiger"
                                    class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none" />
-                        <ValidationMessage For="@(() => registerData.FirstName)" class="text-red-500 text-xs ml-1" />
+                        <ValidationMessage For="@(() => RegistrationForm.FirstName)" class="text-red-500 text-xs ml-1" />
                     </div>
                     <div class="space-y-2">
                         <label class="block text-sm font-bold ml-1">Last Name</label>
-                        <InputText @bind-Value="registerData.LastName"
+                        <InputText @bind-Value="RegistrationForm.LastName"
                                    placeholder="Woods"
                                    class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none" />
-                        <ValidationMessage For="@(() => registerData.LastName)" class="text-red-500 text-xs ml-1" />
+                        <ValidationMessage For="@(() => RegistrationForm.LastName)" class="text-red-500 text-xs ml-1" />
                     </div>
                 </div>
 
                 <div class="space-y-2">
                     <label class="block text-sm font-bold ml-1">Date of Birth</label>
-                    <InputDate @bind-Value="registerData.DateOfBirth"
+                    <InputDate @bind-Value="RegistrationForm.DateOfBirth"
                                class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none" />
                     <p class="text-xs text-amber-600 dark:text-amber-400 italic ml-1">
                         Optional. Fill this in if you'd like to receive a special gift on your birthday! 🎁
@@ -68,45 +68,70 @@
 
                 <div class="space-y-2">
                     <label class="block text-sm font-bold ml-1">Email Address</label>
-                    <InputText @bind-Value="registerData.Email"
+                    <InputText @bind-Value="RegistrationForm.Email"
                                type="email" placeholder="roar@tiger.com"
                                class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none" />
-                    <ValidationMessage For="@(() => registerData.Email)" class="text-red-500 text-xs ml-1" />
+                    <ValidationMessage For="@(() => RegistrationForm.Email)" class="text-red-500 text-xs ml-1" />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
                         <label class="block text-sm font-bold ml-1">Password</label>
-                        <InputText @bind-Value="registerData.Password"
+                        <input @bind="RegistrationForm.Password"
+                                   @bind:event="oninput"
                                    type="password" placeholder="••••••••"
                                    class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none" />
-                        <ValidationMessage For="@(() => registerData.Password)" class="text-red-500 text-xs ml-1" />
+                        <ValidationMessage For="@(() => RegistrationForm.Password)" class="text-red-500 text-xs ml-1" />
                     </div>
                     <div class="space-y-2">
                         <label class="block text-sm font-bold ml-1">Confirm Password</label>
-                        <InputText @bind-Value="registerData.ConfirmPassword"
+                        <input @bind="RegistrationForm.ConfirmPassword"
+                                   @bind:event="oninput"
                                    type="password" placeholder="••••••••"
                                    class="w-full px-5 py-3 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-background-dark/50 focus:bg-white transition-all outline-none" />
-                        <ValidationMessage For="@(() => registerData.ConfirmPassword)" class="text-red-500 text-xs ml-1" />
+                        <ValidationMessage For="@(() => RegistrationForm.ConfirmPassword)" class="text-red-500 text-xs ml-1" />
                     </div>
                 </div>
 
+                <!-- Password Strength Indicator -->
+                <div class="mt-2 px-1">
+                    <div class="h-1.5 w-full bg-gray-200 dark:bg-amber-900/20 rounded-full overflow-hidden">
+                        <div class="h-full transition-all duration-500 @GetStrengthColor()"
+                             style="width: @(GetPasswordStrength() * 25)%">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between mt-1">
+                        <p class="text-[10px] uppercase font-bold tracking-tighter text-gray-400">
+                            Strength: @(GetPasswordStrength() == 4 ? "Tiger Proof" : "Weak")
+                        </p>
+
+                        @if (!string.IsNullOrEmpty(RegistrationForm.ConfirmPassword))
+                        {
+                            <p class="text-[10px] uppercase font-bold tracking-tighter @(RegistrationForm.Password == RegistrationForm.ConfirmPassword ? "text-green-500" : "text-red-500")">
+                                @(RegistrationForm.Password == RegistrationForm.ConfirmPassword ? "Passwords Match" : "Passwords do not match")
+                            </p>
+                        }
+                    </div>
+                </div>
+                <!-- Password Strength Indicator -->
+
                 <div class="space-y-4 py-2">
                     <div class="flex items-start gap-3">
-                        <InputCheckbox @bind-Value="registerData.SubscribeNewsletter" id="newsletter"
+                        <InputCheckbox @bind-Value="RegistrationForm.SubscribeNewsletter" id="newsletter"
                                        class="mt-1 h-5 w-5 rounded border-amber-200 text-primary focus:ring-primary cursor-pointer" />
                         <label class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer" for="newsletter">
                             I'd love to receive the secret Tiger newsletter for exclusive treats and early access.
                         </label>
                     </div>
                     <div class="flex items-start gap-3">
-                        <InputCheckbox @bind-Value="registerData.AgreeToTerms" id="terms"
+                        <InputCheckbox @bind-Value="RegistrationForm.AgreeToTerms" id="terms"
                                        class="mt-1 h-5 w-5 rounded border-amber-200 text-primary focus:ring-primary cursor-pointer" />
                         <label class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer" for="terms">
                             I agree to the Terms and Privacy Policy.
                         </label>
                     </div>
-                    <ValidationMessage For="@(() => registerData.AgreeToTerms)" class="text-red-500 text-xs ml-1" />
+                    <ValidationMessage For="@(() => RegistrationForm.AgreeToTerms)" class="text-red-500 text-xs ml-1" />
                 </div>
 
                 @if (!string.IsNullOrEmpty(errorMessage))
@@ -150,7 +175,7 @@
 </main>
 
 @code {
-    private SignupDto registerData = new();
+    private SignupDto RegistrationForm = new();
     private string? errorMessage;
     private bool isSubmitting;
 
@@ -162,7 +187,7 @@
         try
         {
             // Using the Auth service we created previously
-            var result = await Auth.SignUpAsync(registerData);
+            var result = await Auth.SignUpAsync(RegistrationForm);
 
             if (result.Success)
             {
@@ -182,4 +207,25 @@
             isSubmitting = false;
         }
     }
+
+    private int GetPasswordStrength()
+    {
+        if (string.IsNullOrEmpty(RegistrationForm.Password)) return 0;
+        int score = 0;
+        if (RegistrationForm.Password.Length >= 8) score++;
+        if (System.Text.RegularExpressions.Regex.IsMatch(RegistrationForm.Password, @"[A-Z]")) score++;
+        if (System.Text.RegularExpressions.Regex.IsMatch(RegistrationForm.Password, @"[0-9]")) score++;
+        if (System.Text.RegularExpressions.Regex.IsMatch(RegistrationForm.Password, @"[^a-zA-Z0-9]")) score++;
+        return score;
+    }
+
+    private string GetStrengthColor() => GetPasswordStrength() switch
+    {
+        1 => "bg-red-500",
+        2 => "bg-orange-500",
+        3 => "bg-yellow-500",
+        4 => "bg-green-500",
+        _ => "bg-gray-200"
+    };
+
 }

@@ -1,4 +1,7 @@
 ﻿@page "/shop/checkout"
+@using CookieCommerce.Web.Models.Auth
+@using CookieCommerce.Web.Models.Cart
+@using CookieCommerce.Web.Services
 @rendermode InteractiveServer
 @layout CheckoutLayout
 
@@ -6,231 +9,293 @@
     <div class="flex flex-col lg:flex-row gap-6">
 
         <div class="lg:w-2/3 space-y-6">
+
             <!-- Customer Information -->
-            <div class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
-            <div class="p-6 flex items-center gap-4 border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
-                <span class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">1</span>
-                <h2 class="font-display font-bold text-xl dark:text-amber-50">Customer Information</h2>
-            </div>
-    
-            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-12 relative">
-                <div class="hidden md:block absolute left-1/2 top-12 bottom-12 w-px bg-amber-100 dark:bg-amber-900/30"></div>
-        
-                <div class="space-y-4">
-                    <h3 class="font-display font-bold text-xl text-text-light dark:text-amber-100">New Customer?</h3>
-                    <p class="text-sm text-gray-500 dark:text-amber-100/50">Checkout as a guest or create an account.</p>
-            
-                    <div class="space-y-4 pt-2">
-                        <div>
-                            <label class="block text-xs font-bold text-primary mb-1 uppercase tracking-wider">
-                                Email Address *
-                            </label>
-                            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
-                                   placeholder="roar@tiger.nl" required type="email" />
+            <div class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow transition-all duration-500">
+                <div class="p-6 flex items-center gap-4 border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
+                    <span class="w-8 h-8 rounded-full @(currentStep >= 1 ? "bg-primary text-white" : "bg-gray-200 text-gray-500") flex items-center justify-center font-bold">1</span>
+                    <h2 class="font-display font-bold text-xl dark:text-amber-50">Customer Information</h2>
+                    @if (Auth.IsLoggedIn)
+                    {
+                        <div class="ml-auto flex justify-end items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold uppercase tracking-wider">
+                            <span class="material-symbols-outlined text-sm">check_circle</span>
+                            Logged In
                         </div>
+                    }
+                    @if (currentStep > 1) {
+                        <button @onclick="() => GoToStep(1)" class="ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
+                    }
+                </div>
 
-                        <div class="space-y-4">
-                            <label class="flex items-center gap-3 cursor-pointer group">
-                                <input class="w-5 h-5 rounded-full border-amber-200 dark:border-amber-900/50 text-primary focus:ring-primary cursor-pointer bg-transparent"
-                                       type="checkbox" 
-                                       @bind="shouldCreateAccount" />
-                                <span class="text-sm font-semibold text-gray-600 dark:text-amber-100/70 group-hover:text-primary transition-colors">
-                                    Create an account?
-                                </span>
-                            </label>
-
-                            @if (shouldCreateAccount)
-                            {
-                                <div class="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-500 dark:text-amber-100/40 mb-1 uppercase tracking-wider">Password</label>
-                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
-                                               placeholder="••••••••" type="password" />
+                @if (currentStep == 1) {
+                    <div class="p-8 animate-in fade-in slide-in-from-top-4 duration-300">
+                        @if(Auth.IsLoggedIn && User is not null) 
+                        {
+                            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-primary">
+                                        <span class="material-symbols-outlined text-3xl">person</span>
                                     </div>
+                
                                     <div>
-                                        <label class="block text-xs font-bold text-gray-500 dark:text-amber-100/40 mb-1 uppercase tracking-wider">Confirm Password</label>
-                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
-                                               placeholder="••••••••" type="password" />
+                                        <h3 class="font-display font-bold text-xl text-text-light dark:text-amber-100">
+                                            Welcome back, @User.FirstName!
+                                        </h3>
+                                        <p class="text-sm text-gray-500 dark:text-amber-100/50">
+                                            Checking out as <span class="font-bold text-primary">@User.Email</span>
+                                        </p>
                                     </div>
                                 </div>
-                            }
-                        </div>
-                    </div>
-                </div>
 
-                <div class="space-y-4">
-                    <h3 class="font-display font-bold text-xl text-text-light dark:text-amber-100">Already a Tiger?</h3>
-                    <p class="text-sm text-gray-500 dark:text-amber-100/50">Log in to speed up your checkout.</p>
-                    <div class="pt-2">
-                        <button class="cursor-pointer w-full py-3 px-6 rounded-full border-2 border-primary font-bold text-primary hover:bg-amber-50 dark:hover:bg-primary/10 transition-colors text-lg">
-                            Sign In
-                        </button>
+                                <div class="flex items-center gap-4 w-full md:w-auto">
+                                    <button @onclick="HandleSignOut" 
+                                            class="cursor-pointer flex-1 md:flex-none px-6 py-2 rounded-full border border-gray-200 dark:border-amber-900/50 text-gray-500 dark:text-amber-100/40 text-sm font-bold hover:bg-gray-50 dark:hover:bg-amber-900/10 transition-colors">
+                                        Not you? Sign out
+                                    </button>
+                                    <button @onclick="() => GoToStep(2)" class="cursor-pointer bg-primary text-white px-8 py-3 rounded-full font-bold">Continue</button>
+                                </div>
+                            </div>
+                        } 
+                        else 
+                        {
+                            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-12 relative">
+                                <div class="hidden md:block absolute left-1/2 top-12 bottom-12 w-px bg-amber-100 dark:bg-amber-900/30"></div>
+        
+                                <div class="space-y-4">
+                                    <h3 class="font-display font-bold text-xl text-text-light dark:text-amber-100">New Customer?</h3>
+                                    <p class="text-sm text-gray-500 dark:text-amber-100/50">Checkout as a guest or create an account.</p>
+            
+                                    <div class="space-y-4 pt-2">
+                                        <div>
+                                            <label class="block text-xs font-bold text-primary mb-1 uppercase tracking-wider">
+                                                Email Address *
+                                            </label>
+                                            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                                   placeholder="roar@tiger.nl" required type="email" />
+                                        </div>
+
+                                        <div class="space-y-4">
+                                            <label class="flex items-center gap-3 cursor-pointer group">
+                                                <input class="w-5 h-5 rounded-full border-amber-200 dark:border-amber-900/50 text-primary focus:ring-primary cursor-pointer bg-transparent"
+                                                       type="checkbox" 
+                                                       @bind="shouldCreateAccount" />
+                                                <span class="text-sm font-semibold text-gray-600 dark:text-amber-100/70 group-hover:text-primary transition-colors">
+                                                    Create an account?
+                                                </span>
+                                            </label>
+
+                                            @if (shouldCreateAccount)
+                                            {
+                                                <div class="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-500 dark:text-amber-100/40 mb-1 uppercase tracking-wider">Password</label>
+                                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                                               placeholder="••••••••" type="password" />
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-500 dark:text-amber-100/40 mb-1 uppercase tracking-wider">Confirm Password</label>
+                                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                                               placeholder="••••••••" type="password" />
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <h3 class="font-display font-bold text-xl text-text-light dark:text-amber-100">Already a Tiger?</h3>
+                                    <p class="text-sm text-gray-500 dark:text-amber-100/50">Log in to speed up your checkout.</p>
+                                    <div class="pt-2">
+                                        <NavLink 
+                                            href="@($"/auth/signin?returnUrl={Uri.EscapeDataString(Navigation.Uri)}")" 
+                                            class="block w-full py-3 px-6 rounded-full border-2 border-primary font-bold text-primary hover:bg-amber-50 dark:hover:bg-primary/10 transition-colors text-lg text-center">
+                                        Sign In
+                                    </NavLink>
+                                    </div>
+                                </div>
+                            </div>
+                        }
                     </div>
-                </div>
-            </div>
-        </div>
+                }
+            </div>      
             <!-- Customer Information -->
 
             <!-- Contact & Shipping -->
-            <div class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
-                <div class="p-6 flex items-center justify-between border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
-                    <div class="flex items-center gap-4">
-                        <span class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">2</span>
-                        <h2 class="font-display font-bold text-xl dark:text-amber-50">Contact &amp; Shipping</h2>
-                    </div>
-                    <span class="material-symbols-outlined text-primary">expand_more</span>
+            <div class="@(currentStep < 2 ? "opacity-60" : "cookie-shadow") bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
+                <div class="p-6 flex items-center gap-4 border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
+                    <span class="@(currentStep >= 2 ? "bg-primary text-white" : "bg-gray-200 text-gray-500") w-8 h-8 rounded-full flex items-center justify-center font-bold">2</span>
+                    <h2 class="font-display font-bold text-xl dark:text-amber-50">Contact & Shipping</h2>
+        
+                    @if (currentStep > 2) {
+                        <button @onclick="() => GoToStep(2)" class="ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
+                    }
                 </div>
 
-                <div class="p-8 space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">First Name</label>
-                            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                   placeholder="Roary" type="text" />
-                        </div>
+                @if (currentStep == 2) {
+                    <div class="p-8 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">First Name</label>
+                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                       placeholder="Roary" type="text" />
+                            </div>
 
-                        <div>
-                            <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Last Name</label>
-                            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                   placeholder="Tiger" type="text" />
-                        </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Last Name</label>
+                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                       placeholder="Tiger" type="text" />
+                            </div>
 
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Shipping Address</label>
-                            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                   placeholder="123 Jungle Road" type="text" />
-                        </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Shipping Address</label>
+                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                       placeholder="123 Jungle Road" type="text" />
+                            </div>
 
-                        <div>
-                            <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">City</label>
-                            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                   placeholder="Amsterdam" type="text" />
-                        </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">City</label>
+                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                       placeholder="Amsterdam" type="text" />
+                            </div>
 
-                        <div>
-                            <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Postal Code</label>
-                            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                   placeholder="1011 AB" type="text" />
+                            <div>
+                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Postal Code</label>
+                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                       placeholder="1011 AB" type="text" />
+                            </div>
+                        </div>
+                        <div class="flex justify-end pt-4">
+                            <button @onclick="() => GoToStep(3)" class="cursor-pointer bg-primary text-white px-8 py-3 rounded-full font-bold">Continue to Delivery</button>
                         </div>
                     </div>
-                </div>
+                }
             </div>
             <!-- Contact & Shipping -->
 
             <!-- Delivery Method -->
-            <div class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
+            <div class="@(currentStep < 3 ? "opacity-60" : "cookie-shadow") bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
                 <div class="p-6 flex items-center justify-between border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
                     <div class="flex items-center gap-4">
-                        <span class="w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">3</span>
+                        <span class="@(currentStep >= 3 ? "bg-primary text-white" : "bg-gray-200 text-gray-500") w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">3</span>
                         <h2 class="font-display font-bold text-xl dark:text-amber-50">Delivery Method</h2>
                     </div>
-                    <span class="material-symbols-outlined dark:text-amber-100/50">expand_more</span>
+                    @if (currentStep > 3) {
+                        <button @onclick="() => GoToStep(4)" class="ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
+                    }
                 </div>
+                @if(currentStep == 3)
+                {
+                    <div class="p-8 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label class="relative flex p-4 cursor-pointer rounded-2xl border-2 transition-all duration-200
+                                    @(selectedDelivery == "standard"
+                                                   ? "border-primary bg-amber-50/50 dark:bg-primary/10 shadow-md"
+                                                   : "border-amber-100 dark:border-amber-900/30 hover:border-amber-200 dark:hover:border-primary/40")">
 
-                <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input type="radio" name="delivery" value="standard"
+                                       class="mt-1 w-4 h-4 text-primary focus:ring-primary dark:bg-surface-dark border-amber-300 dark:border-amber-700"
+                                       checked="@(selectedDelivery == "standard")"
+                                       @onchange="@(() => selectedDelivery = "standard")" />
 
-                    <label class="relative flex p-4 cursor-pointer rounded-2xl border-2 transition-all duration-200
-                            @(selectedDelivery == "standard"
-                                           ? "border-primary bg-amber-50/50 dark:bg-primary/10 shadow-md"
-                                           : "border-amber-100 dark:border-amber-900/30 hover:border-amber-200 dark:hover:border-primary/40")">
+                                <div class="ml-4">
+                                    <span class="block font-bold dark:text-amber-50">Standard Shipping</span>
+                                    <span class="block text-sm text-gray-500 dark:text-amber-100/50">3-5 business days</span>
+                                </div>
+                                <span class="ml-auto font-bold dark:text-amber-50">$4.95</span>
+                            </label>
 
-                        <input type="radio" name="delivery" value="standard"
-                               class="mt-1 w-4 h-4 text-primary focus:ring-primary dark:bg-surface-dark border-amber-300 dark:border-amber-700"
-                               checked="@(selectedDelivery == "standard")"
-                               @onchange="@(() => selectedDelivery = "standard")" />
+                            <label class="relative flex p-4 cursor-pointer rounded-2xl border-2 transition-all duration-200
+                                    @(selectedDelivery == "express"
+                                                   ? "border-primary bg-amber-50/50 dark:bg-primary/10 shadow-md"
+                                                   : "border-amber-100 dark:border-amber-900/30 hover:border-amber-200 dark:hover:border-primary/40")">
 
-                        <div class="ml-4">
-                            <span class="block font-bold dark:text-amber-50">Standard Shipping</span>
-                            <span class="block text-sm text-gray-500 dark:text-amber-100/50">3-5 business days</span>
+                                <input type="radio" name="delivery" value="express"
+                                       class="mt-1 w-4 h-4 text-primary focus:ring-primary dark:bg-surface-dark border-amber-300 dark:border-amber-700"
+                                       checked="@(selectedDelivery == "express")"
+                                       @onchange="@(() => selectedDelivery = "express")" />
+
+                                <div class="ml-4">
+                                    <span class="block font-bold dark:text-amber-50">Express Roar</span>
+                                    <span class="block text-sm text-gray-500 dark:text-amber-100/50">Next day delivery</span>
+                                </div>
+                                <span class="ml-auto font-bold dark:text-amber-50">$12.50</span>
+                            </label>
                         </div>
-                        <span class="ml-auto font-bold dark:text-amber-50">$4.95</span>
-                    </label>
-
-                    <label class="relative flex p-4 cursor-pointer rounded-2xl border-2 transition-all duration-200
-                            @(selectedDelivery == "express"
-                                           ? "border-primary bg-amber-50/50 dark:bg-primary/10 shadow-md"
-                                           : "border-amber-100 dark:border-amber-900/30 hover:border-amber-200 dark:hover:border-primary/40")">
-
-                        <input type="radio" name="delivery" value="express"
-                               class="mt-1 w-4 h-4 text-primary focus:ring-primary dark:bg-surface-dark border-amber-300 dark:border-amber-700"
-                               checked="@(selectedDelivery == "express")"
-                               @onchange="@(() => selectedDelivery = "express")" />
-
-                        <div class="ml-4">
-                            <span class="block font-bold dark:text-amber-50">Express Roar</span>
-                            <span class="block text-sm text-gray-500 dark:text-amber-100/50">Next day delivery</span>
+                        <div class="flex justify-end pt-4">
+                            <button @onclick="() => GoToStep(4)" class="cursor-pointer bg-primary text-white px-8 py-3 rounded-full font-bold">Continue to Delivery</button>
                         </div>
-                        <span class="ml-auto font-bold dark:text-amber-50">$12.50</span>
-                    </label>
+                    </div>
+                }
 
-                </div>
             </div>
             <!-- Delivery Method -->
 
             <!-- Payment Method -->
-            <div class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
+            <div class=" @(currentStep < 4 ? "opacity-60" : "cookie-shadow") bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
                 <div class="p-6 flex items-center justify-between border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
                     <div class="flex items-center gap-4">
-                        <span class="w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">4</span>
+                        <span class="@(currentStep >= 4 ? "bg-primary text-white" : "bg-gray-200 text-gray-500") w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">4</span>
                         <h2 class="font-display font-bold text-xl dark:text-amber-50">Payment Method</h2>
                     </div>
-                    <span class="material-symbols-outlined dark:text-amber-100/50">expand_more</span>
                 </div>
+                @if(currentStep == 4)
+                {
+                    <div class="p-8 space-y-6">
+                        <div class="flex gap-4 mb-6">
+                            <button @onclick='() => paymentMethod = "card"' type="button"
+                                    class="cursor-pointer flex-1 py-3 px-6 rounded-full border-2 transition-all flex items-center justify-center gap-2 font-bold
+                                        @(paymentMethod == "card"
+                                                        ? "border-primary text-primary bg-amber-50 dark:bg-primary/10"
+                                                        : "border-amber-100 dark:border-amber-900/30 text-gray-400 dark:text-gray-500 hover:border-amber-200")">
+                                <span class="material-symbols-outlined">credit_card</span> Credit Card
+                            </button>
 
-                <div class="p-8 space-y-6">
-                    <div class="flex gap-4 mb-6">
-                        <button @onclick='() => paymentMethod = "card"' type="button"
-                                class="cursor-pointer flex-1 py-3 px-6 rounded-full border-2 transition-all flex items-center justify-center gap-2 font-bold
-                                    @(paymentMethod == "card"
-                                                    ? "border-primary text-primary bg-amber-50 dark:bg-primary/10"
-                                                    : "border-amber-100 dark:border-amber-900/30 text-gray-400 dark:text-gray-500 hover:border-amber-200")">
-                            <span class="material-symbols-outlined">credit_card</span> Credit Card
-                        </button>
+                            <button @onclick='() => paymentMethod = "paypal"' type="button"
+                                    class="cursor-pointer flex-1 py-3 px-6 rounded-full border-2 transition-all flex items-center justify-center gap-2 font-bold
+                                        @(paymentMethod == "paypal"
+                                                        ? "border-primary text-primary bg-amber-50 dark:bg-primary/10"
+                                                        : "border-amber-100 dark:border-amber-900/30 text-gray-400 dark:text-gray-500 hover:border-amber-200")">
+                                <span class="material-symbols-outlined">payments</span> PayPal
+                            </button>
+                        </div>
 
-                        <button @onclick='() => paymentMethod = "paypal"' type="button"
-                                class="cursor-pointer flex-1 py-3 px-6 rounded-full border-2 transition-all flex items-center justify-center gap-2 font-bold
-                                    @(paymentMethod == "paypal"
-                                                    ? "border-primary text-primary bg-amber-50 dark:bg-primary/10"
-                                                    : "border-amber-100 dark:border-amber-900/30 text-gray-400 dark:text-gray-500 hover:border-amber-200")">
-                            <span class="material-symbols-outlined">payments</span> PayPal
-                        </button>
+                        @if (paymentMethod == "card")
+                        {
+                            <div class="space-y-4 animate-in fade-in duration-300">
+                                @* NOTE: If using Stripe, you'd replace these manual inputs 
+                                   with a single <div id="payment-element"></div> 
+                                *@
+                            <div>
+                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Card Number</label>
+                                    <div class="relative">
+                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                               placeholder="0000 0000 0000 0000" type="text" />
+                                        <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 dark:text-amber-100/30">lock</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Expiry Date</label>
+                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                               placeholder="MM/YY" type="text" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">CVC</label>
+                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                               placeholder="123" type="text" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="p-8 border-2 border-dashed border-amber-100 dark:border-amber-900/30 rounded-2xl text-center animate-in fade-in duration-300">
+                                <p class="text-gray-500 dark:text-amber-100/50">You will be redirected to PayPal to complete your purchase safely.</p>
+                            </div>
+                        }
                     </div>
-
-                    @if (paymentMethod == "card")
-                    {
-                        <div class="space-y-4 animate-in fade-in duration-300">
-                            @* NOTE: If using Stripe, you'd replace these manual inputs 
-                               with a single <div id="payment-element"></div> 
-                            *@
-                        <div>
-                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Card Number</label>
-                                <div class="relative">
-                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
-                                           placeholder="0000 0000 0000 0000" type="text" />
-                                    <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 dark:text-amber-100/30">lock</span>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Expiry Date</label>
-                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
-                                           placeholder="MM/YY" type="text" />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">CVC</label>
-                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
-                                           placeholder="123" type="text" />
-                                </div>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="p-8 border-2 border-dashed border-amber-100 dark:border-amber-900/30 rounded-2xl text-center animate-in fade-in duration-300">
-                            <p class="text-gray-500 dark:text-amber-100/50">You will be redirected to PayPal to complete your purchase safely.</p>
-                        </div>
-                    }
-                </div>
+                }
             </div>
             <!-- Payment Method -->
         </div>
@@ -306,9 +371,14 @@
                     </div>
                 </div>
 
-                <button class="w-full bg-primary hover:bg-amber-700 text-white py-5 rounded-full font-bold text-xl shadow-xl shadow-amber-500/30 dark:shadow-primary/10 transition-all flex items-center justify-center gap-3">
-                    Complete Order
-                    <span class="material-symbols-outlined">arrow_forward</span>
+                <button disabled="@(currentStep < 4)" 
+                        class="w-full @(currentStep < 4 ? "bg-gray-300 cursor-not-allowed" : "bg-primary hover:bg-amber-700 shadow-xl") text-white py-5 rounded-full font-bold text-xl transition-all flex items-center justify-center gap-3">
+                    @if(currentStep < 4) {
+                        <span>Complete Previous Steps</span>
+                    } else {
+                        <span>Complete Order</span>
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    }
                 </button>
 
                 <p class="text-center text-[10px] text-gray-400 dark:text-amber-100/30 mt-6 flex items-center justify-center gap-2 uppercase tracking-widest font-bold">
@@ -341,7 +411,31 @@
 </main>
 
 @code {
+    private int currentStep = 1;
+    private UserDto? User { get; set; }
+    private CartDto? Cart { get; set; }
     private bool shouldCreateAccount = false;
     private string selectedDelivery = "standard";
     private string paymentMethod = "card";
+
+    [Inject] public IAuthService Auth { get; private set; }
+    [Inject] public NavigationManager Navigation { get; private set; }
+    [Inject] public ICartService CartService { get; private set; }
+    [Inject] public ICheckoutService CheckoutService { get; private set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = Auth.CurrentUser;
+        Cart = await CartService.GetCartAsync();
+    }
+
+    private void HandleSignOut()
+    {                Auth.Logout();
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);    
+    }
+
+    private void GoToStep(int step)
+    {
+        currentStep = step;
+    }
 }

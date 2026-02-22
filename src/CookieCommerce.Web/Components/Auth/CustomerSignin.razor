@@ -88,6 +88,9 @@
     private string Email { get; set; } = "";
     private string Password { get; set; } = "";
     private string ErrorMessage { get; set; } = "";
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
 
     private async Task HandleLogin()
     {
@@ -97,7 +100,8 @@
 
         if (success)
         {
-            Nav.NavigateTo("/storefront");
+            // Redirect back to where they came from, or home if empty
+            Nav.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/storefront" : ReturnUrl);
         }
         else
         {

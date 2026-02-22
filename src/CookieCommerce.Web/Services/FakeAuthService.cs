@@ -2,7 +2,7 @@
 
 namespace CookieCommerce.Web.Services;
 
-public class FakeAuthService : IAuthService
+public class FakeAuthService(ICartService cartService) : IAuthService
 {
     // Static list to keep users in memory during the session
     private static readonly List<UserDto> _users =
@@ -22,6 +22,7 @@ public class FakeAuthService : IAuthService
         if (user != null)
         {
             CurrentUser = user;
+            await AssignUserToCartAsync();
             return true;
         }
         return false;
@@ -43,5 +44,11 @@ public class FakeAuthService : IAuthService
     public void Logout()
     {
         CurrentUser = null;
+    }
+
+    private async Task AssignUserToCartAsync()
+    {
+        if (CurrentUser == null) return;
+        await cartService.ConvertToUserCartAsync(CurrentUser.Id);
     }
 }

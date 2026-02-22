@@ -67,4 +67,20 @@ public class MockCartService : ICartService
     }
 
     private void NotifyStateChanged() => OnCartUpdated?.Invoke();
+
+    public  Task ConvertToUserCartAsync(Guid userId)
+    {
+        if (_cart.UserId != null)
+        {
+            _cart = new CartDto
+            {
+                CartId = Guid.NewGuid(),
+                UserId = userId,
+                Items = []
+            };
+            return Task.CompletedTask;
+        }
+        _cart.UserId = userId;
+        return Task.CompletedTask;
+    }
 }

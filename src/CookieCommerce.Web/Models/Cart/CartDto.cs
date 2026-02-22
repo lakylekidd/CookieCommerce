@@ -7,6 +7,7 @@ public class CartDto
     public const decimal TAX_PERCENTAGE = 0.07m;
 
     public Guid CartId { get; set; }
+    public Guid? UserId { get; set; }
     public List<CartItemDto> Items { get; set; } = new List<CartItemDto>();
     public string CurrencySymbol { get; set; } = "$";
     public bool TaxIncluded { get; set; } = true;

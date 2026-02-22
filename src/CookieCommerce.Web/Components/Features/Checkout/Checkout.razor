@@ -1,4 +1,5 @@
 ﻿@page "/shop/checkout"
+@using System.ComponentModel.DataAnnotations
 @using CookieCommerce.Web.Models.Auth
 @using CookieCommerce.Web.Models.Cart
 @using CookieCommerce.Web.Models.Checkout
@@ -445,19 +446,21 @@
 
     private bool DisableContinueFromStep1()
     {
+        var result = new EmailAddressAttribute().IsValid(CheckoutEmail);
+
         if (string.IsNullOrWhiteSpace(CheckoutEmail) && !shouldCreateAccount) return true;
 
-        if (!string.IsNullOrEmpty(CheckoutEmail) && !shouldCreateAccount) return false;
+        if (!string.IsNullOrWhiteSpace(CheckoutEmail) && !shouldCreateAccount && result) return false;
 
         if (shouldCreateAccount 
-            && string.IsNullOrEmpty(CheckoutEmail)
+            && string.IsNullOrWhiteSpace(CheckoutEmail)
             || (string.IsNullOrEmpty(Password) || string.IsNullOrEmpty(ConfirmPassword))) return true;
 
         if (shouldCreateAccount 
-            && string.IsNullOrEmpty(CheckoutEmail)
-            || Password != ConfirmPassword) return true;
+            && string.IsNullOrWhiteSpace(CheckoutEmail)
+            || Password != ConfirmPassword) return true;     
 
-        return false;
+        return !result;
     }
 
     private bool DisableContinueFromStep2()

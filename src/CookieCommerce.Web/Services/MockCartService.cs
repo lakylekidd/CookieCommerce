@@ -1,4 +1,5 @@
-﻿using CookieCommerce.Web.Models.Cart;
+﻿using CookieCommerce.Web.Models;
+using CookieCommerce.Web.Models.Cart;
 using CookieCommerce.Web.Services.Products;
 
 namespace CookieCommerce.Web.Services;
@@ -82,5 +83,35 @@ public class MockCartService : ICartService
         }
         _cart.UserId = userId;
         return Task.CompletedTask;
+    }
+
+    public Task<ResultDto> ApplyPromotionCodeAsync(string code)
+    {
+        if (code == "DISCOUNT10" && _cart is not null)
+        {
+            _cart.Promotion = new CartPromotionDto
+            {
+                Code = code,
+                Description = "10% off your order!",
+                DiscountAmount = 0.1m,
+                IsPercentage = true
+            };
+            NotifyStateChanged();
+            return Task.FromResult(new ResultDto { Success = true, Message = "Promotion code applied successfully." });
+        }
+        
+        return Task.FromResult(new ResultDto { Success = false, Message = "Invalid promotion code." });
+    }
+
+    public Task<ResultDto> RemovePromotionCodeAsync(string code)
+    {
+        if (_cart.Promotion != null && _cart.Promotion.Code == code)
+        {
+            _cart.Promotion = null;
+            NotifyStateChanged();
+            return Task.FromResult(new ResultDto { Success = true, Message = "Promotion code removed successfully." });
+        }
+        
+        return Task.FromResult(new ResultDto { Success = false, Message = "Promotion code not found in cart." });
     }
 }

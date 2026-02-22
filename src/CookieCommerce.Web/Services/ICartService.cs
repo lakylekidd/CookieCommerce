@@ -1,4 +1,5 @@
-﻿using CookieCommerce.Web.Models.Cart;
+﻿using CookieCommerce.Web.Models;
+using CookieCommerce.Web.Models.Cart;
 
 namespace CookieCommerce.Web.Services;
 
@@ -11,4 +12,6 @@ public interface ICartService
     Task UpdateQuantityAsync(Guid itemId, int quantity);
     Task RemoveItemAsync(Guid itemId);
     Task AddToCartAsync(Guid productId, int quantity);
+    Task<ResultDto> ApplyPromotionCodeAsync(string code);
+    Task<ResultDto> RemovePromotionCodeAsync(string code);
 }

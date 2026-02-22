@@ -30,7 +30,9 @@
                         @* Bound to Email variable *@
                         <input @bind="Email"
                                class="w-full px-6 py-4 rounded-2xl bg-white dark:bg-surface-dark/50 border border-amber-100 dark:border-amber-800 focus:ring-primary focus:border-primary text-gray-800 dark:text-white placeholder-gray-400 transition-all"
-                               id="email" placeholder="tiger@forest.com" type="email" required />
+                               id="email" placeholder="tiger@forest.com" 
+                               tabindex="1"
+                               type="email" required />
                     </div>
 
                     <div>
@@ -42,7 +44,9 @@
                         @* Bound to Password variable *@
                         <input @bind="Password"
                                class="w-full px-6 py-4 rounded-2xl bg-white dark:bg-surface-dark/50 border border-amber-100 dark:border-amber-800 focus:ring-primary focus:border-primary text-gray-800 dark:text-white placeholder-gray-400 transition-all"
-                               id="password" placeholder="••••••••" type="password" required />
+                               id="password" placeholder="••••••••" 
+                               tabindex="2"
+                               type="password" required />
                     </div>
 
                     @if (!string.IsNullOrEmpty(ErrorMessage))

@@ -58,4 +58,11 @@ public class FakeAuthService(ICartService cartService) : IAuthService
         if (CurrentUser == null) return;
         await cartService.ConvertToUserCartAsync(CurrentUser.Id);
     }
+
+    public Task<AuthResult> UpdatePasswordAsync(string token, string newPassword)
+    {
+        // In a real implementation, you would verify the token and update the password.
+        // For this fake service, we'll just simulate success.
+        return Task.FromResult(AuthResult.Succeeded());
+    }
 }

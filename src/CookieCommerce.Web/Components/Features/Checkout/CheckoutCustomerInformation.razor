@@ -1,5 +1,6 @@
 ﻿@using CookieCommerce.Web.Models.Auth
 @using CookieCommerce.Web.Services
+@using CookieCommerce.Web.Components.Auth
 @using System.ComponentModel.DataAnnotations
 
 <div class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow transition-all duration-500">
@@ -101,28 +102,12 @@
                                                    @bind:event="oninput"
                                                    placeholder="••••••••" type="password" />
                                         </div>
-                                        <!-- Password Strength Indicator -->
-                                        <div class="mt-2 px-1">
-                                            <div class="h-1.5 w-full bg-gray-200 dark:bg-amber-900/20 rounded-full overflow-hidden">
-                                                <div class="h-full transition-all duration-500 @GetStrengthColor()"
-                                                     style="width: @(GetPasswordStrength() * 25)%">
-                                                </div>
-                                            </div>
+                                        
+                                        <PasswordValidator 
+                                            Password="@Password" 
+                                            ConfirmPassword="@ConfirmPassword"
+                                            OnStrengthChanged="@((strength) => CurrentPasswordStrength = strength)"/>
 
-                                            <div class="flex justify-between mt-1">
-                                                <p class="text-[10px] uppercase font-bold tracking-tighter text-gray-400">
-                                                    Strength: @(GetPasswordStrength() == 4 ? "Tiger Proof" : "Weak")
-                                                </p>
-
-                                                @if (!string.IsNullOrEmpty(ConfirmPassword))
-                                                {
-                                                    <p class="text-[10px] uppercase font-bold tracking-tighter @(Password == ConfirmPassword ? "text-green-500" : "text-red-500")">
-                                                        @(Password == ConfirmPassword ? "Passwords Match" : "Passwords do not match")
-                                                    </p>
-                                                }
-                                            </div>
-                                        </div>
-                                        <!-- Password Strength Indicator -->
                                     </div>
                                 }
                         <div class="flex justify-end pt-4">
@@ -173,6 +158,7 @@
 
     [Inject] private IAuthService Auth { get; set; }
     [Inject] private NavigationManager Navigation { get; set; }
+    private int CurrentPasswordStrength = 0;
 
     private void GoToStep(int step)
     {
@@ -208,44 +194,27 @@
         Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
     }
 
-    private int GetPasswordStrength()
-    {
-        if (string.IsNullOrEmpty(Password)) return 0;
-        int score = 0;
-        if (Password.Length >= 8) score++;
-        if (System.Text.RegularExpressions.Regex.IsMatch(Password, @"[A-Z]")) score++;
-        if (System.Text.RegularExpressions.Regex.IsMatch(Password, @"[0-9]")) score++;
-        if (System.Text.RegularExpressions.Regex.IsMatch(Password, @"[^a-zA-Z0-9]")) score++;
-        return score;
-    }
-
-    private string GetStrengthColor() => GetPasswordStrength() switch
-    {
-        1 => "bg-red-500",
-        2 => "bg-orange-500",
-        3 => "bg-yellow-500",
-        4 => "bg-green-500",
-        _ => "bg-gray-200"
-    };
-
     private bool DisableContinueFromStep1()
     {
-        var result = new EmailAddressAttribute().IsValid(CheckoutEmail);
+        // 1. Validate Email first (Required for both Guest and Account)
+        var isEmailValid = !string.IsNullOrWhiteSpace(CheckoutEmail) &&
+                           new EmailAddressAttribute().IsValid(CheckoutEmail);
 
-        if (string.IsNullOrWhiteSpace(CheckoutEmail) && !ShouldCreateAccount) return true;
+        // If email is bad, we stop here.
+        if (!isEmailValid) return true;
 
-        if (!string.IsNullOrWhiteSpace(CheckoutEmail) && !ShouldCreateAccount && result) return false;
+        // 2. If they want to create an account, check password requirements
+        if (ShouldCreateAccount)
+        {
+            bool passwordsMatch = !string.IsNullOrEmpty(Password) && Password == ConfirmPassword;
+            bool isStrongEnough = CurrentPasswordStrength >= 2;
 
-        if (ShouldCreateAccount
-            && string.IsNullOrWhiteSpace(CheckoutEmail)
-            || (string.IsNullOrEmpty(Password) || string.IsNullOrEmpty(ConfirmPassword))) return true;
+            // Disable if passwords don't match OR if it's too weak
+            return !passwordsMatch || !isStrongEnough;
+        }
 
-        if (ShouldCreateAccount
-            && string.IsNullOrWhiteSpace(CheckoutEmail)
-            || Password != ConfirmPassword
-            && GetPasswordStrength() < 2) return true;
-
-        return !result;
+        // 3. If we got here, email is valid and they are checking out as a guest
+        return false;
     }
 
     private void RemovePassword()

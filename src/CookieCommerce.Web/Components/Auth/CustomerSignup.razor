@@ -93,28 +93,10 @@
                     </div>
                 </div>
 
-                <!-- Password Strength Indicator -->
-                <div class="mt-2 px-1">
-                    <div class="h-1.5 w-full bg-gray-200 dark:bg-amber-900/20 rounded-full overflow-hidden">
-                        <div class="h-full transition-all duration-500 @GetStrengthColor()"
-                             style="width: @(GetPasswordStrength() * 25)%">
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between mt-1">
-                        <p class="text-[10px] uppercase font-bold tracking-tighter text-gray-400">
-                            Strength: @(GetPasswordStrength() == 4 ? "Tiger Proof" : "Weak")
-                        </p>
-
-                        @if (!string.IsNullOrEmpty(RegistrationForm.ConfirmPassword))
-                        {
-                            <p class="text-[10px] uppercase font-bold tracking-tighter @(RegistrationForm.Password == RegistrationForm.ConfirmPassword ? "text-green-500" : "text-red-500")">
-                                @(RegistrationForm.Password == RegistrationForm.ConfirmPassword ? "Passwords Match" : "Passwords do not match")
-                            </p>
-                        }
-                    </div>
-                </div>
-                <!-- Password Strength Indicator -->
+                <PasswordValidator 
+                    Password="@RegistrationForm.Password" 
+                    ConfirmPassword="@RegistrationForm.ConfirmPassword"
+                    OnStrengthChanged="@((strength) => CurrentPasswordStrength = strength)"/>
 
                 <div class="space-y-4 py-2">
                     <div class="flex items-start gap-3">
@@ -178,6 +160,7 @@
     private SignupDto RegistrationForm = new();
     private string? errorMessage;
     private bool isSubmitting;
+    private int CurrentPasswordStrength = 0;
 
     private async Task HandleRegistration()
     {
@@ -207,24 +190,4 @@
             isSubmitting = false;
         }
     }
-
-    private int GetPasswordStrength()
-    {
-        if (string.IsNullOrEmpty(RegistrationForm.Password)) return 0;
-        int score = 0;
-        if (RegistrationForm.Password.Length >= 8) score++;
-        if (System.Text.RegularExpressions.Regex.IsMatch(RegistrationForm.Password, @"[A-Z]")) score++;
-        if (System.Text.RegularExpressions.Regex.IsMatch(RegistrationForm.Password, @"[0-9]")) score++;
-        if (System.Text.RegularExpressions.Regex.IsMatch(RegistrationForm.Password, @"[^a-zA-Z0-9]")) score++;
-        return score;
-    }
-
-    private string GetStrengthColor() => GetPasswordStrength() switch
-    {
-        1 => "bg-red-500",
-        2 => "bg-orange-500",
-        3 => "bg-yellow-500",
-        4 => "bg-green-500",
-        _ => "bg-gray-200"
-    };
 }

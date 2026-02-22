@@ -1,6 +1,7 @@
 ﻿@page "/shop/checkout"
 @using CookieCommerce.Web.Models.Auth
 @using CookieCommerce.Web.Models.Cart
+@using CookieCommerce.Web.Models.Checkout
 @using CookieCommerce.Web.Services
 @rendermode InteractiveServer
 @layout CheckoutLayout
@@ -23,7 +24,7 @@
                         </div>
                     }
                     @if (currentStep > 1) {
-                        <button @onclick="() => GoToStep(1)" class="ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
+                        <button @onclick="() => GoToStep(1)" class="cursor-pointer ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
                     }
                 </div>
 
@@ -58,7 +59,7 @@
                         } 
                         else 
                         {
-                            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-12 relative">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 relative">
                                 <div class="hidden md:block absolute left-1/2 top-12 bottom-12 w-px bg-amber-100 dark:bg-amber-900/30"></div>
         
                                 <div class="space-y-4">
@@ -71,14 +72,17 @@
                                                 Email Address *
                                             </label>
                                             <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                                   @bind="CheckoutEmail"
+                                                   @bind:event="oninput"
                                                    placeholder="roar@tiger.nl" required type="email" />
                                         </div>
 
                                         <div class="space-y-4">
                                             <label class="flex items-center gap-3 cursor-pointer group">
-                                                <input class="w-5 h-5 rounded-full border-amber-200 dark:border-amber-900/50 text-primary focus:ring-primary cursor-pointer bg-transparent"
-                                                       type="checkbox" 
-                                                       @bind="shouldCreateAccount" />
+                                                <input type="checkbox" 
+                                                   @bind="shouldCreateAccount"
+                                                   @onclick="RemovePassword"
+                                                   class="w-5 h-5 rounded-full border-amber-200 text-primary focus:ring-primary accent-primary cursor-pointer" />
                                                 <span class="text-sm font-semibold text-gray-600 dark:text-amber-100/70 group-hover:text-primary transition-colors">
                                                     Create an account?
                                                 </span>
@@ -90,15 +94,29 @@
                                                     <div>
                                                         <label class="block text-xs font-bold text-gray-500 dark:text-amber-100/40 mb-1 uppercase tracking-wider">Password</label>
                                                         <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
-                                                               placeholder="••••••••" type="password" />
+                                                                @bind="Password"
+                                                                @bind:event="oninput"       
+                                                                placeholder="••••••••" type="password" />
                                                     </div>
                                                     <div>
                                                         <label class="block text-xs font-bold text-gray-500 dark:text-amber-100/40 mb-1 uppercase tracking-wider">Confirm Password</label>
                                                         <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
-                                                               placeholder="••••••••" type="password" />
+                                                               @bind="ConfirmPassword"
+                                                               @bind:event="oninput" 
+                                                                placeholder="••••••••" type="password" />
                                                     </div>
                                                 </div>
                                             }
+                                            <div class="flex justify-end pt-4">
+                                                <button @onclick="() => GoToStep(2)"
+                                                        disabled="@DisableContinueFromStep1"
+                                                        class="px-8 py-3 rounded-full font-bold transition-all 
+                                                               @(DisableContinueFromStep1()
+                                                                 ? "bg-gray-300 cursor-not-allowed text-gray-500" 
+                                                                 : "bg-primary hover:bg-amber-700 shadow-xl cursor-pointer text-white")">
+                                                    Continue to Contact & Shipping
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -128,45 +146,136 @@
                     <h2 class="font-display font-bold text-xl dark:text-amber-50">Contact & Shipping</h2>
         
                     @if (currentStep > 2) {
-                        <button @onclick="() => GoToStep(2)" class="ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
+                        <button @onclick="() => GoToStep(2)" class="cursor-pointer ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
                     }
                 </div>
-
                 @if (currentStep == 2) {
                     <div class="p-8 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                        <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
+                            <span class="material-symbols-outlined text-xl">local_shipping</span>
+                            Shipping Address
+                        </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">First Name</label>
                                 <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                       placeholder="Roary" type="text" />
+                                       placeholder="Roary" 
+                                       @bind="CheckoutShippingFirstName"
+                                       @bind:event="oninput"
+                                       type="text" />
                             </div>
 
                             <div>
                                 <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Last Name</label>
                                 <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                       placeholder="Tiger" type="text" />
+                                       placeholder="Tiger" 
+                                       @bind="CheckoutShippingLastName"
+                                       @bind:event="oninput"
+                                       type="text" />
                             </div>
 
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Shipping Address</label>
                                 <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                       placeholder="123 Jungle Road" type="text" />
+                                       placeholder="123 Jungle Road" 
+                                       @bind="CheckoutShippingAddress"
+                                       @bind:event="oninput"
+                                       type="text" />
                             </div>
 
                             <div>
                                 <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">City</label>
                                 <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                       placeholder="Amsterdam" type="text" />
+                                       placeholder="Amsterdam" 
+                                       @bind="CheckoutShippingCity"
+                                       @bind:event="oninput"
+                                       type="text" />
                             </div>
 
                             <div>
                                 <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Postal Code</label>
                                 <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                       placeholder="1011 AB" type="text" />
+                                       placeholder="1011 AB" 
+                                       @bind="CheckoutShippingPostalCode"
+                                       @bind:event="oninput"
+                                       type="text" />
+                            </div>
+                            <div>
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" 
+                                           @bind="CheckoutSameAsShipping"
+                                           class="w-5 h-5 rounded-full border-amber-200 text-primary focus:ring-primary accent-primary cursor-pointer" />
+                                    <span class="text-sm font-semibold text-gray-600 dark:text-amber-100/70 group-hover:text-primary transition-colors">
+                                        Billing address same as Shipping?
+                                    </span>
+                                </label>
                             </div>
                         </div>
+                        @if(!CheckoutSameAsShipping)
+                        {
+                            <div class="h-px w-full bg-gradient-to-r from-transparent via-amber-200 dark:via-amber-900/50 to-transparent my-8"></div>
+                            <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
+                                <span class="material-symbols-outlined text-xl">receipt_long</span>
+                                Billing Address
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">First Name</label>
+                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                           placeholder="Roary" 
+                                           @bind="CheckoutBillingFirstName"
+                                           @bind:event="oninput"
+                                           type="text" />
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Last Name</label>
+                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                           placeholder="Tiger" 
+                                           @bind="CheckoutBillingLastName"
+                                           @bind:event="oninput"
+                                           type="text" />
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Shipping Address</label>
+                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                           placeholder="123 Jungle Road" 
+                                           @bind="CheckoutBillingAddress"
+                                           @bind:event="oninput"    
+                                           type="text" />
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">City</label>
+                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                           placeholder="Amsterdam" 
+                                           @bind="CheckoutBillingCity"
+                                           @bind:event="oninput"
+                                           type="text" />
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Postal Code</label>
+                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                           placeholder="1011 AB" 
+                                           @bind="CheckoutBillingPostalCode"
+                                           @bind:event="oninput"
+                                           type="text" />
+                                </div>
+                            </div>
+                        }
                         <div class="flex justify-end pt-4">
-                            <button @onclick="() => GoToStep(3)" class="cursor-pointer bg-primary text-white px-8 py-3 rounded-full font-bold">Continue to Delivery</button>
+                            <button @onclick="() => GoToStep(3)"
+                                    disabled="@DisableContinueFromStep2"
+                                    class="px-8 py-3 rounded-full font-bold transition-all 
+                                            @(DisableContinueFromStep2()
+                                                ? "bg-gray-300 cursor-not-allowed text-gray-500" 
+                                                : "bg-primary hover:bg-amber-700 shadow-xl cursor-pointer text-white")">
+                                Continue to Delivery Method
+                            </button>
+
+
                         </div>
                     </div>
                 }
@@ -181,7 +290,7 @@
                         <h2 class="font-display font-bold text-xl dark:text-amber-50">Delivery Method</h2>
                     </div>
                     @if (currentStep > 3) {
-                        <button @onclick="() => GoToStep(4)" class="ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
+                        <button @onclick="() => GoToStep(4)" class="cursor-pointer ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
                     }
                 </div>
                 @if(currentStep == 3)
@@ -300,113 +409,8 @@
             <!-- Payment Method -->
         </div>
 
-        <div class="lg:w-1/3 space-y-6">
-            <div class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 p-8 cookie-shadow">
-                <div class="flex items-center gap-3 mb-10">
-                    <span class="material-symbols-outlined text-primary text-3xl">shopping_basket</span>
-                    <h2 class="font-display font-bold text-3xl text-text-light dark:text-amber-50">Your Cookie Jar</h2>
-                </div>
+        <CheckoutCookieJar AllCheckoutStepsComplete="@(currentStep == 4)" />
 
-                <div class="space-y-8 mb-10">
-                    <div class="flex items-center gap-5">
-                        <div class="relative w-20 h-20">
-                            <div class="w-full h-full rounded-2xl overflow-hidden border-2 border-amber-50 dark:border-amber-900/30 shadow-sm">
-                                <img alt="Chocolate Chunk" class="w-full h-full object-cover"
-                                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeiqI9Umndonm4v80T6b-moERbzC1sTOw7Bkt2035Se6-qfrM2_DMYQQGNpX1q9ZXtCy4qnGBvK2ey2XDPfbCHUE5FlKo4g4qB1toFZlprrm0A4IxtLRGOpqWct-oqOHHFI_HoAeaDf6QXlhJo9ycpxhZ5EqjBcZBfXJGSCIHnPLSEWD6jz9J61WJCH9fPdC2d0sLrGnu0DKvFpXQYnSj5ke_4eG8wKYO_VYMXos8oKzwU2ztEV-PWsIX7qLV2ck1t6YoLjS5B2w" />
-                            </div>
-                            <span class="absolute -top-2 -right-2 w-7 h-7 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-surface-dark">2</span>
-                        </div>
-                        <div class="flex-grow">
-                            <h4 class="font-bold text-lg text-text-light dark:text-amber-100 leading-tight">Chocolate Chunk</h4>
-                            <p class="text-sm text-gray-400 dark:text-amber-100/40">Original / Chunky</p>
-                        </div>
-                        <span class="font-bold text-lg text-text-light dark:text-amber-50">$18.00</span>
-                    </div>
-
-                    <div class="flex items-center gap-5">
-                        <div class="relative w-20 h-20">
-                            <div class="w-full h-full rounded-2xl overflow-hidden border-2 border-amber-50 dark:border-amber-900/30 shadow-sm bg-white dark:bg-white/10">
-                                <img alt="Tiger Stripe" class="w-full h-full object-contain p-1"
-                                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXTbkwJrJ9i2uSNY-6ivy7Id_ZXy61SfjAqYWdmIVkZBmr3Vm8wVqcI78dhf7Fv_1XB2rDlfsBsdvhAJjg6PNOu8dnBTGQ4fxgYagl_uIal69aByjCbq4htnJQdtACMFhc7KXD58W6C7w_94X2Iqmk1PfbwiUSwQu5NaRw2WlqaZ1Vw0z5pdl6SQHxkDRUWgUULNaSkBbV6OSqrfAVJP3vhLa1b9L9-66iRqgsQeYeJZGPUDMWhrNh84jNgxY76-dhg9DR1CLpHQ" />
-                            </div>
-                            <span class="absolute -top-2 -right-2 w-7 h-7 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-surface-dark">1</span>
-                        </div>
-                        <div class="flex-grow">
-                            <h4 class="font-bold text-lg text-text-light dark:text-amber-100 leading-tight">Tiger Stripe</h4>
-                            <p class="text-sm text-gray-400 dark:text-amber-100/40">Cocoa & Zest</p>
-                        </div>
-                        <span class="font-bold text-lg text-text-light dark:text-amber-50">$9.50</span>
-                    </div>
-                </div>
-
-                <div class="border-t border-amber-50 dark:border-amber-900/20 pt-8 space-y-4 mb-10">
-                    <div class="flex justify-between text-gray-500 dark:text-amber-100/60 font-semibold">
-                        <span>Subtotal</span>
-                        <span class="text-text-light dark:text-amber-100">$27.50</span>
-                    </div>
-                    <div class="flex justify-between text-gray-500 dark:text-amber-100/60 font-semibold items-center">
-                        <span>Shipping</span>
-                        <span class="text-text-light dark:text-amber-100">$4.95</span>
-                    </div>
-                    <div class="flex justify-between text-gray-500 dark:text-amber-100/60 font-semibold">
-                        <span>Taxes</span>
-                        <span class="text-text-light dark:text-amber-100">$2.48</span>
-                    </div>
-            
-                    <div class="pt-6 flex justify-between items-end border-t border-amber-50 dark:border-amber-900/20">
-                        <div>
-                            <span class="block text-gray-400 dark:text-amber-100/40 text-sm font-bold uppercase tracking-wider">Total</span>
-                            <span class="text-xs text-gray-400 dark:text-amber-100/40 font-bold">USD</span>
-                        </div>
-                        <span class="text-4xl font-display font-bold text-primary">$34.93</span>
-                    </div>
-                </div>
-
-                <div class="mb-8">
-                    <div class="relative flex items-center border-2 border-dashed border-amber-200 dark:border-amber-900/30 rounded-2xl p-4 bg-amber-50/20 dark:bg-amber-900/10 group focus-within:border-primary transition-colors">
-                        <span class="material-symbols-outlined text-primary mr-3">sell</span>
-                        <input class="bg-transparent border-none focus:ring-0 p-0 flex-grow text-text-light dark:text-white placeholder-gray-400 dark:placeholder-amber-100/30 font-semibold"
-                               placeholder="Promo code" type="text" />
-                        <button class="text-primary font-bold hover:text-amber-700 dark:hover:text-amber-400 px-2">Apply</button>
-                    </div>
-                </div>
-
-                <button disabled="@(currentStep < 4)" 
-                        class="w-full @(currentStep < 4 ? "bg-gray-300 cursor-not-allowed" : "bg-primary hover:bg-amber-700 shadow-xl") text-white py-5 rounded-full font-bold text-xl transition-all flex items-center justify-center gap-3">
-                    @if(currentStep < 4) {
-                        <span>Complete Previous Steps</span>
-                    } else {
-                        <span>Complete Order</span>
-                        <span class="material-symbols-outlined">arrow_forward</span>
-                    }
-                </button>
-
-                <p class="text-center text-[10px] text-gray-400 dark:text-amber-100/30 mt-6 flex items-center justify-center gap-2 uppercase tracking-widest font-bold">
-                    <span class="material-symbols-outlined text-sm">security</span>
-                    Secure Encrypted Checkout
-                </p>
-            </div>
-
-            <div class="border-2 border-dashed border-amber-300 dark:border-amber-900/40 rounded-3xl p-6 bg-amber-50/50 dark:bg-amber-900/10 flex items-center gap-4">
-                <div class="flex-shrink-0 w-14 h-14 rounded-full bg-white dark:bg-surface-dark border-2 border-amber-100 dark:border-amber-900/30 flex items-center justify-center shadow-sm">
-                    <span class="material-symbols-outlined text-primary text-2xl">headset_mic</span>
-                </div>
-                <div>
-                    <h3 class="font-display font-bold text-lg text-text-light dark:text-amber-50">Roar-worthy Service</h3>
-                    <p class="text-xs text-gray-500 dark:text-amber-100/50 mb-2">Need help with your order? We're here for you.</p>
-                    <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-primary">
-                        <a class="flex items-center gap-1 hover:underline" href="tel:+1800TIGER">
-                            <span class="material-symbols-outlined text-sm">call</span>
-                            +1 800-TIGER
-                        </a>
-                        <a class="flex items-center gap-1 hover:underline" href="#">
-                            <span class="material-symbols-outlined text-sm">chat_bubble</span>
-                            Live Chat
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </main>
 
@@ -418,10 +422,79 @@
     private string selectedDelivery = "standard";
     private string paymentMethod = "card";
 
+    private string Password { get; set; } = string.Empty;
+    private string ConfirmPassword { get; set; } = string.Empty;
+
+    private string CheckoutEmail { get; set; } = string.Empty;
+    private string CheckoutShippingFirstName { get; set; } = string.Empty;
+    private string CheckoutShippingLastName { get; set; } = string.Empty;
+    private string CheckoutShippingAddress { get; set; } = string.Empty;
+    private string CheckoutShippingCity { get; set; } = string.Empty;
+    private string CheckoutShippingPostalCode { get; set; } = string.Empty;
+    private bool CheckoutSameAsShipping { get; set; } = true;
+    private string CheckoutBillingFirstName { get; set; } = string.Empty;
+    private string CheckoutBillingLastName { get; set; } = string.Empty;
+    private string CheckoutBillingAddress { get; set; } = string.Empty;
+    private string CheckoutBillingCity { get; set; } = string.Empty;
+    private string CheckoutBillingPostalCode { get; set; } = string.Empty;
+
     [Inject] public IAuthService Auth { get; private set; }
     [Inject] public NavigationManager Navigation { get; private set; }
     [Inject] public ICartService CartService { get; private set; }
     [Inject] public ICheckoutService CheckoutService { get; private set; }
+
+    private bool DisableContinueFromStep1()
+    {
+        if (string.IsNullOrWhiteSpace(CheckoutEmail) && !shouldCreateAccount) return true;
+
+        if (!string.IsNullOrEmpty(CheckoutEmail) && !shouldCreateAccount) return false;
+
+        if (shouldCreateAccount 
+            && string.IsNullOrEmpty(CheckoutEmail)
+            || (string.IsNullOrEmpty(Password) || string.IsNullOrEmpty(ConfirmPassword))) return true;
+
+        if (shouldCreateAccount 
+            && string.IsNullOrEmpty(CheckoutEmail)
+            || Password != ConfirmPassword) return true;
+
+        return false;
+    }
+
+    private bool DisableContinueFromStep2()
+    {
+        if (string.IsNullOrWhiteSpace(CheckoutShippingFirstName) ||
+            string.IsNullOrWhiteSpace(CheckoutShippingLastName) ||
+            string.IsNullOrWhiteSpace(CheckoutShippingAddress) ||
+            string.IsNullOrWhiteSpace(CheckoutShippingCity) ||
+            string.IsNullOrWhiteSpace(CheckoutShippingPostalCode))
+            return true;
+
+        if (!CheckoutSameAsShipping)
+        {
+            if (string.IsNullOrWhiteSpace(CheckoutBillingFirstName) ||
+                string.IsNullOrWhiteSpace(CheckoutBillingLastName) ||
+                string.IsNullOrWhiteSpace(CheckoutBillingAddress) ||
+                string.IsNullOrWhiteSpace(CheckoutBillingCity) ||
+                string.IsNullOrWhiteSpace(CheckoutBillingPostalCode))
+                return true;
+        }
+        return false;
+    }
+
+    private void RemoveBillingAddress()
+    {
+        CheckoutBillingFirstName = string.Empty;
+        CheckoutBillingLastName = string.Empty;
+        CheckoutBillingAddress = string.Empty;
+        CheckoutBillingCity = string.Empty;
+        CheckoutBillingPostalCode = string.Empty;
+    }
+
+    private void RemovePassword()
+    {
+        Password = string.Empty;
+        ConfirmPassword = string.Empty;
+    }
 
     protected override async Task OnInitializedAsync()
     {

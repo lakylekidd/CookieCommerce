@@ -1,0 +1,116 @@
+﻿@using CookieCommerce.Web.Models.Cart
+@using CookieCommerce.Web.Services
+<div class="lg:w-1/3 space-y-6">
+    <div class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 p-8 cookie-shadow">
+        <div class="flex items-center gap-3 mb-10">
+            <span class="material-symbols-outlined text-primary text-3xl">shopping_basket</span>
+            <h2 class="font-display font-bold text-3xl text-text-light dark:text-amber-50">Your Cookie Jar</h2>
+        </div>
+
+        <div class="space-y-8 mb-10">
+            @foreach (var cartItem in CurrentCart.Items)
+            {
+                <div class="flex items-center gap-5">
+                    <div class="relative w-20 h-20">
+                        <div class="w-full h-full rounded-2xl overflow-hidden border-2 border-amber-50 dark:border-amber-900/30 shadow-sm">
+                            <img alt="@cartItem.ProductName" 
+                                 class="w-full h-full object-cover"
+                                 src="@cartItem.ProductImageUrl" />
+                        </div>
+                        <span class="absolute -top-2 -right-2 w-7 h-7 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-surface-dark">
+                            @cartItem.Quantity
+                        </span>
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-lg text-text-light dark:text-amber-100 leading-tight">@cartItem.ProductName</h4>
+                        <p class="text-sm text-gray-400 dark:text-amber-100/40">@cartItem.ProductVariantName</p>
+                    </div>
+                    <span class="font-bold text-lg text-text-light dark:text-amber-50">@cartItem.CurrencySymbol@cartItem.TotalPrice.ToString("F2")</span>
+                </div>
+            }
+
+        </div>
+
+        <div class="border-t border-amber-50 dark:border-amber-900/20 pt-8 space-y-4 mb-10">
+            <div class="flex justify-between text-gray-500 dark:text-amber-100/60 font-semibold">
+                <span>Subtotal</span>
+                <span class="text-text-light dark:text-amber-100">@CurrentCart.CurrencySymbol@CurrentCart.SubTotalPrice.ToString("F2")</span>
+            </div>
+            <div class="flex justify-between text-gray-500 dark:text-amber-100/60 font-semibold items-center">
+                <span>Shipping</span>
+                <span class="text-text-light dark:text-amber-100">@CurrentCart.CurrencySymbol@CurrentCart.Shipping.ToString("F2")</span>
+            </div>
+            <div class="flex justify-between text-gray-500 dark:text-amber-100/60 font-semibold">
+                <span>Taxes</span>
+                <span class="text-text-light dark:text-amber-100">@CurrentCart.CurrencySymbol@CurrentCart.Tax.ToString("F2")</span>
+            </div>
+
+            <div class="pt-6 flex justify-between items-end border-t border-amber-50 dark:border-amber-900/20">
+                <div>
+                    <span class="block text-gray-400 dark:text-amber-100/40 text-sm font-bold uppercase tracking-wider">Total</span>
+                    <span class="text-xs text-gray-400 dark:text-amber-100/40 font-bold">USD</span>
+                </div>
+                <span class="text-4xl font-display font-bold text-primary">@CurrentCart.CurrencySymbol@CurrentCart.TotalPrice.ToString("F2")</span>
+            </div>
+        </div>
+
+        <div class="mb-8">
+            <div class="relative flex items-center border-2 border-dashed border-amber-200 dark:border-amber-900/30 rounded-2xl p-4 bg-amber-50/20 dark:bg-amber-900/10 group focus-within:border-primary transition-colors">
+                <span class="material-symbols-outlined text-primary mr-3">sell</span>
+                <input class="bg-transparent border-none focus:ring-0 p-0 flex-grow text-text-light dark:text-white placeholder-gray-400 dark:placeholder-amber-100/30 font-semibold"
+                       placeholder="Promo code" type="text" />
+                <button class="text-primary font-bold hover:text-amber-700 dark:hover:text-amber-400 px-2">Apply</button>
+            </div>
+        </div>
+
+        <button disabled="@(!AllCheckoutStepsComplete)"
+                class="w-full @(!AllCheckoutStepsComplete ? "bg-gray-300 cursor-not-allowed" : "bg-primary hover:bg-amber-700 shadow-xl") text-white py-5 rounded-full font-bold text-xl transition-all flex items-center justify-center gap-3">
+            @if (!AllCheckoutStepsComplete)
+            {
+                <span>Complete Previous Steps</span>
+            }
+            else
+            {
+                <span>Complete Order</span>
+                <span class="material-symbols-outlined">arrow_forward</span>
+            }
+        </button>
+
+        <p class="text-center text-[10px] text-gray-400 dark:text-amber-100/30 mt-6 flex items-center justify-center gap-2 uppercase tracking-widest font-bold">
+            <span class="material-symbols-outlined text-sm">security</span>
+            Secure Encrypted Checkout
+        </p>
+    </div>
+
+    <div class="border-2 border-dashed border-amber-300 dark:border-amber-900/40 rounded-3xl p-6 bg-amber-50/50 dark:bg-amber-900/10 flex items-center gap-4">
+        <div class="flex-shrink-0 w-14 h-14 rounded-full bg-white dark:bg-surface-dark border-2 border-amber-100 dark:border-amber-900/30 flex items-center justify-center shadow-sm">
+            <span class="material-symbols-outlined text-primary text-2xl">headset_mic</span>
+        </div>
+        <div>
+            <h3 class="font-display font-bold text-lg text-text-light dark:text-amber-50">Roar-worthy Service</h3>
+            <p class="text-xs text-gray-500 dark:text-amber-100/50 mb-2">Need help with your order? We're here for you.</p>
+            <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-primary">
+                <a class="flex items-center gap-1 hover:underline" href="tel:+1800TIGER">
+                    <span class="material-symbols-outlined text-sm">call</span>
+                    +1 800-TIGER
+                </a>
+                <a class="flex items-center gap-1 hover:underline" href="#">
+                    <span class="material-symbols-outlined text-sm">chat_bubble</span>
+                    Live Chat
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+    [Parameter] public bool AllCheckoutStepsComplete { get; set; }
+    [Inject] public ICartService CartService { get; set; }
+
+    private CartDto CurrentCart { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentCart = await CartService.GetCartAsync();
+    }
+}

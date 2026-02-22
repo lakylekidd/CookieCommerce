@@ -8,5 +8,6 @@ public interface IAuthService
     public UserDto? CurrentUser { get; }
     public Task<bool> SignInAsync(string email, string password);
     public Task<AuthResult> SignUpAsync(SignupDto signupForm);
+    public Task SendForgotPasswordLinkAsync(string email);
     public void Logout();
 }

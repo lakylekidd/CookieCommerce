@@ -41,6 +41,13 @@ public class FakeAuthService(ICartService cartService) : IAuthService
         return AuthResult.Succeeded();
     }
 
+    public Task SendForgotPasswordLinkAsync(string email)
+    {
+        // In a real implementation, you would send an email with a reset link.
+        // For this fake service, we'll just simulate the delay.
+        return Task.Delay(3000);
+    }
+
     public void Logout()
     {
         CurrentUser = null;

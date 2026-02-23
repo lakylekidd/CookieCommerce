@@ -21,10 +21,21 @@ WORKDIR "/build/src/CookieCommerce.Web"
 
 # Install Tailwind CSS CLI locally in the container
 RUN npm install tailwindcss @tailwindcss/cli
+RUN ls -R wwwroot
 
-# We override the Tailwind command to use 'sh' instead of 'cmd' if necessary, 
-# or just let dotnet publish run (if you fix the .csproj)
-RUN dotnet publish "CookieCommerce.Web.csproj" -c Release -o /app/publish --no-restore
+# Clean any previous artifacts that might be confusing the discovery
+# RUN dotnet clean "CookieCommerce.Web.csproj"
+
+# 1. Standard Publish
+WORKDIR "/build/src/CookieCommerce.Web"
+RUN dotnet publish "CookieCommerce.Web.csproj" \
+    -c Release \
+    -o /app/publish \
+    /p:StaticWebAssetsEnabled=true \
+    /p:UseAppHost=false
+
+# 3. Double-check the files exist before finishing the build stage
+RUN ls -la /app/publish/wwwroot/_framework/blazor.web.js
 
 # --- Runtime Stage ---
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime

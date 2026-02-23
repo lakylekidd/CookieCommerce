@@ -11,7 +11,6 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
     // In a homelab, it's often easiest to clear known networks so it trusts your proxy
-    // options.KnownNetworks.Clear();
     options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
 });
@@ -49,6 +48,7 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 
+app.UseStaticFiles();
 app.UseAntiforgery();
 app.MapStaticAssets();
 

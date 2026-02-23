@@ -12,6 +12,7 @@ public class CartDto
     public string CurrencySymbol { get; set; } = "$";
     public string CurrencyCode { get; set; } = "USD";
     public bool TaxIncluded { get; set; } = true;
+    public string Note { get; set; } = string.Empty;
     public CartPromotionDto? Promotion { get; set; } = null;
     public bool IsPromoApplied => Promotion != null;
     public decimal Tax => SubTotalPrice * TAX_PERCENTAGE;

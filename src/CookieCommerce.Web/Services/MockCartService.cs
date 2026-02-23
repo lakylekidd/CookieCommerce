@@ -75,6 +75,13 @@ public class MockCartService : ICartService
         return Task.CompletedTask;
     }
 
+    public Task AddNoteToCartAsync(string note)
+    {
+        _cart.Note = note;
+        NotifyStateChanged();
+        return Task.CompletedTask;
+    }
+
     private void NotifyStateChanged() => OnCartUpdated?.Invoke();
 
     public  Task ConvertToUserCartAsync(Guid userId)

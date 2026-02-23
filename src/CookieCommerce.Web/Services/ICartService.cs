@@ -12,6 +12,7 @@ public interface ICartService
     Task UpdateQuantityAsync(Guid itemId, int quantity);
     Task RemoveItemAsync(Guid itemId);
     Task AddToCartAsync(Guid productId, int quantity);
+    Task AddNoteToCartAsync(string note);
     Task<ResultDto> ApplyPromotionCodeAsync(string code);
     Task<ResultDto> RemovePromotionCodeAsync(string code);
 }

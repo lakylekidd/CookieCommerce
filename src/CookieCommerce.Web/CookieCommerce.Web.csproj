@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <DockerfileContext>.</DockerfileContext>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +24,7 @@
 
   <Target Name="Tailwind" BeforeTargets="Build">
     <Message Importance="high" Text="Building Tailwind CSS..." />
-    <Exec Command="cmd /c npx @tailwindcss/cli -i ./Styles/app.css -o ./wwwroot/css/app.min.css --minify" WorkingDirectory="$(ProjectDir)" />
+    <Exec Command="npx @tailwindcss/cli -i ./Styles/app.css -o ./wwwroot/css/app.min.css --minify" />
   </Target>
 
 </Project>

@@ -1,8 +1,12 @@
-﻿@page "/"
+﻿@using CookieCommerce.Web.Components.Layout
+@inherits LayoutComponentBase
+@layout MainLayout
 
 <PageTitle>Coming Soon | Tiger van Cookie - Homemade cookies in Amsterdam</PageTitle>
 
-<div id="jumbotron">
+@Body
+
+@* <div id="jumbotron">
     <div id="postcard">
         <div id="comingsoon">
             <img src="/images/coming-soon-ribbon-label.png" alt="Alternate Text" />
@@ -16,7 +20,7 @@
                 <h1>Tiger van Cookie</h1>
                 <h2>Homemade Cookies</h2>
                 <p>Enter your e-mail address and we will notify you when we're open for business!</p>
-            </div>            
+            </div>
             <form action="https://listmonk.vlachos.nl/subscription/form" method="post">
                 <input type="hidden" name="l" value="707d985a-fdbf-487e-a892-259609dc12a9" />
                 <input type="text" name="name" placeholder="Enter your name (optional)..." />
@@ -25,4 +29,4 @@
             </form>
         </div>
     </div>
-</div>
+</div> *@

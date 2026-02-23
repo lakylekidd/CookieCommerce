@@ -61,6 +61,28 @@
     animation: pop 0.4s ease-out forwards;
 }
 
+.card-shadow {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+}
+
+.floating {
+    animation: float 4s ease-in-out infinite
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
 /* Custom Components */
 .celebration-glow {
     background-image: var(--background-image-rainbow-glow);
@@ -142,6 +164,11 @@ nav a.active {
 
 input:focus {
     @apply ring-primary border-primary;
+}
+
+.input-focus-ring:focus-within {
+    ring: 2px;
+    ring-color: #D97706;
 }
 
 details > summary::-webkit-details-marker {

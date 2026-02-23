@@ -23,7 +23,15 @@ public class MockCartService : ICartService
     {
         var product = StaticCookieList.Cookies.FirstOrDefault(p => p.Id == productId);
         if (product == null) return;
-        
+
+        var existingItem = _cart.Items.FirstOrDefault(i => i.ProductId == productId); 
+        if (existingItem is not null)
+        {
+            existingItem.Quantity += quantity;
+            NotifyStateChanged();
+            return;
+        }
+
         _cart.Items.Add(new CartItemDto
         {
             CartItemId = Guid.NewGuid(),

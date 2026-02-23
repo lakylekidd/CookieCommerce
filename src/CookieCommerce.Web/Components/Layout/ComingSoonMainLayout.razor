@@ -1,0 +1,70 @@
+﻿@inherits LayoutComponentBase
+
+<HeadContent>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="qg_XKjLH1Q-HM5s9K4uKesiQHWIOwF9XdE7iOYomv64" />
+    <meta name="google-adsense-account" content="ca-pub-2415952858841772">
+
+    <!-- Google tag (gtag.js) for analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HNS116Q0G5"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-HNS116Q0G5');
+    </script>
+    <link rel="stylesheet" href="@Assets["coming-soon.css"]" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
+
+    <meta name="description" content="Get ready for the best homemade cookies in Amsterdam! Subscribe now to get an exclusive discount when our Amsterdam shop officially opens.">
+
+    <meta property="og:title" content="Tiget van Cookie is Coming Soon!">
+    <meta property="og:description" content="Fresh, handmade cookies are just around the corner. Sign up for early access!">
+    <meta property="og:image" content="https://tigervancookie.nl/images/logo.png">
+
+    <!-- Matomo -->
+    <script>
+        var _paq = window._paq = window._paq || [];
+        /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+        _paq.push(['trackPageView']);
+        _paq.push(['enableLinkTracking']);
+        (function() {
+          var u="//matomo.vlachos.nl/";
+          _paq.push(['setTrackerUrl', u+'matomo.php']);
+          _paq.push(['setSiteId', '1']);
+          var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+          g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+        })();
+    </script>
+    <!-- End Matomo Code -->
+
+
+</HeadContent>
+
+<div class="page">
+    <main class="main-content">
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+
+    <!-- Floating Cookies -->
+    <div class="cookie-background">
+        <span class="cookie"></span>
+        <span class="cookie"></span>
+        <span class="cookie"></span>
+        <span class="cookie"></span>
+        <span class="cookie"></span>
+        <span class="cookie"></span>
+        <span class="cookie"></span>
+    </div>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

@@ -1,0 +1,115 @@
+﻿@page "/auth/signin"
+
+@layout AuthLayout
+@rendermode InteractiveServer
+@using CookieCommerce.Web.Components.Layout
+@using CookieCommerce.Web.Services
+@inject IAuthService Auth
+@inject NavigationManager Nav
+
+<PageTitle>Sign In - Tiger van Cookie</PageTitle>
+
+<main class="flex-grow flex items-center justify-center py-12 px-6 relative overflow-hidden">
+    <div class="absolute inset-0 pattern-bg pointer-events-none"></div>
+    <div class="w-full max-w-5xl bg-white dark:bg-surface-dark rounded-4xl p-8 md:p-16 relative shadow-2xl shadow-amber-200/50 dark:shadow-black/50 border border-white dark:border-amber-900/20">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div class="relative order-2 lg:order-1">
+                <div class="mb-10 text-center lg:text-left">
+                    <h1 class="font-display font-bold text-4xl md:text-5xl mb-4 leading-tight">
+                        Welcome Back, <br />
+                        <span class="text-primary text-5xl md:text-6xl">Hungry Tiger!</span>
+                    </h1>
+                    <p class="text-gray-500 dark:text-gray-400 text-lg">
+                        Your fresh cookies are just a login away.
+                    </p>
+                </div>
+                <form class="space-y-6" @onsubmit="HandleLogin" @onsubmit:preventDefault>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 px-1"
+                               for="email">Email Address</label>
+                        @* Bound to Email variable *@
+                        <input @bind="Email"
+                               class="w-full px-6 py-4 rounded-2xl bg-white dark:bg-surface-dark/50 border border-amber-100 dark:border-amber-800 focus:ring-primary focus:border-primary text-gray-800 dark:text-white placeholder-gray-400 transition-all"
+                               id="email" placeholder="tiger@forest.com" 
+                               tabindex="1"
+                               type="email" required />
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-2 px-1">
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300"
+                                   for="password">Password</label>
+                            <a class="text-xs text-primary font-bold hover:underline" href="/auth/forgot-password">Forgot password?</a>
+                        </div>
+                        @* Bound to Password variable *@
+                        <input @bind="Password"
+                               class="w-full px-6 py-4 rounded-2xl bg-white dark:bg-surface-dark/50 border border-amber-100 dark:border-amber-800 focus:ring-primary focus:border-primary text-gray-800 dark:text-white placeholder-gray-400 transition-all"
+                               id="password" placeholder="••••••••" 
+                               tabindex="2"
+                               type="password" required />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-4 rounded-xl border border-red-100 dark:border-red-900/30">
+                            @ErrorMessage
+                        </div>
+                    }
+
+                    <button class="cursor-pointer w-full bg-primary hover:bg-amber-700 text-white font-display font-bold text-xl py-5 rounded-2xl shadow-xl shadow-primary/30 transition-all hover:-translate-y-1 active:scale-95"
+                            type="submit">
+                        Let's Go!
+                    </button>
+                </form>
+                <div class="mt-12 pt-8 border-t border-amber-100 dark:border-amber-900/30 text-center">
+                    <p class="text-gray-500 dark:text-gray-400">
+                        New to the Jungle?
+                        <a class="text-primary font-extrabold ml-2 hover:underline" href="/auth/signup">Create an Account</a>
+                    </p>
+                </div>
+            </div>
+            <div class="order-1 lg:order-2 flex justify-center relative">
+                <div class="relative w-full max-w-sm">
+                    <div class="bg-white dark:bg-surface-dark/80 backdrop-blur p-4 rounded-3xl shadow-2xl relative z-10 overflow-hidden transform rotate-2 border border-amber-50 dark:border-amber-900/20">
+                        <img alt="Delicious Cookies" class="w-full h-auto rounded-2xl"
+                             src="/images/logo.png" />
+                    </div>
+                    <div class="absolute -top-16 -right-12 w-48 h-48 z-20 transform -rotate-6">
+                        <img alt="Baby Tiger Mascot" class="w-full h-full object-contain"
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-_kAxzmO8Kcj29nTmME3GwWlGvtZWKXO1zCfvVkDtGKtRwhu4lay5gPf-4p3IvjTkjK3iYVmvTaUcAWFuNfQvnRr8-0vig-muSRiX6xkR7RTiVXQjzvwv1YTKOAEXMF7acDkj79EjY4oVFZIOatzuncvbDAUZ76_AY5qqrLXxNOh2CnOEFRN7bHAfDJfq_4Gn-W1jAMJ_oW627efblLVXeZngivSV3vQbVDD9ilkl1brOns1K_otnfKtvAOOGg12QqhTlQXz_7w" />
+                    </div>
+                    <div class="absolute -bottom-10 -left-12 w-32 h-32 z-20">
+                        <img alt="Baby Tiger Eating Cookie" class="w-full h-full object-contain"
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuDK97C0ziM48xnjSqtuK8x2hYU3lKN1AcgP6YFUDPk6beXQ7XGBnITZN_msx5Es8bEQCOTWhszXcfj2IJLY-mfm2BU_Er_c1lGpCtxMMXVIyKkd9ufSZqFavwrtrF7VzXIVZ7C10KQmd9I8YuFmLpnxmGlj6ZbqCLf7J0wisxBFSpE4KxqFnPr4U-nLRsCPj3Yo1yQn_qfXuKt5Ceoz6MTU33fhrMtSXnbHnM7F6s15dciNShfHQpn_vHn2LR-sgRiZhyJatjlMzQ" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+@code {
+    private string Email { get; set; } = "";
+    private string Password { get; set; } = "";
+    private string ErrorMessage { get; set; } = "";
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    private async Task HandleLogin()
+    {
+        ErrorMessage = "";
+
+        bool success = await Auth.SignInAsync(Email, Password);
+
+        if (success)
+        {
+            // Redirect back to where they came from, or home if empty
+            Nav.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/storefront" : ReturnUrl);
+        }
+        else
+        {
+            ErrorMessage = "Oops! Those details don't match our records.";
+        }
+    }
+}

@@ -1,0 +1,15 @@
+﻿@inherits LayoutComponentBase
+@layout LegaLayout
+
+<main class="flex-grow flex flex-col lg:flex-row max-w-7xl mx-auto w-full px-6 gap-12 py-12 relative">
+    <aside class="lg:w-[30%] h-fit lg:sticky lg:top-32 space-y-2">
+        <div class="mb-8">
+            <h1 class="font-display text-4xl font-bold mb-2">Legal Center</h1>
+            <p class="text-amber-700/60 dark:text-amber-200/60">Last updated: October 2023</p>
+        </div>
+        <LegalNavigation />
+        <LegalInfoArea />
+    </aside>
+    @Body
+</main>
+

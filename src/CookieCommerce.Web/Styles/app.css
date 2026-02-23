@@ -1,0 +1,209 @@
+﻿@import "tailwindcss";
+
+@source "../Components";
+
+@variant dark (&:where(.dark, .dark *));
+
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/container-queries";
+
+@theme {
+    /* Your Custom Colors */
+    --color-primary: #D97706;
+    --color-secondary: #FCD34D;
+    --color-background-light: #FFFBEB;
+    --color-background-dark: #1F1508;
+    --color-surface-light: #FFFFFF;
+    --color-surface-dark: #2D2115;
+    --color-text-light: #451a03;
+    --color-text-dark: #FEF3C7;
+    --color-brand-orange: #F97316;
+    --color-rare-peach: #FFF1E6;
+    --color-rare-peach-dark: #3D2B1F;
+    /* Your Custom Fonts */
+    --font-display: "Fredoka", sans-serif;
+    --font-body: "Nunito", sans-serif;
+    /* Your Custom Border Radius */
+    --radius-default: 1rem;
+    --radius-xl: 1.5rem;
+    --radius-2xl: 2rem;
+    --radius-3xl: 3rem;
+    --background-image-rainbow-glow: linear-gradient(to right, #D97706, #FCD34D, #10B981, #3B82F6, #F472B6);
+    /* V4 Keyframes syntax - No extra brackets/semicolons */
+    @keyframes pop {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+}
+
+/* Layer Base for Global Overrides */
+@layer base {
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        display: inline-block;
+        line-height: 1;
+        width: auto;
+        height: auto;
+    }
+}
+
+@utility animate-pop {
+    animation: pop 0.4s ease-out forwards;
+}
+
+.card-shadow {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+}
+
+/* Custom Components */
+.celebration-glow {
+    background-image: var(--background-image-rainbow-glow);
+    box-shadow: 0 0 20px rgba(217, 119, 6, 0.5);
+}
+
+nav a.active {
+    color: var(--color-primary);
+    font-weight: 700;
+    border-bottom: 2px solid var(--color-primary);
+}
+
+.cookie-shadow {
+    box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.15), 0 8px 10px -6px rgba(217, 119, 6, 0.05);
+}
+
+.dark .cookie-shadow {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+}
+
+.rare-find-sash {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #F97316;
+    color: white;
+    padding: 4px 30px;
+    transform: rotate(45deg) translate(30%, -40%);
+    font-weight: 800;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.rare-card .rare-find-sash {
+    background: white;
+    color: #F97316;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #D97706;
+    border-radius: 10px;
+}
+
+.legal-content h2 {
+    @apply font-display text-2xl font-bold mt-12 mb-4 text-primary;
+}
+
+.legal-content p {
+    @apply mb-6 leading-relaxed text-amber-900/80 dark:text-amber-100/80;
+}
+
+.cookie-table {
+    @apply w-full text-left border-collapse mb-8 rounded-xl overflow-hidden;
+}
+
+.cookie-table th {
+    @apply bg-amber-100 dark:bg-amber-900/40 p-4 text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-100;
+}
+
+.cookie-table td {
+    @apply p-4 text-sm border-b border-amber-50 dark:border-amber-900/20;
+}
+
+.dark .pattern-bg {
+    opacity: 0.05;
+    background-image: radial-gradient(#FEF3C7 1px, transparent 1px);
+}
+
+input:focus {
+    @apply ring-primary border-primary;
+}
+
+.input-focus-ring:focus-within {
+    ring: 2px;
+    ring-color: #D97706;
+}
+
+details > summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq-category-title {
+    @apply font-display text-2xl font-bold mt-12 mb-6 text-primary flex items-center gap-3;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5) sepia(1) saturate(5) hue-rotate(0deg);
+    cursor: pointer;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) sepia(1) saturate(5) hue-rotate(0deg);
+}
+
+.polaroid {
+    background: white;
+    padding: 1rem 1rem 3rem 1rem;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+}
+
+.timeline-line::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    @apply bg-amber-200 dark:bg-amber-900/40;
+    transform: translateX(-50%);
+    z-index: 0;
+}
+
+.dotted-line {
+    background-image: linear-gradient(to right, #D97706 50%, rgba(255,255,255,0) 0%);
+    background-position: bottom;
+    background-size: 8px 1px;
+    background-repeat: repeat-x;
+}
+
+
+@layer utilities {
+    .pattern-bg {
+        background-image: radial-gradient(var(--color-primary) 1px, transparent 1px);
+        background-size: 24px 24px;
+        opacity: 0.1;
+    }
+
+    .dark .pattern-bg {
+        opacity: 0.05;
+    }
+}

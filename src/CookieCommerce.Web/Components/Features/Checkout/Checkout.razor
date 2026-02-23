@@ -1,0 +1,328 @@
+﻿@page "/shop/checkout"
+@using System.ComponentModel.DataAnnotations
+@using CookieCommerce.Web.Models.Auth
+@using CookieCommerce.Web.Models.Cart
+@using CookieCommerce.Web.Models.Checkout
+@using CookieCommerce.Web.Services
+@rendermode InteractiveServer
+@layout CheckoutLayout
+
+<main class="container mx-auto px-6 py-12">
+    <div class="flex flex-col lg:flex-row gap-6">
+
+        <div class="lg:w-2/3 space-y-6">
+
+            <CheckoutCustomerInformation CurrentStep="@currentStep" 
+                                         User="@User" 
+                                         @bind-CheckoutEmail="@CheckoutEmail" 
+                                         @bind-ShouldCreateAccount="@shouldCreateAccount" 
+                                         @bind-Password="@Password" 
+                                         @bind-ConfirmPassword="@ConfirmPassword"
+                                         CurrentStepChanged="(step) => GoToStep(step)"/>
+
+            <!-- Contact & Shipping -->
+            <div class="@(currentStep < 2 ? "opacity-60" : "cookie-shadow") bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
+                <div class="p-6 flex items-center gap-4 border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
+                    <span class="@(currentStep >= 2 ? "bg-primary text-white" : "bg-gray-200 text-gray-500") w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">2</span>
+                    <h2 class="font-display font-bold text-xl dark:text-amber-50">Contact & Shipping</h2>
+        
+                    @if (currentStep > 2) {
+                        <button @onclick="() => GoToStep(2)" class="cursor-pointer ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
+                    }
+                </div>
+                @if (currentStep == 2) {
+                    <div class="p-8 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">First Name</label>
+                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                       placeholder="Roary" 
+                                       @bind="ShippingFirstName"
+                                       @bind:event="oninput"
+                                       type="text" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Last Name</label>
+                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                                       placeholder="Tiger" 
+                                       @bind="ShippingLastName"
+                                       @bind:event="oninput"
+                                       type="text" />
+                            </div>
+                         </div>
+
+                        <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
+                            <span class="material-symbols-outlined text-xl">local_shipping</span>
+                            Shipping Address
+                        </h3>
+                        
+                        <DutchAddressLookup @bind-PostalCode="@ShippingPostalCode"
+                                            @bind-HouseNumber="@ShippingHouseNumber"
+                                            @bind-HouseNumberAddition="@ShippingHouseNumberAddition"
+                                            @bind-StreetName="@ShippingAddress"
+                                            @bind-City="@ShippingCity" />
+
+                        <div>
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <input type="checkbox" 
+                                       @bind="SameAsShipping"
+                                       class="w-5 h-5 rounded-full border-amber-200 text-primary focus:ring-primary accent-primary cursor-pointer" />
+                                <span class="text-sm font-semibold text-gray-600 dark:text-amber-100/70 group-hover:text-primary transition-colors">
+                                    Billing address same as Shipping?
+                                </span>
+                            </label>
+                        </div>
+
+                        @if(!SameAsShipping)
+                        {
+                            <div class="h-px w-full bg-gradient-to-r from-transparent via-amber-200 dark:via-amber-900/50 to-transparent my-8"></div>
+                                <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-xl">receipt_long</span>
+                                    Billing Address
+                                </h3>
+
+                                <DutchAddressLookup @bind-PostalCode="@BillingPostalCode"
+                                                    @bind-HouseNumber="@BillingHouseNumber"
+                                                    @bind-HouseNumberAddition="@BillingHouseNumberAddition"
+                                                    @bind-StreetName="@BillingAddress"
+                                                    @bind-City="@BillingCity" />
+
+                            }
+                        
+                        <div class="flex justify-end pt-4">
+                            <button @onclick="() => GoToStep(3)"
+                                    disabled="@DisableContinueFromStep2"
+                                    class="px-8 py-3 rounded-full font-bold transition-all 
+                                            @(DisableContinueFromStep2()
+                                                ? "bg-gray-300 cursor-not-allowed text-gray-500" 
+                                                : "bg-primary hover:bg-amber-700 shadow-xl cursor-pointer text-white")">
+                                Continue to Delivery Method
+                            </button>
+
+
+                        </div>
+                    </div>
+                }
+            </div>
+            <!-- Contact & Shipping -->
+
+            <!-- Delivery Method -->
+            <div class="@(currentStep < 3 ? "opacity-60" : "cookie-shadow") bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
+                <div class="p-6 flex items-center justify-between border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
+                    <div class="flex items-center gap-4">
+                        <span class="@(currentStep >= 3 ? "bg-primary text-white" : "bg-gray-200 text-gray-500") w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">3</span>
+                        <h2 class="font-display font-bold text-xl dark:text-amber-50">Delivery Method</h2>
+                    </div>
+                    @if (currentStep > 3) {
+                        <button @onclick="() => GoToStep(4)" class="cursor-pointer ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
+                    }
+                </div>
+                @if(currentStep == 3)
+                {
+                    <div class="p-8 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label class="relative flex p-4 cursor-pointer rounded-2xl border-2 transition-all duration-200
+                                    @(selectedDelivery == "standard"
+                                                   ? "border-primary bg-amber-50/50 dark:bg-primary/10 shadow-md"
+                                                   : "border-amber-100 dark:border-amber-900/30 hover:border-amber-200 dark:hover:border-primary/40")">
+
+                                <input type="radio" name="delivery" value="standard"
+                                       class="mt-1 w-4 h-4 text-primary focus:ring-primary dark:bg-surface-dark border-amber-300 dark:border-amber-700"
+                                       checked="@(selectedDelivery == "standard")"
+                                       @onchange="@(() => selectedDelivery = "standard")" />
+
+                                <div class="ml-4">
+                                    <span class="block font-bold dark:text-amber-50">Standard Shipping</span>
+                                    <span class="block text-sm text-gray-500 dark:text-amber-100/50">3-5 business days</span>
+                                </div>
+                                <span class="ml-auto font-bold dark:text-amber-50">$4.95</span>
+                            </label>
+
+                            <label class="relative flex p-4 cursor-pointer rounded-2xl border-2 transition-all duration-200
+                                    @(selectedDelivery == "express"
+                                                   ? "border-primary bg-amber-50/50 dark:bg-primary/10 shadow-md"
+                                                   : "border-amber-100 dark:border-amber-900/30 hover:border-amber-200 dark:hover:border-primary/40")">
+
+                                <input type="radio" name="delivery" value="express"
+                                       class="mt-1 w-4 h-4 text-primary focus:ring-primary dark:bg-surface-dark border-amber-300 dark:border-amber-700"
+                                       checked="@(selectedDelivery == "express")"
+                                       @onchange="@(() => selectedDelivery = "express")" />
+
+                                <div class="ml-4">
+                                    <span class="block font-bold dark:text-amber-50">Express Roar</span>
+                                    <span class="block text-sm text-gray-500 dark:text-amber-100/50">Next day delivery</span>
+                                </div>
+                                <span class="ml-auto font-bold dark:text-amber-50">$12.50</span>
+                            </label>
+                        </div>
+                        <div class="flex justify-end pt-4">
+                            <button @onclick="() => GoToStep(4)" class="cursor-pointer bg-primary text-white px-8 py-3 rounded-full font-bold">Continue to Delivery</button>
+                        </div>
+                    </div>
+                }
+
+            </div>
+            <!-- Delivery Method -->
+
+            <!-- Payment Method -->
+            <div class=" @(currentStep < 4 ? "opacity-60" : "cookie-shadow") bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
+                <div class="p-6 flex items-center justify-between border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
+                    <div class="flex items-center gap-4">
+                        <span class="@(currentStep >= 4 ? "bg-primary text-white" : "bg-gray-200 text-gray-500") w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">4</span>
+                        <h2 class="font-display font-bold text-xl dark:text-amber-50">Payment Method</h2>
+                    </div>
+                </div>
+                @if(currentStep == 4)
+                {
+                    <div class="p-8 space-y-6">
+                        <div class="flex gap-4 mb-6">
+                            <button @onclick='() => paymentMethod = "card"' type="button"
+                                    class="cursor-pointer flex-1 py-3 px-6 rounded-full border-2 transition-all flex items-center justify-center gap-2 font-bold
+                                        @(paymentMethod == "card"
+                                                        ? "border-primary text-primary bg-amber-50 dark:bg-primary/10"
+                                                        : "border-amber-100 dark:border-amber-900/30 text-gray-400 dark:text-gray-500 hover:border-amber-200")">
+                                <span class="material-symbols-outlined">credit_card</span> Credit Card
+                            </button>
+
+                            <button @onclick='() => paymentMethod = "paypal"' type="button"
+                                    class="cursor-pointer flex-1 py-3 px-6 rounded-full border-2 transition-all flex items-center justify-center gap-2 font-bold
+                                        @(paymentMethod == "paypal"
+                                                        ? "border-primary text-primary bg-amber-50 dark:bg-primary/10"
+                                                        : "border-amber-100 dark:border-amber-900/30 text-gray-400 dark:text-gray-500 hover:border-amber-200")">
+                                <span class="material-symbols-outlined">payments</span> PayPal
+                            </button>
+                        </div>
+
+                        @if (paymentMethod == "card")
+                        {
+                            <div class="space-y-4 animate-in fade-in duration-300">
+                                @* NOTE: If using Stripe, you'd replace these manual inputs 
+                                   with a single <div id="payment-element"></div> 
+                                *@
+                            <div>
+                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Card Number</label>
+                                    <div class="relative">
+                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                               placeholder="0000 0000 0000 0000" type="text" />
+                                        <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 dark:text-amber-100/30">lock</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Expiry Date</label>
+                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                               placeholder="MM/YY" type="text" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">CVC</label>
+                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                               placeholder="123" type="text" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="p-8 border-2 border-dashed border-amber-100 dark:border-amber-900/30 rounded-2xl text-center animate-in fade-in duration-300">
+                                <p class="text-gray-500 dark:text-amber-100/50">You will be redirected to PayPal to complete your purchase safely.</p>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+            <!-- Payment Method -->
+        </div>
+
+        <CheckoutCookieJar AllCheckoutStepsComplete="@(currentStep == 4)" />
+
+    </div>
+</main>
+
+@code {
+    private int currentStep = 1;
+    private UserDto? User { get; set; }
+    private CartDto? Cart { get; set; }
+    private bool shouldCreateAccount = false;
+    private string selectedDelivery = "standard";
+    private string paymentMethod = "card";
+    private bool IsLoadingAddress { get; set; }
+    private bool IsLoadingBillingAddress { get; set; }
+
+    private string Password { get; set; } = string.Empty;
+    private string ConfirmPassword { get; set; } = string.Empty;
+
+    private string CheckoutEmail { get; set; } = string.Empty;
+
+    private string ShippingHouseNumber { get; set; } = string.Empty;
+    private string ShippingHouseNumberAddition { get; set; } = string.Empty;
+
+    private string ShippingFirstName { get; set; } = string.Empty;
+    private string ShippingLastName { get; set; } = string.Empty;
+    private string ShippingAddress { get; set; } = string.Empty;
+    private string ShippingCity { get; set; } = string.Empty;
+    private string ShippingPostalCode { get; set; } = string.Empty;
+
+    private bool SameAsShipping { get; set; } = true;
+
+    private string BillingHouseNumber { get; set; } = string.Empty;
+    private string BillingHouseNumberAddition { get; set; } = string.Empty;
+    
+    private string BillingFirstName { get; set; } = string.Empty;
+    private string BillingLastName { get; set; } = string.Empty;
+    private string BillingAddress { get; set; } = string.Empty;
+    private string BillingCity { get; set; } = string.Empty;
+    private string BillingPostalCode { get; set; } = string.Empty;
+
+    [Inject] public IAuthService Auth { get; private set; }
+    [Inject] public NavigationManager Navigation { get; private set; }
+    [Inject] public ICartService CartService { get; private set; }
+    [Inject] public ICheckoutService CheckoutService { get; private set; }
+    
+    private bool DisableContinueFromStep2()
+    {
+        if (string.IsNullOrWhiteSpace(ShippingFirstName) ||
+            string.IsNullOrWhiteSpace(ShippingLastName) ||
+            string.IsNullOrWhiteSpace(ShippingAddress) ||
+            string.IsNullOrWhiteSpace(ShippingCity) ||
+            string.IsNullOrWhiteSpace(ShippingPostalCode) ||
+            string.IsNullOrWhiteSpace(ShippingHouseNumber) ||
+            string.IsNullOrWhiteSpace(ShippingHouseNumberAddition))
+            return true;
+
+        if (!SameAsShipping)
+        {
+            if (string.IsNullOrWhiteSpace(BillingFirstName) ||
+                string.IsNullOrWhiteSpace(BillingLastName) ||
+                string.IsNullOrWhiteSpace(BillingAddress) ||
+                string.IsNullOrWhiteSpace(BillingCity) ||
+                string.IsNullOrWhiteSpace(BillingPostalCode) ||
+                string.IsNullOrWhiteSpace(BillingHouseNumber) ||
+                string.IsNullOrWhiteSpace(BillingHouseNumberAddition))
+                return true;
+        }
+        return false;
+    }
+
+    private void RemoveBillingAddress()
+    {
+        BillingFirstName = string.Empty;
+        BillingLastName = string.Empty;
+        BillingAddress = string.Empty;
+        BillingCity = string.Empty;
+        BillingPostalCode = string.Empty;
+        BillingHouseNumber = string.Empty;
+        BillingHouseNumberAddition = string.Empty;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = Auth.CurrentUser;
+        Cart = await CartService.GetCartAsync();
+    }   
+
+    private void GoToStep(int step)
+    {
+        currentStep = step;
+    }
+}

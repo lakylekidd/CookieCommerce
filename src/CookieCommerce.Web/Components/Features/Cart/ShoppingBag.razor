@@ -1,0 +1,42 @@
+﻿@using CookieCommerce.Web.Services
+@implements IDisposable
+@rendermode InteractiveServer
+@inject ICartService CartService
+
+<a href="/shop/cart"
+   aria-label="Cart"
+   class="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-amber-100 dark:hover:bg-white/10 transition-colors">
+    <span class="material-icons-round text-xl">shopping_bag</span>
+    <span class="absolute top-1 right-1 bg-primary text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full border-2 border-background-light dark:border-background-dark">
+        @CartItemCount
+    </span>
+</a>
+
+@code {
+    private int CartItemCount { get; set; } = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CartService.OnCartUpdated += HandleCartChanged;
+        await LoadCartCountAsync();
+    }
+
+    private async void HandleCartChanged()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadCartCountAsync();
+            StateHasChanged();
+        });
+    }
+
+    private async Task LoadCartCountAsync()
+    {
+        CartItemCount = await CartService.GetCartItemCountAsync();
+    }
+
+    public void Dispose()
+    {
+        CartService.OnCartUpdated -= HandleCartChanged;
+    }
+}

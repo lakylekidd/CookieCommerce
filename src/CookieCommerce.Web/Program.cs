@@ -2,6 +2,8 @@ using CookieCommerce.Web.Components;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.DataProtection;
 using CookieCommerce.Web;
+using CookieCommerce.Web.Services.Products;
+using CookieCommerce.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,14 @@ builder.AddServiceDefaults();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddScoped<ICookieService, CookieService>();
+builder.Services.AddSingleton<ICartService, MockCartService>();
+builder.Services.AddSingleton<IAuthService, FakeAuthService>();
+builder.Services.AddSingleton<IContentService, FakeContentService>();
+builder.Services.AddSingleton<ICheckoutService, FakeCheckoutService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddSingleton<IAccountService, FakeAccountService>();
 
 var app = builder.Build();
 

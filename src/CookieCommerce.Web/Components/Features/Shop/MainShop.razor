@@ -1,0 +1,61 @@
+﻿@page "/shop"
+@layout ShopLayout
+
+@using CookieCommerce.Web.Components.Shared
+@using CookieCommerce.Web.Services.Products
+@using CookieCommerce.Web.Models.Products
+@inject ICookieService CookieService
+
+@code {
+    private IReadOnlyList<CookieDto> favoriteCookies = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        favoriteCookies = await CookieService.GetFavoriteCookiesAsync();
+    }
+}
+
+<PageTitle>Shop - Tiger's Favorites</PageTitle>
+
+<header class="container mx-auto px-6 pt-8">
+    
+    <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
+        <div>
+            <h1 class="font-display font-bold text-5xl mb-2">Tiger's Favorites!</h1>
+            <p class="text-gray-600 dark:text-gray-400 max-w-xl">
+                Discover our full pride of artisanal flavors. From
+                timeless classics to rare limited editions.
+            </p>
+        </div>
+        @* <div class="flex items-center gap-4">
+            <button class="bg-white dark:bg-surface-dark border border-amber-100 dark:border-amber-900/30 px-6 py-2 rounded-full font-bold flex items-center gap-2 hover:bg-amber-50 transition-colors shadow-sm">
+                <span class="material-symbols-outlined text-xl">tune</span>
+                Filter
+            </button>
+            <div class="relative group">
+                <button class="bg-white dark:bg-surface-dark border border-amber-100 dark:border-amber-900/30 px-6 py-2 rounded-full font-bold flex items-center gap-2 hover:bg-amber-50 transition-colors shadow-sm">
+                    Sort: Popular
+                    <span class="material-symbols-outlined text-xl">expand_more</span>
+                </button>
+            </div>
+        </div> *@
+    </div>
+</header>
+
+<main class="container mx-auto px-6 pb-12">
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        @foreach (var cookie in favoriteCookies)
+        {
+            <CookieCommerce.Web.Components.Features.Products._CookieCard 
+                Id="@cookie.Id"    
+                ImageUrl="@cookie.ImageUrls[0]"
+                CookieTitle="@cookie.Title"
+                Description="@cookie.Description"
+                Price="@cookie.Price"
+                IsBestSeller="@cookie.IsBestSeller"
+                IsLimitedEdition="@cookie.IsLimitedEdition" />
+        }
+    </section>
+</main>
+
+<SubscribeSection />

@@ -1,0 +1,27 @@
+﻿@using CookieCommerce.Web.Services
+@inject IAuthService Auth
+
+@if(!Auth.IsLoggedIn)
+{
+    <div class="bg-amber-50/60 dark:bg-amber-900/10 border-2 border-dashed border-amber-200 dark:border-amber-900/40 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-6">
+            <div class="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/20 flex-shrink-0">
+                <span class="material-symbols-outlined text-white text-3xl md:text-4xl"
+                      style="font-variation-settings: 'FILL' 1">sell</span>
+            </div>
+            <div>
+                <h2 class="font-display font-bold text-xl md:text-2xl text-text-light dark:text-text-dark">
+                    Join the Tiger Club
+                </h2>
+                <p class="text-gray-600 dark:text-gray-400 font-medium">
+                    First timers get 20% off! <a class="text-primary underline hover:text-amber-700 decoration-2 underline-offset-2"
+                                                 href="/auth/signup">Login or sign up</a>
+                </p>
+            </div>
+        </div>
+        <a class="px-8 py-3 rounded-full border-2 border-primary text-primary font-bold hover:bg-primary hover:text-white transition-all bg-white dark:bg-surface-dark whitespace-nowrap"
+           href="/auth/signup">
+            Claim Discount
+        </a>
+    </div>
+}

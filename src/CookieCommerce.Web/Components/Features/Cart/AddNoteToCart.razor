@@ -1,0 +1,94 @@
+﻿@using CookieCommerce.Web.Services
+@using System.Timers
+@inject ICartService CartService
+@implements IDisposable
+
+<div class="bg-white dark:bg-surface-dark p-8 rounded-3xl border border-amber-100 dark:border-amber-900/30 cookie-shadow">
+    <h4 class="font-display font-bold text-xl mb-4">Add a Note</h4>
+
+    <div class="relative">
+        <textarea class="w-full bg-amber-50/50 dark:bg-black/20 border-amber-100 dark:border-amber-900/30 rounded-2xl focus:ring-primary focus:border-primary p-6 text-sm min-h-[120px] transition-all"
+                  placeholder="Gift message or delivery instructions..."
+                  rows="4"
+                  @bind="NoteText"
+                  @bind:event="oninput">
+        </textarea>
+
+        @if (IsSaving)
+        {
+            <div class="absolute bottom-4 right-4 flex items-center gap-2">
+                <div class="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full"></div>
+                <span class="text-[10px] text-primary font-bold uppercase tracking-widest">Saving...</span>
+            </div>
+        }
+    </div>
+
+    <p class="text-xs text-gray-400 mt-4 italic">
+        Is this a gift? Add your personalized message here and
+        we'll handwrite it on a Tiger card!
+    </p>
+</div>
+
+@code {
+    private string _noteText = string.Empty;
+    private Timer? _debounceTimer;
+    private bool IsSaving { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var cart = await CartService.GetCartAsync();
+        var existingNote = cart?.Note;
+        if (!string.IsNullOrEmpty(existingNote))
+        {
+            _noteText = existingNote;
+        }
+    }
+
+    // This property binds to the UI
+    private string NoteText
+    {
+        get => _noteText;
+        set
+        {
+            if (_noteText != value)
+            {
+                _noteText = value;
+                DisposeTimer();
+                StartTimer();
+            }
+        }
+    }
+
+    private void StartTimer()
+    {
+        _debounceTimer = new Timer(500); // Wait 500ms after last keystroke
+        _debounceTimer.Elapsed += OnTimerElapsed;
+        _debounceTimer.AutoReset = false;
+        _debounceTimer.Enabled = true;
+    }
+
+    private async void OnTimerElapsed(object? sender, ElapsedEventArgs e)
+    {
+        await InvokeAsync(async () =>
+        {
+            IsSaving = true;
+            StateHasChanged();
+
+            await CartService.AddNoteToCartAsync(_noteText);
+
+            IsSaving = false;
+            StateHasChanged();
+        });
+    }
+
+    private void DisposeTimer()
+    {
+        if (_debounceTimer != null)
+        {
+            _debounceTimer.Elapsed -= OnTimerElapsed;
+            _debounceTimer.Dispose();
+        }
+    }
+
+    public void Dispose() => DisposeTimer();
+}

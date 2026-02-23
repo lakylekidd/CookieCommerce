@@ -1,0 +1,209 @@
+﻿@page "/shop/cookie/{id:guid}"
+@layout ShopLayout
+@rendermode InteractiveServer
+@using CookieCommerce.Web.Components.Features.Shop
+@using CookieCommerce.Web.Services
+@using CookieCommerce.Web.Services.Products
+@using CookieCommerce.Web.Models.Products
+@inject NavigationManager Navigation
+@inject ICookieService CookieService
+@inject ICartService CartService
+@inject IAuthService Auth
+@inject IAccountService AccountService
+
+@if (_cookie is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <main class="relative min-h-screen pt-8 pb-12">
+        <div class="absolute inset-0 pattern-bg pointer-events-none"></div>
+        <div class="container mx-auto px-6 relative z-10">
+            <CookieCommerce.Web.Components.Shared._Breadcrumbs />
+            <div class="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
+                <div class="w-full lg:w-1/2">
+                    <div class="relative group">
+                        <div class="absolute -inset-4 bg-primary/10 rounded-3xl blur-2xl group-hover:bg-primary/20 transition-colors">
+                        </div>
+                        <div class="relative bg-surface-light dark:bg-surface-dark rounded-3xl overflow-hidden shadow-2xl border border-amber-100 dark:border-amber-900/30">
+                            <img alt="@_cookie.Title"                                 
+                                class="w-full h-auto aspect-square object-cover transition-all duration-300"
+                                 src="@_currentMainImage" />
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 mt-6">
+                        @foreach(var photo in _cookie.ImageUrls)
+                        {
+                            <div @onclick="() => SelectImage(photo)"
+                                 class="aspect-square rounded-xl overflow-hidden border-2 cursor-pointer transition-transform hover:scale-105 @(photo == _currentMainImage ? "border-primary" : "border-transparent")">
+                                <img alt="@_cookie.Title" class="w-full h-full object-cover"
+                                     src="@photo" />
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="w-full lg:w-1/2 flex flex-col">
+                    <div class="mb-2">
+                        <span class="text-primary font-bold tracking-widest text-sm uppercase">
+                            Signature Collection
+                        </span>
+                    </div>
+                    <h1 class="font-display font-bold text-4xl lg:text-6xl text-text-light dark:text-text-dark mb-4 leading-tight">
+                        @_cookie.Title
+                    </h1>
+                    <div class="flex items-center gap-4 mb-6">
+                        <span class="text-3xl font-display font-bold text-primary">@_cookie.CurrencySymbol@_cookie.Price.ToString("F2")</span>
+                        <div class="flex items-center gap-1 bg-amber-100 dark:bg-amber-900/40 px-3 py-1 rounded-full">
+                            <span class="material-icons-round text-primary text-sm">star</span>
+                            <span class="text-sm font-bold text-primary">@_cookie.Rating.ToString("F1") (@_cookie.ReviewCount reviews)</span>
+                        </div>
+                    </div>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                        @_cookie.Description
+                    </p>
+                    <div class="mb-8">
+                        <h3 class="font-display font-bold text-lg text-text-light dark:text-text-dark mb-3 uppercase tracking-wide">
+                            Key Ingredients
+                        </h3>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach(var ingredient in _cookie.Ingredients)
+                            {
+                                <span class="bg-amber-100 dark:bg-amber-900/30 text-text-light dark:text-text-dark px-4 py-1.5 rounded-full text-sm font-semibold">
+                                    @ingredient
+                                </span>
+                            }
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+
+                            <div class="flex items-center justify-center mx-auto max-w-fit bg-surface-light dark:bg-surface-dark border-2 border-amber-100 dark:border-amber-800 rounded-full overflow-hidden">
+                                <button @onclick="DecreaseQuantity" 
+                                        class="p-4 hover:text-primary transition-colors cursor-pointer flex items-center justify-center">
+                                    <span class="material-icons-round text-xl">remove</span>
+                                </button>
+                                <input class="w-12 text-center bg-transparent border-none focus:ring-0 font-bold text-lg appearance-none"
+                                       readonly type="number" 
+                                       value="@Quantity" />
+                                <button @onclick="IncreaseQuantity" 
+                                        class="p-4 hover:text-primary transition-colors cursor-pointer flex items-center justify-center">
+                                    <span class="material-icons-round text-xl">add</span>
+                                </button>    
+                            </div>
+                            <button @onclick="async () => await AddToCartAsync()" class="cursor-pointer flex-grow bg-primary hover:bg-amber-700 text-white px-8 py-4 rounded-full font-bold text-xl shadow-lg shadow-primary/30 transition-all active:scale-95 flex items-center justify-center gap-3">
+                                <span class="material-symbols-outlined text-white">shopping_bag</span>
+                                Add to Cart
+                            </button>
+
+                            <button @onclick="ToggleFavorite" 
+                                    class="group cursor-pointer flex items-center justify-center p-4 bg-surface-light dark:bg-surface-dark border-2 transition-all duration-300 rounded-full
+                                           @(IsInFavorites 
+                                             ? "border-red-100 dark:border-red-900/30 text-red-500 shadow-lg shadow-red-500/10" 
+                                             : "border-amber-100 dark:border-amber-800 text-gray-400 hover:text-red-500")">
+    
+                                <span class="material-icons-round transition-transform duration-300 @(IsInFavorites ? "scale-110" : "group-active:scale-90")">
+                                    @(IsInFavorites ? "favorite" : "favorite_border")
+                                </span>
+                            </button>
+
+                        </div>
+                        <div class="flex items-center gap-2 mt-4 px-2">
+                            <span class="material-symbols-outlined text-green-500 text-xl font-bold"
+                                  style="font-variation-settings: 'FILL' 1, 'wght' 700">check_circle</span>
+                            <p class="text-gray-500 dark:text-gray-400 font-semibold text-sm">
+                                In stock, ready to ship
+                                today!
+                            </p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+                        <div class="flex items-start gap-4 p-4 bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 shadow-sm">
+                            <div class="w-10 h-10 flex-shrink-0 bg-primary/10 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary">local_shipping</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm">Fast Delivery</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    Next day delivery for orders before
+                                    2PM.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 shadow-sm">
+                            <div class="w-10 h-10 flex-shrink-0 bg-primary/10 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary">verified_user</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm">Fresh Guarantee</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    Baked fresh every single morning.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <CookieCommerce.Web.Components.Features.Reviews.ProductReviews Id="@_cookie.Id" />
+
+    <CookieCommerce.Web.Components.Layout.SmallerFooter />
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private string _currentMainImage = string.Empty;
+    private int Quantity { get; set; } = 1;
+    private CookieDto? _cookie;
+    private bool IsInFavorites { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _cookie = await CookieService.GetCookieByIdAsync(Id);
+        ArgumentNullException.ThrowIfNull(_cookie, nameof(_cookie));
+        _currentMainImage = _cookie.ImageUrls[0];
+        if (Auth.IsLoggedIn)
+        {
+            IsInFavorites = await AccountService.IsFavoriteAsync(_cookie.Id);
+        }
+    }
+
+    private void SelectImage(string imageUrl)
+    {
+        _currentMainImage = imageUrl;
+    }
+
+    private void IncreaseQuantity() => Quantity++;
+
+    private void DecreaseQuantity() => Quantity = Math.Max(1, Quantity - 1);
+
+    private async Task AddToCartAsync()
+    {
+        if (_cookie is not null)
+        {
+            await CartService.AddToCartAsync(_cookie.Id, Quantity);
+        }
+    }
+
+    private async Task ToggleFavorite()
+    {
+        if (!Auth.IsLoggedIn)
+        {
+            Navigation.NavigateTo($"/auth/signin?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+            return;
+        }
+
+        if (_cookie is not null)
+        {
+            if (IsInFavorites) await AccountService.RemoveFromFavoritesAsync(Id);
+            else await AccountService.AddToFavoritesAsync(Id);
+        }
+
+        IsInFavorites = await AccountService.IsFavoriteAsync(Id);
+        StateHasChanged();
+    }
+}
+

@@ -1,0 +1,131 @@
+﻿@page "/legal/faq"
+@using CookieCommerce.Web.Models.Content
+@using CookieCommerce.Web.Services
+@layout Legal.LegalMain
+@rendermode InteractiveServer
+@inject IContentService ContentService
+@inject NavigationManager Nav
+
+<div class="lg:w-[70%] bg-surface-light dark:bg-surface-dark rounded-[2.5rem] shadow-xl shadow-amber-900/5 border border-amber-100 dark:border-amber-900/30 overflow-hidden relative">
+    <div class="absolute inset-0 pattern-bg pointer-events-none"></div>
+    <div class="p-8 lg:p-16 relative z-10">
+
+        <div class="mb-12">
+            <div class="relative group max-w-2xl mx-auto">
+                <span class="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-primary z-10">search</span>
+
+                @* We bind to a local string and trigger navigation on 'Enter' or button click *@
+                <input class="w-full bg-amber-50/50 dark:bg-amber-900/10 border-2 border-amber-100 dark:border-amber-900/30 rounded-2xl py-5 pl-14 pr-32 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-lg font-medium"
+                       placeholder="How can we help you, Tiger?"
+                       type="text"
+                       @bind="localSearchTerm"
+                       @onkeyup="HandleKeyUp" />
+
+                <button @onclick="TriggerSearch"
+                        class="absolute right-2 top-2 bottom-2 px-6 bg-primary hover:bg-amber-700 text-white rounded-xl font-bold transition-all active:scale-95">
+                    Search
+                </button>
+            </div>
+        </div>
+
+        <div class="space-y-12">
+            @if (!string.IsNullOrWhiteSpace(Search))
+            {
+                @* --- SEARCH RESULTS VIEW --- *@
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-2xl font-bold">Search Results for "@Search"</h2>
+                    <button @onclick="ClearSearch" class="cursor-pointer text-primary hover:underline font-medium text-sm">Clear Results</button>
+                </div>
+
+                @if (SearchResults.Any())
+                {
+                    <div class="grid gap-4">
+                        @foreach (var faq in SearchResults)
+                        {
+                            <details open class="group bg-amber-50/30 dark:bg-white/5 rounded-2xl border border-amber-100/50 dark:border-amber-900/20 overflow-hidden">
+                                <summary class="flex items-center justify-between p-6 cursor-pointer list-none">
+                                    <span class="font-bold text-amber-900 dark:text-amber-100">@faq.Description</span>
+                                    <span class="material-symbols-outlined text-primary transition-transform group-open:rotate-45">add_circle</span>
+                                </summary>
+                                <div class="px-6 pb-6 text-amber-900/70 dark:text-amber-100/70 leading-relaxed">@faq.Content</div>
+                            </details>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-12">
+                        <span class="material-symbols-outlined text-6xl opacity-20">sentiment_dissatisfied</span>
+                        <p class="mt-4 opacity-50">No matches found for your search.</p>
+                    </div>
+                }
+            }
+            else
+            {
+                @* --- STANDARD FAQ VIEW --- *@
+                @foreach (var category in FaqCategories)
+                {
+                    <section>
+                        <h2 class="faq-category-title mt-0 flex items-center gap-4">
+                            <span class="inline-flex items-center justify-center bg-amber-100 dark:bg-amber-900/40 w-12 h-12 rounded-xl text-primary shrink-0">
+                                <span class="material-symbols-outlined text-2xl">@category.Icon</span>
+                            </span>
+                            @category.Title
+                        </h2>
+                        <div class="space-y-3 mt-6">
+                            @foreach (var faq in category.Items)
+                            {
+                                <details class="group bg-amber-50/30 dark:bg-white/5 rounded-2xl border border-amber-100/50 dark:border-amber-900/20 overflow-hidden">
+                                    <summary class="flex items-center justify-between p-6 cursor-pointer list-none">
+                                        <span class="font-bold text-amber-900 dark:text-amber-100">@faq.Description</span>
+                                        <span class="material-symbols-outlined text-primary transition-transform group-open:rotate-45">add_circle</span>
+                                    </summary>
+                                    <div class="px-6 pb-6 text-amber-900/70 dark:text-amber-100/70 leading-relaxed">@faq.Content</div>
+                                </details>
+                            }
+                        </div>
+                    </section>
+                }
+            }
+        </div>
+    </div>
+</div>
+@code {
+
+    [SupplyParameterFromQuery(Name = "search")]
+    public string? Search { get; set; }
+
+    private string localSearchTerm = "";
+    private IReadOnlyList<FaqCategoryDto> FaqCategories { get; set; } = [];
+    private IReadOnlyList<FaqCategoryItemDto> SearchResults { get; set; } = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(Search))
+        {
+            localSearchTerm = Search;
+            SearchResults = await ContentService.SearchAsync(Search);
+        }
+        else
+        {
+            FaqCategories = await ContentService.GetFaqsAsync();
+        }
+    }
+
+    private void TriggerSearch()
+    {
+        if (!string.IsNullOrWhiteSpace(localSearchTerm))
+            Nav.NavigateTo($"/legal/faq?search={Uri.EscapeDataString(localSearchTerm)}");
+    }
+
+    private void HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") TriggerSearch();
+    }
+
+    private void ClearSearch()
+    {
+        localSearchTerm = "";
+        Nav.NavigateTo("/legal/faq");
+    }
+}

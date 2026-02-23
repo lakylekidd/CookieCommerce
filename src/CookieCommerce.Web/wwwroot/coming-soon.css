@@ -1,0 +1,273 @@
+html, body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f1de;
+}
+
+.nocopy {
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+h1:focus {
+    outline: none;
+}
+
+/* Floating Cookie Annimations START */
+@keyframes move {
+    100% {
+        transform: translate3d(0, 0, 1px) rotate(360deg);
+    }
+}
+.page {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+}
+.cookie-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0; /* Background layer */
+    pointer-events: none; /* User can click "through" the cookies */
+    overflow: hidden;
+}
+.main-content {
+    position: relative;
+    z-index: 10; /* Higher than cookies */
+    /* If your main content has a background, 
+       make it transparent or remove it to see the cookies */
+    background: transparent;
+}
+.cookie {
+    position: absolute;
+    width: 15vmin;
+    height: 15vmin;
+    border-radius: 50%;
+    backface-visibility: hidden;
+    animation: move linear infinite;
+    background-image: url('/images/cookie.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    filter: blur(10px);
+}
+.cookie:nth-child(odd) {
+    
+}
+.cookie:nth-child(even) {
+    
+}
+    .cookie:nth-child(1) {
+        top: 77%;
+        left: 88%;
+        animation-duration: 40s;
+        animation-delay: -3s;
+        transform-origin: 16vw -2vh;
+    }
+    .cookie:nth-child(2) {
+        top: 42%;
+        left: 2%;
+        animation-duration: 53s;
+        animation-delay: -29s;
+        transform-origin: -19vw 21vh;
+    }
+    .cookie:nth-child(3) {
+        top: 28%;
+        left: 18%;
+        animation-duration: 49s;
+        animation-delay: -8s;
+        transform-origin: -22vw 3vh;
+    }
+    .cookie:nth-child(4) {
+        top: 50%;
+        left: 79%;
+        animation-duration: 26s;
+        animation-delay: -21s;
+        transform-origin: -17vw -6vh;
+    }
+    .cookie:nth-child(5) {
+        top: 46%;
+        left: 15%;
+        animation-duration: 36s;
+        animation-delay: -40s;
+        transform-origin: 4vw 0vh;
+    }
+
+    .cookie:nth-child(6) {
+        top: 77%;
+        left: 16%;
+        animation-duration: 31s;
+        animation-delay: -10s;
+        transform-origin: 18vw 4vh;
+    }
+
+    .cookie:nth-child(7) {
+        top: 22%;
+        left: 17%;
+        animation-duration: 55s;
+        animation-delay: -6s;
+        transform-origin: 1vw -23vh;
+    }
+
+    .cookie:nth-child(8) {
+        top: 41%;
+        left: 47%;
+        animation-duration: 43s;
+        animation-delay: -28s;
+        transform-origin: 25vw -3vh;
+    }
+/* Floating Cookie Annimations END */
+
+#jumbotron {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    vertical-align: middle;
+    height: 100vh;
+}
+    #jumbotron #postcard {
+        position: relative;
+        width: 600px;
+        background-image: url('/images/paper.avif');
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        padding: 2rem;
+    }
+    #jumbotron #postcard #comingsoon {
+        position: absolute;
+        top: -15px;
+        left: -15px;
+    }
+        #jumbotron #postcard #comingsoon img {
+            width: 100px;
+        }
+        #jumbotron #postcard #social-instagram {
+            position: absolute;
+            right: 30px;
+            width: 30px;
+        }
+            #jumbotron #postcard form {
+                display: flex;
+                flex-direction: column;
+            }
+
+            #jumbotron h1 {
+                font-family: 'Comic Neue', cursive;
+                color: #50363f;
+                font-size: 4rem;
+                font-weight: 900;
+                margin-top: 50px;
+            }
+
+            #jumbotron h2 {
+                font-size: 2.5rem;
+                color: #152131;
+            }
+
+            input {
+                border-color: #50363f;
+                border-radius: 30px;
+                height: 50px;
+                padding: 0 1rem;
+                font-family: 'Comic Neue';
+                font-weight: 700;
+                font-size: 1.4rem;
+                color: #50363f;
+                margin: 0.2rem 0 0.2rem 0;
+            }
+
+            button {
+                border-color: #50363f;
+                border-radius: 30px;
+                background-color: #50363f;
+                font-family: 'Comic Neue';
+                font-weight: 700;
+                color: #f8f1de;
+                font-size: 1.4rem;
+                padding: 0.3rem;
+                margin: 0.2rem 0 0.2rem 0;
+                width: 200px;
+                align-self: center;
+            }
+
+            @media (max-width: 768px) {
+                #jumbotron #postcard {
+                    width: 500px; /* Use percentage instead of fixed px */
+                    padding: 1rem;
+                    margin: 0 10px;
+                }
+
+                    #jumbotron #postcard #logo {
+                        width: 300px; /* Scale down the logo */
+                    }
+
+                #jumbotron h1 {
+                    font-size: 3rem; /* Shrink the large text */
+                    margin-top: 30px;
+                }
+
+                #jumbotron h2 {
+                    font-size: 2rem;
+                }
+
+                input {
+                    width: 100%; /* Make input fill the postcard width */
+                }
+
+                #jumbotron #comingsoon img {
+                    width: 70px; /* Scale down the "coming soon" badge */
+                }
+            }
+
+            @media (max-width: 552px) {
+                #jumbotron #postcard {
+                    width: 300px; /* Use percentage instead of fixed px */
+                    padding: 1rem;
+                    margin: 0 10px;
+                }
+
+                    #jumbotron #postcard #logo {
+                        width: 150px; /* Scale down the logo */
+                    }
+
+                #jumbotron h1 {
+                    font-size: 2rem; /* Shrink the large text */
+                    margin-top: 30px;
+                }
+
+                #jumbotron h2 {
+                    font-size: 1.5rem;
+                }
+
+                input {
+                    width: 100%;
+                    font-size: 1rem;
+                }
+
+                button {
+                }
+
+                #jumbotron #comingsoon img {
+                    width: 70px; /* Scale down the "coming soon" badge */
+                }
+            }
+
+            @media (max-height: 715px) {
+                #jumbotron #postcard {
+                    display: flex;
+                    width: 90vw;
+                }
+
+                #jumbotron h1 {
+                    font-size: 3rem;
+                }
+
+                #jumbotron h2 {
+                    font-size: 2rem;
+                }
+            }

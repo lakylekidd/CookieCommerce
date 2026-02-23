@@ -2,23 +2,28 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 # We stay at the root /app or /src
 WORKDIR /build 
 
-# Add this anywhere in your Dockerfile (usually near the top)
 LABEL org.opencontainers.image.source=https://github.com/lakylekidd/CookieCommerce
 
-# 1. Copy the projects into their relative subfolders
-# This mirrors your repo structure exactly
+# Install Node.js
+RUN apt-get update && apt-get install -y curl gnupg && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
+# Copy the projects into their relative subfolders and build the solution
+# This mirrors your repo structure exactly 
 COPY src/CookieCommerce.Web/CookieCommerce.Web.csproj src/CookieCommerce.Web/
 COPY src/CookieCommerce.ServiceDefaults/CookieCommerce.ServiceDefaults.csproj src/CookieCommerce.ServiceDefaults/
-
-# 2. Restore 
-# Note: Path is now relative to our WORKDIR (/build)
 RUN dotnet restore "src/CookieCommerce.Web/CookieCommerce.Web.csproj"
 
-# 3. Copy everything else
+# Copy everything else
 COPY . .
-
-# 4. Build and Publish
 WORKDIR "/build/src/CookieCommerce.Web"
+
+# Install Tailwind CSS CLI locally in the container
+RUN npm install tailwindcss @tailwindcss/cli
+
+# We override the Tailwind command to use 'sh' instead of 'cmd' if necessary, 
+# or just let dotnet publish run (if you fix the .csproj)
 RUN dotnet publish "CookieCommerce.Web.csproj" -c Release -o /app/publish --no-restore
 
 # --- Runtime Stage ---

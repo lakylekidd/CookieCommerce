@@ -7,6 +7,11 @@ public class LocationService(HttpClient http) : ILocationService
 {
     public async Task<DutchAddressResult?> LookupDutchAddressAsync(string postCode, string houseNumber)
     {
+        return await LookupDutchAddressAsync(postCode, houseNumber, string.Empty);
+    }
+
+    public async Task<DutchAddressResult?> LookupDutchAddressAsync(string postCode, string houseNumber, string addition)
+    {
         if (string.IsNullOrWhiteSpace(postCode) || string.IsNullOrWhiteSpace(houseNumber)) return null;
 
         var cleanPostcode = postCode.Replace(" ", "").ToUpper();

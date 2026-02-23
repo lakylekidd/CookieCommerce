@@ -1,0 +1,141 @@
+﻿@using CookieCommerce.Web.Services
+@inject ILocationService LocationService
+
+<!-- Lookup Criteria -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="space-y-2">
+        <label class="block text-sm font-bold text-primary italic mb-2 px-1">Postcode</label>
+        <input class="w-full px-5 py-3 rounded-full border-2 border-primary/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white uppercase"
+               placeholder="1011 AB"
+               @bind:get="PostalCode"
+               @bind:set="OnPostalCodeChanged"
+               @bind:event="oninput"
+               @onkeyup="OnAddressInputChanged" />
+    </div>
+
+    <div class="space-y-2">
+        <label class="block text-sm font-bold text-primary italic mb-2 px-1">House Number</label>
+        <div class="flex gap-2">
+            <input class="w-2/3 px-5 py-3 rounded-full border-2 border-primary/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                   placeholder="10"
+                   @bind:get="HouseNumber"
+                   @bind:set="OnHouseNumberChanged"
+                   @bind:event="oninput"
+                   @onkeyup="OnAddressInputChanged" />
+
+            <input class="w-1/3 px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-background-light/30 dark:bg-amber-900/10 dark:text-white text-center text-xs"
+                   placeholder="Add."
+                   @bind:get="HouseNumberAddition"
+                   @bind:set="OnHouseNumberAdditionChanged"
+                   @bind:event="oninput"
+                   @onkeyup="OnAddressInputChanged" />
+        </div>
+    </div>
+</div>
+<!-- Lookup Criteria -->
+
+<!-- Result Address -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="relative">
+        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Street</label>
+        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white"
+               placeholder="Auto-filled street name"
+               @bind:get="StreetName"
+               @bind:set="OnStreetNameChanged" />
+
+        @if (IsLoadingAddress)
+        {
+            <div class="absolute right-4 top-11">
+                <div class="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full"></div>
+            </div>
+        }
+    </div>
+
+    <div>
+        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">City</label>
+        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white"
+               placeholder="Auto-filled city"
+               @bind:get="City"
+               @bind:set="OnCityChanged" />
+    </div>
+</div>
+<!-- Result Address -->
+
+@code {
+    [Parameter] public string PostalCode { get; set; } = string.Empty;
+    [Parameter] public string HouseNumber { get; set; } = string.Empty;
+    [Parameter] public string HouseNumberAddition { get; set; } = string.Empty;
+    [Parameter] public string StreetName { get; set; } = string.Empty;
+    [Parameter] public string City { get; set; } = string.Empty;
+
+    [Parameter] public EventCallback<string> PostalCodeChanged { get; set; }
+    [Parameter] public EventCallback<string> HouseNumberChanged { get; set; }
+    [Parameter] public EventCallback<string> HouseNumberAdditionChanged { get; set; }
+    [Parameter] public EventCallback<string> StreetNameChanged { get; set; }
+    [Parameter] public EventCallback<string> CityChanged { get; set; }
+
+
+    public bool IsLoadingAddress { get; set; } = false;
+
+    private Task OnPostalCodeChanged(string value)
+    {
+        PostalCode = value;
+        return PostalCodeChanged.InvokeAsync(value);
+    }
+
+    private Task OnHouseNumberChanged(string value)
+    {
+        HouseNumber = value;
+        return HouseNumberChanged.InvokeAsync(value);
+    }
+
+    private Task OnHouseNumberAdditionChanged(string value)
+    {
+        HouseNumberAddition = value;
+        return HouseNumberAdditionChanged.InvokeAsync(value);
+    }
+
+    private Task OnStreetNameChanged(string value)
+    {
+        StreetName = value;
+        return StreetNameChanged.InvokeAsync(value);
+    }
+
+    private Task OnCityChanged(string value)
+    {
+        City = value;
+        return CityChanged.InvokeAsync(value);
+    }
+
+    private async Task OnAddressInputChanged()
+    {
+        // Dutch postcodes are 6 chars (1234AB). We check for at least 6 + a house number.
+        if (PostalCode?.Replace(" ", "").Length == 6 && !string.IsNullOrWhiteSpace(HouseNumber))
+        {
+            await LookupAddress();
+        }
+    }
+
+    private async Task LookupAddress()
+    {
+        IsLoadingAddress = true;
+        try
+        {
+            var result = await LocationService.LookupDutchAddressAsync(PostalCode, HouseNumber, HouseNumberAddition);
+
+            if (result != null)
+            {
+                StreetName = result.Street;
+                City = result.City;
+                if (PostalCode.Length == 6 && !PostalCode.Contains(" "))
+                {
+                    PostalCode = PostalCode.Insert(4, " ");
+                }
+            }
+        }
+        finally
+        {
+            IsLoadingAddress = false;
+        }
+    }
+}

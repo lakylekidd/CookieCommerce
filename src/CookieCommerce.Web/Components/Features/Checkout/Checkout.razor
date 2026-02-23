@@ -32,10 +32,7 @@
                 </div>
                 @if (currentStep == 2) {
                     <div class="p-8 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
-                        <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
-                            <span class="material-symbols-outlined text-xl">local_shipping</span>
-                            Shipping Address
-                        </h3>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">First Name</label>
@@ -45,7 +42,6 @@
                                        @bind:event="oninput"
                                        type="text" />
                             </div>
-
                             <div>
                                 <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Last Name</label>
                                 <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
@@ -54,98 +50,143 @@
                                        @bind:event="oninput"
                                        type="text" />
                             </div>
+                         </div>
 
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Shipping Address</label>
-                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                       placeholder="123 Jungle Road" 
-                                       @bind="CheckoutShippingAddress"
+                        <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
+                            <span class="material-symbols-outlined text-xl">local_shipping</span>
+                            Shipping Address
+                        </h3>
+                        
+                        <!-- Lookup Criteria -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-bold text-primary italic mb-2 px-1">Postcode</label>
+                                <input class="w-full px-5 py-3 rounded-full border-2 border-primary/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white uppercase"
+                                       placeholder="1011 AB"
+                                       @bind="CheckoutShippingPostalCode"
                                        @bind:event="oninput"
-                                       type="text" />
+                                       @onkeyup="OnAddressInputChanged" />
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-sm font-bold text-primary italic mb-2 px-1">House Number</label>
+                                <div class="flex gap-2">
+                                    <input class="w-2/3 px-5 py-3 rounded-full border-2 border-primary/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                           placeholder="10"
+                                           @bind="CheckoutHouseNumber"
+                                           @bind:event="oninput"
+                                           @onkeyup="OnAddressInputChanged" />
+
+                                    <input class="w-1/3 px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-background-light/30 dark:bg-amber-900/10 dark:text-white text-center text-xs"
+                                           placeholder="Add."
+                                           @bind="CheckoutHouseNumberAddition" />
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Lookup Criteria -->
+
+                        <!-- Result Address -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="relative">
+                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Street</label>
+                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white"
+                                       placeholder="Auto-filled street name"
+                                       @bind="CheckoutShippingAddress"
+                                       @bind:event="oninput" />
+
+                                @if (IsLoadingAddress)
+                                {
+                                    <div class="absolute right-4 top-11">
+                                        <div class="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full"></div>
+                                    </div>
+                                }
                             </div>
 
                             <div>
                                 <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">City</label>
-                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                       placeholder="Amsterdam" 
+                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white"
+                                       placeholder="Auto-filled city"
                                        @bind="CheckoutShippingCity"
-                                       @bind:event="oninput"
-                                       type="text" />
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Postal Code</label>
-                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                       placeholder="1011 AB" 
-                                       @bind="CheckoutShippingPostalCode"
-                                       @bind:event="oninput"
-                                       type="text" />
-                            </div>
-                            <div>
-                                <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" 
-                                           @bind="CheckoutSameAsShipping"
-                                           class="w-5 h-5 rounded-full border-amber-200 text-primary focus:ring-primary accent-primary cursor-pointer" />
-                                    <span class="text-sm font-semibold text-gray-600 dark:text-amber-100/70 group-hover:text-primary transition-colors">
-                                        Billing address same as Shipping?
-                                    </span>
-                                </label>
+                                       @bind:event="oninput" />
                             </div>
                         </div>
+                        <!-- Result Address -->
+
+                        <div>
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <input type="checkbox" 
+                                       @bind="CheckoutSameAsShipping"
+                                       class="w-5 h-5 rounded-full border-amber-200 text-primary focus:ring-primary accent-primary cursor-pointer" />
+                                <span class="text-sm font-semibold text-gray-600 dark:text-amber-100/70 group-hover:text-primary transition-colors">
+                                    Billing address same as Shipping?
+                                </span>
+                            </label>
+                        </div>
+
                         @if(!CheckoutSameAsShipping)
                         {
                             <div class="h-px w-full bg-gradient-to-r from-transparent via-amber-200 dark:via-amber-900/50 to-transparent my-8"></div>
-                            <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
-                                <span class="material-symbols-outlined text-xl">receipt_long</span>
-                                Billing Address
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">First Name</label>
-                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                           placeholder="Roary" 
-                                           @bind="CheckoutBillingFirstName"
-                                           @bind:event="oninput"
-                                           type="text" />
-                                </div>
+                                <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-xl">receipt_long</span>
+                                    Billing Address
+                                </h3>
 
-                                <div>
-                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Last Name</label>
-                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                           placeholder="Tiger" 
-                                           @bind="CheckoutBillingLastName"
-                                           @bind:event="oninput"
-                                           type="text" />
-                                </div>
+                                <!-- Lookup Criteria -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-bold text-primary italic mb-2 px-1">Postcode</label>
+                                        <input class="w-full px-5 py-3 rounded-full border-2 border-primary/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white uppercase"
+                                               placeholder="1011 AB"
+                                               @bind="CheckoutBillingPostalCode"
+                                               @bind:event="oninput"
+                                               @onkeyup="OnBillingAddressInputChanged" />
+                                    </div>
 
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Shipping Address</label>
-                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                           placeholder="123 Jungle Road" 
-                                           @bind="CheckoutBillingAddress"
-                                           @bind:event="oninput"    
-                                           type="text" />
-                                </div>
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-bold text-primary italic mb-2 px-1">House Number</label>
+                                        <div class="flex gap-2">
+                                            <input class="w-2/3 px-5 py-3 rounded-full border-2 border-primary/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
+                                                   placeholder="10"
+                                                   @bind="CheckoutBillingHouseNumber"
+                                                   @bind:event="oninput"
+                                                   @onkeyup="OnBillingAddressInputChanged" />
 
-                                <div>
-                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">City</label>
-                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                           placeholder="Amsterdam" 
-                                           @bind="CheckoutBillingCity"
-                                           @bind:event="oninput"
-                                           type="text" />
+                                            <input class="w-1/3 px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-background-light/30 dark:bg-amber-900/10 dark:text-white text-center text-xs"
+                                                   placeholder="Add."
+                                                   @bind="CheckoutBillingHouseNumberAddition" />
+                                        </div>
+                                    </div>
                                 </div>
+                                <!-- Lookup Criteria -->
 
-                                <div>
-                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Postal Code</label>
-                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                           placeholder="1011 AB" 
-                                           @bind="CheckoutBillingPostalCode"
-                                           @bind:event="oninput"
-                                           type="text" />
+                                <!-- Result Address -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="relative">
+                                        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Street</label>
+                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white"
+                                               placeholder="Auto-filled street name"
+                                               @bind="CheckoutBillingAddress"
+                                               @bind:event="oninput" />
+
+                                        @if (IsLoadingBillingAddress)
+                                        {
+                                            <div class="absolute right-4 top-11">
+                                                <div class="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full"></div>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">City</label>
+                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white"
+                                               placeholder="Auto-filled city"
+                                               @bind="CheckoutBillingCity"
+                                               @bind:event="oninput" />
+                                    </div>
                                 </div>
-                            </div>
-                        }
+                                <!-- Result Address -->
+                            }
+                        
                         <div class="flex justify-end pt-4">
                             <button @onclick="() => GoToStep(3)"
                                     disabled="@DisableContinueFromStep2"
@@ -302,17 +343,26 @@
     private bool shouldCreateAccount = false;
     private string selectedDelivery = "standard";
     private string paymentMethod = "card";
+    private bool IsLoadingAddress { get; set; }
+    private bool IsLoadingBillingAddress { get; set; }
 
     private string Password { get; set; } = string.Empty;
     private string ConfirmPassword { get; set; } = string.Empty;
 
     private string CheckoutEmail { get; set; } = string.Empty;
+
+    private string CheckoutHouseNumber { get; set; } = string.Empty;
+    private string CheckoutHouseNumberAddition { get; set; } = string.Empty;
+
     private string CheckoutShippingFirstName { get; set; } = string.Empty;
     private string CheckoutShippingLastName { get; set; } = string.Empty;
     private string CheckoutShippingAddress { get; set; } = string.Empty;
     private string CheckoutShippingCity { get; set; } = string.Empty;
     private string CheckoutShippingPostalCode { get; set; } = string.Empty;
+
     private bool CheckoutSameAsShipping { get; set; } = true;
+    private string CheckoutBillingHouseNumber { get; set; } = string.Empty;
+    private string CheckoutBillingHouseNumberAddition { get; set; } = string.Empty;
     private string CheckoutBillingFirstName { get; set; } = string.Empty;
     private string CheckoutBillingLastName { get; set; } = string.Empty;
     private string CheckoutBillingAddress { get; set; } = string.Empty;
@@ -323,8 +373,74 @@
     [Inject] public NavigationManager Navigation { get; private set; }
     [Inject] public ICartService CartService { get; private set; }
     [Inject] public ICheckoutService CheckoutService { get; private set; }
+    [Inject] public ILocationService LocationService { get; private set; }
 
-    
+    private async Task OnAddressInputChanged()
+    {
+        // Dutch postcodes are 6 chars (1234AB). We check for at least 6 + a house number.
+        if (CheckoutShippingPostalCode?.Replace(" ", "").Length == 6 && !string.IsNullOrWhiteSpace(CheckoutHouseNumber))
+        {
+            await LookupAddress();
+        }
+    }
+
+    private async Task OnBillingAddressInputChanged()
+    {
+        // Dutch postcodes are 6 chars (1234AB). We check for at least 6 + a house number.
+        if (CheckoutBillingPostalCode?.Replace(" ", "").Length == 6 && !string.IsNullOrWhiteSpace(CheckoutBillingHouseNumber))
+        {
+            await LookupAddress();
+        }
+    }
+
+    private async Task LookupAddress()
+    {
+        IsLoadingAddress = true;
+        try
+        {
+            var result = await LocationService.LookupDutchAddressAsync(CheckoutShippingPostalCode, CheckoutHouseNumber);
+        
+            if (result != null)
+            {
+                CheckoutShippingAddress = result.Street;
+                CheckoutShippingCity = result.City;
+                // Optionally format the postcode to the standard 1234 AB
+                if(CheckoutShippingPostalCode.Length == 6 && !CheckoutShippingPostalCode.Contains(" "))
+                {
+                    CheckoutShippingPostalCode = CheckoutShippingPostalCode.Insert(4, " ");
+                }
+            }
+        }
+        finally
+        {
+            IsLoadingAddress = false;
+        }
+    }
+
+    private async Task LookupBillingAddress()
+    {
+        IsLoadingBillingAddress = true;
+        try
+        {
+            var result = await LocationService.LookupDutchAddressAsync(CheckoutBillingPostalCode, CheckoutBillingHouseNumber);
+
+
+            if (result != null)
+            {
+                CheckoutBillingAddress = result.Street;
+                CheckoutBillingCity = result.City;
+                // Optionally format the postcode to the standard 1234 AB
+                if (CheckoutBillingPostalCode.Length == 6 && !CheckoutBillingPostalCode.Contains(" "))
+                {
+                    CheckoutBillingPostalCode = CheckoutBillingPostalCode.Insert(4, " ");
+                }
+            }
+        }
+        finally
+        {
+            IsLoadingBillingAddress = false;
+        }
+    }
 
     private bool DisableContinueFromStep2()
     {

@@ -32,6 +32,7 @@ builder.Services.AddSingleton<IAuthService, FakeAuthService>();
 builder.Services.AddSingleton<IContentService, FakeContentService>();
 builder.Services.AddSingleton<ICheckoutService, FakeCheckoutService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddSingleton<IAccountService, FakeAccountService>();
 
 var app = builder.Build();
 

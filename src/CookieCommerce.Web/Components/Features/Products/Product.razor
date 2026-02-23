@@ -1,11 +1,15 @@
 ﻿@page "/shop/cookie/{id:guid}"
-@layout Layout.MainLayout
+@layout ShopLayout
 @rendermode InteractiveServer
+@using CookieCommerce.Web.Components.Features.Shop
 @using CookieCommerce.Web.Services
 @using CookieCommerce.Web.Services.Products
 @using CookieCommerce.Web.Models.Products
+@inject NavigationManager Navigation
 @inject ICookieService CookieService
 @inject ICartService CartService
+@inject IAuthService Auth
+@inject IAccountService AccountService
 
 @if (_cookie is null)
 {
@@ -73,25 +77,36 @@ else
                     </div>
                     <div class="mb-6">
                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                            <div class="flex items-center bg-surface-light dark:bg-surface-dark border-2 border-amber-100 dark:border-amber-800 rounded-full overflow-hidden">
-                                <button @onclick="DecreaseQuantity" class="p-4 hover:text-primary transition-colors cursor-pointer">
-                                    <span class="material-icons-round">remove</span>
+
+                            <div class="flex items-center justify-center mx-auto max-w-fit bg-surface-light dark:bg-surface-dark border-2 border-amber-100 dark:border-amber-800 rounded-full overflow-hidden">
+                                <button @onclick="DecreaseQuantity" 
+                                        class="p-4 hover:text-primary transition-colors cursor-pointer flex items-center justify-center">
+                                    <span class="material-icons-round text-xl">remove</span>
                                 </button>
-                                <input class="w-12 text-center bg-transparent border-none focus:ring-0 font-bold text-lg"
-                                       readonly="" type="number" value="@Quantity" />
-                                <button @onclick="IncreaseQuantity" class="p-4 hover:text-primary transition-colors cursor-pointer">
-                                    <span class="material-icons-round">add</span>
-                                </button>
+                                <input class="w-12 text-center bg-transparent border-none focus:ring-0 font-bold text-lg appearance-none"
+                                       readonly type="number" 
+                                       value="@Quantity" />
+                                <button @onclick="IncreaseQuantity" 
+                                        class="p-4 hover:text-primary transition-colors cursor-pointer flex items-center justify-center">
+                                    <span class="material-icons-round text-xl">add</span>
+                                </button>    
                             </div>
                             <button @onclick="async () => await AddToCartAsync()" class="cursor-pointer flex-grow bg-primary hover:bg-amber-700 text-white px-8 py-4 rounded-full font-bold text-xl shadow-lg shadow-primary/30 transition-all active:scale-95 flex items-center justify-center gap-3">
                                 <span class="material-symbols-outlined text-white">shopping_bag</span>
                                 Add to Cart
                             </button>
-                            <button class="cursor-pointer flex items-center justify-center p-4 bg-surface-light dark:bg-surface-dark border-2 border-amber-100 dark:border-amber-800 rounded-full text-gray-400 hover:text-red-500 transition-colors">
-                                <span class="material-icons-round">
-                                    favorite_border
+
+                            <button @onclick="ToggleFavorite" 
+                                    class="group cursor-pointer flex items-center justify-center p-4 bg-surface-light dark:bg-surface-dark border-2 transition-all duration-300 rounded-full
+                                           @(IsInFavorites 
+                                             ? "border-red-100 dark:border-red-900/30 text-red-500 shadow-lg shadow-red-500/10" 
+                                             : "border-amber-100 dark:border-amber-800 text-gray-400 hover:text-red-500")">
+    
+                                <span class="material-icons-round transition-transform duration-300 @(IsInFavorites ? "scale-110" : "group-active:scale-90")">
+                                    @(IsInFavorites ? "favorite" : "favorite_border")
                                 </span>
                             </button>
+
                         </div>
                         <div class="flex items-center gap-2 mt-4 px-2">
                             <span class="material-symbols-outlined text-green-500 text-xl font-bold"
@@ -143,12 +158,17 @@ else
     private string _currentMainImage = string.Empty;
     private int Quantity { get; set; } = 1;
     private CookieDto? _cookie;
+    private bool IsInFavorites { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         _cookie = await CookieService.GetCookieByIdAsync(Id);
         ArgumentNullException.ThrowIfNull(_cookie, nameof(_cookie));
         _currentMainImage = _cookie.ImageUrls[0];
+        if (Auth.IsLoggedIn)
+        {
+            IsInFavorites = await AccountService.IsFavoriteAsync(_cookie.Id);
+        }
     }
 
     private void SelectImage(string imageUrl)
@@ -166,6 +186,24 @@ else
         {
             await CartService.AddToCartAsync(_cookie.Id, Quantity);
         }
+    }
+
+    private async Task ToggleFavorite()
+    {
+        if (!Auth.IsLoggedIn)
+        {
+            Navigation.NavigateTo($"/auth/signin?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+            return;
+        }
+
+        if (_cookie is not null)
+        {
+            if (IsInFavorites) await AccountService.RemoveFromFavoritesAsync(Id);
+            else await AccountService.AddToFavoritesAsync(Id);
+        }
+
+        IsInFavorites = await AccountService.IsFavoriteAsync(Id);
+        StateHasChanged();
     }
 }
 

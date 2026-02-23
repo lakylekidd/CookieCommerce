@@ -32,120 +32,64 @@
                 </div>
                 @if (currentStep == 2) {
                     <div class="p-8 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
-                        <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
-                            <span class="material-symbols-outlined text-xl">local_shipping</span>
-                            Shipping Address
-                        </h3>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">First Name</label>
                                 <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
                                        placeholder="Roary" 
-                                       @bind="CheckoutShippingFirstName"
+                                       @bind="ShippingFirstName"
                                        @bind:event="oninput"
                                        type="text" />
                             </div>
-
                             <div>
                                 <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Last Name</label>
                                 <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
                                        placeholder="Tiger" 
-                                       @bind="CheckoutShippingLastName"
+                                       @bind="ShippingLastName"
                                        @bind:event="oninput"
                                        type="text" />
                             </div>
+                         </div>
 
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Shipping Address</label>
-                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                       placeholder="123 Jungle Road" 
-                                       @bind="CheckoutShippingAddress"
-                                       @bind:event="oninput"
-                                       type="text" />
-                            </div>
+                        <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
+                            <span class="material-symbols-outlined text-xl">local_shipping</span>
+                            Shipping Address
+                        </h3>
+                        
+                        <DutchAddressLookup @bind-PostalCode="@ShippingPostalCode"
+                                            @bind-HouseNumber="@ShippingHouseNumber"
+                                            @bind-HouseNumberAddition="@ShippingHouseNumberAddition"
+                                            @bind-StreetName="@ShippingAddress"
+                                            @bind-City="@ShippingCity" />
 
-                            <div>
-                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">City</label>
-                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                       placeholder="Amsterdam" 
-                                       @bind="CheckoutShippingCity"
-                                       @bind:event="oninput"
-                                       type="text" />
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Postal Code</label>
-                                <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                       placeholder="1011 AB" 
-                                       @bind="CheckoutShippingPostalCode"
-                                       @bind:event="oninput"
-                                       type="text" />
-                            </div>
-                            <div>
-                                <label class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" 
-                                           @bind="CheckoutSameAsShipping"
-                                           class="w-5 h-5 rounded-full border-amber-200 text-primary focus:ring-primary accent-primary cursor-pointer" />
-                                    <span class="text-sm font-semibold text-gray-600 dark:text-amber-100/70 group-hover:text-primary transition-colors">
-                                        Billing address same as Shipping?
-                                    </span>
-                                </label>
-                            </div>
+                        <div>
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <input type="checkbox" 
+                                       @bind="SameAsShipping"
+                                       class="w-5 h-5 rounded-full border-amber-200 text-primary focus:ring-primary accent-primary cursor-pointer" />
+                                <span class="text-sm font-semibold text-gray-600 dark:text-amber-100/70 group-hover:text-primary transition-colors">
+                                    Billing address same as Shipping?
+                                </span>
+                            </label>
                         </div>
-                        @if(!CheckoutSameAsShipping)
+
+                        @if(!SameAsShipping)
                         {
                             <div class="h-px w-full bg-gradient-to-r from-transparent via-amber-200 dark:via-amber-900/50 to-transparent my-8"></div>
-                            <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
-                                <span class="material-symbols-outlined text-xl">receipt_long</span>
-                                Billing Address
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">First Name</label>
-                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                           placeholder="Roary" 
-                                           @bind="CheckoutBillingFirstName"
-                                           @bind:event="oninput"
-                                           type="text" />
-                                </div>
+                                <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-xl">receipt_long</span>
+                                    Billing Address
+                                </h3>
 
-                                <div>
-                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Last Name</label>
-                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                           placeholder="Tiger" 
-                                           @bind="CheckoutBillingLastName"
-                                           @bind:event="oninput"
-                                           type="text" />
-                                </div>
+                                <DutchAddressLookup @bind-PostalCode="@BillingPostalCode"
+                                                    @bind-HouseNumber="@BillingHouseNumber"
+                                                    @bind-HouseNumberAddition="@BillingHouseNumberAddition"
+                                                    @bind-StreetName="@BillingAddress"
+                                                    @bind-City="@BillingCity" />
 
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Shipping Address</label>
-                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                           placeholder="123 Jungle Road" 
-                                           @bind="CheckoutBillingAddress"
-                                           @bind:event="oninput"    
-                                           type="text" />
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">City</label>
-                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                           placeholder="Amsterdam" 
-                                           @bind="CheckoutBillingCity"
-                                           @bind:event="oninput"
-                                           type="text" />
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Postal Code</label>
-                                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
-                                           placeholder="1011 AB" 
-                                           @bind="CheckoutBillingPostalCode"
-                                           @bind:event="oninput"
-                                           type="text" />
-                                </div>
-                            </div>
-                        }
+                            }
+                        
                         <div class="flex justify-end pt-4">
                             <button @onclick="() => GoToStep(3)"
                                     disabled="@DisableContinueFromStep2"
@@ -302,46 +246,59 @@
     private bool shouldCreateAccount = false;
     private string selectedDelivery = "standard";
     private string paymentMethod = "card";
+    private bool IsLoadingAddress { get; set; }
+    private bool IsLoadingBillingAddress { get; set; }
 
     private string Password { get; set; } = string.Empty;
     private string ConfirmPassword { get; set; } = string.Empty;
 
     private string CheckoutEmail { get; set; } = string.Empty;
-    private string CheckoutShippingFirstName { get; set; } = string.Empty;
-    private string CheckoutShippingLastName { get; set; } = string.Empty;
-    private string CheckoutShippingAddress { get; set; } = string.Empty;
-    private string CheckoutShippingCity { get; set; } = string.Empty;
-    private string CheckoutShippingPostalCode { get; set; } = string.Empty;
-    private bool CheckoutSameAsShipping { get; set; } = true;
-    private string CheckoutBillingFirstName { get; set; } = string.Empty;
-    private string CheckoutBillingLastName { get; set; } = string.Empty;
-    private string CheckoutBillingAddress { get; set; } = string.Empty;
-    private string CheckoutBillingCity { get; set; } = string.Empty;
-    private string CheckoutBillingPostalCode { get; set; } = string.Empty;
+
+    private string ShippingHouseNumber { get; set; } = string.Empty;
+    private string ShippingHouseNumberAddition { get; set; } = string.Empty;
+
+    private string ShippingFirstName { get; set; } = string.Empty;
+    private string ShippingLastName { get; set; } = string.Empty;
+    private string ShippingAddress { get; set; } = string.Empty;
+    private string ShippingCity { get; set; } = string.Empty;
+    private string ShippingPostalCode { get; set; } = string.Empty;
+
+    private bool SameAsShipping { get; set; } = true;
+
+    private string BillingHouseNumber { get; set; } = string.Empty;
+    private string BillingHouseNumberAddition { get; set; } = string.Empty;
+    
+    private string BillingFirstName { get; set; } = string.Empty;
+    private string BillingLastName { get; set; } = string.Empty;
+    private string BillingAddress { get; set; } = string.Empty;
+    private string BillingCity { get; set; } = string.Empty;
+    private string BillingPostalCode { get; set; } = string.Empty;
 
     [Inject] public IAuthService Auth { get; private set; }
     [Inject] public NavigationManager Navigation { get; private set; }
     [Inject] public ICartService CartService { get; private set; }
     [Inject] public ICheckoutService CheckoutService { get; private set; }
-
     
-
     private bool DisableContinueFromStep2()
     {
-        if (string.IsNullOrWhiteSpace(CheckoutShippingFirstName) ||
-            string.IsNullOrWhiteSpace(CheckoutShippingLastName) ||
-            string.IsNullOrWhiteSpace(CheckoutShippingAddress) ||
-            string.IsNullOrWhiteSpace(CheckoutShippingCity) ||
-            string.IsNullOrWhiteSpace(CheckoutShippingPostalCode))
+        if (string.IsNullOrWhiteSpace(ShippingFirstName) ||
+            string.IsNullOrWhiteSpace(ShippingLastName) ||
+            string.IsNullOrWhiteSpace(ShippingAddress) ||
+            string.IsNullOrWhiteSpace(ShippingCity) ||
+            string.IsNullOrWhiteSpace(ShippingPostalCode) ||
+            string.IsNullOrWhiteSpace(ShippingHouseNumber) ||
+            string.IsNullOrWhiteSpace(ShippingHouseNumberAddition))
             return true;
 
-        if (!CheckoutSameAsShipping)
+        if (!SameAsShipping)
         {
-            if (string.IsNullOrWhiteSpace(CheckoutBillingFirstName) ||
-                string.IsNullOrWhiteSpace(CheckoutBillingLastName) ||
-                string.IsNullOrWhiteSpace(CheckoutBillingAddress) ||
-                string.IsNullOrWhiteSpace(CheckoutBillingCity) ||
-                string.IsNullOrWhiteSpace(CheckoutBillingPostalCode))
+            if (string.IsNullOrWhiteSpace(BillingFirstName) ||
+                string.IsNullOrWhiteSpace(BillingLastName) ||
+                string.IsNullOrWhiteSpace(BillingAddress) ||
+                string.IsNullOrWhiteSpace(BillingCity) ||
+                string.IsNullOrWhiteSpace(BillingPostalCode) ||
+                string.IsNullOrWhiteSpace(BillingHouseNumber) ||
+                string.IsNullOrWhiteSpace(BillingHouseNumberAddition))
                 return true;
         }
         return false;
@@ -349,11 +306,13 @@
 
     private void RemoveBillingAddress()
     {
-        CheckoutBillingFirstName = string.Empty;
-        CheckoutBillingLastName = string.Empty;
-        CheckoutBillingAddress = string.Empty;
-        CheckoutBillingCity = string.Empty;
-        CheckoutBillingPostalCode = string.Empty;
+        BillingFirstName = string.Empty;
+        BillingLastName = string.Empty;
+        BillingAddress = string.Empty;
+        BillingCity = string.Empty;
+        BillingPostalCode = string.Empty;
+        BillingHouseNumber = string.Empty;
+        BillingHouseNumberAddition = string.Empty;
     }
 
     protected override async Task OnInitializedAsync()

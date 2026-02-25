@@ -7,7 +7,8 @@ public class FakeAuthService(ICartService cartService) : IAuthService
     // Static list to keep users in memory during the session
     private static readonly List<UserDto> _users =
     [
-        new UserDto { Email = "tiger@cookie.com", Password = "Password123", FirstName = "Tiger", LastName = "van Cookie" }
+        new UserDto { Email = "tiger@cookie.com", Password = "Password123", FirstName = "Tiger", LastName = "van Cookie" },
+        new UserDto { Email = "hello@tigercookie.com", Password = "123", FirstName = "Cookie", LastName = "Lover" }
     ];
 
     public UserDto? CurrentUser { get; private set; }

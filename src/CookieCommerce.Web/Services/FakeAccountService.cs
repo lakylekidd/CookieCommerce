@@ -1,5 +1,6 @@
 ﻿using CookieCommerce.Web.Models;
 using CookieCommerce.Web.Models.Account;
+using CookieCommerce.Web.Models.Addresses;
 
 namespace CookieCommerce.Web.Services;
 
@@ -47,6 +48,66 @@ public class FakeAccountService() : IAccountService
         {
             Success = true,
             Message = "Profile updated successfully"
+        };
+        return Task.FromResult(result);
+    }
+
+    public Task<IList<AddressBookItemDto>> GetAddressesAsync()
+    {
+        var addresses = StaticData.StaticAddressList.Addresses;
+        return Task.FromResult((IList<AddressBookItemDto>)addresses);
+    }
+
+    public Task<ResultDto> AddAddressAsync(AddressBookItemDto address)
+    {
+        var addresses = StaticData.StaticAddressList.Addresses;
+        address.Index = addresses.Count > 0 ? addresses.Max(a => a.Index) + 1 : 1;
+        addresses.Add(address);
+        var result = new ResultDto
+        {
+            Success = true,
+            Message = "Address added successfully"
+        };
+        return Task.FromResult(result);
+    }
+
+    public Task<ResultDto> DeleteAddressAsync(int index)
+    {
+        var addresses = StaticData.StaticAddressList.Addresses;
+        var addressToRemove = addresses.FirstOrDefault(a => a.Index == index);
+        if (addressToRemove != null)
+        {
+            addresses.Remove(addressToRemove);
+            var result = new ResultDto
+            {
+                Success = true,
+                Message = "Address deleted successfully"
+            };
+            return Task.FromResult(result);
+        }
+        else
+        {
+            var result = new ResultDto
+            {
+                Success = false,
+                Message = "Address not found"
+            };
+            return Task.FromResult(result);
+        }
+    }
+
+    public Task<ResultDto> SetAsPrimaryAsync(int index)
+    {
+        var addresses = StaticData.StaticAddressList.Addresses;
+        foreach (var address in addresses)
+        {
+            address.IsDefault = address.Index == index;
+        }
+
+        var result = new ResultDto
+        {
+            Success = true,
+            Message = "Primary address set successfully"
         };
         return Task.FromResult(result);
     }

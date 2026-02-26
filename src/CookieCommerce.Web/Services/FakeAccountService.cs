@@ -1,6 +1,7 @@
 ﻿using CookieCommerce.Web.Models;
 using CookieCommerce.Web.Models.Account;
 using CookieCommerce.Web.Models.Addresses;
+using System;
 
 namespace CookieCommerce.Web.Services;
 
@@ -63,6 +64,12 @@ public class FakeAccountService() : IAccountService
         var addresses = StaticData.StaticAddressList.Addresses;
         address.Index = addresses.Count > 0 ? addresses.Max(a => a.Index) + 1 : 1;
         addresses.Add(address);
+
+        foreach (var a in addresses)
+        {
+            a.IsDefault = a.Index == address.Index;
+        }
+
         var result = new ResultDto
         {
             Success = true,

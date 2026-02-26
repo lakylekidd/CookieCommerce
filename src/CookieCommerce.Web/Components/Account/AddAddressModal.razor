@@ -1,0 +1,225 @@
+﻿@using CookieCommerce.Web.Components.Features.Checkout
+@using CookieCommerce.Web.Models.Account
+@using CookieCommerce.Web.Services
+@inject IAccountService AccountService
+@rendermode InteractiveServer
+
+<style>
+    input:focus, select:focus, textarea:focus {
+        --tw-ring-color: #F59E0B;
+        border-color: #F59E0B;
+    }
+</style>
+
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+    @if (isSaving)
+    {
+        <div class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/60 dark:bg-black/60 backdrop-blur-[2px]">
+            <div class="w-12 h-12 border-4 border-gray-200 border-t-primary rounded-full animate-spin mb-4"></div>
+            <p class="font-display font-bold text-secondary dark:text-white animate-pulse">
+                Saving your cookie profile...
+            </p>
+        </div>
+    }
+    <div class="bg-white dark:bg-card-dark w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="p-6 border-b border-orange-100 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-card-dark sticky top-0 z-10">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full border-2 border-primary overflow-hidden bg-orange-100">
+                    <img alt="Tiger van Cookie Mascot" class="w-full h-full object-cover"
+                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsi3jTr65ZY8H4fnNGgNhYOfX-VxgVW56xrT4XSnPLdYLLBDgKcH0fFJJkbjZdGdRRV7tQEa4qOoH9YfYjFqqiSE1m_CCD0AOavYloSTiEDaOE1eiKsw7ZJaf4gETtAdlEWe15BwGTing5AXYbSaHxMhowD-gqfda7E7-Ctrj6I_luCNgZBikfiYvmsZRfiw2HL0l9pycDVyJiIh2C7C2QM__ffPQAafIrjKqol6sSB8EEj-ROgUmUllVT1_mLwIvBLx94RW2VVw" />
+                </div>
+                <div>
+                    <h2 class="text-2xl font-display font-bold text-gray-800 dark:text-white leading-tight">
+                        Add a New Cookie Spot
+                    </h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Where should we drop off the treats?</p>
+                </div>
+            </div>
+            <button class=" p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors flex items-center justify-center">
+                <span class="material-symbols-outlined text-gray-400">close</span>
+            </button>
+        </div>
+        <div class="p-8 overflow-y-auto">
+            <form class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider">
+                            Choose an Icon
+                        </label>
+                        <select @bind="Icon" 
+                            class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 dark:text-white focus:ring-primary focus:border-primary py-3 px-4 appearance-none">
+                            <option value="home">🏠 Home Base</option>
+                            <option value="work">🏢 Office / Work</option>
+                            <option value="redeem">🎁 Gift Delivery</option>
+                            <option value="cabin">🏡 Summer Den</option>
+                            <option value="location_on">📍 Other Spot</option>
+                            <option value="local_shipping">🚚 Warehouse</option>
+                            <option value="store">🏬 Shop</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider">Label</label>
+                        <input class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-primary focus:border-primary py-3"
+                               @bind="Label"
+                               placeholder="e.g. Home, Work, Grandma's" type="text" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider">First Name</label>
+                        <input class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-primary focus:border-primary py-3"
+                               @bind="FirstName"   
+                               placeholder="Enter first name" type="text" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider">Last Name</label>
+                        <input class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-primary focus:border-primary py-3"
+                               @bind="LastName"       
+                               placeholder="Enter last name" type="text" />
+                    </div>
+                    <div class="space-y-1 md:col-span-2">
+                        <DutchAddressLookup ShowResults="false"
+                            OnAddressFound="HandleAddressUpdate"
+                            @bind-PostalCode="@PostalCode"
+                            @bind-HouseNumber="@HouseNumber"
+                            @bind-HouseNumberAddition="@HouseNumberAddition" />
+                    </div>
+
+
+                    <div class="md:col-span-2 space-y-2">
+                        <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider">
+                            Street Address
+                        </label>
+                        <input class="w-full rounded-xl border-gray-200 border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white py-3"
+                               @bind="Address"
+                               @bind:event="oninput"
+                               placeholder="Street name and number" type="text" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider">City</label>
+                        <input class="w-full rounded-xl border-gray-200 border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white py-3"
+                               @bind="City"
+                               @bind:event="oninput"
+                               placeholder="City" type="text" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider">
+                            State /
+                            Province
+                        </label>
+                        <input class="w-full rounded-xl border-gray-200 border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white py-3"
+                               @bind="Province"
+                               placeholder="State" type="text" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider">
+                            Country
+                        </label>
+                        <div class="relative">
+                            <select disabled @bind="Country"
+                                    class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 focus:ring-0 focus:border-gray-200 py-3 px-4 appearance-none cursor-not-allowed">
+                                <option value="NL" selected>The Netherlands</option>
+                                <option value="BE">Belgium</option>
+                                <option value="DE">Germany</option>
+                                <option value="FR">France</option>
+                            </select>
+
+                            <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-[18px] text-gray-400">lock</span>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-gray-400 italic px-1">Currently only delivering cookies within NL 🍪</p>
+                    </div>
+                    <div class="space-y-2">
+                        <PhoneInputComponent @bind-PhoneNumber="@Phone" />
+                    </div>
+                    <div class="md:col-span-2 flex items-center justify-between bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-800/30">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider">
+                                verified_user
+                            </span>
+                            <span class="font-bold text-secondary dark:text-orange-200">
+                                Set as Default Shipping Spot
+                            </span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input @bind="IsDefault" class="sr-only peer" type="checkbox" value="" />
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary">
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex gap-4 justify-end">
+            @* 1. The Cancel Button simply flips the bool *@
+            <button @onclick="OnCancel"
+                    class="cursor-pointer px-6 py-3 rounded-full font-bold text-secondary dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    type="button">
+                Cancel
+            </button>
+
+            @* 2. The Save button should ideally call a method that saves data THEN closes the modal *@
+            <button @onclick="HandleSave"
+                    class="cursor-pointer px-8 py-3 bg-primary hover:bg-orange-600 text-white font-bold rounded-full shadow-lg shadow-orange-200 dark:shadow-none transition-all transform hover:scale-105 active:scale-95"
+                    type="button">
+                @* Changed type to button to prevent default form refresh *@
+                Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private bool isSaving = false;
+    private string HouseNumber { get; set; } = string.Empty;
+    private string HouseNumberAddition { get; set; } = string.Empty;
+
+    private string Icon { get; set; } = "home";
+    private string Label { get; set; } = string.Empty;
+    private string FirstName { get; set; } = string.Empty;
+    private string LastName { get; set; } = string.Empty;
+    private string Address { get; set; } = string.Empty;
+    private string City { get; set; } = string.Empty;
+    private string PostalCode { get; set; } = string.Empty;
+    private string Province { get; set; } = string.Empty;
+    private string Country { get; set; } = "NL";
+    private string Phone { get; set; } = string.Empty;
+    private bool IsDefault { get; set; } = true;
+
+    private async Task HandleSave()
+    {
+        isSaving = true;
+
+        await Task.Delay(2000);
+        var result = await AccountService.AddAddressAsync(new Models.Addresses.AddressBookItemDto
+        {
+            Icon = Icon,
+            Label = Label,
+            FirstName = FirstName,
+            LastName = LastName,
+            Street = Address,
+            City = City,
+            PostalCode = PostalCode,
+            Province = Province,
+            Phone = Phone,
+            Country = Country,
+            IsDefault = IsDefault
+        });
+
+        await OnSave.InvokeAsync();
+
+        isSaving = false;
+    }
+
+    private void HandleAddressUpdate(DutchAddressLookup.AddressUpdateEventArgs e)
+    {
+        Address = e.Street;
+        City = e.City;
+        Province = e.Province;
+        PostalCode = e.PostalCode;
+
+        StateHasChanged();
+    }
+}

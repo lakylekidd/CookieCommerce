@@ -39,7 +39,9 @@ public class LocationService(HttpClient http) : ILocationService
                         Street = finalDoc.Straatnaam,
                         City = finalDoc.Woonplaatsnaam,
                         PostCode = cleanPostcode,
-                        HouseNumber = houseNumber
+                        HouseNumber = houseNumber,
+                        Country = "Netherlands",
+                        Province = finalDoc.Provincenaam
                     };
                 }
             }

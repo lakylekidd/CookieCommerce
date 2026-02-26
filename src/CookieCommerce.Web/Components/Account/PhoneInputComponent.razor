@@ -1,0 +1,62 @@
+﻿@inject IJSRuntime JS
+
+<style>
+    .iti {
+        width: 100%;
+    }
+    /* Ensure the dropdown matches your dark mode theme */
+    .iti__country-list {
+        background-color: #1f2937; /* dark:bg-gray-800 */
+        color: white;
+        border: 1px solid #374151;
+    }
+
+    .iti__country-container {
+        margin-left: 15px;
+    }
+    /* Nudge the text to the right.
+       Default is usually around 50px, so 80px or 90px gives it a nice gap. */
+    .iti input {
+        padding-left: 65px !important;
+        transition: padding-left 0.2s ease; /* Smoothly stays put */
+    }
+
+        /* If you are using the 'separateDialCode: true' setting,
+       you might need to target the placeholder too */
+        .iti input::placeholder {
+            padding-left: 0px; /* Reset placeholder if it inherited the nudge */
+        }
+
+</style>
+
+<label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider">
+    Phone Number
+</label>
+
+@* Note the @ref and id *@
+<input @ref="phoneInputRef" id="phone"
+       class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-primary focus:border-primary py-3"
+       type="tel" />
+
+@code {
+    private ElementReference phoneInputRef;
+    [Parameter] public string PhoneNumber { get; set; }
+    [Parameter] public EventCallback<string> PhoneNumberChanged { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Pass 'this' as a reference so JS can call back to UpdatePhoneNumber
+            await JS.InvokeVoidAsync("initPhoneInput", phoneInputRef, DotNetObjectReference.Create(this));
+        }
+    }
+
+    [JSInvokable]
+    public async Task UpdatePhoneNumber(string value)
+    {
+        PhoneNumber = value;
+        await PhoneNumberChanged.InvokeAsync(value);
+        StateHasChanged();
+    }
+}

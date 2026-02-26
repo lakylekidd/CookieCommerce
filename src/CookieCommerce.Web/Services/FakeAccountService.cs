@@ -118,4 +118,13 @@ public class FakeAccountService() : IAccountService
         };
         return Task.FromResult(result);
     }
+
+    public Task<AddressBookItemDto>? GetPrimaryAddressAsync()
+    {
+        var addresses = StaticData.StaticAddressList.Addresses;
+        var primaryAddress = addresses.FirstOrDefault(a => a.IsDefault);
+        if (primaryAddress is not null)
+            return Task.FromResult(primaryAddress);
+        return Task.FromResult<AddressBookItemDto?>(null);
+    }
 }

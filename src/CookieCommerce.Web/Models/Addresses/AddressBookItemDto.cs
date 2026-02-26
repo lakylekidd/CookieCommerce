@@ -8,6 +8,8 @@ public class AddressBookItemDto
     public string FirstName { get; set; } = null!;
     public string LastName { get; set; } = null!;
     public string Street { get; set; } = null!;
+    public string HouseNumber { get; set; } = null!;
+    public string HouseNumberAddition { get; set; } = null!;
     public string City { get; set; } = null!;
     public string State { get; set; } = null!;
     public string PostalCode { get; set; } = null!;

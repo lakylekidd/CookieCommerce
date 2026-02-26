@@ -1,24 +1,40 @@
-﻿<div class="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+﻿@using CookieCommerce.Web.Models.Addresses
+@using CookieCommerce.Web.Services
+@inject IAccountService AccountService
+
+<div class="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
     <div class="flex justify-between items-start mb-6">
         <h2 class="text-xl font-display font-bold text-gray-800 dark:text-white">Default Shipping</h2>
         <a href="/account/addresses" class="cursor-pointer text-primary hover:text-orange-600 dark:hover:text-orange-400 text-sm font-semibold">
             Manage
         </a>
     </div>
-    <div class="flex items-start gap-4">
-        <div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-gray-800 flex items-center justify-center text-primary flex-shrink-0">
-            <span class="material-icons">home</span>
-        </div>
-        <div>
-            <p class="font-bold mb-1">Home</p>
-            <p class="text-gray-600 dark:text-gray-300 leading-relaxed text-sm">
-                Baker Street 221B<br />
-                1011 AB, Amsterdam<br />
-                The Netherlands
-            </p>
-            <div class="mt-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                Primary Address
+    @if(defaultAddress is not null)
+    {
+        <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-gray-800 flex items-center justify-center text-primary flex-shrink-0">
+                <span class="material-symbols-outlined">@defaultAddress.Icon</span>
+            </div>
+            <div>
+                <p class="font-bold mb-1">@defaultAddress.Label</p>
+                <p class="text-gray-600 dark:text-gray-300 leading-relaxed text-sm">
+                    @defaultAddress.Street @defaultAddress.HouseNumber @defaultAddress.HouseNumberAddition<br />
+                    @defaultAddress.PostalCode, @defaultAddress.City<br />
+                    @defaultAddress.Country
+                </p>
+                <div class="mt-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                    Primary Address
+                </div>
             </div>
         </div>
-    </div>
+    }
 </div>
+
+@code {
+    private AddressBookItemDto? defaultAddress;
+    protected override async Task OnInitializedAsync()
+    {
+        defaultAddress = await AccountService.GetPrimaryAddressAsync();
+    }
+
+}

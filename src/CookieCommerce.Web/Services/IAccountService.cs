@@ -15,4 +15,5 @@ public interface IAccountService
     Task<ResultDto> AddAddressAsync(AddressBookItemDto address);
     Task<ResultDto> DeleteAddressAsync(int index);
     Task<ResultDto> SetAsPrimaryAsync(int index);
+    Task<AddressBookItemDto>? GetPrimaryAddressAsync();
 }

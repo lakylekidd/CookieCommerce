@@ -2,6 +2,7 @@
 using CookieCommerce.Web.Models.Account;
 using CookieCommerce.Web.Models.Addresses;
 using CookieCommerce.Web.Models.Order;
+using CookieCommerce.Web.Models.Reviews;
 
 namespace CookieCommerce.Web.Services;
 
@@ -164,5 +165,10 @@ public class FakeAccountService() : IAccountService
             return Task.FromResult(order.TrackingInformation);
         }
         return Task.FromResult<TrackingDto?>(null);
+    }
+
+    public Task SubmitReviewAsync(Guid productId, ReviewSubmitRequest review)
+    {
+        throw new NotImplementedException();
     }
 }

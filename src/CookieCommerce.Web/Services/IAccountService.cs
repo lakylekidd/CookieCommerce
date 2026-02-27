@@ -2,6 +2,7 @@
 using CookieCommerce.Web.Models.Account;
 using CookieCommerce.Web.Models.Addresses;
 using CookieCommerce.Web.Models.Order;
+using CookieCommerce.Web.Models.Reviews;
 
 namespace CookieCommerce.Web.Services;
 
@@ -22,4 +23,5 @@ public interface IAccountService
     Task<OrderDto> GetOrderByIdAsync(Guid orderId);
     Task<int> GetOrderCountInNeedOfAttentionAsync();
     Task<TrackingDto> GetTrackingAsync(Guid orderId);
+    Task SubmitReviewAsync(Guid productId, ReviewSubmitRequest review);
 }

@@ -208,7 +208,7 @@
     protected override async Task OnInitializedAsync()
     {
         totalOrders = await AccountService.GetTotalOrdersCountAsync();
-        await LoadOrders();
+        _ = LoadOrders();
     }
 
     private async Task LoadOrders()

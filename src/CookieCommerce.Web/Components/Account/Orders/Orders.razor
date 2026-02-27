@@ -1,0 +1,56 @@
+﻿@page "/account/orders"
+@using CookieCommerce.Web.Models.Order
+@using CookieCommerce.Web.Services
+@layout AccountLayout
+@inject IAccountService AccountService
+
+<div class="flex-grow space-y-6">
+    <OrdersHeader />
+    <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-widest font-bold">
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Ordered On</th>
+                        <th class="p-6 py-4 font-bold">Items</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Status</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Total</th>
+                        <th class="p-6 py-4 font-bold"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    @foreach(var order in orders)
+                    {
+                        <OrdersLineItem OrderListItem="order" />
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="p-6 bg-gray-50/50 dark:bg-gray-800/50 border-t border-orange-100 dark:border-gray-800 flex justify-between items-center">
+            <span class="text-sm text-gray-500">Showing 3 of 12 orders</span>
+            <div class="flex gap-2">
+                <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-orange-100 dark:border-gray-700 bg-white dark:bg-card-dark text-gray-400 hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-orange-100 dark:border-gray-700 bg-primary text-white font-bold">
+                    1
+                </button>
+                <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-orange-100 dark:border-gray-700 bg-white dark:bg-card-dark text-secondary hover:text-primary transition-colors">
+                    2
+                </button>
+                <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-orange-100 dark:border-gray-700 bg-white dark:bg-card-dark text-gray-400 hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ICollection<OrderListItemDto> orders = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        orders = await AccountService.GetOrdersAsync();
+    }
+}

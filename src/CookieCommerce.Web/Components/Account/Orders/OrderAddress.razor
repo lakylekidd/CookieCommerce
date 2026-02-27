@@ -1,0 +1,25 @@
+﻿@using CookieCommerce.Web.Models.Addresses
+
+<div class="space-y-4">
+    <h4 class="text-sm font-bold uppercase tracking-wider text-gray-400 text-primary">
+        @(IsBilling ? "Billing Address" : "Shipping Address")
+    </h4>
+    <div class="flex gap-3">
+        <span class="material-symbols-outlined text-primary mt-1">
+            @(IsBilling ? "receipt_long" : "local_shipping")
+        </span>
+        <p class="text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+            <span class="font-bold block text-primary dark:text-white">
+                @Address.FirstName @Address.LastName
+            </span>
+            @Address.Street @Address.HouseNumber @Address.HouseNumberAddition<br />
+            @Address.PostalCode, @Address.City<br />
+            @Address.Country
+        </p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public AddressBookItemDto Address { get; set; }
+    [Parameter] public bool IsBilling { get; set; }
+}

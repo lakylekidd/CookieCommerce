@@ -1,7 +1,7 @@
 ﻿using CookieCommerce.Web.Models;
 using CookieCommerce.Web.Models.Account;
 using CookieCommerce.Web.Models.Addresses;
-using System;
+using CookieCommerce.Web.Models.Order;
 
 namespace CookieCommerce.Web.Services;
 
@@ -126,5 +126,21 @@ public class FakeAccountService() : IAccountService
         if (primaryAddress is not null)
             return Task.FromResult(primaryAddress);
         return Task.FromResult<AddressBookItemDto?>(null);
+    }
+
+    public Task<ICollection<OrderListItemDto>> GetOrdersAsync()
+    {
+        var orders = StaticData.StaticOrders.Orders;
+        return Task.FromResult((ICollection<OrderListItemDto>)orders);
+    }
+
+    public Task<OrderDto> GetOrderByIdAsync(Guid orderId)
+    {
+        var order = StaticData.StaticOrders.OrdersE.FirstOrDefault(o => o.Id == orderId);
+        if (order is not null)
+        {
+            return Task.FromResult(order);
+        }
+        return Task.FromResult<OrderDto?>(null);
     }
 }

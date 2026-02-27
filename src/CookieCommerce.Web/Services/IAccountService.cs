@@ -1,6 +1,7 @@
 ﻿using CookieCommerce.Web.Models;
 using CookieCommerce.Web.Models.Account;
 using CookieCommerce.Web.Models.Addresses;
+using CookieCommerce.Web.Models.Order;
 
 namespace CookieCommerce.Web.Services;
 
@@ -16,4 +17,7 @@ public interface IAccountService
     Task<ResultDto> DeleteAddressAsync(int index);
     Task<ResultDto> SetAsPrimaryAsync(int index);
     Task<AddressBookItemDto>? GetPrimaryAddressAsync();
+    Task<ICollection<OrderListItemDto>> GetOrdersAsync();
+    Task<OrderDto> GetOrderByIdAsync(Guid orderId);
+    
 }

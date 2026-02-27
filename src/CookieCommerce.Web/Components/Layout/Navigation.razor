@@ -1,4 +1,4 @@
-@using CookieCommerce.Web.Components.Layout
+﻿@using CookieCommerce.Web.Components.Layout
 @using CookieCommerce.Web.Components.Features.Cart
 @using CookieCommerce.Web.Services
 @rendermode InteractiveServer
@@ -30,8 +30,8 @@
 
             @if(Auth.IsLoggedIn)
             {
-                <span class="px-6 py-2 text-xs font-bold uppercase opacity-50">Welcome, @Auth.CurrentUser!.FirstName</span>
-                <button @onclick="Auth.Logout" class="cursor-pointer bg-primary-subtle flex items-center gap-3 px-6 py-4 rounded-2xl text-red-500 hover:bg-red-50">
+                <span class="px-6 py-2 text-xs font-bold uppercase opacity-50 sm:hidden">Welcome, @Auth.CurrentUser!.FirstName</span>
+                <button @onclick="Auth.Logout" class="cursor-pointer sm:hidden bg-primary-subtle flex items-center gap-3 px-6 py-4 rounded-2xl text-red-500 hover:bg-red-50">
                     <span class="material-symbols-outlined">logout</span>
                     Sign Out
                 </button>
@@ -69,7 +69,7 @@
 
             <div class="flex flex-col gap-6 text-center">
                 <div class="flex flex-col gap-2">
-                    @foreach (var link in new[] { ("/storefront", "Home"), ("/shop", "Shop"), ("/our-story", "Our Story"), ("/locations", "Locations") })
+                    @foreach (var link in new[] { ("/storefront", "Home"), ("/shop", "Shop"), ("/our-story", "Our Story") })
                     {
                         <NavLink @onclick="ToggleMenu"
                                  class="text-3xl font-display font-bold py-2 hover:text-primary transition-colors"
@@ -96,9 +96,12 @@
                 </div>
             </div>
 
-            <div class="mt-4 pt-6 border-t border-amber-100 dark:border-amber-900/20">
+            <div class="mt-4 pt-6 border-t border-amber-100 dark:border-amber-900/20 flex flex-col items-center gap-4">
                 @if (Auth.IsLoggedIn)
                 {
+                    <span class="w-full text-center py-2 font-display font-bold uppercase opacity-50 text-sm tracking-wider">
+                        Welcome, @Auth.CurrentUser!.FirstName 🐯
+                    </span>
                     <button @onclick="() => { Auth.Logout(); ToggleMenu(); }" class="w-full py-4 rounded-2xl bg-red-50 dark:bg-red-500/10 text-red-500 font-bold">
                         Sign Out
                     </button>
@@ -120,6 +123,16 @@
 
     [Inject] IJSRuntime JS { get; set; } = default!;
 
+    protected override void OnInitialized()
+    {
+        Auth.OnChange += HandleStatusChange;
+    }
+
+    private void HandleStatusChange()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
     private async Task ToggleDarkMode()
     {
         isDarkMode = !isDarkMode;
@@ -129,5 +142,10 @@
     private void ToggleMenu()
     {
         isMenuOpen = !isMenuOpen;
+    }
+
+    public void Dispose()
+    {
+        Auth.OnChange -= HandleStatusChange;
     }
 }

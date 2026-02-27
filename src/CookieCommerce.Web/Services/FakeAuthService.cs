@@ -11,6 +11,9 @@ public class FakeAuthService(ICartService cartService) : IAuthService
         new UserDto { Email = "hello@tigercookie.com", Password = "123", FirstName = "Cookie", LastName = "Lover" }
     ];
 
+    public event Action OnChange;
+    private void NotifyStateChanged() => OnChange?.Invoke();
+
     public UserDto? CurrentUser { get; private set; }
     public bool IsLoggedIn => CurrentUser != null;
 
@@ -24,6 +27,7 @@ public class FakeAuthService(ICartService cartService) : IAuthService
         {
             CurrentUser = user;
             await AssignUserToCartAsync();
+            NotifyStateChanged();
             return true;
         }
         return false;
@@ -52,6 +56,7 @@ public class FakeAuthService(ICartService cartService) : IAuthService
     public void Logout()
     {
         CurrentUser = null;
+        NotifyStateChanged();
     }
 
     private async Task AssignUserToCartAsync()

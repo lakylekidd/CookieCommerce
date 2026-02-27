@@ -11,4 +11,5 @@ public interface IAuthService
     public Task SendForgotPasswordLinkAsync(string email);
     public Task<AuthResult> UpdatePasswordAsync(string token, string newPassword);
     public void Logout();
+    event Action OnChange;
 }

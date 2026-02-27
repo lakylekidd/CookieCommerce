@@ -24,4 +24,5 @@ public interface IAccountService
     Task<int> GetOrderCountInNeedOfAttentionAsync();
     Task<TrackingDto> GetTrackingAsync(Guid orderId);
     Task SubmitReviewAsync(Guid productId, ReviewSubmitRequest review);
+    Task<(bool,int)> HasAlreadyReviewedProductIdAsync(Guid productId);
 }

@@ -169,6 +169,13 @@ public class FakeAccountService() : IAccountService
 
     public Task SubmitReviewAsync(Guid productId, ReviewSubmitRequest review)
     {
-        throw new NotImplementedException();
+        // In a real implementation, you would save the review to a database.
+        // For this fake service, we'll just simulate the delay and do nothing.
+        return Task.Delay(1000);
+    }
+
+    public Task<(bool, int)> HasAlreadyReviewedProductIdAsync(Guid productId)
+    {
+        return Task.FromResult((false, 0));
     }
 }

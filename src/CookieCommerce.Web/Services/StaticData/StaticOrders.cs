@@ -39,6 +39,12 @@ public static class StaticOrders
                     ProductName = "Oatmeal Raisin Cookies",
                     Quantity = 2
                 },
+                new OrderListItemProductDto 
+                { 
+                    ProductImageUrl = "/fake-images/cocoa-chocolate-chip.png", 
+                    ProductName = "Cocoa Chocolate Chip Cookies",
+                    Quantity = 2
+                }
             }
         },
         new OrderListItemDto
@@ -147,7 +153,8 @@ public static class StaticOrders
             {
                 new OrderProductDto { IsLimitedEdition = true, ProductId = Guid.NewGuid(), ProductImageUrl = "/fake-images/matcha.png", ProductName = "Matcha Cookies", Quantity = 3, UnitPrice = 8.5m },
                 new OrderProductDto { ProductId = Guid.NewGuid(), ProductImageUrl = "/fake-images/peanut-butter.png", ProductName = "Peanut Butter Cookies", Quantity = 1, UnitPrice = 4.5m },
-                new OrderProductDto { ProductId = Guid.NewGuid(), ProductImageUrl = "/fake-images/oatmeal-raisin.png", ProductName = "Oatmeal Raisin Cookies", Quantity = 2, UnitPrice = 2.25m }
+                new OrderProductDto { ProductId = Guid.NewGuid(), ProductImageUrl = "/fake-images/oatmeal-raisin.png", ProductName = "Oatmeal Raisin Cookies", Quantity = 2, UnitPrice = 2.25m },
+                new OrderProductDto { ProductId = Guid.NewGuid(), ProductImageUrl = "/fake-images/cocoa-chocolate-chip.png", ProductName = "Cocoa Chocolate Chip Cookies", Quantity = 2, UnitPrice = 2.25m }
             },
             ShippingAddress = new AddressBookItemDto { FirstName = "Tiger", LastName = "User", Street = "123 Cookie Lane", City = "Baker City", PostalCode = "12345" },
             BillingAddress = new AddressBookItemDto { FirstName = "Tiger", LastName = "User", Street = "123 Cookie Lane", City = "Baker City", PostalCode = "12345" }

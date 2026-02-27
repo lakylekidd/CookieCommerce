@@ -71,15 +71,15 @@
                 <ul class="space-y-4 text-sm text-gray-600 dark:text-gray-300">
                     @if(Auth.IsLoggedIn)
                     {
-                        <li><a class="hover:text-primary transition-colors" href="/account">Dashboard</a></li>
+                        <li><a class="hover:text-primary transition-colors" href="/account/overview">Dashboard</a></li>
+                        <li><a class="hover:text-primary transition-colors" href="/account/orders">Order History</a></li>
                     }
                     else
                     {
                         <li><a class="hover:text-primary transition-colors" href="/auth/signin">Sign In</a></li>
                         <li><a class="hover:text-primary transition-colors" href="/auth/signup">Sign Up</a></li>
                     }
-                    <li><a class="hover:text-primary transition-colors" href="/shop/cart">My Cart</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="/account/my-orders">Order History</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="/shop/cart">My Cart</a></li>                    
                     <li><a class="hover:text-primary transition-colors" href="/loyalty/my-rewards">Tiger Rewards</a></li>
                 </ul>
             </div>

@@ -143,4 +143,11 @@ public class FakeAccountService() : IAccountService
         }
         return Task.FromResult<OrderDto?>(null);
     }
+
+    public Task<int> GetOrderCountInNeedOfAttentionAsync()
+    {
+        var orders = StaticData.StaticOrders.OrdersE;
+        var count = orders.Count(o => o.Status.StatusId <= 1);
+        return Task.FromResult(count);
+    }
 }

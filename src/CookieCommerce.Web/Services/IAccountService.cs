@@ -19,5 +19,6 @@ public interface IAccountService
     Task<AddressBookItemDto>? GetPrimaryAddressAsync();
     Task<ICollection<OrderListItemDto>> GetOrdersAsync();
     Task<OrderDto> GetOrderByIdAsync(Guid orderId);
+    Task<int> GetOrderCountInNeedOfAttentionAsync();
     
 }

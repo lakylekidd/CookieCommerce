@@ -14,7 +14,13 @@
                  ActiveClassName="bg-primary text-white shadow-md transform scale-[1.02] hover:text-white">
             <span class="material-icons text-xl">shopping_bag</span>
             My Orders
-            <span class="ml-auto bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-300 text-xs font-bold px-2 py-0.5 rounded-full">2</span>
+            @if (OrderCountInNeedOfAttention > 0)
+            {
+                <span class="ml-auto bg-orange-100 dark:bg-orange-900 
+                    text-orange-600 dark:text-orange-300 text-xs font-bold px-2 py-0.5 rounded-full">
+                    @OrderCountInNeedOfAttention
+                </span>
+            }
         </NavLink>
 
         <NavLink class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all text-gray-600 dark:text-gray-300 hover:bg-accent-light dark:hover:bg-accent-dark hover:text-primary"
@@ -40,3 +46,7 @@
         </a>
     </nav>
 </aside>
+
+@code {
+    private int OrderCountInNeedOfAttention = 2;
+}

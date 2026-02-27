@@ -17,7 +17,8 @@ public interface IAccountService
     Task<ResultDto> DeleteAddressAsync(int index);
     Task<ResultDto> SetAsPrimaryAsync(int index);
     Task<AddressBookItemDto>? GetPrimaryAddressAsync();
-    Task<ICollection<OrderListItemDto>> GetOrdersAsync();
+    Task<ICollection<OrderListItemDto>> GetOrdersAsync(int page, int pageSize);
+    Task<int> GetTotalOrdersCountAsync();
     Task<OrderDto> GetOrderByIdAsync(Guid orderId);
     Task<int> GetOrderCountInNeedOfAttentionAsync();
     Task<TrackingDto> GetTrackingAsync(Guid orderId);

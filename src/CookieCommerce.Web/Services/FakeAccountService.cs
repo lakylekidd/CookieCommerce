@@ -128,11 +128,16 @@ public class FakeAccountService() : IAccountService
         return Task.FromResult<AddressBookItemDto?>(null);
     }
 
-    public Task<ICollection<OrderListItemDto>> GetOrdersAsync()
+    public Task<ICollection<OrderListItemDto>> GetOrdersAsync(int page, int pageSize)
     {
-        var orders = StaticData.StaticOrders.Orders;
+        var orders = StaticData.StaticOrders.Orders
+         .Skip((page - 1) * pageSize)
+         .Take(pageSize)
+         .ToList();
         return Task.FromResult((ICollection<OrderListItemDto>)orders);
     }
+
+    public Task<int> GetTotalOrdersCountAsync() => Task.FromResult(StaticData.StaticOrders.Orders.Count);
 
     public Task<OrderDto> GetOrderByIdAsync(Guid orderId)
     {

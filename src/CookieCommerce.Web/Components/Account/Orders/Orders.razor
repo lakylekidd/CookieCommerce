@@ -3,55 +3,229 @@
 @using CookieCommerce.Web.Services
 @layout AccountLayout
 @inject IAccountService AccountService
+@rendermode InteractiveServer
+
+<style>
+    @@keyframes tiger-shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+    .animate-tiger-shimmer {
+        background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+        background-size: 200% 100%;
+        animation: tiger-shimmer 1.5s infinite linear;
+    }
+</style>
 
 <div class="flex-grow space-y-6">
     <OrdersHeader />
-    <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-widest font-bold">
-                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Ordered On</th>
-                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Rewards</th>
-                        <th class="p-6 py-4 font-bold">Items</th>
-                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Status</th>
-                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Total</th>
-                        <th class="p-6 py-4 font-bold"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                    @foreach(var order in orders)
-                    {
-                        <OrdersLineItem OrderListItem="order" />
-                    }
-                </tbody>
-            </table>
-        </div>
-        <div class="p-6 bg-gray-50/50 dark:bg-gray-800/50 border-t border-orange-100 dark:border-gray-800 flex justify-between items-center">
-            <span class="text-sm text-gray-500">Showing 3 of 12 orders</span>
-            <div class="flex gap-2">
-                <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-orange-100 dark:border-gray-700 bg-white dark:bg-card-dark text-gray-400 hover:text-primary transition-colors">
-                    <span class="material-symbols-outlined">chevron_left</span>
-                </button>
-                <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-orange-100 dark:border-gray-700 bg-primary text-white font-bold">
-                    1
-                </button>
-                <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-orange-100 dark:border-gray-700 bg-white dark:bg-card-dark text-secondary hover:text-primary transition-colors">
-                    2
-                </button>
-                <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-orange-100 dark:border-gray-700 bg-white dark:bg-card-dark text-gray-400 hover:text-primary transition-colors">
-                    <span class="material-symbols-outlined">chevron_right</span>
-                </button>
+
+    @* The main relative container for the loading area [cite: 2026-02-25] *@
+    <div class="relative bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden min-h-[400px]">
+
+        @* 1. The Tiger Prowl Loader [cite: 2026-02-25] *@
+        @if (isLoading)
+        {
+            @* We keep the overlay, but make it transparent so ghosts are visible underneath *@
+            <div class="absolute inset-0 z-50 flex flex-col items-center justify-center h-[500px]
+                    backdrop-blur-[0.1px] pointer-events-none transition-opacity duration-300">
+                <div class="relative">
+                    <div class="w-16 h-16 bg-primary rounded-full animate-ping opacity-20"></div>
+                    <div class="absolute inset-0 w-16 h-16 bg-primary rounded-full border-4 border-white dark:border-gray-800 shadow-xl flex items-center justify-center animate-bounce">
+                        <img src="/images/logo.png" alt="Tiger Logo" class="w-10 h-10 object-contain" />
+                    </div>
+                </div>
+                <p class="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">
+                    Prowling for cookies...
+                </p>
             </div>
+        }
+
+        @* 2. The Content Wrapper (dims when loading) [cite: 2026-02-25] *@
+        <div class="@(isLoading ? "opacity-20 pointer-events-none" : "opacity-100") transition-opacity duration-500">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-widest font-bold">
+                            <th class="p-6 py-4 font-bold hidden sm:table-cell">Ordered On</th>
+                            <th class="p-6 py-4 font-bold hidden sm:table-cell">Rewards</th>
+                            <th class="p-6 py-4 font-bold">Items</th>
+                            <th class="p-6 py-4 font-bold hidden sm:table-cell">Status</th>
+                            <th class="p-6 py-4 font-bold hidden sm:table-cell">Total</th>
+                            <th class="p-6 py-4 font-bold"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @if (isLoading)
+                        {
+                            @* Show 4 Ghost Rows while loading *@
+                            @for (int i = 0; i < 4; i++)
+                            {
+                                <tr class="relative overflow-hidden">
+                                    @* Date Skeleton *@
+                                    <td class="p-6 py-6 hidden sm:table-cell">
+                                        @* Increased contrast: gray-300 instead of 200 *@
+                                        <div class="h-4 w-24 bg-gray-300 dark:bg-gray-600 rounded-lg mb-2 relative overflow-hidden">
+                                            <div class="absolute inset-0 animate-tiger-shimmer"></div>
+                                        </div>
+                                        <div class="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded-md relative overflow-hidden">
+                                            <div class="absolute inset-0 animate-tiger-shimmer"></div>
+                                        </div>
+                                    </td>
+
+                                    @* Rewards Badge Skeleton *@
+                                    <td class="p-6 py-6 hidden sm:table-cell">
+                                        <div class="flex items-center gap-2">
+                                            @* Primary-tinted skeleton for that tiger brand feel *@
+                                            <div class="w-7 h-7 rounded-full bg-orange-200 dark:bg-orange-900/40 relative overflow-hidden">
+                                                <div class="absolute inset-0 animate-tiger-shimmer"></div>
+                                            </div>
+                                            <div class="space-y-1">
+                                                <div class="h-2 w-8 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                                                <div class="h-3 w-12 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    @* Items Skeleton *@
+                                    <td class="p-6 py-6">
+                                        <div class="flex -space-x-2">
+                                            <div class="w-9 h-9 rounded-full border-2 border-white dark:border-gray-800 bg-gray-300 dark:bg-gray-600 relative overflow-hidden">
+                                                <div class="absolute inset-0 animate-tiger-shimmer"></div>
+                                            </div>
+                                            <div class="w-9 h-9 rounded-full border-2 border-white dark:border-gray-800 bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
+                                                <div class="absolute inset-0 animate-tiger-shimmer"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    @* Status Skeleton *@
+                                    <td class="p-6 py-6 hidden sm:table-cell">
+                                        <div class="h-6 w-20 bg-gray-300 dark:bg-gray-600 rounded-lg relative overflow-hidden">
+                                            <div class="absolute inset-0 animate-tiger-shimmer"></div>
+                                        </div>
+                                    </td>
+
+                                    @* Total Skeleton *@
+                                    <td class="p-6 py-6 hidden sm:table-cell">
+                                        <div class="h-6 w-20 bg-gray-300 dark:bg-gray-600 rounded-lg relative overflow-hidden">
+                                            <div class="absolute inset-0 animate-tiger-shimmer"></div>
+                                        </div>
+                                    </td>
+
+                                    @* Action Buttons Skeleton *@
+                                    <td class="p-6 py-6">
+                                        <div class="flex gap-2">
+                                            <div class="w-9 h-9 rounded-xl bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"></div>
+                                            <div class="w-9 h-9 rounded-xl bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            @foreach (var order in orders)
+                            {
+                                <OrdersLineItem OrderListItem="order" />
+                            }
+                        }
+                        
+                    </tbody>
+                </table>
+            </div>
+
+            @* 3. Pagination Bar *@
+            <div class="p-6 bg-gray-50/50 dark:bg-gray-800/50 border-t border-orange-100 dark:border-gray-800 flex justify-between items-center">
+                <span class="text-sm text-gray-500 font-medium">
+                    Showing <span class="text-primary font-bold">@orders.Count</span> of @totalOrders orders 🐯
+                </span>
+
+                <div class="flex gap-2 @(orders.Count <= pageSize ? "hidden" : "")">
+                    <button @onclick="PreviousPage" disabled="@(currentPage == 1)"
+                            class="w-10 h-10 flex items-center justify-center rounded-xl 
+                            border-2 border-orange-100 dark:border-gray-700 bg-white dark:bg-card-dark 
+                            text-gray-400 disabled:opacity-50 transition-all 
+                            @(currentPage == 1 ? "" : "cursor-pointer hover:text-primary hover:border-primary")">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+
+                    @for (int i = 1; i <= Math.Ceiling((double)totalOrders / pageSize); i++)
+                    {
+                        var pageNumber = i;
+                        <button @onclick="() => GoToPage(pageNumber)"
+                                class="cursor-pointer @(currentPage == pageNumber
+                                            ? "w-10 h-10 rounded-xl border-4 border-white dark:border-gray-700 bg-primary text-white font-black shadow-md scale-110"
+                                            : "w-10 h-10 rounded-xl border-2 border-orange-100 dark:border-gray-700 bg-white dark:bg-card-dark text-secondary hover:text-primary transition-all")">
+                            @pageNumber
+                        </button>
+                    }
+
+                    <button @onclick="NextPage" disabled="@(currentPage * pageSize >= totalOrders)"
+                            class="w-10 h-10 flex items-center justify-center rounded-xl 
+                            border-2 border-orange-100 dark:border-gray-700 bg-white dark:bg-card-dark 
+                            text-gray-400 disabled:opacity-50 transition-all 
+                            @(currentPage* pageSize >= totalOrders ? "" : "cursor-pointer hover:text-primary hover:border-primary")">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* 4. The Actionable Birthday Tooltip *@
+    <div class="flex justify-center mt-2">
+        <div class="group relative inline-block cursor-help">
+            <button class="text-xs font-bold text-gray-400 hover:text-primary transition-colors flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">cake</span>
+                Missing a birthday cookie?
+            </button>
+
+            @* Tiger Cute Tooltip content [cite: 2026-02-25] *@
+            <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 scale-0 group-hover:scale-100 transition-all duration-200 rounded-xl bg-primary p-3 text-[11px] font-bold text-white whitespace-nowrap z-[60] shadow-2xl pointer-events-none origin-bottom border-2 border-white">
+                Add your birthday to get a royal tiger gift! 🐯🎁
+                <span class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-primary"></span>
+            </span>
         </div>
     </div>
 </div>
 
 @code {
     private ICollection<OrderListItemDto> orders = [];
+    private int currentPage = 1;
+    private int pageSize = 4;
+    private int totalOrders;
+    private bool isLoading = true; // [cite: 2026-02-25]
 
     protected override async Task OnInitializedAsync()
     {
-        orders = await AccountService.GetOrdersAsync();
+        totalOrders = await AccountService.GetTotalOrdersCountAsync();
+        await LoadOrders();
     }
+
+    private async Task LoadOrders()
+    {
+        isLoading = true; // Start prowling [cite: 2026-02-25]
+        StateHasChanged();
+
+        await Task.Delay(1500); // Tiger delay for effect [cite: 2026-02-25]
+        orders = await AccountService.GetOrdersAsync(currentPage, pageSize);
+
+        isLoading = false; // Data arrived [cite: 2026-02-25]
+        StateHasChanged();
+    }
+
+    private async Task GoToPage(int page)
+    {
+        currentPage = page;
+        await LoadOrders();
+    }
+
+    private async Task NextPage() => await GoToPage(currentPage + 1);
+    private async Task PreviousPage() => await GoToPage(currentPage - 1);
 }

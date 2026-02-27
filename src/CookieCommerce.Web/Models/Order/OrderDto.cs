@@ -22,6 +22,7 @@ public class OrderDto
     public decimal Shipping => SubTotalPrice >= CartDto.FREE_SHIPPING_THRESHOLD ? 0 : CartDto.SHIPPING_COST;
     public decimal SubTotalPrice => Products.Sum(item => item.UnitPrice * item.Quantity);
     public decimal TotalPrice => SubTotalPrice + (!TaxIncluded ? Tax : 0) + Shipping - GetPromotionDiscount();
+    public TrackingDto TrackingInformation { get; set; } = new();
 
     public decimal GetPromotionDiscount()
     {

@@ -20,5 +20,5 @@ public interface IAccountService
     Task<ICollection<OrderListItemDto>> GetOrdersAsync();
     Task<OrderDto> GetOrderByIdAsync(Guid orderId);
     Task<int> GetOrderCountInNeedOfAttentionAsync();
-    
+    Task<TrackingDto> GetTrackingAsync(Guid orderId);
 }

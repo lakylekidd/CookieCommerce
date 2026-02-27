@@ -1,0 +1,94 @@
+﻿@using CookieCommerce.Web.Models.Order
+<div class="space-y-6">
+    <div class="bg-card-light dark:bg-card-dark border border-orange-100 dark:border-orange-900/30 overflow-visible">
+        <div class="p-8">
+            <div class="mb-2">
+                <div class="relative flex justify-between">
+                    @* The Background Track *@
+                    <div class="absolute top-4 left-0 w-full h-1.5 bg-gray-100 dark:bg-gray-800 -z-0 rounded-full"></div>
+
+                    @{
+                        // Calculate progress: (Step - 1) / (Total Steps - 1)
+                        // For 5 steps: Step 1 = 0%, Step 2 = 25%, Step 3 = 50%, Step 4 = 75%, Step 5 = 100%
+                        var progressPercentage = (TrackingInfo.TrackingStatus / 4.0) * 100;
+                    }
+
+                    @* The Animated Progress Fill *@
+                    <div class="absolute top-4 left-0 h-1.5 bg-gradient-to-r from-primary to-secondary 
+                         -z-0 rounded-full transition-all duration-1000 ease-out"
+                         style="width: @(progressPercentage)%">
+                        @* The Prowling Tiger Head following the progress *@
+                        <div class="absolute right-0 -top-6 translate-x-1/2 text-xl animate-bounce">🐯</div>
+                    </div>
+
+                    @* Stage: Baking *@
+                    <div class="relative z-10 flex flex-col items-center gap-3 group @(TrackingInfo.TrackingStatus >= 0 ? "" : "opacity-50")">
+                        @* Pulsing outer ring for the active step *@
+                        @if (TrackingInfo.TrackingStatus == 0)
+                        {
+                            <div class="absolute -inset-1 bg-primary rounded-full animate-ping opacity-20"></div>
+                        }
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center ring-4 ring-white dark:ring-gray-900 @(TrackingInfo.TrackingStatus >= 0 ? "bg-primary text-white shadow-lg relative" : "bg-gray-200 dark:bg-gray-800 text-gray-400")">
+                            <span class="material-symbols-outlined text-[18px] @(TrackingInfo.TrackingStatus == 0 ? "animate-pulse" : "")">bakery_dining</span>
+                        </div>
+                        <span class="text-[10px] font-black uppercase tracking-tighter text-primary">Baking</span>
+                    </div>
+
+                    @* Stage: Cooling *@
+                    <div class="relative z-10 flex flex-col items-center gap-3 group @(TrackingInfo.TrackingStatus >= 1 ? "" : "opacity-50")">
+                        @* Pulsing outer ring for the active step *@
+                        @if (TrackingInfo.TrackingStatus == 1)
+                        {
+                            <div class="absolute -inset-1 bg-primary rounded-full animate-ping opacity-20"></div>
+                        }
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center ring-4 ring-white dark:ring-gray-900 @(TrackingInfo.TrackingStatus >= 1 ? "bg-primary text-white shadow-lg relative" : "bg-gray-200 dark:bg-gray-800 text-gray-400")">
+                            <span class="material-symbols-outlined text-[18px] @(TrackingInfo.TrackingStatus == 1 ? "animate-pulse" : "")">ac_unit</span>
+                        </div>
+                        <span class="text-[10px] font-black uppercase tracking-tighter text-primary">Cooling</span>
+                    </div>
+
+                    @* Stage: Packing *@
+                    <div class="relative z-10 flex flex-col items-center gap-3 group @(TrackingInfo.TrackingStatus >= 2 ? "" : "opacity-50")">
+                        @* Pulsing outer ring for the active step *@
+                        @if (TrackingInfo.TrackingStatus == 2)
+                        {
+                            <div class="absolute -inset-1 bg-primary rounded-full animate-ping opacity-20"></div>
+                        }
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center ring-4 ring-white dark:ring-gray-900 @(TrackingInfo.TrackingStatus >= 2 ? "bg-primary text-white shadow-lg relative" : "bg-gray-200 dark:bg-gray-800 text-gray-400")">
+                            <span class="material-symbols-outlined text-[18px] @(TrackingInfo.TrackingStatus == 2 ? "animate-pulse" : "")">inventory_2</span>
+                        </div>
+                        <span class="text-[10px] font-black uppercase tracking-tighter text-primary">Packing</span>
+                    </div>
+
+                    @* Stage: Delivery *@
+                    <div class="relative z-10 flex flex-col items-center gap-3 @(TrackingInfo.TrackingStatus >= 3 ? "" : "opacity-50")">
+                        @* Pulsing outer ring for the active step *@
+                        @if (TrackingInfo.TrackingStatus == 3)
+                        {
+                            <div class="absolute -inset-1 bg-primary rounded-full animate-ping opacity-20"></div>
+                        }
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center ring-4 ring-white dark:ring-gray-900 @(TrackingInfo.TrackingStatus >= 3 ? "bg-primary text-white shadow-lg relative" : "bg-gray-200 dark:bg-gray-800 text-gray-400")">
+                            <span class="material-symbols-outlined text-[18px] @(TrackingInfo.TrackingStatus == 3 ? "animate-pulse" : "")">local_shipping</span>
+                        </div>
+                        <span class="text-[10px] font-black uppercase tracking-tighter text-primary flex items-center gap-1">
+                            Prowling
+                        </span>
+                    </div>
+
+                    @* Stage: Delivered (Pending) *@
+                    <div class="relative z-10 flex flex-col items-center gap-3">
+                        @* Pulsing outer ring for the active step *@
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center ring-4 ring-white dark:ring-gray-900  @(TrackingInfo.TrackingStatus >= 4 ? "bg-primary text-white shadow-lg relative" : "bg-gray-200 dark:bg-gray-800 text-gray-400")">
+                            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-tighter text-gray-400">Arrived</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public TrackingDto TrackingInfo { get; set; }
+}

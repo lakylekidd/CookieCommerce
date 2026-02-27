@@ -147,6 +147,13 @@ public static class StaticOrders
             OrderReference = "TC-8827",
             PlacedOn = DateTime.Now,
             Status = new OrderStatusDto { StatusId = 0, Status = "Processing" },
+            TrackingInformation = new()
+            {
+                Carrier = "PostNL",
+                TrackingNumber = "NL123456789",
+                TrackingStatus = 1,
+                TrackingStatusDescription = "Cooling"
+            },
             Total = 34.5m,
             CurrencySymbol = "$",
             Products = new List<OrderProductDto>
@@ -165,6 +172,13 @@ public static class StaticOrders
             OrderReference = "TC-8823",
             PlacedOn = DateTime.Now.AddDays(-10),
             Status = new OrderStatusDto { StatusId = 1, Status = "In Transit" },
+            TrackingInformation = new()
+            {
+                Carrier = "PostNL",
+                TrackingNumber = "NL12669782",
+                TrackingStatus = 3,
+                TrackingStatusDescription = "Prowling"
+            },
             Total = 24.5m,
             CurrencySymbol = "$",
             Products = new List<OrderProductDto>
@@ -180,7 +194,14 @@ public static class StaticOrders
             Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-666666666666"),
             OrderReference = "TC-8801",
             PlacedOn = DateTime.Now.AddMonths(-2).AddDays(10),
-            Status = new OrderStatusDto { StatusId = 2, Status = "Delivered" },
+            Status = new OrderStatusDto { StatusId = 2, Status = "Delivered" }, 
+            TrackingInformation = new()
+            {
+                Carrier = "PostNL",
+                TrackingNumber = "NL125554654",
+                TrackingStatus = 4,
+                TrackingStatusDescription = "Arrived"
+            },
             Total = 42m,
             CurrencySymbol = "$",
             Products = new List<OrderProductDto>
@@ -196,6 +217,13 @@ public static class StaticOrders
             OrderReference = "TC-8755",
             PlacedOn = DateTime.Now.AddMonths(-5).AddDays(-7),
             Status = new OrderStatusDto { StatusId = 2, Status = "Delivered" },
+            TrackingInformation = new()
+            {
+                Carrier = "PostNL",
+                TrackingNumber = "NL248612943",
+                TrackingStatus = 4,
+                TrackingStatusDescription = "Arrived"
+            },
             Total = 18.95m,
             CurrencySymbol = "$",
             Products = new List<OrderProductDto>
@@ -211,6 +239,13 @@ public static class StaticOrders
             OrderReference = "TC-8645",
             PlacedOn = DateTime.Now.AddMonths(-5).AddDays(-7),
             Status = new OrderStatusDto { StatusId = 3, Status = "Cancelled" },
+            TrackingInformation = new()
+            {
+                Carrier = "PostNL",
+                TrackingNumber = "NL125554654",
+                TrackingStatus = 4,
+                TrackingStatusDescription = "Arrived"
+            },
             Total = 18.95m,
             CurrencySymbol = "$",
             Products = new List<OrderProductDto>

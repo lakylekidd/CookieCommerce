@@ -150,4 +150,14 @@ public class FakeAccountService() : IAccountService
         var count = orders.Count(o => o.Status.StatusId <= 1);
         return Task.FromResult(count);
     }
+
+    public Task<TrackingDto> GetTrackingAsync(Guid orderId)
+    {
+        var order = StaticData.StaticOrders.OrdersE.FirstOrDefault(o => o.Id == orderId);
+        if (order is not null)
+        {
+            return Task.FromResult(order.TrackingInformation);
+        }
+        return Task.FromResult<TrackingDto?>(null);
+    }
 }

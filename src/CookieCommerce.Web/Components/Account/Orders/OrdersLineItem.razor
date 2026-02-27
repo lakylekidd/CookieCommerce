@@ -221,6 +221,12 @@
             }
             else
             {
+                @* The order tracker *@
+                @if(order?.TrackingInformation != null)
+                {
+                    <OrderTracker TrackingInfo="@order.TrackingInformation" />
+                }
+
                 @* The actual displayed order *@
                 <div class="bg-white dark:bg-card-dark/50 p-8 border-b border-orange-100 dark:border-gray-800">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
@@ -376,6 +382,14 @@
                                         <td class="text-left sm:text-right pr-8 text-primary dark:text-white font-black text-lg">Total:</td>
                                         <td class="text-right text-primary font-black text-2xl">
                                             @order?.CurrencySymbol@order?.Total.ToString("N2")
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="text-right">
+                                            <a class="text-primary font-bold inline-flex items-center gap-2 group" href="/shop">
+                                                <span class="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform no-underline">download</span>
+                                                <span class="group-hover:underline">Download Invoice</span>
+                                            </a>
                                         </td>
                                     </tr>
                                 </tbody>

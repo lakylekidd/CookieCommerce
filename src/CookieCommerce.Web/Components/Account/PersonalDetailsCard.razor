@@ -6,7 +6,7 @@
 <div class="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
     <div class="flex justify-between items-start mb-6">
         <h2 class="text-xl font-display font-bold text-gray-800 dark:text-white">Personal Details</h2>
-        <button @onclick="() => isEditModalOpen = true" class="cursor-pointer text-primary hover:text-orange-600 dark:hover:text-orange-400 text-sm font-semibold">
+        <button @onclick="() => IsEditModalOpen = true" class="cursor-pointer text-primary hover:text-orange-600 dark:hover:text-orange-400 text-sm font-semibold">
             Edit
         </button>
     </div>
@@ -49,7 +49,7 @@
                 }
                 else
                 {
-                    <button type="button" @onclick="() => isEditModalOpen = true"
+                    <button type="button" @onclick="() => IsEditModalOpen = true"
                             class="group relative flex items-center gap-1.5 cursor-pointer focus:outline-none">
 
                         <p class="text-sm font-medium text-orange-400 dark:text-orange-300 italic group-hover:text-primary transition-colors">
@@ -72,14 +72,14 @@
     </div>
 </div>
 
-@if (isEditModalOpen)
+@if (IsEditModalOpen)
 {
     <EditProfileModal OnSave="HandleSave"
                       OnCancel="CloseModal" />
 }
 
 @code {
-    private bool isEditModalOpen = false;
+    [Parameter] public bool IsEditModalOpen { get; set; } = false;
     private UserProfileDto profile = new();
 
     protected override async Task OnInitializedAsync()
@@ -89,13 +89,13 @@
 
     private void CloseModal()
     {
-        isEditModalOpen = false;
+        IsEditModalOpen = false;
     }
 
     private async Task HandleSave()
     {
         await GetProfile();
-        isEditModalOpen = false;
+        IsEditModalOpen = false;
     }
 
     private async Task GetProfile()

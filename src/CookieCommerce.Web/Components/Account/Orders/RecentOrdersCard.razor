@@ -1,0 +1,53 @@
+﻿@using CookieCommerce.Web.Models.Order
+@using CookieCommerce.Web.Services
+@inject IAccountService AccountService
+
+<div class="bg-card-light dark:bg-card-dark rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+    <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+        <h2 class="text-xl font-display font-bold text-gray-800 dark:text-white">Recent Orders</h2>
+        <a class="text-primary hover:text-orange-600 dark:hover:text-orange-400 text-sm font-semibold flex items-center"
+           href="/account/orders">
+            View All <span class="material-icons text-sm ml-1">chevron_right</span>
+        </a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">
+                    <th class="p-4 font-semibold rounded-tl-lg">Order ID</th>
+                    <th class="p-4 font-semibold">Date</th>
+                    <th class="p-4 font-semibold">Status</th>
+                    <th class="p-4 font-semibold">Total</th>
+                    <th class="p-4 font-semibold rounded-tr-lg">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-sm">
+                @foreach(var order in RecentOrders)
+                {
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                        <td class="p-4 font-medium text-gray-900 dark:text-white">#@order.OrderReference</td>
+                        <td class="p-4 text-gray-600 dark:text-gray-300">@order.PlacedOn.ToString("MMM dd, yyyy")</td>
+                        <td class="p-4">
+                            <OrderStatus Status="@order.Status" />
+                        </td>
+                        <td class="p-4 font-bold text-gray-900 dark:text-white">@order.CurrencySymbol@order.Total.ToString("C2")</td>
+                        <td class="p-4">
+                            <a href="/account/orders/@order.OrderReference" class="text-gray-400 hover:text-primary transition-colors">
+                                <span class="cursor-pointer material-icons">visibility</span>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private ICollection<OrderListItemDto> RecentOrders { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        RecentOrders = await AccountService.GetOrdersAsync(1, 3);
+    }
+}

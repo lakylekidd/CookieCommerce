@@ -1,4 +1,5 @@
 ﻿@page "/account/orders"
+@page "/account/orders/{OrderReference}"
 @using CookieCommerce.Web.Models.Order
 @using CookieCommerce.Web.Services
 @layout AccountLayout
@@ -47,6 +48,7 @@
         }
 
         @* 2. The Content Wrapper (dims when loading) [cite: 2026-02-25] *@
+        
         <div class="@(isLoading ? "opacity-20 pointer-events-none" : "opacity-100") transition-opacity duration-500">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
@@ -132,7 +134,7 @@
                         {
                             @foreach (var order in orders)
                             {
-                                <OrdersLineItem OrderListItem="order" />
+                                <OrdersLineItem OrderListItem="order" OpenOrder="@(OrderReference == order.OrderReference)" />
                             }
                         }
                         
@@ -181,10 +183,10 @@
     @* 4. The Actionable Birthday Tooltip *@
     <div class="flex justify-center mt-2">
         <div class="group relative inline-block cursor-help">
-            <button class="text-xs font-bold text-gray-400 hover:text-primary transition-colors flex items-center gap-1">
+            <a href="/account/overview/true" class="text-xs font-bold text-gray-400 hover:text-primary transition-colors flex items-center gap-1">
                 <span class="material-symbols-outlined text-sm">cake</span>
                 Missing a birthday cookie?
-            </button>
+            </a>
 
             @* Tiger Cute Tooltip content [cite: 2026-02-25] *@
             <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 scale-0 group-hover:scale-100 transition-all duration-200 rounded-xl bg-primary p-3 text-[11px] font-bold text-white whitespace-nowrap z-[60] shadow-2xl pointer-events-none origin-bottom border-2 border-white">
@@ -196,6 +198,7 @@
 </div>
 
 @code {
+    [Parameter] public string OrderReference { get; set; }
     private ICollection<OrderListItemDto> orders = [];
     private int currentPage = 1;
     private int pageSize = 4;

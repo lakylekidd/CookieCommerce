@@ -1,13 +1,21 @@
-﻿@page "/account/overview"
+﻿@page "/account/overview/"
+@page "/account/overview/{OpenModal:bool}"
 @rendermode InteractiveServer
 @layout AccountLayout
+
+@using CookieCommerce.Web.Components.Account.Orders
 
 <div class="flex-grow space-y-8">
     <WelcomeHeaderWithPointsRedemable />
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <PersonalDetailsCard />
+        <PersonalDetailsCard IsEditModalOpen="@OpenModal" />
         <DefaultShippingCard />
     </div>
     <RecentOrdersCard />
     <ReorderYourFavoritesArea />
 </div>
+
+@code {
+    [Parameter]
+    public bool OpenModal { get; set; } = false;
+}

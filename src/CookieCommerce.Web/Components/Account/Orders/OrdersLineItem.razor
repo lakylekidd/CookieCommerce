@@ -100,13 +100,7 @@
         </div>
     </td>
     <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1" : "")">
-        @{
-            var status = GetStatusStyles();
-        }
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold transition-colors @status.Container">
-            <span class="w-1.5 h-1.5 rounded-full mr-2 @status.Dot"></span>
-            @status.Label
-        </span>
+        <OrderStatus Status="@OrderListItem.Status" />
     </td>
     <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1" : "")">
         <p class="font-bold">@OrderListItem.CurrencySymbol@OrderListItem.Total.ToString("N2")</p>
@@ -407,11 +401,17 @@
 @code {
 
     [Parameter] public OrderListItemDto OrderListItem { get; set; } = default!;
+    [Parameter] public bool OpenOrder { get; set; }
 
     private OrderDto? order { get; set; }
 
     private bool isExpanded = false;
     private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (OpenOrder) await ToggleDetailsAsync();
+    }
 
     private async Task ToggleDetailsAsync()
     {
@@ -429,13 +429,4 @@
             order = null;
         }
     }
-
-    private (string Container, string Dot, string Label) GetStatusStyles() => OrderListItem?.Status?.StatusId switch
-    {
-        3 => ("bg-red-500 text-white shadow-sm", "bg-white", "Cancelled"),
-        2 => ("bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300", "bg-green-500", "Delivered"),
-        1 => ("bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300", "bg-blue-500", "In Transit"),
-        0 => ("bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300", "bg-amber-800 animate-pulse", "Processing"),
-        _ => ("bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300", "bg-gray-500", "Unknown")
-    };
 }

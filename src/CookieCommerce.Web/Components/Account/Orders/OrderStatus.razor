@@ -1,0 +1,20 @@
+﻿@using CookieCommerce.Web.Models.Order
+@{
+    var status = GetStatusStyles();
+}
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold transition-colors @status.Container">
+    <span class="w-1.5 h-1.5 rounded-full mr-2 @status.Dot"></span>
+    @status.Label
+</span>
+
+@code {
+    [Parameter] public OrderStatusDto Status { get; set; }
+    private (string Container, string Dot, string Label) GetStatusStyles() => Status?.StatusId switch
+    {
+        3 => ("bg-red-500 text-white shadow-sm", "bg-white", "Cancelled"),
+        2 => ("bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300", "bg-green-500", "Delivered"),
+        1 => ("bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300", "bg-blue-500", "In Transit"),
+        0 => ("bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300", "bg-amber-800 animate-pulse", "Processing"),
+        _ => ("bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300", "bg-gray-500", "Unknown")
+    };
+}

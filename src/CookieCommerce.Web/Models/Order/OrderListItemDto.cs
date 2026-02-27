@@ -1,4 +1,6 @@
-﻿namespace CookieCommerce.Web.Models.Order;
+﻿using System.Numerics;
+
+namespace CookieCommerce.Web.Models.Order;
 
 /// <summary>
 /// This class represents a data transfer object (DTO) for an order list item, 
@@ -14,6 +16,7 @@ public class OrderListItemDto
     public OrderStatusDto Status { get; set; } = new();
     public string CurrencySymbol { get; set; } = "$";
     public decimal Total { get; set; }
+    public int RewardPointsEarned => (int)(Total * 10);
 }
 
 public class OrderListItemProductDto

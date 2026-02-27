@@ -27,22 +27,51 @@
     }
 </style>
 
-<tr class="cursor-pointer hover:bg-orange-50/30 dark:hover:bg-gray-800/30 transition-all">
-    <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-l-4 bg-orange-50/20 dark:bg-gray-800/20" : "")">
+<tr class="cursor-pointer hover:bg-orange-50/30 dark:hover:bg-gray-800/30 transition-all  @(isExpanded ? "bg-orange-50 dark:bg-gray-800" : "")">
+    <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1 border-l-4" : "")">
         <p class="font-bold text-gray-900 dark:text-white">@OrderListItem.PlacedOn.ToString("MMM dd, yyyy")</p>
         <p class="text-xs text-gray-400 font-mono">#@OrderListItem.OrderReference</p>
     </td>
-    <td class="px-6 py-6">
+    <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1" : "")">
+        <div class="flex items-center gap-2">
+            <div class="relative flex-shrink-0 group">
+                <div class="w-7 h-7 flex items-center justify-center relative overflow-hidden">
+                    <span class="material-symbols-outlined text-primary !text-xs z-10">crown</span>
+                    <div class="absolute inset-0 animate-shimmer opacity-20"></div>
+                </div>
+            </div>
+
+            @* Compact Earnings Text *@
+            <div class="flex flex-col justify-center">
+                <p class="font-black text-xs uppercase tracking-tight text-gray-400 dark:text-gray-500 leading-none">Earned</p>
+                <p class="text-[11px] font-black text-gray-900 dark:text-white flex items-center gap-0.5">
+                    <span class="text-secondary">+</span>@OrderListItem.RewardPointsEarned
+                    <span class="text-[8px] text-primary opacity-80">pts</span>
+                </p>
+            </div>
+        </div>
+    </td>
+    <td class="px-6 py-6 @(isExpanded ? "border-primary border-t-1" : "")">
         <div class="block sm:hidden">
             <p class="font-bold text-gray-900 dark:text-white">@OrderListItem.PlacedOn.ToString("MMM dd, yyyy")</p>
-            <p class="text-xs text-gray-400 font-mono">#@OrderListItem.OrderReference</p>
+            <div class="flex flex-row">
+                <p class="text-xs text-gray-400 font-mono">
+                    #@OrderListItem.OrderReference
+                </p>
+                <p class="text-[11px] font-black text-gray-900 dark:text-white flex items-center ml-1 gap-0.5">
+                    <span class="text-primary">+</span>@OrderListItem.RewardPointsEarned
+                    <span class="text-[8px] text-primary opacity-80">pts</span>
+                </p>
+            </div>
         </div>
         <div class="flex -space-x-2">
             @foreach(var item in OrderListItem.Products.Take(3))
             {
                 <div class="relative group">
-                    <div class="w-8 h-8 rounded-full border-2 border-white dark:border-card-dark bg-orange-100 flex items-center justify-center shadow-sm overflow-hidden">
-                        <img src="@item.ProductImageUrl" alt="@item.ProductName" class="w-full h-full object-cover" />
+                    <div class="w-8 h-8 rounded-full border-2 border-primary dark:border-primary bg-orange-100 flex items-center justify-center shadow-md overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+                        <img src="@item.ProductImageUrl"
+                             alt="@item.ProductName"
+                             class="w-full h-full object-cover" />
                     </div>
                     <span class="absolute -top-10 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 text-[10px] font-bold text-white whitespace-nowrap z-50 shadow-xl pointer-events-none origin-bottom">
                         @item.Quantity x @item.ProductName
@@ -70,7 +99,7 @@
 
         </div>
     </td>
-    <td class="px-6 py-6 hidden sm:table-cell">
+    <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1" : "")">
         @{
             var status = GetStatusStyles();
         }
@@ -79,10 +108,10 @@
             @status.Label
         </span>
     </td>
-    <td class="px-6 py-6 hidden sm:table-cell">
+    <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1" : "")">
         <p class="font-bold">@OrderListItem.CurrencySymbol@OrderListItem.Total.ToString("N2")</p>
     </td>
-    <td class="px-6 py-6 @(isExpanded ? "border-r-4 border-primary bg-orange-50/20 dark:bg-gray-800/20" : "")">
+    <td class="px-6 py-6 @(isExpanded ? "border-r-4 border-primary border-t-1" : "")">
         <div class="flex items-center justify-end gap-3">
 
             @* Rate & Review Button - Isolated Group *@
@@ -157,7 +186,7 @@
 @if (isExpanded)
 {
     <tr>
-        <td class="p-0 border-primary border-l-4 border-r-4 bg-orange-50/20 dark:bg-gray-800/20" colspan="5">
+        <td class="p-0 border-primary border-l-4 border-r-4 border-b border-t bg-orange-50/20 dark:bg-gray-800/20" colspan="6">
             @if(isLoading)
             {
                 @* Skeleton Loader with Shimmer *@

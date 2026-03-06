@@ -14,8 +14,11 @@
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-body transition-colors duration-300">
-    <Routes />
+    <Routes @rendermode="InteractiveServer" />
     <ReconnectModal />
+
+    <script src="js/global.js"></script>
+    <script src="js/phone-helper.js"></script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 

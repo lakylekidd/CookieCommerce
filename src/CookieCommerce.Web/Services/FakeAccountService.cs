@@ -2,13 +2,19 @@
 using CookieCommerce.Web.Models.Account;
 using CookieCommerce.Web.Models.Addresses;
 using CookieCommerce.Web.Models.Order;
+using CookieCommerce.Web.Models.Products;
 using CookieCommerce.Web.Models.Reviews;
+using CookieCommerce.Web.Services.Products;
 
 namespace CookieCommerce.Web.Services;
 
 public class FakeAccountService() : IAccountService
 {
-    private List<Guid> _favoriteProductIds = [Guid.Parse("d8f5a8e1-1234-4567-89ab-444444444444")];
+    private List<Guid> _favoriteProductIds = 
+        [
+            Guid.Parse("d8f5a8e1-1234-4567-89ab-444444444444"),
+            Guid.Parse("d8f5a8e1-1234-4567-89ab-222222222222"),
+        ];
 
     private UserProfileDto _profile = new UserProfileDto
     {
@@ -35,6 +41,14 @@ public class FakeAccountService() : IAccountService
     public Task<bool> IsFavoriteAsync(Guid productId)
     {
         return Task.FromResult(_favoriteProductIds.Contains(productId));
+    }
+
+    public Task<ICollection<CookieDto>> GetFavoriteProductsAsync()
+    {
+        var favoriteProducts = StaticCookieList.Cookies
+            .Where(p => _favoriteProductIds.Contains(p.Id))
+            .ToList();
+        return Task.FromResult((ICollection<CookieDto>)favoriteProducts);
     }
 
     public  Task<UserProfileDto> GetProfileAsync()

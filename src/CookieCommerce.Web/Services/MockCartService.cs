@@ -129,4 +129,33 @@ public class MockCartService : ICartService
         
         return Task.FromResult(new ResultDto { Success = false, Message = "Promotion code not found in cart." });
     }
+
+    public Task AddMultipleToCartAsync(IEnumerable<(Guid productId, int quantity)> items)
+    {
+        foreach (var (productId, quantity) in items)
+        {
+            var product = StaticCookieList.Cookies.FirstOrDefault(p => p.Id == productId);
+            if (product == null) continue;
+            var existingItem = _cart.Items.FirstOrDefault(i => i.ProductId == productId); 
+            if (existingItem is not null)
+            {
+                existingItem.Quantity += quantity;
+                continue;
+            }
+            _cart.Items.Add(new CartItemDto
+            {
+                CartItemId = Guid.NewGuid(),
+                ProductImageUrl = product.ImageUrls[0],
+                ProductId = product.Id,
+                ProductName = product.Title,
+                ProductVariantName = "1 item",
+                Quantity = quantity,
+                UnitPrice = product.Price,
+                IsLimitedEdition = product.IsLimitedEdition
+            });
+        }
+        
+        NotifyStateChanged();
+        return Task.CompletedTask;
+    }
 }

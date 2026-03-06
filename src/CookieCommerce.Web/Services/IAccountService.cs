@@ -2,6 +2,7 @@
 using CookieCommerce.Web.Models.Account;
 using CookieCommerce.Web.Models.Addresses;
 using CookieCommerce.Web.Models.Order;
+using CookieCommerce.Web.Models.Products;
 using CookieCommerce.Web.Models.Reviews;
 
 namespace CookieCommerce.Web.Services;
@@ -11,6 +12,7 @@ public interface IAccountService
     Task AddToFavoritesAsync(Guid productId);
     Task RemoveFromFavoritesAsync(Guid productId);
     Task<bool> IsFavoriteAsync(Guid productId);
+    Task<ICollection<CookieDto>> GetFavoriteProductsAsync();
     Task<UserProfileDto> GetProfileAsync();
     Task<ResultDto> UpdateProfileAsync(UserProfileDto profile);
     Task<IList<AddressBookItemDto>> GetAddressesAsync();

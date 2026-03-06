@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject IJSRuntime JS
 
 <HeadContent>
     <meta charset="utf-8" />
@@ -45,11 +46,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/css/intlTelInput.css">
     <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/js/intlTelInput.min.js"></script>
-    <script src="js/phone-helper.js"></script>
     <meta property="og:image" content="https://tigervancookie.nl/images/logo.png">
 
 </HeadContent>
 
 @Body
 
-
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Every time we render (including after navigation),
+        // we tell JS to double-check the theme classes.
+        await JS.InvokeVoidAsync("applyTheme");
+    }
+}

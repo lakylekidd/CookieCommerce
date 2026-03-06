@@ -25,6 +25,7 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<ICookieService, CookieService>();
 builder.Services.AddSingleton<ICartService, MockCartService>();
 builder.Services.AddSingleton<IAuthService, FakeAuthService>();

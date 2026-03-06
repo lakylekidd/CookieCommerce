@@ -1,0 +1,52 @@
+﻿@using CookieCommerce.Web.Services
+@inject ThemeService Theme
+
+
+@if (IsMobileMenu)
+{
+    <button aria-label="Toggle Dark Mode"
+            class="w-12 h-12 flex items-center justify-center rounded-2xl bg-white dark:bg-white/10 shadow-sm hover:scale-105 transition-all cursor-pointer"
+            @onclick="ToggleDarkMode">
+        <span class="material-icons-round text-xl text-amber-500 dark:text-amber-300">
+            @(isDarkMode ? "light_mode" : "dark_mode")
+        </span>
+    </button>
+}
+else
+{
+    <button aria-label="Toggle Dark Mode"
+            class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-amber-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+            @onclick="ToggleDarkMode">
+        <span class="material-icons-round text-xl">@(isDarkMode ? "light_mode" : "dark_mode")</span>
+    </button>
+}
+
+
+@code {
+    [Parameter] public bool IsMobileMenu { get; set; } = false;
+    private bool isDarkMode;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Sync the C# variable with the actual DOM state
+            isDarkMode = await Theme.IsDarkModeAsync();
+            Theme.OnThemeChanged += HandleThemeChanged;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleDarkMode() => await Theme.ToggleThemeAsync();
+
+    private void HandleThemeChanged()
+    {
+        InvokeAsync(async () =>
+        {
+            isDarkMode = await Theme.IsDarkModeAsync();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose() => Theme.OnThemeChanged -= HandleThemeChanged;
+}

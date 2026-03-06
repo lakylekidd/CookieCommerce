@@ -1,0 +1,432 @@
+﻿@rendermode InteractiveServer
+@using CookieCommerce.Web.Models.Order
+@using CookieCommerce.Web.Services
+@inject IAccountService AccountService
+
+<style>
+    @@keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    .animate-shimmer {
+        background: linear-gradient( 90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 100% );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite linear;
+    }
+
+    /* Dark mode adjustment for the shimmer light */
+    .dark .animate-shimmer {
+        background: linear-gradient( 90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100% );
+        background-size: 200% 100%;
+    }
+</style>
+
+<tr class="cursor-pointer hover:bg-orange-50/30 dark:hover:bg-gray-800/30 transition-all  @(isExpanded ? "bg-orange-50 dark:bg-gray-800" : "")">
+    <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1 border-l-4" : "")">
+        <p class="font-bold text-gray-900 dark:text-white">@OrderListItem.PlacedOn.ToString("MMM dd, yyyy")</p>
+        <p class="text-xs text-gray-400 font-mono">#@OrderListItem.OrderReference</p>
+    </td>
+    <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1" : "")">
+        <div class="flex items-center gap-2">
+            <div class="relative flex-shrink-0 group">
+                <div class="w-7 h-7 flex items-center justify-center relative overflow-hidden">
+                    <span class="material-symbols-outlined text-primary !text-xs z-10">crown</span>
+                    <div class="absolute inset-0 animate-shimmer opacity-20"></div>
+                </div>
+            </div>
+
+            @* Compact Earnings Text *@
+            <div class="flex flex-col justify-center">
+                <p class="font-black text-xs uppercase tracking-tight text-gray-400 dark:text-gray-500 leading-none">Earned</p>
+                <p class="text-[11px] font-black text-gray-900 dark:text-white flex items-center gap-0.5">
+                    <span class="text-secondary">+</span>@OrderListItem.RewardPointsEarned
+                    <span class="text-[8px] text-primary opacity-80">pts</span>
+                </p>
+            </div>
+        </div>
+    </td>
+    <td class="px-6 py-6 @(isExpanded ? "border-primary border-t-1" : "")">
+        <div class="block sm:hidden">
+            <p class="font-bold text-gray-900 dark:text-white">@OrderListItem.PlacedOn.ToString("MMM dd, yyyy")</p>
+            <div class="flex flex-row">
+                <p class="text-xs text-gray-400 font-mono">
+                    #@OrderListItem.OrderReference
+                </p>
+                <p class="text-[11px] font-black text-gray-900 dark:text-white flex items-center ml-1 gap-0.5">
+                    <span class="text-primary">+</span>@OrderListItem.RewardPointsEarned
+                    <span class="text-[8px] text-primary opacity-80">pts</span>
+                </p>
+            </div>
+        </div>
+        <div class="flex -space-x-2">
+            @foreach(var item in OrderListItem.Products.Take(3))
+            {
+                <div class="relative group">
+                    <div class="w-8 h-8 rounded-full border-2 border-primary dark:border-primary bg-orange-100 flex items-center justify-center shadow-md overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+                        <img src="@item.ProductImageUrl"
+                             alt="@item.ProductName"
+                             class="w-full h-full object-cover" />
+                    </div>
+                    <span class="absolute -top-10 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 text-[10px] font-bold text-white whitespace-nowrap z-50 shadow-xl pointer-events-none origin-bottom">
+                        @item.Quantity x @item.ProductName
+                        <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
+                    </span>
+                </div>
+            }
+
+            @if (OrderListItem.Products.Count > 3)
+            {
+                @* Added 'group' to handle the hover state *@
+                <div class="relative group -ml-2">
+                    @* The Badge *@
+                    <div class="w-8 h-8 rounded-full border-2 border-white dark:border-card-dark bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-500 shadow-sm cursor-help">
+                        +@((OrderListItem.Products.Count) - 3)
+                    </div>
+                    <span class="absolute -top-10 left-1/2 -translate-x-1/2 scale-0 
+                        group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 
+                        text-[10px] font-bold text-white whitespace-nowrap z-50 shadow-xl pointer-events-none origin-bottom">
+                        +@((OrderListItem.Products.Count) - 3) more delicious items! 🍪
+                        <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
+                    </span>
+                </div>
+            }
+
+        </div>
+    </td>
+    <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1" : "")">
+        <OrderStatus Status="@OrderListItem.Status" />
+    </td>
+    <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1" : "")">
+        <p class="font-bold">@OrderListItem.CurrencySymbol@OrderListItem.Total.ToString("N2")</p>
+    </td>
+    <td class="px-6 py-6 @(isExpanded ? "border-r-4 border-primary border-t-1" : "")">
+        <div class="flex items-center justify-end gap-3">
+
+            @* Rate & Review Button - Isolated Group *@
+            <div class="relative group">
+                @* The 'group' is now only for this button *@
+                <button type="button" class="cursor-pointer flex items-center justify-center w-10 h-10 bg-white dark:bg-gray-800 border border-primary text-primary hover:bg-primary hover:text-white rounded-full transition-all shadow-sm active:scale-90">
+                    <span class="material-symbols-outlined text-xl">star</span>
+                    @* Tooltip - Now triggers ONLY when the div above is hovered *@
+                    <span class="absolute -top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 text-[11px] text-white whitespace-nowrap z-50 shadow-xl pointer-events-none">
+                        Earn <span class="text-secondary font-black">200 points</span> for rating! 🐯
+                        @* Tiny Triangle Arrow *@
+                        <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
+                    </span>
+                </button>
+            </div>
+
+            @* Repeat Order Button - Isolated Group *@
+            <div class="relative group">
+                @* Separate isolated group *@
+                <button type="button" class="cursor-pointer flex items-center justify-center w-10 h-10 bg-white dark:bg-gray-800 border border-primary text-primary hover:bg-primary hover:text-white rounded-full transition-all shadow-sm active:scale-90">
+                    <span class="material-symbols-outlined text-xl">replay</span>
+                    @* Tooltip *@
+                    <span class="absolute -top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 text-[11px] text-white whitespace-nowrap z-50 shadow-xl pointer-events-none">
+                        Order these again! 🍪
+                        <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
+                    </span>
+                </button>
+            </div>
+
+            @* Expand Order Button - Isolated Group *@
+            @if(isExpanded)
+            {
+                <div class="relative group">
+                    @* Separate isolated group *@
+                    <button @onclick="async () => await ToggleDetailsAsync()" 
+                        type="button" 
+                        class="cursor-pointer flex items-center justify-center w-10 h-10
+                        dark:bg-gray-800 border border-primary text-primary bg-primary 
+                        text-white rounded-full transition-all shadow-sm active:scale-90">
+                        <span class="material-symbols-outlined text-xl">keyboard_arrow_up</span>
+                        @* Tooltip *@
+                        <span class="absolute -top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 text-[11px] text-white whitespace-nowrap z-50 shadow-xl pointer-events-none">
+                            Minimize!
+                            <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
+                        </span>
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="relative group">
+                    @* Separate isolated group *@
+                    <button @onclick="async () => await ToggleDetailsAsync()" 
+                        type="button" 
+                        class="cursor-pointer flex items-center justify-center w-10 h-10 bg-white 
+                        dark:bg-gray-800 border border-primary text-primary hover:bg-primary hover:text-white 
+                        rounded-full transition-all shadow-sm active:scale-90">
+                        <span class="material-symbols-outlined text-xl">keyboard_arrow_down</span>
+                        @* Tooltip *@
+                        <span class="absolute -top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 text-[11px] text-white whitespace-nowrap z-50 shadow-xl pointer-events-none">
+                            Expand!
+                            <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
+                        </span>
+                    </button>
+                </div>
+            }
+
+        </div>
+    </td>
+</tr>
+
+@if (isExpanded)
+{
+    <tr>
+        <td class="p-0 border-primary border-l-4 border-r-4 border-b border-t bg-orange-50/20 dark:bg-gray-800/20" colspan="6">
+            @if(isLoading)
+            {
+                @* Skeleton Loader with Shimmer *@
+                <div class="bg-white dark:bg-card-dark/50 p-8 border-b border-orange-100 dark:border-gray-800">
+                    <div class="flex items-center gap-4 mb-6">
+                        @* Circle Shimmer *@
+                        <div class="relative overflow-hidden w-10 h-10 bg-orange-100 dark:bg-gray-700 rounded-full">
+                            <span class="absolute inset-0 animate-shimmer"></span>
+                        </div>
+                        @* Title Shimmer *@
+                        <div class="relative overflow-hidden h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4">
+                            <span class="absolute inset-0 animate-shimmer"></span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        @for (int i = 0; i < 3; i++)
+                        {
+                            <div class="space-y-3">
+                                @* Label Shimmer *@
+                                <div class="relative overflow-hidden h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2">
+                                    <span class="absolute inset-0 animate-shimmer"></span>
+                                </div>
+                                @* Box Shimmer *@
+                                <div class="relative overflow-hidden h-20 bg-gray-100 dark:bg-gray-800/50 rounded-xl">
+                                    <span class="absolute inset-0 animate-shimmer"></span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                @* The order tracker *@
+                @if(order?.TrackingInformation != null)
+                {
+                    <OrderTracker TrackingInfo="@order.TrackingInformation" />
+                }
+
+                @* The actual displayed order *@
+                <div class="bg-white dark:bg-card-dark/50 p-8 border-b border-orange-100 dark:border-gray-800">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                        <OrderAddress Address="@order?.ShippingAddress" IsBilling="false" />
+                        <OrderAddress Address="@order?.BillingAddress" IsBilling="true" />
+                        <div class="space-y-4">
+                            <h4 class="text-sm font-bold uppercase tracking-wider text-gray-400 text-primary">
+                                Freshness Tracker
+                            </h4>
+                            <div class="flex items-center gap-3 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-100 dark:border-green-800/30">
+                                <span class="material-symbols-outlined text-green-600 dark:text-green-400">timer</span>
+                                <div>
+                                    <p class="text-xs font-bold text-green-700 dark:text-green-400 uppercase">
+                                        Baked fresh
+                                    </p>
+                                    <p class="text-sm text-green-600 dark:text-green-300">
+                                        Oct 24, 2023 at 08:30 AM
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-100 dark:border-gray-700 pt-6">
+                        <h4 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4 text-primary">
+                            Order Items
+                        </h4>
+                        <div class="space-y-3">
+                            @foreach(var item in order?.Products)
+                            {
+                                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                    <div class="flex items-center gap-4 relative group">
+                                        @* Image Container *@
+                                        <div class="relative group">
+                                            @* The Aura: Only shows if it's Limited Edition. It spins and glows! *@
+                                            @if(item.IsLimitedEdition)
+                                            {
+                                                <div class="absolute -inset-1 bg-gradient-to-tr from-primary via-secondary to-primary rounded-full animate-pulse opacity-75 blur-[2px]"></div>
+                                            }
+
+                                            <div class="relative w-12 h-12 rounded-full border-4 border-orange-200 bg-white overflow-hidden shadow-sm">
+                                                <img src="@item?.ProductImageUrl" 
+                                                     alt="@item?.ProductName" 
+                                                     class="w-full h-full object-cover rounded-full" />   
+                                            </div>
+
+                                            @if (item.IsLimitedEdition)
+                                            {
+                                                @* A small, floating badge instead of a clipped corner *@
+                                                <div class="absolute bottom-0 right-0 transform translate-x-1 translate-y-1
+                                                            bg-primary rounded-full w-5 h-5 border-2 border-white shadow-md
+                                                            flex items-center justify-center z-10 pointer-events-none select-none">
+                                                    <span class="material-symbols-outlined !text-[12px] text-white">workspace_premium</span>
+                                                </div>
+                                            }
+
+                                            @* Tiger Cute Tooltip *@
+                                            @if(item.IsLimitedEdition)
+                                            {
+                                                <span class="absolute -top-10 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary px-2 py-1 text-[10px] font-bold text-white whitespace-nowrap z-50 shadow-xl pointer-events-none origin-bottom">
+                                                    Rare Tiger Treat! 🐯
+                                                    <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
+                                                </span>
+                                            }
+                                        </div>
+                                        
+
+                                        <div class="pointer-events-none select-none">
+                                            <p class="font-bold text-primary dark:text-white text-sm">
+                                                @item?.ProductName
+                                            </p>
+                                            <p class="text-[10px] text-gray-500">Qty: @item?.Quantity</p>
+                                        </div>
+                                    </div>
+
+                                    <span class="font-bold text-primary dark:text-white text-sm select-none pointer-events-none select-none">
+                                        @item?.CurrencySymbol@item?.UnitPrice.ToString("N2")
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex flex-col sm:flex-row justify-between items-start gap-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+
+                        @* Left Side: Help Link stays pinned to the left *@
+                        <div class="flex-shrink-0">
+                            <a class="text-primary hover:text-orange-600 text-sm font-bold flex items-center gap-2 transition-colors group"
+                               href="mailto:support@tigervancookie.nl">
+                                <span class="material-symbols-outlined text-xl group-hover:rotate-12 transition-transform">help</span>
+                                Need Help with this Order?
+                            </a>
+                        </div>
+
+                        @* Right Side: Summary Table pinned to the right *@
+                        <div class="w-full sm:w-auto sm:ml-auto select-none cursor-default">
+                            <table class="w-full border-separate border-spacing-y-1.5">
+                                <tbody>
+                                    @* 1. Subtotal *@
+                                    <tr>
+                                        <td class="text-left sm:text-right pr-8 text-gray-400 dark:text-gray-500 text-sm">Subtotal:</td>
+                                        <td class="text-right font-bold text-sm text-primary dark:text-white min-w-[100px]">
+                                            @order?.CurrencySymbol@order?.SubTotalPrice.ToString("N2")
+                                        </td>
+                                    </tr>
+
+                                    @* 2. Shipping *@
+                                    <tr>
+                                        <td class="text-left sm:text-right pr-8 text-gray-400 dark:text-gray-500 text-sm">Shipping:</td>
+                                        <td class="text-right font-bold text-sm text-primary dark:text-white">
+                                            @if (order?.Shipping == 0)
+                                            {
+                                                <span class="text-green-500 text-[10px] font-black uppercase tracking-widest bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">Free</span>
+                                            }
+                                            else
+                                            {
+                                                @($"{order?.CurrencySymbol}{order?.Shipping.ToString("N2")}")
+                                            }
+                                        </td>
+                                    </tr>
+
+                                    @* 3. Tax *@
+                                    <tr>
+                                        <td class="text-left sm:text-right pr-8 text-gray-400 dark:text-gray-500 text-sm">
+                                            Tax <span class="text-[10px] opacity-60 italic">(@(order?.TaxIncluded ?? true ? "Incl." : "Excl."))</span>:
+                                        </td>
+                                        <td class="text-right font-bold text-sm text-primary dark:text-white">
+                                            @order?.CurrencySymbol@order?.Tax.ToString("N2")
+                                        </td>
+                                    </tr>
+
+                                    @* 4. Discount *@
+                                    @if (order?.IsPromoApplied ?? false)
+                                    {
+                                        <tr>
+                                            <td class="text-left sm:text-right pr-8 text-primary font-bold text-sm">
+                                                <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-xs">sell</span> Discount:</span>
+                                            </td>
+                                            <td class="text-right font-bold text-sm text-primary">
+                                                -@order?.CurrencySymbol@order?.GetPromotionDiscount().ToString("N2")
+                                            </td>
+                                        </tr>
+                                    }
+
+                                    @* Divider *@
+                                    <tr>
+                                        <td colspan="2" class="py-1">
+                                            <div class="h-px bg-gray-100 dark:bg-gray-800 w-full"></div>
+                                        </td>
+                                    </tr>
+
+                                    @* 5. Total *@
+                                    <tr>
+                                        <td class="text-left sm:text-right pr-8 text-primary dark:text-white font-black text-lg">Total:</td>
+                                        <td class="text-right text-primary font-black text-2xl">
+                                            @order?.CurrencySymbol@order?.Total.ToString("N2")
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="text-right">
+                                            <a class="text-primary font-bold inline-flex items-center gap-2 group" href="/shop">
+                                                <span class="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform no-underline">download</span>
+                                                <span class="group-hover:underline">Download Invoice</span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            }
+        </td>
+    </tr>
+}
+
+
+@code {
+
+    [Parameter] public OrderListItemDto OrderListItem { get; set; } = default!;
+    [Parameter] public bool OpenOrder { get; set; }
+
+    private OrderDto? order { get; set; }
+
+    private bool isExpanded = false;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (OpenOrder) await ToggleDetailsAsync();
+    }
+
+    private async Task ToggleDetailsAsync()
+    {
+        isExpanded = !isExpanded;
+
+        if (isExpanded)
+        {
+            isLoading = true;
+            await Task.Delay(600);
+            order = await AccountService.GetOrderByIdAsync(OrderListItem.Id);
+            isLoading = false;
+        }
+        else
+        {
+            order = null;
+        }
+    }
+}

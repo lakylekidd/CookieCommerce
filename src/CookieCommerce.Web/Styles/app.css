@@ -14,6 +14,10 @@
     --color-secondary: #FCD34D;
     --color-background-light: #FFFBEB;
     --color-background-dark: #1F1508;
+    --color-card-light: #FFFFFF;
+    --color-card-dark: #2D2A26;
+    --color-accent-light: #FEF3C7;
+    --color-accent-dark: #453825;
     --color-surface-light: #FFFFFF;
     --color-surface-dark: #2D2115;
     --color-text-light: #451a03;
@@ -21,10 +25,8 @@
     --color-brand-orange: #F97316;
     --color-rare-peach: #FFF1E6;
     --color-rare-peach-dark: #3D2B1F;
-    /* Your Custom Fonts */
     --font-display: "Fredoka", sans-serif;
     --font-body: "Nunito", sans-serif;
-    /* Your Custom Border Radius */
     --radius-default: 1rem;
     --radius-xl: 1.5rem;
     --radius-2xl: 2rem;
@@ -44,6 +46,19 @@
             transform: scale(1);
         }
     }
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Fredoka', sans-serif;
 }
 
 /* Layer Base for Global Overrides */

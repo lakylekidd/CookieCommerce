@@ -7,8 +7,12 @@ public class FakeAuthService(ICartService cartService) : IAuthService
     // Static list to keep users in memory during the session
     private static readonly List<UserDto> _users =
     [
-        new UserDto { Email = "tiger@cookie.com", Password = "Password123", FirstName = "Tiger", LastName = "van Cookie" }
+        new UserDto { Email = "tiger@cookie.com", Password = "Password123", FirstName = "Tiger", LastName = "van Cookie" },
+        new UserDto { Email = "hello@tigercookie.com", Password = "123", FirstName = "Cookie", LastName = "Lover" }
     ];
+
+    public event Action OnChange;
+    private void NotifyStateChanged() => OnChange?.Invoke();
 
     public UserDto? CurrentUser { get; private set; }
     public bool IsLoggedIn => CurrentUser != null;
@@ -23,6 +27,7 @@ public class FakeAuthService(ICartService cartService) : IAuthService
         {
             CurrentUser = user;
             await AssignUserToCartAsync();
+            NotifyStateChanged();
             return true;
         }
         return false;
@@ -51,6 +56,7 @@ public class FakeAuthService(ICartService cartService) : IAuthService
     public void Logout()
     {
         CurrentUser = null;
+        NotifyStateChanged();
     }
 
     private async Task AssignUserToCartAsync()

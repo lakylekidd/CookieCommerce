@@ -1,4 +1,5 @@
-﻿@using CookieCommerce.Web.Services
+﻿@using CookieCommerce.Web.Models.Addresses
+@using CookieCommerce.Web.Services
 @inject ILocationService LocationService
 
 <!-- Lookup Criteria -->
@@ -35,44 +36,73 @@
 <!-- Lookup Criteria -->
 
 <!-- Result Address -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="relative">
-        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Street</label>
-        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white"
-               placeholder="Auto-filled street name"
-               @bind:get="StreetName"
-               @bind:set="OnStreetNameChanged" />
+@if(ShowResults)
+{
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+        <div class="relative">
+            <label class="block text-xs font-bold mb-2 text-gray-500 dark:text-amber-100/60 uppercase tracking-tighter px-1">Street</label>
+            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white focus:ring-primary focus:border-primary transition-all"
+                   placeholder="Street name"
+                   @bind:get="StreetName"
+                   @bind:set="OnStreetNameChanged" />
 
-        @if (IsLoadingAddress)
-        {
-            <div class="absolute right-4 top-11">
-                <div class="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full"></div>
-            </div>
-        }
-    </div>
+            @if (IsLoadingAddress)
+            {
+                <div class="absolute right-4 top-10">
+                    <div class="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full"></div>
+                </div>
+            }
+        </div>
 
-    <div>
-        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">City</label>
-        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white"
-               placeholder="Auto-filled city"
-               @bind:get="City"
-               @bind:set="OnCityChanged" />
+        <div>
+            <label class="block text-xs font-bold mb-2 text-gray-500 dark:text-amber-100/60 uppercase tracking-tighter px-1">City</label>
+            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white focus:ring-primary focus:border-primary transition-all"
+                   placeholder="City"
+                   @bind:get="City"
+                   @bind:set="OnCityChanged" 
+                   @bind:event="oninput" />
+        </div>
+
+        <div>
+            <label class="block text-xs font-bold mb-2 text-gray-500 dark:text-amber-100/60 uppercase tracking-tighter px-1">Province</label>
+            <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 bg-gray-100 dark:bg-amber-900/5 dark:text-white focus:ring-primary focus:border-primary transition-all"
+                   placeholder="Province"
+                   @bind:get="Province"
+                   @bind:set="OnProvinceChanged" 
+                   @bind:event="oninput" />
+        </div>
     </div>
-</div>
+}
 <!-- Result Address -->
 
 @code {
+
+    public class AddressUpdateEventArgs
+    {
+        public string HouseNumber { get; set; } = string.Empty;
+        public string? HouseNumberAddition { get; set; }
+        public string Street { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string Province { get; set; } = string.Empty;
+        public string PostalCode { get; set; } = string.Empty;
+    }
+
+    [Parameter] public EventCallback<AddressUpdateEventArgs> OnAddressFound { get; set; }
+
+    [Parameter] public bool ShowResults { get; set; } = true;
     [Parameter] public string PostalCode { get; set; } = string.Empty;
     [Parameter] public string HouseNumber { get; set; } = string.Empty;
     [Parameter] public string HouseNumberAddition { get; set; } = string.Empty;
     [Parameter] public string StreetName { get; set; } = string.Empty;
     [Parameter] public string City { get; set; } = string.Empty;
+    [Parameter] public string Province { get; set; } = string.Empty;
 
     [Parameter] public EventCallback<string> PostalCodeChanged { get; set; }
     [Parameter] public EventCallback<string> HouseNumberChanged { get; set; }
     [Parameter] public EventCallback<string> HouseNumberAdditionChanged { get; set; }
     [Parameter] public EventCallback<string> StreetNameChanged { get; set; }
     [Parameter] public EventCallback<string> CityChanged { get; set; }
+    [Parameter] public EventCallback<string> ProvinceChanged { get; set; }
 
 
     public bool IsLoadingAddress { get; set; } = false;
@@ -107,8 +137,16 @@
         return CityChanged.InvokeAsync(value);
     }
 
+    private Task OnProvinceChanged(string value)
+    {
+        Province = value;
+        return ProvinceChanged.InvokeAsync(value);
+    }
+
     private async Task OnAddressInputChanged()
     {
+        await Task.Delay(300);
+
         // Dutch postcodes are 6 chars (1234AB). We check for at least 6 + a house number.
         if (PostalCode?.Replace(" ", "").Length == 6 && !string.IsNullOrWhiteSpace(HouseNumber))
         {
@@ -119,18 +157,30 @@
     private async Task LookupAddress()
     {
         IsLoadingAddress = true;
+
         try
         {
             var result = await LocationService.LookupDutchAddressAsync(PostalCode, HouseNumber, HouseNumberAddition);
 
             if (result != null)
             {
+                Province = result.Province;
                 StreetName = result.Street;
                 City = result.City;
+                
+
                 if (PostalCode.Length == 6 && !PostalCode.Contains(" "))
                 {
                     PostalCode = PostalCode.Insert(4, " ");
                 }
+
+                await OnAddressFound.InvokeAsync(new AddressUpdateEventArgs
+                {
+                    Street = StreetName,
+                    City = City,
+                    Province = Province,
+                    PostalCode = PostalCode
+                });
             }
         }
         finally

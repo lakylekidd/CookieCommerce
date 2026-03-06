@@ -72,13 +72,34 @@
                     </p>
                 </div>
             </div>
-            <div class="flex justify-center">
-                <div class="polaroid rotate-3 max-w-sm">
-                    <img alt="First Batch" class="w-full h-64 object-cover grayscale-[0.2] mb-4"
-                         src="/images/logo.png" />
-                    <p class="font-display text-xl text-center text-gray-700">The First Batch (2026)</p>
+
+            <div class="flex justify-center py-10">
+                @* The 'polaroid' container *@
+                <div class="bg-white dark:bg-gray-100 border border-gray-200 p-4 pb-8 
+                    shadow-[0_10px_30px_rgba(0,0,0,0.5)] rotate-3 max-w-sm transition-transform 
+                    hover:rotate-0 hover:scale-105 duration-300">
+
+                    @* The Image Frame *@
+                    <div class="bg-gray-200 overflow-hidden relative border border-gray-100">
+                        <img alt="First Batch"
+                             class="w-full h-64 object-cover grayscale-[0.2] contrast-[1.1]"
+                             src="/images/logo.png" />
+
+                        @* Subtle inner shadow to make the photo look "sunken" into the card *@
+                        <div class="absolute inset-0 shadow-[inner_0_0_20px_rgba(0,0,0,0.1)] pointer-events-none"></div>
+                    </div>
+
+                    @* The Caption (Using a handwritten-style font) *@
+                    <p class="font-display text-2xl text-center text-gray-800 tracking-tight"
+                       style="font-family: 'Permanent Marker', cursive, 'Brush Script MT';">
+                        The First Batch (2026)
+                    </p>
                 </div>
+
+                @* Small "Flash" glare effect for realism *@
+                <div class="absolute top-4 left-4 right-4 h-32 bg-gradient-to-br from-white/20 to-transparent pointer-events-none"></div>
             </div>
+
         </div>
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <div class="order-2 lg:order-1 flex justify-center">

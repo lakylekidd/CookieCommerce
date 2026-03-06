@@ -1,0 +1,183 @@
+﻿@page "/account/favorites"
+@rendermode InteractiveServer
+@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Services
+@using CookieCommerce.Web.Services.Products
+@layout AccountLayout
+@inject IAccountService AccountService
+@inject ICartService CartService
+
+<style>
+    @@keyframes tiger-pounce-out {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        20% {
+            transform: scale(1.05);
+        }
+        /* Slight stretch before disappearing */
+        100% {
+            transform: scale(0.3) rotate(5deg);
+            opacity: 0;
+            filter: blur(4px);
+        }
+    }
+
+    .tiger-delete-effect {
+        animation: tiger-pounce-out 0.4s forwards ease-in-out;
+        pointer-events: none; /* Prevent double clicks during animation */
+    }
+    /* Target the span inside our specific button */
+    .tiger-close-btn:hover span {
+        font-variation-settings: 'FILL' 1; /* Makes the paw solid/cute */
+    }
+
+    /* Use the :after pseudo-element to swap the text safely */
+    .tiger-close-btn:hover span {
+        font-size: 0; /* Hide the word "close" */
+    }
+
+        .tiger-close-btn:hover span::after {
+            content: "pets"; /* Show the word "pets" */
+            font-size: 28px; /* Bring the icon back at the right size */
+        }
+
+    .material-symbols-outlined.pets {
+        font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48;
+    }
+</style>
+
+<div class="flex-grow space-y-8">
+    <div class="bg-gradient-to-r from-orange-400 to-amber-500 rounded-xl p-8 text-white shadow-lg relative overflow-hidden flex items-center justify-between">
+        <div class="relative z-10">
+            <h1 class="text-3xl font-display font-bold mb-2">Your Secret Cookie Stash 🐯</h1>
+            <p class="opacity-90 max-w-lg">All your hand-picked favorites in one place. Ready for a restock?</p>
+        </div>
+        <div class="hidden lg:block relative z-10 mr-4">
+            <img alt="Mascot Peek" class="w-24 h-24 object-contain drop-shadow-lg transform rotate-12"
+                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsi3jTr65ZY8H4fnNGgNhYOfX-VxgVW56xrT4XSnPLdYLLBDgKcH0fFJJkbjZdGdRRV7tQEa4qOoH9YfYjFqqiSE1m_CCD0AOavYloSTiEDaOE1eiKsw7ZJaf4gETtAdlEWe15BwGTing5AXYbSaHxMhowD-gqfda7E7-Ctrj6I_luCNgZBikfiYvmsZRfiw2HL0l9pycDVyJiIh2C7C2QM__ffPQAafIrjKqol6sSB8EEj-ROgUmUllVT1_mLwIvBLx94RW2VVw" />
+        </div>
+        <div class="absolute -right-10 -bottom-20 w-64 h-64 bg-white opacity-20 rounded-full blur-2xl"></div>
+        <div class="absolute right-20 -top-10 w-32 h-32 bg-yellow-300 opacity-30 rounded-full blur-xl"></div>
+    </div>
+    
+
+        @if (FavoriteProducts.Count > 0)
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @foreach (var favorite in FavoriteProducts)
+                {
+                    var deletingClass = deletedId == favorite.Id ? "tiger-delete-effect" : "";
+
+                    <div class="relative group/container p-1 bg-[#FEF9E7] border-2 border-dashed border-orange-200 rounded-2xl transition-all @deletingClass">
+
+                        <button @onclick="async () => await RemoveFromFavoritesAsync(favorite.Id)"
+                                class="tiger-close-btn absolute top-4 right-4 z-50 p-1.5 rounded-full bg-white/70 hover:bg-red-500 hover:text-white backdrop-blur-sm transition-all duration-200 shadow-sm active:scale-90 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-xl pointer-events-none">
+                                close
+                            </span>
+                        </button>
+
+                            <CookieCommerce.Web.Components.Features.Products._CookieCard Id="@favorite.Id"
+                                                                                         CookieTitle="@favorite.Title"
+                                                                                         Description="@favorite.Description"
+                                                                                         ImageUrl="@favorite.ImageUrls[0]"
+                                                                                         Price="@favorite.Price"
+                                                                                         CurrencySymbol="@favorite.CurrencySymbol"
+                                                                                         IsFeatured="true" />
+
+                    </div>
+                }
+
+                <div class="relative group p-8 bg-[#FEF9E7] border-4 border-dashed border-orange-200 rounded-3xl overflow-hidden min-h-[160px] flex items-center justify-center transition-all duration-300 hover:border-orange-300 hover:shadow-xl hover:shadow-orange-900/5">
+                    <div class="z-10 relative flex flex-col items-center text-center space-y-1">
+                        <div class="mb-2 w-12 h-12 flex items-center justify-center bg-white rounded-full border border-orange-100 shadow-sm animate-pulse">
+                            <span class="material-symbols-outlined text-orange-500 text-2xl"
+                                  style="font-variation-settings: 'FILL' 1;">
+                                heart_plus
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-black text-[#4A2C2A]">Add more to your pride!</h3>
+                        <p class="text-sm text-gray-500 font-medium max-w-[260px]">
+                            Tigers who share, get a cookie! Tap the heart on any treat to grow your collection.
+                        </p>
+                    </div>
+                </div>
+
+                </div>
+
+            <div class="pt-8 border-t border-orange-100 dark:border-gray-800 flex justify-center">
+                <button @onclick="async () => await RestockFavoritesAsync()" class="bg-secondary hover:bg-black text-white px-10 py-4 rounded-full font-bold shadow-lg flex items-center gap-3 transition-all transform hover:scale-105 active:scale-95">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                    Restock All Favorites
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="relative w-full flex flex-col items-center justify-center p-8 md:p-16 text-center bg-[#FEF9E7] border-2 border-dashed border-orange-200 rounded-[40px] overflow-hidden">
+
+                <div class="absolute -right-16 -bottom-16 opacity-[0.05] pointer-events-none z-0">
+                    <span class="material-symbols-outlined text-[300px] text-orange-900 rotate-[15deg]"
+                          style="font-variation-settings: 'FILL' 1;">pets</span>
+                </div>
+
+                <div class="relative z-10 flex flex-col items-center w-full max-w-2xl">
+                    <div class="relative mb-8">
+                        <div class="w-24 h-24 bg-white rounded-[32px] rotate-3 shadow-xl shadow-orange-900/5 flex items-center justify-center border-4 border-white">
+                            <span class="material-symbols-outlined text-6xl text-gray-200">heart_broken</span>
+                        </div>
+                        <div class="absolute -top-2 -right-2 w-12 h-12 bg-primary rounded-full flex items-center justify-center border-4 border-[#FEF9E7] shadow-lg animate-bounce">
+                            <span class="material-symbols-outlined text-white text-2xl">search</span>
+                        </div>
+                    </div>
+
+                    <h3 class="text-3xl md:text-4xl font-black text-[#4A2C2A] mb-3">Your pride is looking a bit lonely!</h3>
+                    <p class="text-lg text-gray-500 font-medium mb-10 px-4">
+                        You haven't marked any cookies as favorites yet. <br class="hidden md:block" />
+                        Explore our wild flavors and tap the heart to start your collection.
+                    </p>
+
+                    <div class="w-full md:w-auto">
+                        <a href="/shop"
+                           class="group flex items-center justify-center gap-3 px-10 py-5 bg-primary text-white font-black rounded-3xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+                            <span class="uppercase tracking-widest text-sm">Prowl the Shop</span>
+                            <span class="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            </div>
+        }    
+</div>
+
+@code {
+    private ICollection<CookieDto> FavoriteProducts { get; set; } = [];
+    private Guid? deletedId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        FavoriteProducts = await AccountService.GetFavoriteProductsAsync();
+    }
+
+    private async Task RemoveFromFavoritesAsync(Guid productId)
+    {
+        deletedId = productId;
+        await Task.Delay(1000);
+
+        await AccountService.RemoveFromFavoritesAsync(productId);
+        FavoriteProducts = await AccountService.GetFavoriteProductsAsync();
+        StateHasChanged();
+
+        deletedId = null;
+    }
+
+    private async Task RestockFavoritesAsync()
+    {
+        var itemsToRestock = FavoriteProducts.Select(p => (p.Id, 1));
+        await CartService.AddMultipleToCartAsync(itemsToRestock);
+    }
+}

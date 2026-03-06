@@ -1,4 +1,6 @@
 ﻿#nullable disable
+using System.Text.Json.Serialization;
+
 namespace CookieCommerce.Web.Models.Addresses;
 
 public class PdokResponse
@@ -16,5 +18,7 @@ public class PdokResponse
         public string Straatnaam { get; set; }
         public string Woonplaatsnaam { get; set; }
         public string Weergavenaam { get; set; }
+        [JsonPropertyName("provincienaam")]
+        public string Provincenaam { get; set; }
     }
 }

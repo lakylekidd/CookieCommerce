@@ -1,0 +1,108 @@
+﻿@using CookieCommerce.Web.Models.Account
+@using CookieCommerce.Web.Services
+@inject IAccountService AccountService
+@rendermode InteractiveServer
+
+<div class="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+    <div class="flex justify-between items-start mb-6">
+        <h2 class="text-xl font-display font-bold text-gray-800 dark:text-white">Personal Details</h2>
+        <button @onclick="() => IsEditModalOpen = true" class="cursor-pointer text-primary hover:text-orange-600 dark:hover:text-orange-400 text-sm font-semibold">
+            Edit
+        </button>
+    </div>
+    <div class="space-y-4">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-gray-800 flex items-center justify-center text-primary">
+                <span class="material-icons">badge</span>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
+                    Full Name
+                </p>
+                <p class="font-medium">@profile.FirstName @profile.LastName</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-gray-800 flex items-center justify-center text-primary">
+                <span class="material-icons">email</span>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
+                    Email
+                </p>
+                <p class="font-medium">@profile.Email</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-gray-800 flex items-center justify-center text-primary">
+                <span class="material-icons">cake</span>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
+                    Birthdate
+                </p>
+                @if (profile.DateOfBirth.HasValue)
+                {
+                    <p class="font-medium dark:text-white">
+                        @profile.DateOfBirth.Value.ToString("MMM dd, yyyy")
+                    </p>
+                }
+                else
+                {
+                    <button type="button" @onclick="() => IsEditModalOpen = true"
+                            class="group relative flex items-center gap-1.5 cursor-pointer focus:outline-none">
+
+                        <p class="text-sm font-medium text-orange-400 dark:text-orange-300 italic group-hover:text-primary transition-colors">
+                            Missing a birthday cookie?
+                        </p>
+                        <span class="material-icons text-xs text-orange-300 animate-bounce group-hover:text-primary">redeem</span>
+
+                        <span class="absolute -top-12 left-1/2 -translate-x-1/2 scale-0 transition-all duration-200
+                             rounded-lg bg-primary p-2.5 text-white group-hover:scale-100 -top-10 text-xs
+                             whitespace-nowrap shadow-xl z-10 border-b-2 border-primary">
+                            <span class="flex items-center gap-5 p-2">
+                                Tell Tiger your birthday for a special treat! 🐾 🍪
+                            </span>
+                            <span class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-secondary"></span>
+                        </span>
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (IsEditModalOpen)
+{
+    <EditProfileModal OnSave="HandleSave"
+                      OnCancel="CloseModal" />
+}
+
+@code {
+    [Parameter] public bool IsEditModalOpen { get; set; } = false;
+    private UserProfileDto profile = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetProfile();
+    }
+
+    private void CloseModal()
+    {
+        IsEditModalOpen = false;
+    }
+
+    private async Task HandleSave()
+    {
+        await GetProfile();
+        IsEditModalOpen = false;
+    }
+
+    private async Task GetProfile()
+    {
+        if (await AccountService.GetProfileAsync() is { } data)
+        {
+            profile = data;
+        }
+    }
+}

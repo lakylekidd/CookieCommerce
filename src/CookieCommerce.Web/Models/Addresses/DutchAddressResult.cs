@@ -6,4 +6,6 @@ public class DutchAddressResult
     public string HouseNumber { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
     public string PostCode { get; set; } = string.Empty;
+    public string Country { get; set; } = string.Empty;
+    public string Province { get; set; } = string.Empty;
 }

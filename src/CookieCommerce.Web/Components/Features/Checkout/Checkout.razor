@@ -60,8 +60,7 @@
                         <DutchAddressLookup @bind-PostalCode="@ShippingPostalCode"
                                             @bind-HouseNumber="@ShippingHouseNumber"
                                             @bind-HouseNumberAddition="@ShippingHouseNumberAddition"
-                                            @bind-StreetName="@ShippingAddress"
-                                            @bind-City="@ShippingCity" />
+                                            OnAddressFound="HandleShippingAddressUpdate" />
 
                         <div>
                             <label class="flex items-center gap-3 cursor-pointer group">
@@ -85,8 +84,7 @@
                                 <DutchAddressLookup @bind-PostalCode="@BillingPostalCode"
                                                     @bind-HouseNumber="@BillingHouseNumber"
                                                     @bind-HouseNumberAddition="@BillingHouseNumberAddition"
-                                                    @bind-StreetName="@BillingAddress"
-                                                    @bind-City="@BillingCity" />
+                                                    OnAddressFound="HandleBillingAddressUpdate" />
 
                             }
                         
@@ -262,6 +260,7 @@
     private string ShippingAddress { get; set; } = string.Empty;
     private string ShippingCity { get; set; } = string.Empty;
     private string ShippingPostalCode { get; set; } = string.Empty;
+    private string ShippingProvince { get; set; } = string.Empty;
 
     private bool SameAsShipping { get; set; } = true;
 
@@ -273,6 +272,7 @@
     private string BillingAddress { get; set; } = string.Empty;
     private string BillingCity { get; set; } = string.Empty;
     private string BillingPostalCode { get; set; } = string.Empty;
+    private string BillingProvince { get; set; } = string.Empty;
 
     [Inject] public IAuthService Auth { get; private set; }
     [Inject] public NavigationManager Navigation { get; private set; }
@@ -287,7 +287,8 @@
             string.IsNullOrWhiteSpace(ShippingCity) ||
             string.IsNullOrWhiteSpace(ShippingPostalCode) ||
             string.IsNullOrWhiteSpace(ShippingHouseNumber) ||
-            string.IsNullOrWhiteSpace(ShippingHouseNumberAddition))
+            string.IsNullOrWhiteSpace(ShippingHouseNumberAddition) ||
+            string.IsNullOrWhiteSpace(ShippingProvince))
             return true;
 
         if (!SameAsShipping)
@@ -298,7 +299,8 @@
                 string.IsNullOrWhiteSpace(BillingCity) ||
                 string.IsNullOrWhiteSpace(BillingPostalCode) ||
                 string.IsNullOrWhiteSpace(BillingHouseNumber) ||
-                string.IsNullOrWhiteSpace(BillingHouseNumberAddition))
+                string.IsNullOrWhiteSpace(BillingHouseNumberAddition) ||
+                string.IsNullOrWhiteSpace(BillingProvince))
                 return true;
         }
         return false;
@@ -313,6 +315,7 @@
         BillingPostalCode = string.Empty;
         BillingHouseNumber = string.Empty;
         BillingHouseNumberAddition = string.Empty;
+        BillingProvince = string.Empty;
     }
 
     protected override async Task OnInitializedAsync()
@@ -324,5 +327,30 @@
     private void GoToStep(int step)
     {
         currentStep = step;
+    }
+
+    private void HandleShippingAddressUpdate(DutchAddressLookup.AddressUpdateEventArgs e)
+    {
+        ShippingAddress = e.Street;
+        ShippingCity = e.City;
+        ShippingProvince = e.Province;
+        ShippingPostalCode = e.PostalCode;
+        if (SameAsShipping)
+        {
+            BillingAddress = ShippingAddress;
+            BillingCity = ShippingCity;
+            BillingProvince = ShippingProvince;
+            BillingPostalCode = ShippingPostalCode;
+        }
+        StateHasChanged();
+    }
+
+    private void HandleBillingAddressUpdate(DutchAddressLookup.AddressUpdateEventArgs e)
+    {
+        BillingAddress = e.Street;
+        BillingCity = e.City;
+        BillingProvince = e.Province;
+        BillingPostalCode = e.PostalCode;
+        StateHasChanged();
     }
 }

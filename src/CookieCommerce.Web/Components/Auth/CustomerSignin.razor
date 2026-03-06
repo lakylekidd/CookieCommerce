@@ -106,6 +106,7 @@
         {
             // Redirect back to where they came from, or home if empty
             Nav.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/storefront" : ReturnUrl);
+            StateHasChanged();
         }
         else
         {

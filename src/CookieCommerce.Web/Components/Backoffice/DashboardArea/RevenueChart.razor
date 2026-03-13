@@ -1,0 +1,44 @@
+﻿@inject IJSRuntime JS
+
+<div class="lg:col-span-2 bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-orange-50 dark:border-stone-700">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg font-bold font-display text-secondary dark:text-stone-200">
+            Revenue
+            Overview
+        </h3>
+        <select class="bg-stone-50 dark:bg-stone-800 border-none text-sm font-semibold text-stone-600 dark:text-stone-300 rounded-lg focus:ring-2 focus:ring-primary/50 cursor-pointer">
+            <option>This Week</option>
+            <option>This Month</option>
+            <option>This Year</option>
+        </select>
+    </div>
+    <div class="chart-container">
+        <canvas id="revenueChart"></canvas>
+    </div>
+</div>
+
+@code {
+
+    private List<(string Day, decimal Amount)> revenue = new()
+    {
+        ("Mon", 1200),
+        ("Tue", 1900),
+        ("Wed", 1500),
+        ("Thu", 2200),
+        ("Fri", 2800),
+        ("Sat", 3500),
+        ("Sun", 3100)
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Map the Tuples into two simple arrays
+            var labels = revenue.Select(x => x.Day).ToArray();
+            var values = revenue.Select(x => x.Amount).ToArray();
+
+            await JS.InvokeVoidAsync("setupRevenueChart", labels, values);
+        }
+    }
+}

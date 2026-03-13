@@ -1,9 +1,10 @@
-using CookieCommerce.Web.Components;
-using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.DataProtection;
 using CookieCommerce.Web;
-using CookieCommerce.Web.Services.Products;
+using CookieCommerce.Web.Components;
 using CookieCommerce.Web.Services;
+using CookieCommerce.Web.Services.Products;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddScoped<ThemeService>();
+builder.Services.AddScoped<AuthenticationStateProvider, FakeAuthStateProvider>();
 builder.Services.AddScoped<ICookieService, CookieService>();
 builder.Services.AddSingleton<ICartService, MockCartService>();
 builder.Services.AddSingleton<IAuthService, FakeAuthService>();
@@ -34,13 +36,34 @@ builder.Services.AddSingleton<ICheckoutService, FakeCheckoutService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddSingleton<IAccountService, FakeAccountService>();
 
+builder.Services.AddAuthentication(options =>
+{
+    // If you are using OpenIddict/Identity, these usually default to 
+    // IdentityConstants.ApplicationScheme
+    //options.DefaultScheme = "Identity.Application";
+    //options.DefaultSignInScheme = "Identity.Application";
+    options.DefaultScheme = "FakeCookies";
+    options.DefaultChallengeScheme = "FakeCookies";
+})
+//.AddCookie(); // Or .AddIdentityCookies() if using ASP.NET Core Identity
+.AddCookie("FakeCookies", options =>
+{
+    // Tell the app where to send people if they aren't authorized
+    options.LoginPath = "/auth/signin";
+    options.AccessDeniedPath = "/access-denied";
+});
+
+builder.Services.AddAuthorization();
+builder.Services.AddCascadingAuthenticationState();
+
 var app = builder.Build();
 
-// FIRST: Process proxy headers so app knows it's HTTPS
 app.UseForwardedHeaders();
-
 app.MapDefaultEndpoints();
 
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (!app.Environment.IsDevelopment())
 {

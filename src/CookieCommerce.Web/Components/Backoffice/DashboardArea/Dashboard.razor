@@ -1,0 +1,15 @@
+﻿@page "/backoffice/dashboard/"
+@rendermode InteractiveServer
+@layout BackofficeLayout
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <TotalOrders />
+    <TotalRevenue />
+    <NewCustomers />
+    <AverageRating />
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+    <RevenueChart />
+    <TopSellingCookies />
+</div>
+<RecentOrders />

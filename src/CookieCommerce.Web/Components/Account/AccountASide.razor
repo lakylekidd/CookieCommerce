@@ -1,4 +1,9 @@
-﻿<aside class="w-full md:w-64 flex-shrink-0">
+﻿@using CookieCommerce.Web.Services
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+@inject IAuthService Auth
+
+<aside class="w-full md:w-64 flex-shrink-0">
     <nav class="bg-card-light dark:bg-card-dark rounded-xl shadow-sm p-4 space-y-2 sticky top-28">
 
         <NavLink class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all text-gray-600 dark:text-gray-300 hover:bg-accent-light dark:hover:bg-accent-dark hover:text-primary"
@@ -39,14 +44,21 @@
 
         <hr class="border-gray-100 dark:border-gray-700 my-2" />
 
-        <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-medium"
-           href="logout">
+        <button 
+            @onclick="Logout"
+            class="flex items-center cursor-pointer w-full gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-medium">
             <span class="material-icons text-xl">logout</span>
             Logout
-        </a>
+        </button>
     </nav>
 </aside>
 
 @code {
     private int OrderCountInNeedOfAttention = 2;
+
+    public void Logout()
+    {
+        Auth.Logout();
+        Navigation.NavigateTo("/storefront", forceLoad: false);
+    }
 }

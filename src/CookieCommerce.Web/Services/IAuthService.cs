@@ -5,6 +5,7 @@ namespace CookieCommerce.Web.Services;
 public interface IAuthService
 {
     public bool IsLoggedIn { get; }
+    public bool IsAdmin { get; }
     public UserDto? CurrentUser { get; }
     public Task<bool> SignInAsync(string email, string password);
     public Task<AuthResult> SignUpAsync(SignupDto signupForm);

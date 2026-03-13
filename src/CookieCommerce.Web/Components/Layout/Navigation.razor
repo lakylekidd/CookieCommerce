@@ -28,8 +28,8 @@
 
             @if(Auth.IsLoggedIn)
             {
-                <span class="px-6 py-2 text-xs font-bold uppercase opacity-50 sm:hidden">Welcome, @Auth.CurrentUser!.FirstName</span>
-                <button @onclick="Auth.Logout" class="cursor-pointer sm:hidden bg-primary-subtle flex items-center gap-3 px-6 py-4 rounded-2xl text-red-500 hover:bg-red-50">
+                <span class="px-6 py-2 text-xs font-bold uppercase opacity-50">Welcome, @Auth.CurrentUser!.FirstName</span>
+                <button @onclick="Auth.Logout" class="cursor-pointer bg-primary-subtle flex items-center gap-3 px-6 py-4 rounded-2xl text-red-500 hover:bg-red-50">
                     <span class="material-symbols-outlined">logout</span>
                     Sign Out
                 </button>

@@ -6,7 +6,11 @@
             Revenue
             Overview
         </h3>
-        <select class="bg-stone-50 dark:bg-stone-800 border-none text-sm font-semibold text-stone-600 dark:text-stone-300 rounded-lg focus:ring-2 focus:ring-primary/50 cursor-pointer">
+        <select 
+            @bind:get="Period"
+            @bind:set="OnPeriodChanged"
+            @bind:event="oninput"
+            class="bg-stone-50 dark:bg-stone-800 border-none text-sm font-semibold text-stone-600 dark:text-stone-300 rounded-lg focus:ring-2 focus:ring-primary/50 cursor-pointer">
             <option>This Week</option>
             <option>This Month</option>
             <option>This Year</option>
@@ -19,26 +23,28 @@
 
 @code {
 
-    private List<(string Day, decimal Amount)> revenue = new()
-    {
-        ("Mon", 1200),
-        ("Tue", 1900),
-        ("Wed", 1500),
-        ("Thu", 2200),
-        ("Fri", 2800),
-        ("Sat", 3500),
-        ("Sun", 3100)
-    };
+    [Parameter] public string Period { get; set; } = "This Week";
+    [Parameter] public EventCallback<string> PeriodChanged { get; set; }
+    [Parameter] public List<(string Day, decimal Amount)> Revenue { get; set; } = [];
+
+    private List<(string Day, decimal Amount)>? _lastRenderedRevenue;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (_lastRenderedRevenue != Revenue)
         {
-            // Map the Tuples into two simple arrays
-            var labels = revenue.Select(x => x.Day).ToArray();
-            var values = revenue.Select(x => x.Amount).ToArray();
+            _lastRenderedRevenue = Revenue;
+
+            var labels = Revenue.Select(x => x.Day).ToArray();
+            var values = Revenue.Select(x => x.Amount).ToArray();
 
             await JS.InvokeVoidAsync("setupRevenueChart", labels, values);
         }
+    }
+
+    private Task OnPeriodChanged(string value)
+    {
+        Period = value;
+        return PeriodChanged.InvokeAsync(value);
     }
 }

@@ -1,15 +1,36 @@
 ﻿@page "/backoffice/dashboard/"
+@using CookieCommerce.Web.Models.Backoffice
+@using CookieCommerce.Web.Services
 @rendermode InteractiveServer
 @layout BackofficeLayout
+@inject IBackofficeService BackofficeService
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <TotalOrders />
-    <TotalRevenue />
-    <NewCustomers />
-    <AverageRating />
+    <TotalOrders Total="dashboard.TotalOrders" PercentageChange="dashboard.TotalOrdersPercentageChange" />
+    <TotalRevenue Total="dashboard.TotalRevenue" PercentageChange="dashboard.TotalRevenuePercentageChange" />
+    <NewCustomers Total="dashboard.TotalCustomers" PercentageChange="dashboard.TotalCustomersPercentageChange" />
+    <AverageRating Total="dashboard.AverageRating" />
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-    <RevenueChart />
+    <RevenueChart Revenue="dashboard.Revenue" PeriodChanged="OnPeriodChanged" />
     <TopSellingCookies />
 </div>
 <RecentOrders />
+
+@code {
+
+    private string Period { get; set; } = "This Week";
+    private DashboardDto dashboard = new DashboardDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        dashboard = await BackofficeService.GetTotalsAsync(Period);
+    }
+
+    private async Task OnPeriodChanged(string newPeriod)
+    {
+        Period = newPeriod;
+        dashboard = await BackofficeService.GetTotalsAsync(Period);
+        StateHasChanged();
+    }
+}

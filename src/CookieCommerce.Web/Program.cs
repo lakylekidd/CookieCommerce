@@ -34,6 +34,7 @@ builder.Services.AddScoped<IAuthService, FakeAuthService>();
 builder.Services.AddSingleton<IContentService, FakeContentService>();
 builder.Services.AddSingleton<ICheckoutService, FakeCheckoutService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<IBackofficeService, FakeBackofficeService>();
 builder.Services.AddSingleton<IAccountService, FakeAccountService>();
 
 builder.Services.AddAuthentication(options =>

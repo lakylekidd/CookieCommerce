@@ -8,5 +8,10 @@
         </span>
     </div>
     <h3 class="text-stone-500 dark:text-stone-400 text-sm font-semibold mb-1">New Customers</h3>
-    <p class="text-3xl font-display font-bold text-primary dark:text-white">384</p>
+    <p class="text-3xl font-display font-bold text-primary dark:text-white">@Total</p>
 </div>
+
+@code {
+    [Parameter] public int Total { get; set; }
+    [Parameter] public decimal PercentageChange { get; set; }
+}

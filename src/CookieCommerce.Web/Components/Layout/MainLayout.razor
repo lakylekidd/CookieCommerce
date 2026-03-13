@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using CookieCommerce.Web.Services
+@inherits LayoutComponentBase
+@inject IAuthService Auth
 @inject IJSRuntime JS
 
 <HeadContent>
@@ -56,6 +58,13 @@
 @code {
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            await Auth.InitializeAsync();
+            // Tell Blazor to re-check the [Authorize] attributes now that we found the user
+            StateHasChanged();
+        }
+
         // Every time we render (including after navigation),
         // we tell JS to double-check the theme classes.
         await JS.InvokeVoidAsync("applyTheme");

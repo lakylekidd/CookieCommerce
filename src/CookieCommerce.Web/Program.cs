@@ -30,7 +30,7 @@ builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<AuthenticationStateProvider, FakeAuthStateProvider>();
 builder.Services.AddScoped<ICookieService, CookieService>();
 builder.Services.AddSingleton<ICartService, MockCartService>();
-builder.Services.AddSingleton<IAuthService, FakeAuthService>();
+builder.Services.AddScoped<IAuthService, FakeAuthService>();
 builder.Services.AddSingleton<IContentService, FakeContentService>();
 builder.Services.AddSingleton<ICheckoutService, FakeCheckoutService>();
 builder.Services.AddScoped<ILocationService, LocationService>();

@@ -1,8 +1,9 @@
 ﻿using CookieCommerce.Web.Models.Auth;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace CookieCommerce.Web.Services;
 
-public class FakeAuthService(ICartService cartService) : IAuthService
+public class FakeAuthService(ICartService cartService, ProtectedLocalStorage localStorage) : IAuthService
 {
     // Static list to keep users in memory during the session
     private static readonly List<UserDto> _users =
@@ -18,6 +19,17 @@ public class FakeAuthService(ICartService cartService) : IAuthService
     public bool IsLoggedIn => CurrentUser != null;
     public bool IsAdmin => CurrentUser?.Role == "Admin";
 
+    public async Task InitializeAsync()
+    {
+        // Look for the "Identity" in the browser's pocket
+        var result = await localStorage.GetAsync<string>("user_email");
+        if (result.Success && result.Value != null)
+        {
+            CurrentUser = _users.FirstOrDefault(u => u.Email == result.Value);
+            NotifyStateChanged();
+        }
+    }
+
     public async Task<bool> SignInAsync(string email, string password)
     {
         var user = _users.FirstOrDefault(u =>
@@ -27,6 +39,7 @@ public class FakeAuthService(ICartService cartService) : IAuthService
         if (user != null)
         {
             CurrentUser = user;
+            await localStorage.SetAsync("user_email", user.Email);
             await AssignUserToCartAsync();
             NotifyStateChanged();
             return true;
@@ -57,6 +70,7 @@ public class FakeAuthService(ICartService cartService) : IAuthService
     public void Logout()
     {
         CurrentUser = null;
+        localStorage.DeleteAsync("user_email");
         NotifyStateChanged();
     }
 

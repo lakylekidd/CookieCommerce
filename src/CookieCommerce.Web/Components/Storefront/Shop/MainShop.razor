@@ -2,6 +2,7 @@
 @layout ShopLayout
 
 @using CookieCommerce.Web.Components.Shared
+@using CookieCommerce.Web.Components.Storefront.Products
 @using CookieCommerce.Web.Services.Products
 @using CookieCommerce.Web.Models.Products
 @inject ICookieService CookieService
@@ -27,18 +28,6 @@
                 timeless classics to rare limited editions.
             </p>
         </div>
-        @* <div class="flex items-center gap-4">
-            <button class="bg-white dark:bg-surface-dark border border-amber-100 dark:border-amber-900/30 px-6 py-2 rounded-full font-bold flex items-center gap-2 hover:bg-amber-50 transition-colors shadow-sm">
-                <span class="material-symbols-outlined text-xl">tune</span>
-                Filter
-            </button>
-            <div class="relative group">
-                <button class="bg-white dark:bg-surface-dark border border-amber-100 dark:border-amber-900/30 px-6 py-2 rounded-full font-bold flex items-center gap-2 hover:bg-amber-50 transition-colors shadow-sm">
-                    Sort: Popular
-                    <span class="material-symbols-outlined text-xl">expand_more</span>
-                </button>
-            </div>
-        </div> *@
     </div>
 </header>
 
@@ -46,7 +35,7 @@
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         @foreach (var cookie in favoriteCookies)
         {
-            <CookieCommerce.Web.Components.Features.Products._CookieCard 
+            <CookieCard 
                 Id="@cookie.Id"    
                 ImageUrl="@cookie.ImageUrls[0]"
                 CookieTitle="@cookie.Title"

@@ -1,5 +1,6 @@
 ﻿@page "/storefront"
-@using CookieCommerce.Web.Components.Features.Shop
+@using CookieCommerce.Web.Components.Storefront.Products
+@using CookieCommerce.Web.Components.Storefront.Shop
 @layout ShopLayout
 @using CookieCommerce.Web.Services.Products
 @using CookieCommerce.Web.Models.Products
@@ -69,7 +70,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             @foreach (var cookie in featuredCookies)
             {
-                <CookieCommerce.Web.Components.Features.Products._CookieCard 
+                <CookieCard 
                     Id="@cookie.Id"    
                     ImageUrl="@cookie.ImageUrls[0]"
                     CookieTitle="@cookie.Title"

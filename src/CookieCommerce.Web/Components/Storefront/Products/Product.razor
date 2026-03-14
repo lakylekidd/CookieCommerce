@@ -1,7 +1,9 @@
 ﻿@page "/shop/cookie/{id:guid}"
 @layout ShopLayout
 @rendermode InteractiveServer
-@using CookieCommerce.Web.Components.Features.Shop
+@using CookieCommerce.Web.Components.Shared
+@using CookieCommerce.Web.Components.Storefront.Reviews
+@using CookieCommerce.Web.Components.Storefront.Shop
 @using CookieCommerce.Web.Services
 @using CookieCommerce.Web.Services.Products
 @using CookieCommerce.Web.Models.Products
@@ -20,7 +22,7 @@ else
     <main class="relative min-h-screen pt-8 pb-12">
         <div class="absolute inset-0 pattern-bg pointer-events-none"></div>
         <div class="container mx-auto px-6 relative z-10">
-            <CookieCommerce.Web.Components.Shared._Breadcrumbs />
+            <Breadcrumbs />
             <div class="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
                 <div class="w-full lg:w-1/2">
                     <div class="relative group">
@@ -150,9 +152,9 @@ else
         </div>
     </main>
 
-    <CookieCommerce.Web.Components.Features.Reviews.ProductReviews Id="@_cookie.Id" />
+    <ProductReviews Id="@_cookie.Id" />
 
-    <CookieCommerce.Web.Components.Layout.SmallerFooter />
+    <SmallerFooter />
 }
 
 @code {

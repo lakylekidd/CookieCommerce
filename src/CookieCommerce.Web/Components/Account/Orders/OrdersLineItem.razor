@@ -241,6 +241,7 @@
                         <div class="space-y-3">
                             @foreach(var item in order?.Products)
                             {
+                                if (item == null) continue;
                                 <div class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                     <div class="flex items-center gap-4 relative group">
                                         @* Image Container *@
@@ -257,7 +258,7 @@
                                                      class="w-full h-full object-cover rounded-full" />   
                                             </div>
 
-                                            @if (item.IsLimitedEdition)
+                                            @if (item?.IsLimitedEdition ?? false)
                                             {
                                                 @* A small, floating badge instead of a clipped corner *@
                                                 <div class="absolute bottom-0 right-0 transform translate-x-1 translate-y-1
@@ -268,7 +269,7 @@
                                             }
 
                                             @* Tiger Cute Tooltip *@
-                                            @if(item.IsLimitedEdition)
+                                            @if(item?.IsLimitedEdition ?? false)
                                             {
                                                 <span class="absolute -top-10 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary px-2 py-1 text-[10px] font-bold text-white whitespace-nowrap z-50 shadow-xl pointer-events-none origin-bottom">
                                                     Rare Tiger Treat! 🐯

@@ -1,5 +1,6 @@
 ﻿@page "/account/favorites"
 @rendermode InteractiveServer
+@using CookieCommerce.Web.Components.Storefront.Products
 @using CookieCommerce.Web.Models.Products
 @using CookieCommerce.Web.Services
 @using CookieCommerce.Web.Services.Products
@@ -80,13 +81,13 @@
                             </span>
                         </button>
 
-                            <CookieCommerce.Web.Components.Features.Products._CookieCard Id="@favorite.Id"
-                                                                                         CookieTitle="@favorite.Title"
-                                                                                         Description="@favorite.Description"
-                                                                                         ImageUrl="@favorite.ImageUrls[0]"
-                                                                                         Price="@favorite.Price"
-                                                                                         CurrencySymbol="@favorite.CurrencySymbol"
-                                                                                         IsFeatured="true" />
+                            <CookieCard Id="@favorite.Id"
+                                        CookieTitle="@favorite.Title"
+                                        Description="@favorite.Description"
+                                        ImageUrl="@favorite.ImageUrls[0]"
+                                        Price="@favorite.Price"
+                                        CurrencySymbol="@favorite.CurrencySymbol"
+                                        IsFeatured="true" />
 
                     </div>
                 }

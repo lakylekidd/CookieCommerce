@@ -6,9 +6,34 @@
 @layout BackofficeLayout
 @inject IBackofficeService BackofficeService
 
-<QuotaOrdersTable 
-    Orders="quotaDateOrders.Orders"
-    IsLoading="isLoadingTodaysQuotaOrders" />
+<style>
+    @@keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    .animate-skeleton {
+        background: linear-gradient(90deg, rgba(251, 191, 36, 0.05) 25%, rgba(251, 191, 36, 0.15) 50%, rgba(251, 191, 36, 0.05) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 2s infinite linear;
+    }
+</style>
+
+<div class="grid grid-cols-12 gap-6 mb-8 items-start">
+    <div class="col-span-12 lg:col-span-4 xl:col-span-3">
+        <QuotaCookiesRequired IsLoading="isLoadingTodaysQuotaOrders"
+                              QuotaItems="quotaDateOrders.Items" />
+    </div>
+    <div class="col-span-12 lg:col-span-8 xl:col-span-9">
+        <QuotaOrdersTable Orders="quotaDateOrders.Orders"
+                          IsLoading="isLoadingTodaysQuotaOrders" />
+    </div>
+</div>
 
 @code {
 

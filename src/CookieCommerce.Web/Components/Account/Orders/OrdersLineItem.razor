@@ -1,4 +1,5 @@
 ﻿@rendermode InteractiveServer
+@using CookieCommerce.Web.Components.Shared.OrderComponents
 @using CookieCommerce.Web.Components.Shared.ProductComponents
 @using CookieCommerce.Web.Models.Order
 @using CookieCommerce.Web.Services
@@ -30,8 +31,9 @@
 
 <tr class="cursor-pointer hover:bg-orange-50/30 dark:hover:bg-gray-800/30 transition-all  @(isExpanded ? "bg-orange-50 dark:bg-gray-800" : "")">
     <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1 border-l-4" : "")">
-        <p class="font-bold text-gray-900 dark:text-white">@OrderListItem.PlacedOn.ToString("MMM dd, yyyy")</p>
-        <p class="text-xs text-gray-400 font-mono">#@OrderListItem.OrderReference</p>
+        <OrderDateAndReference 
+            OrderReference="@OrderListItem.OrderReference" 
+            PlacedOn="@OrderListItem.PlacedOn" />
     </td>
     <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1" : "")">
         <div class="flex items-center gap-2">

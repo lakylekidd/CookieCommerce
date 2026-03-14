@@ -1,0 +1,47 @@
+﻿@using CookieCommerce.Web.Components.Account.Orders
+@using CookieCommerce.Web.Components.Shared.OrderComponents
+@using CookieCommerce.Web.Components.Shared.ProductComponents
+@using CookieCommerce.Web.Models.Order
+@rendermode InteractiveServer
+
+<tr class="cursor-pointer hover:bg-orange-50/30 dark:hover:bg-gray-800/30 transition-all">
+    <td class="px-6 py-6 hidden sm:table-cell">
+        <OrderDateAndReference 
+            OrderReference="@Order.OrderReference" 
+            PlacedOn="@Order.PlacedOn" />
+    </td>
+    <td>
+        <OrderCustomer AddressInformation="@Order.Address" />
+    </td>
+    <td class="">
+        <div class="flex -space-x-2">
+            @foreach (var item in Order.Items)
+            {
+                <div class="relative group flex items-center">
+                    <SmallCookieImage ImageUrl="@item.ProductImageUrl"
+                                      Name="@item.ProductName" />
+                    <span class="absolute -top-10 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 text-[10px] font-bold text-white whitespace-nowrap z-50 shadow-xl pointer-events-none origin-bottom">
+                        @item.Quantity x @item.ProductName
+                        <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
+                    </span>
+                </div>
+            }
+        </div>        
+    </td>
+    <td>
+        <OrderStatus Status="@Order.Status" />
+    </td>
+    <td>
+        <p class="font-bold">@Order.CurrencySymbol@Order.Total.ToString("N2")</p>
+    </td>
+    <td>
+        <Handler 
+            Icon="@Order.ShippingInformation.Icon" 
+            Name="@Order.ShippingInformation.Carrier" />
+    </td>
+    <td></td>
+</tr>
+
+@code {
+    [Parameter] public QuotaOrderDto Order { get; set; } = new();
+}

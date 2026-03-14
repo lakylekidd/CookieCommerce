@@ -1,6 +1,29 @@
 ﻿@page "/backoffice/orders/"
 @using CookieCommerce.Web.Models.Backoffice
+@using CookieCommerce.Web.Models.Order
 @using CookieCommerce.Web.Services
 @rendermode InteractiveServer
 @layout BackofficeLayout
 @inject IBackofficeService BackofficeService
+
+<QuotaOrdersTable 
+    Orders="quotaDateOrders.Orders"
+    IsLoading="isLoadingTodaysQuotaOrders" />
+
+@code {
+
+    private QuotaDateOrdersDto quotaDateOrders = new();
+    private bool isLoadingTodaysQuotaOrders = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTodaysQuotaOrders();
+    }
+
+    public async Task LoadTodaysQuotaOrders()
+    {
+        isLoadingTodaysQuotaOrders = true;
+        quotaDateOrders = await BackofficeService.GetQuotaDateOrdersAsync(DateTime.Now.Date);
+        isLoadingTodaysQuotaOrders = false;
+    }
+}

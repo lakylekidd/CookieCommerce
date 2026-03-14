@@ -1,0 +1,7 @@
+﻿<p class="font-bold text-gray-900 dark:text-white">@PlacedOn.ToString("MMM dd, yyyy")</p>
+<p class="text-xs text-gray-400 font-mono">#@OrderReference</p>
+
+@code {
+    [Parameter] public DateTime PlacedOn { get; set; }
+    [Parameter] public string OrderReference { get; set; } = string.Empty;
+}

@@ -1,0 +1,63 @@
+﻿@using CookieCommerce.Web.Models.Order
+@rendermode InteractiveServer
+
+<div class="relative bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden min-h-[400px]">
+    <div class="@(IsLoading ? "opacity-20 pointer-events-none" : "opacity-100") transition-opacity duration-500">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-400 text-xs uppercase tracking-widest font-bold">
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Ordered On</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Customer</th>
+                        <th class="p-6 py-4 font-bold">Items</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Status</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Total</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Handler</th>
+                        <th class="p-6 py-4 font-bold"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    @if(IsLoading)
+                    {
+                        
+                    }
+                    else
+                    {
+                        foreach(var item in Orders)
+                        {
+                            <QuotaOrderTableItem Order="item" />
+                        }
+                    }
+                </tbody>
+                </table>
+            </div>
+        </div>
+</div>
+
+@code  {
+    [Parameter] public ICollection<QuotaOrderDto> Orders { get; set; } = [];
+    [Parameter] public bool IsLoading { get; set; } = true;
+
+    private int ordersCount => Orders.Count;
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalOrders = 0;
+
+    private async Task NextPage() => await GoToPage(currentPage + 1);
+    private async Task PreviousPage() => await GoToPage(currentPage - 1);
+
+    private async Task LoadOrders()
+    {
+        IsLoading = true;
+
+        StateHasChanged();
+        // Simulate loading time
+        await Task.Delay(1000);
+    }
+
+    private async Task GoToPage(int page)
+    {
+        currentPage = page;
+        await LoadOrders();
+    }
+}

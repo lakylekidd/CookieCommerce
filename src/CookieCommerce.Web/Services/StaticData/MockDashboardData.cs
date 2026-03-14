@@ -1,4 +1,6 @@
 ﻿using CookieCommerce.Web.Models.Backoffice;
+using CookieCommerce.Web.Services.Products;
+using System;
 
 namespace CookieCommerce.Web.Services.StaticData;
 
@@ -67,9 +69,31 @@ public static class MockDashboardData
         TopSellingCookies = GetTopCookies()
     };
 
-    private static List<CookieRankDto> GetTopCookies() => [
-        new() { Name = "Tiger Triple Choc", SalesCount = 450, Revenue = 1350m },
-        new() { Name = "Amber Salted Caramel", SalesCount = 380, Revenue = 1140m },
-        new() { Name = "Classic Jungle Oat", SalesCount = 210, Revenue = 525m }
-    ];
+    private static List<CookieRankDto> GetTopCookies()
+    {
+        var cookies = StaticCookieList.Cookies.Take(4).ToList();
+
+        var random = new Random();
+        var cookieData = cookies.Select((cookie, index) => new
+        {
+            cookie.Title,
+            cookie.ImageUrl,
+            // Generate a random number between 100 and 1000
+            Sales = random.Next(100, 1000),
+            // Revenue is Sales * a random price between 2.50 and 5.00
+            Rev = (decimal)(random.Next(100, 1000) * (random.NextDouble() * (5.0 - 2.5) + 2.5))
+        }).ToList();
+
+        return cookieData
+            .OrderByDescending(c => c.Sales)
+            .Select((c, index) => new CookieRankDto
+            {
+                Rank = index + 1,
+                Name = c.Title,
+                ImageUrl = c.ImageUrl,
+                SalesCount = c.Sales,
+                Revenue = Math.Round(c.Rev, 2)
+            })
+            .ToList();
+    }
 }

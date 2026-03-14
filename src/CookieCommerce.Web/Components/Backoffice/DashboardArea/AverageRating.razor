@@ -4,7 +4,14 @@
             <span class="material-icons-round text-yellow-600 text-xl">star</span>
         </div>
         <span class="flex items-center text-xs font-bold text-stone-500 bg-stone-100 dark:bg-stone-800 px-2 py-1 rounded-lg">
-            @Total <span class="material-icons-round text-sm ml-1 text-yellow-500">star</span>
+            @if (IsLoading)
+            {
+                <div class="h-9 w-24 animate-skeleton rounded-xl mt-1"></div>
+            }
+            else
+            {
+                @Total <span class="material-icons-round text-sm ml-1 text-yellow-500">star</span>
+            }
         </span>
     </div>
     <h3 class="text-stone-500 dark:text-stone-400 text-sm font-semibold mb-1">Avg Rating</h3>
@@ -12,5 +19,6 @@
 </div>
 
 @code {
+    [Parameter] public bool IsLoading { get; set; }
     [Parameter] public double Total { get; set; }
 }

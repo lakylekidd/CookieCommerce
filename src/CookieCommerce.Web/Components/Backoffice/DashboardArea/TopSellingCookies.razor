@@ -1,60 +1,63 @@
-﻿<div class="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-orange-50 dark:border-stone-700">
+﻿@using CookieCommerce.Web.Models.Backoffice
+@using System.Globalization
+
+<div class="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-orange-50 dark:border-stone-700">
     <h3 class="text-lg font-bold font-display text-secondary dark:text-stone-200 mb-6">
-        Top Selling
-        Cookies
+        Top Selling Cookies
     </h3>
     <div class="space-y-4">
-        <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
-            <div class="w-12 h-12 bg-accent/20 rounded-xl flex items-center justify-center text-xl">
-                🍪
-            </div>
-            <div class="flex-1">
-                <h4 class="font-bold text-stone-700 dark:text-stone-200 text-sm">
-                    Choco Chunk Supreme
-                </h4>
-                <p class="text-xs text-stone-500">450 sales</p>
-            </div>
-            <span class="font-bold text-primary">$2,450</span>
-        </div>
-        <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
-            <div class="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-xl flex items-center justify-center text-xl">
-                🍓
-            </div>
-            <div class="flex-1">
-                <h4 class="font-bold text-stone-700 dark:text-stone-200 text-sm">
-                    Strawberry
-                    Shortcake
-                </h4>
-                <p class="text-xs text-stone-500">320 sales</p>
-            </div>
-            <span class="font-bold text-primary">$1,890</span>
-        </div>
-        <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
-            <div class="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center text-xl">
-                🍵
-            </div>
-            <div class="flex-1">
-                <h4 class="font-bold text-stone-700 dark:text-stone-200 text-sm">
-                    Matcha Macadamia
-                </h4>
-                <p class="text-xs text-stone-500">210 sales</p>
-            </div>
-            <span class="font-bold text-primary">$1,240</span>
-        </div>
-        <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
-            <div class="w-12 h-12 bg-stone-200 dark:bg-stone-700 rounded-xl flex items-center justify-center text-xl">
-                🥜
-            </div>
-            <div class="flex-1">
-                <h4 class="font-bold text-stone-700 dark:text-stone-200 text-sm">
-                    Peanut Butter Blast
-                </h4>
-                <p class="text-xs text-stone-500">180 sales</p>
-            </div>
-            <span class="font-bold text-primary">$980</span>
-        </div>
+        @if (IsLoading)
+        {
+            @* Render 3 skeleton rows while loading *@
+            @for (int i = 0; i < 3; i++)
+            {
+                <div class="flex items-center gap-4 p-3">
+                    @* Image Skeleton *@
+                    <div class="w-8 h-8 rounded-full animate-skeleton shadow-sm"></div>
+
+                    @* Name and Sales Skeleton *@
+                    <div class="flex-1 space-y-2">
+                        <div class="h-4 w-24 animate-skeleton rounded-md"></div>
+                        <div class="h-3 w-12 animate-skeleton rounded-md"></div>
+                    </div>
+
+                    @* Revenue Skeleton *@
+                    <div class="h-4 w-16 animate-skeleton rounded-md"></div>
+                </div>
+            }
+        }
+        else
+        {
+            @foreach (var cookie in Cookies.OrderBy(x => x.Rank))
+            {
+                <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
+                    <div class="relative group">
+                        <div class="w-8 h-8 rounded-full border-2 border-primary bg-orange-100 flex items-center justify-center shadow-md overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+                            <img src="@cookie.ImageUrl"
+                                 alt="@cookie.Name"
+                                 class="w-full h-full object-cover" />
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-stone-700 dark:text-stone-200 text-sm">
+                            @cookie.Name
+                        </h4>
+                        <p class="text-xs text-stone-500">@cookie.SalesCount sales</p>
+                    </div>
+                    <span class="font-bold text-primary">
+                        €@cookie.Revenue.ToString("N2", CultureInfo.GetCultureInfo("nl-NL"))
+                    </span>
+                </div>
+            }
+        }
     </div>
+
     <button class="w-full mt-6 py-3 text-sm font-bold text-primary border border-primary/30 rounded-xl hover:bg-primary hover:text-white transition-colors">
         View All Products
     </button>
 </div>
+
+@code {
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public List<CookieRankDto> Cookies { get; set; } = [];
+}

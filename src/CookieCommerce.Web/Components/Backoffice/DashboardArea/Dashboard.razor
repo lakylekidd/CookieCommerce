@@ -5,32 +5,71 @@
 @layout BackofficeLayout
 @inject IBackofficeService BackofficeService
 
+<style>
+    @@keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+    .animate-skeleton {
+        background: linear-gradient(90deg, rgba(251, 191, 36, 0.05) 25%, rgba(251, 191, 36, 0.15) 50%, rgba(251, 191, 36, 0.05) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 2s infinite linear;
+    }
+</style>
+
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <TotalOrders Total="dashboard.TotalOrders" PercentageChange="dashboard.TotalOrdersPercentageChange" />
-    <TotalRevenue Total="dashboard.TotalRevenue" PercentageChange="dashboard.TotalRevenuePercentageChange" />
-    <NewCustomers Total="dashboard.TotalCustomers" PercentageChange="dashboard.TotalCustomersPercentageChange" />
-    <AverageRating Total="dashboard.AverageRating" />
+    <TotalOrders 
+        IsLoading="isLoading"
+        Total="dashboard.TotalOrders" 
+        PercentageChange="dashboard.TotalOrdersPercentageChange" />
+    <TotalRevenue 
+        IsLoading="isLoading"
+        Total="dashboard.TotalRevenue" 
+        PercentageChange="dashboard.TotalRevenuePercentageChange" />
+    <NewCustomers 
+        IsLoading="isLoading"
+        Total="dashboard.TotalCustomers" 
+        PercentageChange="dashboard.TotalCustomersPercentageChange" />
+    <AverageRating IsLoading="isLoading"
+        Total="dashboard.AverageRating" />
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-    <RevenueChart Revenue="dashboard.Revenue" PeriodChanged="OnPeriodChanged" />
-    <TopSellingCookies />
+    <RevenueChart 
+        IsLoading="isLoading"
+        Revenue="dashboard.Revenue" 
+        PeriodChanged="OnPeriodChanged" />
+    <TopSellingCookies
+        IsLoading="isLoading"
+        Cookies="dashboard.TopSellingCookies"/>
 </div>
-<RecentOrders />
+
 
 @code {
 
     private string Period { get; set; } = "This Week";
     private DashboardDto dashboard = new DashboardDto();
+    private bool isLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
-        dashboard = await BackofficeService.GetTotalsAsync(Period);
+        await RefreshData();
     }
 
     private async Task OnPeriodChanged(string newPeriod)
     {
         Period = newPeriod;
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+        isLoading = true;
         dashboard = await BackofficeService.GetTotalsAsync(Period);
-        StateHasChanged();
+        isLoading = false;
     }
 }

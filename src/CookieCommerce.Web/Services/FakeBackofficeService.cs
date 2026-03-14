@@ -5,9 +5,10 @@ namespace CookieCommerce.Web.Services;
 
 public class FakeBackofficeService : IBackofficeService
 {
-    public Task<DashboardDto> GetTotalsAsync(string period)
+    public async Task<DashboardDto> GetTotalsAsync(string period)
     {
+        await Task.Delay(800);
         var dashboard = MockDashboardData.GetDashboardByPeriod(period);
-        return Task.FromResult(dashboard);
+        return dashboard;
     }
 }

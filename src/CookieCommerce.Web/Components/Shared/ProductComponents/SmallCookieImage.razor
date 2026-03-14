@@ -1,0 +1,12 @@
+﻿<div class="relative group">
+    <div class="w-8 h-8 rounded-full border-2 border-primary bg-orange-100 flex items-center justify-center shadow-md overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+        <img src="@ImageUrl"
+             alt="@Name"
+             class="w-full h-full object-cover" />
+    </div>
+</div>
+
+@code {
+    [Parameter] public string ImageUrl { get; set; } = default!;
+    [Parameter] public string Name { get; set; } = default!;
+}

@@ -1,4 +1,5 @@
-﻿@using CookieCommerce.Web.Models.Backoffice
+﻿@using CookieCommerce.Web.Components.Shared.ProductComponents
+@using CookieCommerce.Web.Models.Backoffice
 @using System.Globalization
 
 <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-orange-50 dark:border-stone-700">
@@ -31,13 +32,7 @@
             @foreach (var cookie in Cookies.OrderBy(x => x.Rank))
             {
                 <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
-                    <div class="relative group">
-                        <div class="w-8 h-8 rounded-full border-2 border-primary bg-orange-100 flex items-center justify-center shadow-md overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
-                            <img src="@cookie.ImageUrl"
-                                 alt="@cookie.Name"
-                                 class="w-full h-full object-cover" />
-                        </div>
-                    </div>
+                    <SmallCookieImage ImageUrl="@cookie.ImageUrl" Name="@cookie.Name" />
                     <div class="flex-1">
                         <h4 class="font-bold text-stone-700 dark:text-stone-200 text-sm">
                             @cookie.Name

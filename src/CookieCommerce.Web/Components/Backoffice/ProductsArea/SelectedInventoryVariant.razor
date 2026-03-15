@@ -1,0 +1,121 @@
+﻿@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Services
+@inject IBackofficeService BackofficeService
+
+<tr class="group hover:bg-stone-50/50 dark:hover:bg-white/5 transition-colors">
+    @* 1. Variant Name *@
+    <td class="py-4 px-2">
+        <div class="relative group/name flex items-center">
+            <input type="text"
+                   @bind="Variant.Name"
+                   @bind:event="oninput"
+                   @onblur="HandleUpdateName"
+                   @onkeydown="HandleKeyDown"
+                   disabled="@isSaving"
+                   class="w-full bg-transparent px-2 py-1 rounded-lg text-sm font-bold
+                      @(isSaving ? "text-stone-400" : "text-stone-700 dark:text-stone-200")
+                      border border-transparent
+                      hover:bg-stone-50 dark:hover:bg-stone-800/50 hover:border-stone-200
+                      focus:bg-white dark:focus:bg-stone-800 focus:border-primary focus:ring-4 focus:ring-primary/10
+                      transition-all outline-none" />
+
+            @* Tiger-Cute Loading Spinner *@
+            <div class="absolute right-2 flex items-center">
+                @if (isSaving)
+                {
+                    <div class="animate-spin size-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                }
+                else
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-stone-300 opacity-0 group-hover/name:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                }
+            </div>
+        </div>
+    </td>
+
+    @* 2. Editable Price *@
+    <td class="py-4 px-2">
+        <div class="relative w-24">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-primary text-s">@Variant.CurrencySymbol</span>
+            <input type="number" step="0.01"
+                   class="w-full pl-5 pr-2 py-1 bg-transparent border border-transparent group-hover:border-stone-200 dark:group-hover:border-stone-700 rounded-lg text-sm font-bold focus:bg-white dark:focus:bg-stone-800 focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                   @bind="Variant.Price" />
+        </div>
+    </td>
+
+    @* 3. Editable Stock *@
+    <td class="py-4 px-2">
+        <div class="inline-flex items-center gap-2 bg-stone-100 dark:bg-stone-800 px-3 py-1.5 rounded-full border border-stone-200 dark:border-stone-700 shadow-sm">
+            <span class="size-2 rounded-full @(Variant.Stock > 10 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-orange-500")"></span>
+            <span class="text-sm font-black text-stone-700 dark:text-stone-200">
+                @Variant.Stock
+            </span>
+            <span class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Qty</span>
+        </div>
+    </td>
+
+    @* 4. Mini Toggle *@
+    <td class="py-4 px-2 text-right">
+        <div class="flex flex-col items-end gap-1">
+            <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked="@Variant.Active" @onchange="ToggleActive" class="sr-only peer">
+                @* The Switch Track *@
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700
+                                 peer-checked:after:translate-x-full peer-checked:after:border-white
+                                 after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                 after:bg-white after:border-gray-300 after:border after:rounded-full
+                                 after:h-5 after:w-5 after:transition-all
+                                 peer-checked:bg-primary"></div>
+            </label>
+            <span class="text-[10px] font-bold uppercase @(Variant.Active ? "text-emerald-600" : "text-gray-400")">
+                @(Variant.Active ? "Live" : "Draft")
+            </span>
+        </div>
+    </td>
+
+    <td class="py-4 px-2 text-right">
+        <button @onclick="HandleDelete"
+                class="size-10 rounded-xl flex items-center justify-center text-stone-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all active:scale-90 group/delete">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 transition-transform group-hover/delete:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+        </button>
+    </td>
+</tr>
+
+@code {
+    [Parameter] public ProductVariantDto Variant { get; set; } = default!;
+    [Parameter] public EventCallback<Guid> OnDeleteRequested { get; set; }
+    private bool isSaving = false;
+
+    private async Task ToggleActive(ChangeEventArgs e)
+    {
+        bool isChecked = (bool)(e.Value ?? false);
+        await BackofficeService.ChangeVariantStatusAsync(Variant.Id, isChecked);
+    }
+
+    private async Task HandleDelete()
+    {
+        // Bubble the event up so the parent can remove it from the ICollection
+        await OnDeleteRequested.InvokeAsync(Variant.Id);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await HandleUpdateName();
+        }
+    }
+
+    private async Task HandleUpdateName()
+    {
+        if (isSaving) return;
+
+        isSaving = true;
+        await BackofficeService.ChangeVariantNameAsync(Variant.Id, Variant.Name);
+        isSaving = false;
+    }
+}

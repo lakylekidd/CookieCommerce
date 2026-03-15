@@ -1,0 +1,100 @@
+﻿@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Services
+@rendermode InteractiveServer
+@inject IBackofficeService BackofficeService
+
+@if (InventoryItem is null)
+{
+    if(IsLoading)
+    {
+        @* --- THE LOADING SKELETON --- *@
+        <div class="bg-surface-light dark:bg-surface-dark rounded-[2.5rem] shadow-sm border border-orange-50 dark:border-stone-700 overflow-hidden animate-skeleton">
+            @* Header Skeleton *@
+            <div class="p-8 border-b border-orange-50 dark:border-stone-700">
+                <div class="flex items-center gap-4">
+                    @* Image Circle *@
+                    <div class="size-16 rounded-2xl bg-stone-200 dark:bg-stone-800"></div>
+                    <div class="space-y-3">
+                        @* Title bar *@
+                        <div class="h-6 w-48 bg-stone-200 dark:bg-stone-800 rounded-lg"></div>
+                        @* Subtitle bar *@
+                        <div class="h-3 w-24 bg-stone-100 dark:bg-stone-900 rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            @* Table Skeleton *@
+            <div class="p-6">
+                <div class="space-y-6">
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <div class="flex items-center justify-between py-2">
+                            <div class="flex gap-4 items-center">
+                                @* Variant Name bar *@
+                                <div class="h-4 w-32 bg-stone-100 dark:bg-stone-800 rounded"></div>
+                                @* Price Input Box *@
+                                <div class="h-8 w-20 bg-stone-50 dark:bg-stone-900 rounded-lg"></div>
+                            </div>
+                            @* Stock and Toggle *@
+                            <div class="flex gap-8 items-center">
+                                <div class="h-4 w-12 bg-stone-100 dark:bg-stone-800 rounded"></div>
+                                <div class="size-8 bg-stone-200 dark:bg-stone-800 rounded-xl"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed border-stone-200 dark:border-stone-800 rounded-[2.5rem] bg-stone-50/50 dark:bg-stone-900/20">
+            <div class="size-16 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-8 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5" />
+                </svg>
+            </div>
+            <p class="text-stone-500 font-display font-medium">Select a cookie to adjust the recipe...</p>
+        </div>
+    }    
+}
+else
+{
+    <div class="bg-surface-light dark:bg-surface-dark rounded-[2.5rem] shadow-sm border border-orange-50 dark:border-stone-700 overflow-hidden">
+        @* Header Section *@
+        <div class="p-8 border-b border-orange-50 dark:border-stone-700 bg-gradient-to-br from-white to-orange-50/30 dark:from-stone-800 dark:to-stone-900">
+            <div class="flex items-center gap-4">
+                <img src="@InventoryItem.ProductImageUrl" class="size-10 rounded-2xl object-cover shadow-orange-200 dark:shadow-none shadow-lg" />
+                <div>
+                    <h2 class="text-xl font-black font-display text-stone-800 dark:text-stone-100">@InventoryItem.ProductName</h2>
+                    <span class="text-xs font-mono text-primary uppercase tracking-widest">Pricing & Variants</span>
+                </div>
+            </div>
+        </div>
+
+        @* Variants Table *@
+        <div class="p-6">
+            <table class="w-full">
+                <thead>
+                    <tr class="text-[10px] uppercase tracking-[0.2em] text-stone-400 font-black">
+                        <th class="text-left pb-4 px-2">Package Size</th>
+                        <th class="text-left pb-4 px-2">Price</th>
+                        <th class="text-left pb-4 px-2">Stock</th>
+                        <th colspan="2" class="text-right pb-4 px-2"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
+                    @foreach (var variant in InventoryItem.Variants)
+                    {
+                        <SelectedInventoryVariant Variant="variant" />
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public InventoryItemWithVariantsDto? InventoryItem { get; set; }
+    [Parameter] public bool IsLoading { get; set; } = false;    
+}

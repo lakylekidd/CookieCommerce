@@ -1,0 +1,83 @@
+﻿@using CookieCommerce.Web.Models.Products
+
+<div class="relative bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden min-h-[400px]">
+    <div class="@(IsLoading ? "opacity-20 pointer-events-none" : "opacity-100") transition-opacity duration-500">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-400 text-xs uppercase tracking-widest font-bold">
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Product</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Stock</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Status</th>
+                        <th class="p-6 py-4 font-bold"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    @if(IsLoading)
+                    {
+                        @for (int i = 0; i < 5; i++)
+                        {
+                            <tr class="animate-skeleton border-b border-gray-100 dark:border-gray-800/50">
+                                @* 1. Product Info Skeleton *@
+                                <td class="px-6 py-6 hidden sm:table-cell">
+                                    <div class="flex items-center gap-3">
+                                        @* The Circle Avatar *@
+                                        <div class="size-10 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                                        <div class="space-y-2">
+                                            @* Product Name bar *@
+                                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+                                            @* Reference bar *@
+                                            <div class="h-3 bg-gray-100 dark:bg-gray-800 rounded w-20"></div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                @* 2. Tiger-Cute Stock Badge Skeleton *@
+                                <td class="px-6 py-5">
+                                    <div class="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                </td>
+
+                                @* 3. The Active Switch Skeleton *@
+                                <td class="px-6 py-5 text-right">
+                                    <div class="flex flex-col items-end gap-1">
+                                        @* The Toggle Shape *@
+                                        <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                        @* The "Live/Draft" text bar *@
+                                        <div class="h-2 w-8 bg-gray-100 dark:bg-gray-800 rounded"></div>
+                                    </div>
+                                </td>
+
+                                @* Empty Spacer *@
+                                <td class="px-6 py-6 hidden sm:table-cell"></td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        foreach(var item in InventoryItems)
+                        {
+                            <InventoryTableItem 
+                                Item="item"
+                                IsSelected="@(SelectedProductId == item.ProductId)" 
+                                OnSelected="HandleSelection"/>
+                        }
+                    }
+                </tbody>
+                </table>
+            </div>
+        </div>
+</div>
+
+
+@code {
+    [Parameter] public EventCallback<Guid?> OnProductSelected { get; set; }
+    [Parameter] public ICollection<InventoryItemWithVariantsDto> InventoryItems { get; set; } = [];
+    [Parameter] public bool IsLoading { get; set; } = true;
+    private Guid? SelectedProductId;
+
+    private async Task HandleSelection(Guid productId)
+    {
+        SelectedProductId = productId;
+        await OnProductSelected.InvokeAsync(productId);
+    }
+}

@@ -12,5 +12,7 @@ public interface IBackofficeService
     Task ChangeProductStatusAsync(Guid productId, bool isActive);
     Task ChangeVariantStatusAsync(Guid variantId, bool isActive);
     Task ChangeVariantNameAsync(Guid variantId, string name);
+    Task ChangeVariantPriceAsync(Guid variantId, decimal price);
+    Task DeleteVariantAsync(Guid variantId);
     Task<InventoryItemWithVariantsDto> GetInventoryItemAsync(Guid productId);
 }

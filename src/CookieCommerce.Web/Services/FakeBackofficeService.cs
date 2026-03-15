@@ -27,6 +27,16 @@ public class FakeBackofficeService : IBackofficeService
         return Task.Delay(500);
     }
 
+    public Task ChangeVariantPriceAsync(Guid variantId, decimal price)
+    {
+        StaticInventoryList.InventoryItems
+            .SelectMany(i => i.Variants)
+            .Where(v => v.Id == variantId)
+            .ToList()
+            .ForEach(v => v.Price = price);
+        return Task.Delay(500);
+    }
+
     public Task ChangeVariantStatusAsync(Guid variantId, bool isActive)
     {
         StaticInventoryList.InventoryItems
@@ -34,6 +44,14 @@ public class FakeBackofficeService : IBackofficeService
             .Where(v => v.Id == variantId)
             .ToList()
             .ForEach(v => v.Active = isActive);
+        return Task.Delay(500);
+    }
+
+    public Task DeleteVariantAsync(Guid variantId)
+    {
+        StaticInventoryList.InventoryItems
+            .ToList()
+            .ForEach(i => i.Variants.ToList().RemoveAll(v => v.Id == variantId));
         return Task.Delay(500);
     }
 

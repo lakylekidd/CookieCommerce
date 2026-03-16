@@ -7,6 +7,31 @@
 @layout BackofficeLayout
 @inject IBackofficeService BackofficeService
 
+<div class="flex items-center justify-start mb-8">
+    <button @onclick="HandleCreateProduct"
+            class="group flex items-center justify-center gap-2 w-48 py-3
+                   text-sm font-black uppercase tracking-widest
+                   text-primary bg-white dark:bg-stone-900
+                   border-2 border-primary/20 rounded-2xl
+                   hover:border-primary hover:bg-primary hover:text-white
+                   shadow-sm hover:shadow-orange-200/50 dark:hover:shadow-none
+                   transition-all duration-300 active:scale-95 cursor-pointer">
+        @* Dynamic Plus Icon *@
+        <svg xmlns="http://www.w3.org/2000/svg"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="3"
+             stroke-linecap="round"
+             stroke-linejoin="round"
+             class="size-4 transition-transform group-hover:rotate-90">
+            <path d="M12 5v14M5 12h14" />
+        </svg>
+        <span>New Product</span>
+    </button>
+    <CreateNewProductModal />
+</div>
+
 <div class="grid grid-cols-12 gap-6 mb-8 items-start">
     <div class="col-span-12 lg:col-span-6">
         <InventoryTable InventoryItems="@InventoryItems"
@@ -58,5 +83,10 @@
     {
         ActiveProductId = id;
         await LoadActiveInventoryItem();
+    }
+
+    private async Task HandleCreateProduct()
+    {
+        
     }
 }

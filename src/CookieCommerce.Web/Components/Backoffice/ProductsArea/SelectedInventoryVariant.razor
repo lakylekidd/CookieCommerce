@@ -76,7 +76,7 @@
     <td class="py-4 px-2 @(isDeleting ? "py-0 transition-all duration-500" : "")">
         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg">
             <span class="text-xs font-bold text-primary">@Variant.CurrencySymbol</span>
-            <span class="text-sm font-black text-stone-600 dark:text-stone-300">
+            <span class="text-sm font-black text-stone-600 dark:text-stone-300 transition-all duration-500 @(justUpdated ? "text-emerald-500 scale-110" : "")">
                 @Variant.CostPrice.ToString("N2")
             </span>
 
@@ -136,7 +136,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>
-                        <span class="text-sm font-black text-emerald-600 dark:text-emerald-400">
+                        <span class="text-sm font-black text-emerald-600 dark:text-emerald-400 @(justUpdated ? "text-emerald-500 scale-110" : "")">
                             +@MarkupPercentage.ToString("N0")%
                         </span>
                     }
@@ -145,7 +145,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
                         </svg>
-                        <span class="text-sm font-black text-red-600 dark:text-red-400">
+                        <span class="text-sm font-black text-red-600 dark:text-red-400 @(justUpdated ? "text-emerald-500 scale-110" : "")">
                             @MarkupPercentage.ToString("N0")%
                         </span>
                     }
@@ -154,7 +154,7 @@
         </div>
     </td>
 
-    @* 5. Editable Stock *@
+    @* 5. Stock *@
     <td class="py-4 px-2 @(isDeleting ? "py-0 transition-all duration-500" : "")">
         <div class="inline-flex items-center gap-2 bg-stone-100 dark:bg-stone-800 px-3 py-1.5 rounded-full border border-stone-200 dark:border-stone-700 shadow-sm">
             <span class="size-2 rounded-full @(Variant.Stock > 10 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-orange-500")"></span>
@@ -255,6 +255,7 @@
 
 @code {
     [Parameter] public ProductVariantDto Variant { get; set; } = default!;
+    private bool justUpdated = false;
     private string? originalName;
     private decimal? originalPrice;
     private bool isDeleting = false;
@@ -278,8 +279,10 @@
 
     private async Task ReloadVariantDataAsync()
     {
+        justUpdated = true;
         Variant = await BackofficeService.GetVariantAsync(Variant.Id);
         StateHasChanged();
+        justUpdated = false;
     }
 
     private async Task ToggleDetailsAsync()

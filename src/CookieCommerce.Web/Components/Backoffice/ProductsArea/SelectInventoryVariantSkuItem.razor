@@ -1,0 +1,57 @@
+﻿@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Services
+@inject IBackofficeService BackofficeService
+
+<tr class="@(isDeleting ? "row-swipe-out" : "") bg-accent-light dark:bg-stone-800/50 rounded-2xl shadow-sm border border-stone-100 dark:border-stone-700/50 overflow-hidden group">
+    <td class="px-4 py-3 rounded-l-2xl font-bold text-sm text-stone-700 dark:text-stone-200">
+        @VariantSku.Name
+    </td>
+    <td class="px-4 py-3 text-xs text-stone-500">@VariantSku.Description</td>
+    <td class="px-4 py-3">
+        <input type="number" @bind="VariantSku.Quantity"
+               class="w-16 bg-stone-100 dark:bg-stone-700 border-none rounded-lg px-2 py-1 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20" />
+    </td>
+    <td class="px-4 py-3 text-right font-mono text-xs font-bold text-stone-600">
+        @VariantSku.Cost.ToString("C")
+    </td>
+    <td class="px-4 py-3 rounded-r-2xl text-right">
+        <button @onclick="() => HandleDeleteSku(VariantSku)"
+                disabled="@isDeleting"
+                class="cursor-pointer flex items-center justify-center w-10 h-10 bg-white dark:bg-gray-800 border border-primary text-primary hover:bg-primary hover:text-white rounded-full transition-all shadow-sm active:scale-90">
+            @if (isDeleting)
+            {
+                <div class="animate-spin size-4 border-2 border-red-500 border-t-transparent rounded-full"></div>
+            }
+            else
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            }
+        </button>
+    </td>
+</tr>
+
+@code {
+    [Parameter] public Guid VariantId { get; set; }
+    [Parameter] public ProductVariantSkuDto VariantSku { get; set; } = default!;
+    [Parameter] public EventCallback<ProductVariantSkuDto> OnSkuDeleted { get; set; }
+    private bool isDeleting = false;
+
+    private async Task HandleDeleteSku(ProductVariantSkuDto sku)
+    {
+        if (isDeleting) return;
+
+        // 1. Start the animation
+        isDeleting = true;
+        StateHasChanged();
+
+        // 2. Wait for the CSS animation to finish (matching your 0.5s CSS)
+        await BackofficeService.RemoveVariantSku(VariantId, sku.Id);
+
+        await OnSkuDeleted.InvokeAsync(sku);
+
+        StateHasChanged();
+        isDeleting = false;
+    }
+}

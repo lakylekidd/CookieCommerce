@@ -168,11 +168,12 @@ public class FakeBackofficeService : IBackofficeService
         return Task.Delay(500);
     }
 
-    public Task<ProductVariantDto> GetVariantAsync(Guid variantId)
+    public async Task<ProductVariantDto> GetVariantAsync(Guid variantId)
     {
         var variant = StaticInventoryList.InventoryItems
             .SelectMany(i => i.Variants)
             .FirstOrDefault(v => v.Id == variantId);
-        return Task.FromResult(variant);
+        await Task.Delay(800);
+        return variant;
     }
 }

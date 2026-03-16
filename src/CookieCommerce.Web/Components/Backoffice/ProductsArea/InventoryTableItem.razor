@@ -45,12 +45,12 @@
         <div class="flex justify-end">
             <div class="transition-all duration-300 transform
                     @(IsSelected
-                                         ? "opacity-100 translate-x-0"
-                                         : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-1")">
+                            ? "opacity-100 translate-x-0"
+                            : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-1")">
                 <div class="p-1.5 rounded-full inline-flex transition-colors duration-300
                         @(IsSelected
-                                                 ? "bg-primary text-white shadow-lg shadow-orange-200/50"
-                                                 : "bg-secondary text-white")">
+                                ? "bg-primary text-white"
+                                : "bg-secondary text-white")">
                     <svg xmlns="http://www.w3.org/2000/svg"
                          viewBox="0 0 24 24"
                          fill="none"

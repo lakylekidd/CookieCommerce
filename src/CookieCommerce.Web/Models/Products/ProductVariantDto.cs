@@ -10,4 +10,5 @@ public class ProductVariantDto
     public int Stock { get; set; }
     public bool Active { get; set; }
     public ICollection<ProductVariantSkuDto> Skus { get; set; } = [];
+    public ICollection<ProductVariantImageDto> Images { get; set; } = [];
 }

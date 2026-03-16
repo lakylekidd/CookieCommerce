@@ -23,6 +23,12 @@ builder.Services.AddDataProtection()
 
 builder.AddServiceDefaults();
 
+builder.Services.AddServerSideBlazor().AddHubOptions(options =>
+{
+    // Set to 10MB or whatever fits your cookie photos
+    options.MaximumReceiveMessageSize = 10 * 1024 * 1024;
+});
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -35,6 +41,7 @@ builder.Services.AddSingleton<IContentService, FakeContentService>();
 builder.Services.AddSingleton<ICheckoutService, FakeCheckoutService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IBackofficeService, FakeBackofficeService>();
+builder.Services.AddScoped<IImageUploadService, FakeImageUploadService>();
 builder.Services.AddSingleton<IAccountService, FakeAccountService>();
 
 builder.Services.AddAuthentication(options =>

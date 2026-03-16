@@ -1,8 +1,95 @@
 ﻿@using CookieCommerce.Web.Models.Products
 @using CookieCommerce.Web.Services
+@using System.Threading.Tasks
 @rendermode InteractiveServer
 @inject IBackofficeService BackofficeService
+@inject IImageUploadService ImageService
 
+@* 📸 PHOTO GALLERY ROW *@
+<tr>
+    <td class="p-0 border-primary border-l-4 border-r-4 border-b bg-stone-50/10 dark:bg-stone-900/10" colspan="7">
+        <div class="p-6 m-4 rounded-[2rem] border border-dashed border-stone-200 dark:border-stone-800">
+            <div class="flex items-center justify-between mb-4 px-2">
+                <h4 class="text-xs font-black uppercase tracking-[0.2em] text-primary">Variant Media</h4>
+                @if (!isLoading)
+                {
+                    <div class="flex gap-2">
+                        <InputFile id="fileInput" OnChange="HandleFileUpload" class="hidden" multiple accept="image/*" />
+                        <label for="fileInput" class="cursor-pointer flex items-center gap-2 bg-white dark:bg-stone-800 border border-primary/20 hover:border-primary px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter text-primary transition-all active:scale-95">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                            Add Photos
+                        </label>
+                    </div>
+                }
+            </div>
+            <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                @if (isLoading)
+                {
+                    @for (int i = 0; i < 3; i++)
+                    {
+                        <div class="flex-shrink-0">
+                            <div class="w-32 h-32 rounded-3xl bg-stone-100 dark:bg-stone-800/50 animate-pulse flex items-center justify-center border-2 border-transparent">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-8 text-stone-200 dark:text-stone-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                        </div>
+                    }
+                }
+                else if (VariantPhotos.Any())
+                {
+                    @* Cute Carousel/Grid Layout *@
+                    <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                        @foreach (var photo in VariantPhotos)
+                        {
+                            <div class="relative group flex-shrink-0">
+                                @* Added w-32 h-32 explicitly and aspect-square *@
+                                <div class="w-32 h-32 aspect-square rounded-3xl overflow-hidden border-2 transition-all relative @(photo.IsMain ? "border-primary shadow-lg shadow-primary/20 scale-105 z-10" : "border-transparent bg-stone-100 dark:bg-stone-800")">
+
+                                    <img src="@photo.Url"
+                                            class="w-full h-full object-cover block"
+                                            alt="Variant Image" />
+
+                                    @* Overlay Controls - Ensure z-index is high *@
+                                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-20">
+                                        @if (!photo.IsMain)
+                                        {
+                                            <button @onclick="() => SetMainPhoto(photo)"
+                                                    class="bg-white text-primary text-[10px] font-black uppercase px-3 py-1 rounded-full transform hover:scale-105 transition-transform">
+                                                Make Main
+                                            </button>
+                                        }
+                                        <button @onclick="() => DeletePhoto(photo)"
+                                                class="bg-red-500 text-white p-2 rounded-full transform hover:scale-110 transition-transform">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                @if (photo.IsMain)
+                                {
+                                    @* Adjust badge position to avoid clipping *@
+                                    <span class="absolute -top-1 -right-1 bg-primary text-white text-[8px] font-black uppercase px-2 py-1 rounded-full shadow-md z-30">
+                                        Main
+                                    </span>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="py-8 flex flex-col items-center justify-center opacity-40">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-8 mb-2 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <p class="text-xs font-bold text-stone-500 italic">No media baked yet...</p>
+                    </div>
+                }
+            </div>
+            </div>
+    </td>
+</tr>
 <tr>
     <td class="p-0 border-primary border-l-4 border-r-4 border-b border-t bg-orange-50/20 dark:bg-gray-800/20" colspan="7">
         @if(isLoading)
@@ -138,8 +225,10 @@
     [Parameter] public ICollection<ProductVariantSkuDto> VariantSkus { get; set; } = [];
     [Parameter] public EventCallback<ICollection<ProductVariantSkuDto>> VariantSkusChanged { get; set; }
     [Parameter] public bool isLoading { get; set; } = false;
+    [Parameter] public List<ProductVariantImageDto> VariantPhotos { get; set; } = [];
     private ICollection<SkuDto> AllAvailableSkus = [];
     private HashSet<Guid> deletingSkuIds = new();
+    private int maxAllowedFiles = 5;
 
     private Guid _selectedSkuId = Guid.Empty;
     private Guid SelectedSkuId
@@ -157,8 +246,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Fetch your base ingredients/packaging from the service
         AllAvailableSkus = await BackofficeService.GetSkusAsync();
+        VariantPhotos = await ImageService.GetImagesForVariantAsync(VariantId);
     }
 
     private async Task HandleDeleteSku(ProductVariantSkuDto sku)
@@ -188,5 +277,34 @@
 
             StateHasChanged();
         }
+    }
+
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        var files = e.GetMultipleFiles();
+        foreach (var file in files)
+        {
+            var result = await ImageService.ProcessImageUploadAsync(file, VariantId);
+            if (result != null)
+            {
+                VariantPhotos.Add(result);
+            }
+        }
+        StateHasChanged();
+    }
+
+    private async Task SetMainPhoto(ProductVariantImageDto selectedImage)
+    {
+        // Set all to false, then the selected one to true
+        await ImageService.SetPhotoAsMain(selectedImage.Id, VariantId);
+        selectedImage.IsMain = true;
+        StateHasChanged();
+    }
+
+    private async Task DeletePhoto(ProductVariantImageDto image)
+    {
+        await ImageService.DeletePhotoAsync(image.Id, VariantId);
+        VariantPhotos.Remove(image);
+        StateHasChanged();
     }
 }

@@ -8,10 +8,23 @@
            @(IsSelected ? "bg-orange-50/50 dark:bg-orange-900/10" : "hover:bg-orange-50/20 dark:hover:bg-gray-800/30")">
     <td class="px-6 py-6 hidden sm:table-cell">
         <div class="flex items-center gap-3">
-            <img src="@Item.ProductImageUrl" alt="@Item.ProductName" class="size-10 rounded-full object-cover">
+            @if (!string.IsNullOrEmpty(Item.ProductImageUrl))
+            {
+                <img src="@Item.ProductImageUrl"
+                     alt="@Item.ProductName"
+                     class="size-10 rounded-full object-cover border-2 border-stone-100 dark:border-stone-800 shadow-sm">
+            }
+            else
+            {
+                @* 🐯 Tiger Placeholder *@
+                <div class="size-10 rounded-full bg-orange-100 dark:bg-orange-950/30 flex items-center justify-center border-2 border-orange-200/50 dark:border-orange-500/20 shadow-inner group-hover:scale-110 transition-transform duration-300">
+                    <span class="text-lg" role="img" aria-label="tiger">🐯</span>
+                </div>
+            }
+
             <div>
                 <div class="text-sm font-medium text-gray-900 dark:text-gray-300">@Item.ProductName</div>
-                <div class="text-xs text-gray-500 dark:text-gray-600">@Item.ProductReference</div>
+                <div class="text-xs text-gray-500 dark:text-gray-600 font-mono">@Item.ProductReference</div>
             </div>
         </div>
     </td>

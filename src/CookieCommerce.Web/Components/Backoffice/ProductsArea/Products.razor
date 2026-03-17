@@ -1,5 +1,6 @@
 ﻿@page "/backoffice/products/"
 @page "/backoffice/products/{ActiveProductId:guid}"
+@using CookieCommerce.Web.Components.Backoffice.ProductsArea.CreateProductModalArea
 @using CookieCommerce.Web.Models.Backoffice
 @using CookieCommerce.Web.Models.Products
 @using CookieCommerce.Web.Services
@@ -29,7 +30,7 @@
         </svg>
         <span>New Product</span>
     </button>
-    <CreateNewProductModal />
+    <CreateNewProductModal @ref="CreateModal" OnProductCreated="StateHasChanged" />
 </div>
 
 <div class="grid grid-cols-12 gap-6 mb-8 items-start">
@@ -51,7 +52,9 @@
     private InventoryItemWithVariantsDto? SelectedInventoryItem { get; set; } = null;
     private bool IsLoadingInventoryTable { get; set; } = true;
     private bool IsLoadingSelectedInventoryItem { get; set; } = false;
+    private CreateNewProductModal CreateModal { get; set; } = null!;
     [Parameter] public Guid? ActiveProductId { get; set; }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,6 +90,6 @@
 
     private async Task HandleCreateProduct()
     {
-        
+        CreateModal?.Open();
     }
 }

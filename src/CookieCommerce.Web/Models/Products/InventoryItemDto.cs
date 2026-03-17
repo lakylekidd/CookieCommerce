@@ -2,10 +2,10 @@
 
 public class InventoryItemDto
 {
-    public Guid ProductId { get; init; }
-    public string ProductReference { get; init; } = string.Empty;
-    public string ProductName { get; init; } = string.Empty;
-    public string ProductImageUrl { get; init; } = string.Empty;
-    public int Stock { get; init; }
+    public Guid ProductId { get; set; }
+    public string ProductReference { get; set; } = string.Empty;
+    public string ProductName { get; set; } = string.Empty;
+    public string ProductImageUrl { get; set; } = string.Empty;
+    public int Stock { get; set; }
     public bool Active { get; set; }
 }

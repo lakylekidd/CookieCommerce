@@ -6,6 +6,7 @@ namespace CookieCommerce.Web.Services;
 
 public interface IBackofficeService
 {
+    Task CreateProductAsync(CreateProductDto createProductDto);
     Task<DashboardDto> GetTotalsAsync(string period = "this week");
     Task<ICollection<SkuDto>> GetSkusAsync();
     Task<ProductVariantDto> GetVariantAsync(Guid variantId);
@@ -21,5 +22,4 @@ public interface IBackofficeService
     Task AddVariantSkuAsync(Guid productId, Guid skuId, int quantity);
     Task RemoveVariantSku(Guid variantId, Guid skuId);
     Task UpdateVariantSkuQuantity(Guid variantId, Guid skuId, int quantity);
-
 }

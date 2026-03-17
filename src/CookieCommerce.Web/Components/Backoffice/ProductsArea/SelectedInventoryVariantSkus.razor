@@ -290,6 +290,7 @@
                 VariantPhotos.Add(result);
             }
         }
+        await VariantSkusChanged.InvokeAsync(VariantSkus);
         StateHasChanged();
     }
 

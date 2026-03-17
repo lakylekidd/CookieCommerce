@@ -176,4 +176,24 @@ public class FakeBackofficeService : IBackofficeService
         await Task.Delay(800);
         return variant;
     }
+
+    public Task CreateProductAsync(CreateProductDto createProductDto)
+    {
+        var newProductId = Guid.NewGuid();
+        StaticInventoryList.InventoryItems.Add(new InventoryItemWithVariantsDto
+        {
+            ProductId = newProductId,
+            ProductReference = createProductDto.ProductReference,
+            ProductName = createProductDto.ProductName,
+            Variants = createProductDto.Variants.Select(v => new ProductVariantDto
+            {
+                Id = Guid.NewGuid(),
+                Name = v.Name,
+                Price = v.Price,
+                Active = false,
+                Skus = []
+            }).ToList()
+        });
+        return Task.Delay(500);
+    }
 }

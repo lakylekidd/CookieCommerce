@@ -5,21 +5,21 @@ namespace CookieCommerce.Web.Services.Products;
 
 public class CookieService : ICookieService
 {
-    public Task<IReadOnlyList<CookieDto>> GetFeaturedCookiesAsync(CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ProductDto>> GetFeaturedCookiesAsync(CancellationToken cancellationToken = default)
     {
-        var cookies = StaticCookieList.Cookies.Where(c => c.IsFeatured).ToList();
-        return Task.FromResult<IReadOnlyList<CookieDto>>(cookies);
+        var cookies = StaticProductList.Cookies.Where(c => c.IsFeatured).ToList();
+        return Task.FromResult<IReadOnlyList<ProductDto>>(cookies);
     }
 
-    public Task<IReadOnlyList<CookieDto>> GetFavoriteCookiesAsync(CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ProductDto>> GetFavoriteCookiesAsync(CancellationToken cancellationToken = default)
     {
-        var favorites = StaticCookieList.Cookies.ToList();
-        return Task.FromResult<IReadOnlyList<CookieDto>>(favorites);
+        var favorites = StaticProductList.Cookies.ToList();
+        return Task.FromResult<IReadOnlyList<ProductDto>>(favorites);
     }
 
-    public Task<CookieDto?> GetCookieByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task<ProductDto?> GetCookieByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var cookie = StaticCookieList.Cookies.FirstOrDefault(c => c.Id == id);
+        var cookie = StaticProductList.Cookies.FirstOrDefault(c => c.Id == id);
         return Task.FromResult(cookie);
     }
 
@@ -57,9 +57,9 @@ public class CookieService : ICookieService
         return reviews;
     }
 
-    public Task<IReadOnlyList<CookieDto>> GetTopRatedAsync()
+    public Task<IReadOnlyList<ProductDto>> GetTopRatedAsync()
     {
-        var topRated = StaticCookieList.Cookies.OrderByDescending(c => c.Rating).Take(4).ToList();
-        return Task.FromResult<IReadOnlyList<CookieDto>>(topRated);
+        var topRated = StaticProductList.Cookies.OrderByDescending(c => c.Rating).Take(4).ToList();
+        return Task.FromResult<IReadOnlyList<ProductDto>>(topRated);
     }
 }

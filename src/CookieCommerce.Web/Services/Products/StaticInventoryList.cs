@@ -4,6 +4,8 @@ namespace CookieCommerce.Web.Services.Products;
 
 public static class StaticInventoryList
 {
+
+
     public static List<InventoryItemWithVariantsDto> InventoryItems { get; } = new List<InventoryItemWithVariantsDto>
 {
     new InventoryItemWithVariantsDto

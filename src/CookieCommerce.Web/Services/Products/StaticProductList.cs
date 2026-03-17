@@ -2,9 +2,9 @@
 
 namespace CookieCommerce.Web.Services.Products;
 
-public static class StaticCookieList
+public static class StaticProductList
 {
-    public static CookieDto CookieChocolateChunk = new()
+    public static ProductDto CookieChocolateChunk = new()
     {
         Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-111111111111"),
         Title = "Chocolate Chunk",
@@ -20,7 +20,7 @@ public static class StaticCookieList
         TopSeller = true,
         Ingredients = ["Organic wheat flour", "70% Belgian dark chocolate", "Unsalted butter", "Brown sugar", "Free-range eggs", "Vanilla extract", "Maldon sea salt", "Baking soda"]
     };  
-    public static CookieDto CookieMatchaWhiteChoc = new()
+    public static ProductDto CookieMatchaWhiteChoc = new()
     {
         Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-444444444444"),
         Title = "Matcha White Choc",
@@ -35,7 +35,7 @@ public static class StaticCookieList
         ReviewCount = 68,
         Ingredients = ["Organic wheat flour", "Ceremonial Uji matcha powder", "Belgian white chocolate pearls", "Unsalted butter", "Cane sugar", "Free-range eggs", "Almond flour", "Baking powder"]
     };
-    public static CookieDto CookieTigerStripe = new()
+    public static ProductDto CookieTigerStripe = new()
     {
         Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-222222222222"),
         Title = "Tiger Stripe",
@@ -50,7 +50,7 @@ public static class StaticCookieList
         ReviewCount = 85,
         Ingredients = ["Organic wheat flour", "Dutch cocoa powder", "Madagascar vanilla beans", "Orange zest", "Unsalted butter", "Cane sugar", "Free-range eggs", "Activated charcoal", "Baking powder"]
     };
-    public static CookieDto CookieVelvetTiger = new()
+    public static ProductDto CookieVelvetTiger = new()
     {
         Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-555555555555"),
         Title = "Velvet Tiger",
@@ -64,7 +64,7 @@ public static class StaticCookieList
         ReviewCount = 54,
         Ingredients = ["Organic wheat flour", "Red velvet cocoa", "Cream cheese", "Belgian white chocolate", "Unsalted butter", "Cane sugar", "Free-range eggs", "Buttermilk", "Red food coloring", "Baking soda"]
     };
-    public static CookieDto CookieCaramelSeaSalt = new()
+    public static ProductDto CookieCaramelSeaSalt = new()
     {
         Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-333333333333"),
         Title = "Caramel Sea Salt",
@@ -78,7 +78,7 @@ public static class StaticCookieList
         ReviewCount = 72,
         Ingredients = ["Organic wheat flour", "Brown butter", "Brown sugar", "Homemade caramel", "Fleur de sel", "Free-range eggs", "Butterscotch chips", "Vanilla extract", "Sea salt flakes", "Baking soda"]
     };
-    public static CookieDto CookieHazelnutPraline = new()
+    public static ProductDto CookieHazelnutPraline = new()
     {
         Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-666666666666"),
         Title = "Hazelnut Praline",
@@ -94,7 +94,7 @@ public static class StaticCookieList
         Ingredients = ["Organic wheat flour", "Roasted hazelnuts", "Hazelnut praline", "Dark chocolate", "Unsalted butter", "Brown sugar", "Free-range eggs", "Vanilla extract", "Baking powder"]
     };
 
-    public static List<CookieDto> Cookies { get; } = new List<CookieDto>
+    public static List<ProductDto> Cookies { get; } = new List<ProductDto>
     {
         CookieChocolateChunk,
         CookieMatchaWhiteChoc,

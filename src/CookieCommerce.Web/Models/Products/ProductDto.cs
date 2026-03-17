@@ -1,6 +1,6 @@
 namespace CookieCommerce.Web.Models.Products;
 
-public class CookieDto
+public class ProductDto
 {
     public Guid Id { get; init; }
     public string Title { get; init; } = string.Empty;

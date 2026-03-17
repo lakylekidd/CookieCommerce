@@ -33,8 +33,8 @@ public static class StaticTodaysOrders
         },
         Items = new List<QuotaOrderItemDto>
             {
-                StaticCookieList.CookieChocolateChunk.ToDto(2),
-                StaticCookieList.CookieMatchaWhiteChoc.ToDto(1)
+                StaticProductList.CookieChocolateChunk.ToDto(2),
+                StaticProductList.CookieMatchaWhiteChoc.ToDto(1)
             }
     };
     public static QuotaOrderDto TGR1002 = new()
@@ -63,7 +63,7 @@ public static class StaticTodaysOrders
         },
         Items = new List<QuotaOrderItemDto>
         {
-            StaticCookieList.CookieTigerStripe.ToDto(3)
+            StaticProductList.CookieTigerStripe.ToDto(3)
         }
     };
     public static QuotaOrderDto TGR1003 = new()
@@ -89,8 +89,8 @@ public static class StaticTodaysOrders
         },
         Items = new List<QuotaOrderItemDto>
         {
-            StaticCookieList.CookieChocolateChunk.ToDto(4),
-            StaticCookieList.CookieCaramelSeaSalt.ToDto(2)
+            StaticProductList.CookieChocolateChunk.ToDto(4),
+            StaticProductList.CookieCaramelSeaSalt.ToDto(2)
         }
     };
     public static QuotaOrderDto TGR1004 = new()
@@ -116,8 +116,8 @@ public static class StaticTodaysOrders
         },
         Items = new List<QuotaOrderItemDto>
         {
-            StaticCookieList.CookieVelvetTiger.ToDto(2),
-            StaticCookieList.CookieHazelnutPraline.ToDto(2)
+            StaticProductList.CookieVelvetTiger.ToDto(2),
+            StaticProductList.CookieHazelnutPraline.ToDto(2)
         }
     };
     public static QuotaOrderDto TGR1005 = new()
@@ -143,7 +143,7 @@ public static class StaticTodaysOrders
         },
         Items = new List<QuotaOrderItemDto>
         {
-            StaticCookieList.CookieMatchaWhiteChoc.ToDto(3)
+            StaticProductList.CookieMatchaWhiteChoc.ToDto(3)
         }
     };
     public static QuotaOrderDto TGR1006 = new()
@@ -169,8 +169,8 @@ public static class StaticTodaysOrders
         },
         Items = new List<QuotaOrderItemDto>
         {
-            StaticCookieList.CookieTigerStripe.ToDto(2),
-            StaticCookieList.CookieHazelnutPraline.ToDto(5)
+            StaticProductList.CookieTigerStripe.ToDto(2),
+            StaticProductList.CookieHazelnutPraline.ToDto(5)
         }
     };
 
@@ -184,7 +184,7 @@ public static class StaticTodaysOrders
         TGR1006
     ];
 
-    public static QuotaOrderItemDto ToDto(this CookieDto product, int quantity)
+    public static QuotaOrderItemDto ToDto(this ProductDto product, int quantity)
     {
         return new QuotaOrderItemDto
         {

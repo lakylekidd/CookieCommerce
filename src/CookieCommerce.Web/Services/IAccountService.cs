@@ -12,7 +12,7 @@ public interface IAccountService
     Task AddToFavoritesAsync(Guid productId);
     Task RemoveFromFavoritesAsync(Guid productId);
     Task<bool> IsFavoriteAsync(Guid productId);
-    Task<ICollection<CookieDto>> GetFavoriteProductsAsync();
+    Task<ICollection<ProductDto>> GetFavoriteProductsAsync();
     Task<UserProfileDto> GetProfileAsync();
     Task<ResultDto> UpdateProfileAsync(UserProfileDto profile);
     Task<IList<AddressBookItemDto>> GetAddressesAsync();

@@ -196,4 +196,25 @@ public class FakeBackofficeService : IBackofficeService
         });
         return Task.Delay(500);
     }
+
+    public Task SetOrderAsProcessing(Guid orderId)
+    {
+        ChangeStatus(orderId, "Processing", 2);
+        return Task.Delay(500);
+    }
+
+    public Task SetOrderAsReadyForPickup(Guid orderId)
+    {
+        ChangeStatus(orderId, "Ready for Pickup", 3);
+        return Task.Delay(500);
+    }
+
+    private Task ChangeStatus(Guid orderId, string newStatus, int statusId)
+    {
+        StaticTodaysOrders.GetTodaysOrders
+            .Where(o => o.Id == orderId)
+            .ToList()
+            .ForEach(o => o.Status = new OrderStatusDto { StatusId = statusId, Status = newStatus });
+        return Task.Delay(500);
+    }
 }

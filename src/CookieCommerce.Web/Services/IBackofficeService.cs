@@ -6,6 +6,8 @@ namespace CookieCommerce.Web.Services;
 
 public interface IBackofficeService
 {
+    Task SetOrderAsProcessing(Guid orderId);
+    Task SetOrderAsReadyForPickup(Guid orderId);
     Task CreateProductAsync(CreateProductDto createProductDto);
     Task<DashboardDto> GetTotalsAsync(string period = "this week");
     Task<ICollection<SkuDto>> GetSkusAsync();

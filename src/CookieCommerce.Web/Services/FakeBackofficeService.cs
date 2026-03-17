@@ -78,7 +78,7 @@ public class FakeBackofficeService : IBackofficeService
 
     public async Task<QuotaDateOrdersDto> GetQuotaDateOrdersAsync(DateTime quotaDate)
     {
-        var orders = MockOrderData.GetRecentOrders();
+        var orders = StaticTodaysOrders.GetTodaysOrders;
         await Task.Delay(800);
         return new QuotaDateOrdersDto
         {

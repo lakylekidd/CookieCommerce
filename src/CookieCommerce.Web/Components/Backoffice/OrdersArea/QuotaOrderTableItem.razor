@@ -4,7 +4,38 @@
 @using CookieCommerce.Web.Models.Order
 @rendermode InteractiveServer
 
-<tr class="cursor-pointer hover:bg-orange-50/30 dark:hover:bg-gray-800/30 transition-all">
+<style>
+    @@keyframes oven-glow {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    .is-baking-row {
+        background: linear-gradient(-45deg, #fffaf0, #ffedd5, #fee2e2, #fff7ed);
+        background-size: 400% 400%;
+        animation: oven-glow 3s ease infinite;
+    }
+
+    .dark .is-baking-row {
+        background: linear-gradient(-45deg, #1c1917, #292524, #441515, #292524);
+        background-size: 400% 400%;
+        animation: oven-glow 3s ease infinite;
+    }
+</style>
+
+<tr class="group cursor-pointer transition-all duration-700 relative
+        @(Order.Status?.StatusId == 4 
+            ? "is-baking-row" 
+            : "hover:bg-orange-50/30 dark:hover:bg-gray-800/30")">
     <td class="px-6 py-6 hidden sm:table-cell">
         <OrderDateAndReference 
             OrderReference="@Order.OrderReference" 
@@ -39,10 +70,41 @@
             Icon="@Order.ShippingInformation.Icon" 
             Name="@Order.ShippingInformation.Carrier" />
     </td>
-    <td></td>
+    @* 🐯 KITCHEN ACTIONS *@
+    <td class="px-6 py-4 text-right">
+        @if (Order.Status?.StatusId == 2) @* Confirmed *@
+        {
+            <button @onclick="StartBaking" @onclick:stop="true"
+                    class="size-10 inline-flex items-center justify-center bg-white dark:bg-stone-900 border-2 border-orange-200 dark:border-stone-700 text-orange-500 hover:border-orange-500 hover:bg-orange-500 hover:text-white rounded-full transition-all shadow-sm active:scale-90">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+            </button>
+        }
+        else if (Order.Status?.StatusId == 4)
+        @* Processing / Baking *@
+        {
+            <div class="inline-flex items-center justify-center size-10 text-orange-600 dark:text-orange-400">
+                @* Spinning Arrow *@
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-6 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+            </div>
+        }
+    </td>
 </tr>
 
 @code {
     [Parameter] public QuotaOrderDto Order { get; set; } = new();
     [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public EventCallback<QuotaOrderDto> OnStatusUpdated { get; set; }
+
+    private async Task StartBaking()
+    {
+        // 🐯 Set to Processing
+        Order.Status = new OrderStatusDto { StatusId = 4, Status = "Processing" };
+
+        await OnStatusUpdated.InvokeAsync(Order);
+        StateHasChanged();
+    }
 }

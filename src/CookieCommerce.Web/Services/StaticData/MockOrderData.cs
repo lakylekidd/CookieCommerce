@@ -21,7 +21,7 @@ public static class MockOrderData
         (string Icon, string Name)[] carriers = [("pedal_bike", "Peddler"), ("local_shipping","Easy2Send"), ("flight", "Skynet"), ("help", "Unassigned")];
         (int Id, string Name)[] statuses = [(1, "Pending"), (2, "Processing"), (3, "Shipped"), (4, "Delivered")];
 
-        for (int i = 1; i <= 15; i++)
+        for (int i = 1; i <= 5; i++)
         {
             // Generate a random time during yesterday
             var orderTime = yesterday.Date

@@ -109,7 +109,7 @@
         standardClassList += " bg-surface-light dark:bg-surface-dark border-amber-50 dark:border-amber-900/20";
         h3ClassList += " group-hover:text-primary transition-colors";
         pClassList += "text-gray-500 dark:text-gray-400 leading-relaxed mb-6";
-        btnClassList += " flex items-center justify-center p-2 ";
+        btnClassList += " flex items-center justify-center ";
     }
 }
 
@@ -164,31 +164,31 @@
             </p>
         </div>
     </a>
-    @* 🐯 Flex container with a gap *@
-    <div class="flex items-center gap-2 mt-4">
 
-        @* Left Navigation Group *@
-        <div class="flex items-center bg-gray-100 dark:bg-white/10 rounded-2xl p-1 border border-gray-200 dark:border-white/5">
+    @* 🐯 Flex container with a gap *@
+    <div class="flex flex-col sm:flex-row items-stretch gap-3 mt-4">
+
+        @* Variant Selector: Added min-h to force the issue on mobile *@
+        <div class="w-full sm:flex-1 flex items-center justify-between bg-gray-100 dark:bg-white/10 rounded-full p-1 border border-gray-200 dark:border-white/5 h-[50px] min-h-[50px]">
             <button @onclick="PrevVariant"
-                    class="size-10 flex items-center justify-center hover:text-primary transition-colors cursor-pointer active:scale-90">
+                    class="flex-1 h-full flex items-center justify-start pl-3 hover:text-primary transition-colors cursor-pointer active:scale-90">
                 <span class="material-symbols-outlined text-xl">chevron_left</span>
             </button>
 
-            @* 🐯 Middle Label for the variant name *@
-            <span class="text-[10px] font-black uppercase tracking-widest px-2 min-w-[70px] text-center opacity-70">
+            <span class="flex-none text-[10px] font-black uppercase tracking-widest px-2 text-center opacity-70 truncate max-w-[120px]">
                 @CurrentVariant?.Title
             </span>
 
             <button @onclick="NextVariant"
-                    class="size-10 flex items-center justify-center hover:text-primary transition-colors cursor-pointer active:scale-90">
+                    class="flex-1 h-full flex items-center justify-end pr-3 hover:text-primary transition-colors cursor-pointer active:scale-90">
                 <span class="material-symbols-outlined text-xl">chevron_right</span>
             </button>
         </div>
 
-        @* Right Side: Main Add to Cart Button (Flexible width) *@
+        @* 🐯 The Add Button: Force h-[50px] and reset vertical padding with !py-0 *@
         <button @onclick="async () => await AddToCartAsync()"
                 disabled="@(isAddingToCart || showCheckMark)"
-                class="@btnClassList flex-grow cursor-pointer flex items-center justify-center gap-3 transition-all duration-500 h-[50px]
+                class="@btnClassList w-full sm:flex-1 cursor-pointer flex items-center justify-center gap-3 transition-all duration-500 h-[50px] min-h-[50px] !py-0
             @(showCheckMark ? "bg-emerald-600 text-white"
                                             : IsLimitedEdition ? "bg-white text-brand-orange"
                                                                : "bg-primary text-white")

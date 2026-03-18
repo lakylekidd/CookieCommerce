@@ -63,7 +63,15 @@ public static class StaticStorefrontProductList
             IsLimitedEdition = product.IsLimitedEdition,
             Rating = ratingInfo.Rating,
             ReviewCount = ratingInfo.Reviews,
-            Ingredients = sku.Ingredients
+            Ingredients = sku.Ingredients, 
+            CurrencySymbol = variant.CurrencySymbol,
+            Variants = product.Variants.Select(v => new StorefrontProductVariantDto()
+            {
+                Id = v.Id,
+                Title = v.Name,
+                Price = v.Price,
+                ImageUrls = v.Images.Select(i => i.Url).ToArray()
+            }).ToList()
         };
     }
 }

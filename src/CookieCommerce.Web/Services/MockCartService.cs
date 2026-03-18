@@ -29,6 +29,7 @@ public class MockCartService : ICartService
         {
             existingItem.Quantity += quantity;
             NotifyStateChanged();
+            await Task.Delay(800);
             return;
         }
 
@@ -43,6 +44,8 @@ public class MockCartService : ICartService
             UnitPrice = product.Price,
             IsLimitedEdition = product.IsLimitedEdition
         });
+
+        await Task.Delay(800);
 
         NotifyStateChanged();
     }

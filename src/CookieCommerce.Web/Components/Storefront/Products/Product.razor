@@ -31,16 +31,17 @@ else
                         <div class="relative bg-surface-light dark:bg-surface-dark rounded-3xl overflow-hidden shadow-2xl border border-amber-100 dark:border-amber-900/30">
                             <img alt="@_cookie.Title"                                 
                                 class="w-full h-auto aspect-square object-cover transition-all duration-300"
-                                 src="@_currentMainImage" />
+                                 src="@currentVariantImage.VariantImage" />
                         </div>
                     </div>
                     <div class="grid grid-cols-4 gap-4 mt-6">
-                        @foreach(var photo in _cookie.ImageUrls)
+                        @foreach(var photo in _cookie.Variants
+                            .SelectMany(x => x.ImageUrls.Select(url => new { x.Id, ImageUrl = url })))
                         {
-                            <div @onclick="() => SelectImage(photo)"
-                                 class="aspect-square rounded-xl overflow-hidden border-2 cursor-pointer transition-transform hover:scale-105 @(photo == _currentMainImage ? "border-primary" : "border-transparent")">
+                            <div @onclick="() => SelectImage(photo.Id, photo.ImageUrl)"
+                                 class="aspect-square rounded-xl overflow-hidden border-2 cursor-pointer transition-transform hover:scale-105 @(photo.Id == currentVariantImage.VariantId ? "border-primary" : "border-transparent")">
                                 <img alt="@_cookie.Title" class="w-full h-full object-cover"
-                                     src="@photo" />
+                                     src="@photo.ImageUrl" />
                             </div>
                         }
                     </div>
@@ -55,7 +56,11 @@ else
                         @_cookie.Title
                     </h1>
                     <div class="flex items-center gap-4 mb-6">
-                        <span class="text-3xl font-display font-bold text-primary">@_cookie.CurrencySymbol@_cookie.Price.ToString("F2")</span>
+                        @* 🐯 Dynamic Price based on selection *@
+                        <span class="text-3xl font-display font-bold text-primary">
+                            @_cookie.CurrencySymbol@((_selectedVariant?.Price ?? _cookie.Price).ToString("F2"))
+                        </span>
+
                         <div class="flex items-center gap-1 bg-amber-100 dark:bg-amber-900/40 px-3 py-1 rounded-full">
                             <span class="material-icons-round text-primary text-sm">star</span>
                             <span class="text-sm font-bold text-primary">@_cookie.Rating.ToString("F1") (@_cookie.ReviewCount reviews)</span>
@@ -64,6 +69,27 @@ else
                     <p class="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
                         @_cookie.Description
                     </p>
+                    @if (_cookie.Variants != null && _cookie.Variants.Any())
+                    {
+                        <div class="mb-8">
+                            <h3 class="font-display font-bold text-lg text-text-light dark:text-text-dark mb-3 uppercase tracking-wide">
+                                Choose your size/pack
+                            </h3>
+                            <div class="flex flex-wrap gap-3">
+                                @foreach (var variant in _cookie.Variants)
+                                {
+                                    <button @onclick="() => SelectVariant(variant)"
+                                            class="px-6 py-3 rounded-2xl border-2 transition-all duration-300 text-sm font-bold flex flex-col items-start
+                                           @(_selectedVariant?.Id == variant.Id
+                                                                             ? "border-primary bg-primary/5 text-primary shadow-md shadow-primary/10"
+                                                                             : "border-amber-100 dark:border-amber-800 text-gray-500 hover:border-primary/50")">
+                                        <span>@variant.Title</span>
+                                        <span class="text-xs opacity-70">@_cookie.CurrencySymbol@variant.Price.ToString("F2")</span>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
                     <div class="mb-8">
                         <h3 class="font-display font-bold text-lg text-text-light dark:text-text-dark mb-3 uppercase tracking-wide">
                             Key Ingredients
@@ -93,10 +119,26 @@ else
                                     <span class="material-icons-round text-xl">add</span>
                                 </button>    
                             </div>
-                            <button @onclick="async () => await AddToCartAsync()" class="cursor-pointer flex-grow bg-primary hover:bg-amber-700 text-white px-8 py-4 rounded-full font-bold text-xl shadow-lg shadow-primary/30 transition-all active:scale-95 flex items-center justify-center gap-3">
-                                <span class="material-symbols-outlined text-white">shopping_bag</span>
-                                Add to Cart
-                            </button>
+                            
+                            <button @onclick="async () => await AddToCartAsync()"
+                                    disabled="@isAddingToCart"
+                                    class="cursor-pointer flex-grow bg-primary hover:bg-amber-700 text-white px-8 py-4 rounded-full font-bold text-xl shadow-lg shadow-primary/30 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-80 disabled:cursor-not-allowed">
+
+                                @if (isAddingToCart)
+                                {
+                                    @* 🐯 Spinning Loader *@
+                                    <svg class="animate-spin size-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span>Adding...</span>
+                                }
+                                else
+                                {
+                                    <span class="material-symbols-outlined text-white">shopping_bag</span>
+                                    <span>Add to Cart</span>
+                                }
+                        </button>
 
                             <button @onclick="ToggleFavorite" 
                                     class="group cursor-pointer flex items-center justify-center p-4 bg-surface-light dark:bg-surface-dark border-2 transition-all duration-300 rounded-full
@@ -160,25 +202,50 @@ else
 @code {
     [Parameter] public Guid Id { get; set; }
 
-    private string _currentMainImage = string.Empty;
+    private (Guid VariantId, string VariantImage) currentVariantImage = (Guid.Empty, string.Empty);
     private int Quantity { get; set; } = 1;
     private StorefrontProductDto? _cookie;
+    private StorefrontProductVariantDto? _selectedVariant;
     private bool IsInFavorites { get; set; }
+    private bool isAddingToCart = false;
 
     protected override async Task OnInitializedAsync()
     {
         _cookie = await CookieService.GetCookieByIdAsync(Id);
         ArgumentNullException.ThrowIfNull(_cookie, nameof(_cookie));
-        _currentMainImage = _cookie.ImageUrls[0];
+
+        _selectedVariant = _cookie.Variants?.FirstOrDefault();
+        currentVariantImage = (
+            _selectedVariant?.Id ?? Guid.Empty, 
+            _selectedVariant?.ImageUrls.FirstOrDefault() ?? string.Empty);
+
         if (Auth.IsLoggedIn)
         {
             IsInFavorites = await AccountService.IsFavoriteAsync(_cookie.Id);
         }
     }
 
-    private void SelectImage(string imageUrl)
+    private void SelectVariant(StorefrontProductVariantDto variant)
     {
-        _currentMainImage = imageUrl;
+        _selectedVariant = variant;
+        UpdateDisplay();
+    }
+
+    private void UpdateDisplay()
+    {
+        // If variant has specific images, use them; otherwise fallback to base cookie images
+        var images = _selectedVariant?.ImageUrls.Any() == true
+                     ? _selectedVariant.ImageUrls.ToList()
+                     : _cookie!.ImageUrls.ToList();
+
+        currentVariantImage = (currentVariantImage.VariantId, images.First());
+    }
+
+    private void SelectImage(Guid variantId, string imageUrl)
+    {
+        currentVariantImage = (variantId, imageUrl);
+        _selectedVariant = _cookie!.Variants?.FirstOrDefault(v => v.Id == variantId);
+        UpdateDisplay();
     }
 
     private void IncreaseQuantity() => Quantity++;
@@ -187,10 +254,11 @@ else
 
     private async Task AddToCartAsync()
     {
-        if (_cookie is not null)
-        {
-            await CartService.AddToCartAsync(_cookie.Id, Quantity);
-        }
+        if (_cookie is null || isAddingToCart) return;
+
+        isAddingToCart = true;
+        await CartService.AddToCartAsync(_cookie.Id, Quantity);
+        isAddingToCart = false;
     }
 
     private async Task ToggleFavorite()

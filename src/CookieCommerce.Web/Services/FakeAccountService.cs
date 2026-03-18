@@ -192,4 +192,9 @@ public class FakeAccountService() : IAccountService
     {
         return Task.FromResult((false, 0));
     }
+
+    public Task<bool> HasBirthdateAsync()
+    {
+        return Task.FromResult(_profile.DateOfBirth.HasValue);
+    }
 }

@@ -13,6 +13,7 @@ public interface IAccountService
     Task RemoveFromFavoritesAsync(Guid productId);
     Task<bool> IsFavoriteAsync(Guid productId);
     Task<ICollection<StorefrontProductDto>> GetFavoriteProductsAsync();
+    Task<bool> HasBirthdateAsync();
     Task<UserProfileDto> GetProfileAsync();
     Task<ResultDto> UpdateProfileAsync(UserProfileDto profile);
     Task<IList<AddressBookItemDto>> GetAddressesAsync();

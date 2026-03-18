@@ -30,7 +30,7 @@
                         <td class="p-4">
                             <OrderStatus Status="@order.Status" />
                         </td>
-                        <td class="p-4 font-bold text-gray-900 dark:text-white">@order.CurrencySymbol@order.Total.ToString("C2")</td>
+                        <td class="p-4 font-bold text-gray-900 dark:text-white">@order.CurrencySymbol@order.Total.ToString("F2")</td>
                         <td class="p-4">
                             <a href="/account/orders/@order.OrderReference" class="text-gray-400 hover:text-primary transition-colors">
                                 <span class="cursor-pointer material-icons">visibility</span>

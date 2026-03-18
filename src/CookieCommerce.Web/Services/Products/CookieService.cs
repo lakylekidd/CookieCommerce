@@ -17,7 +17,7 @@ public class CookieService : ICookieService
         return Task.FromResult<IReadOnlyList<StorefrontProductDto>>(favorites);
     }
 
-    public Task<StorefrontProductDto?> GetCookieByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task<StorefrontProductDto?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var cookie = StaticStorefrontProductList.Cookies.FirstOrDefault(c => c.Id == id);
         return Task.FromResult(cookie);

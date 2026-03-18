@@ -211,7 +211,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _cookie = await CookieService.GetCookieByIdAsync(Id);
+        _cookie = await CookieService.GetProductByIdAsync(Id);
         ArgumentNullException.ThrowIfNull(_cookie, nameof(_cookie));
 
         _selectedVariant = _cookie.Variants?.FirstOrDefault();

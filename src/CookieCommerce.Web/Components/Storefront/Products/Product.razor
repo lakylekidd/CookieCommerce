@@ -254,10 +254,10 @@ else
 
     private async Task AddToCartAsync()
     {
-        if (_cookie is null || isAddingToCart) return;
+        if (_cookie is null || _selectedVariant is null || isAddingToCart) return;
 
         isAddingToCart = true;
-        await CartService.AddToCartAsync(_cookie.Id, Quantity);
+        await CartService.AddToCartAsync(_cookie.Id, _selectedVariant.Id, Quantity);
         isAddingToCart = false;
     }
 

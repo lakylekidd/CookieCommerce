@@ -21,7 +21,7 @@ public class MockCartService : ICartService
 
     public async Task AddToCartAsync(Guid productId, int quantity)
     {
-        var product = StaticProductList.Cookies.FirstOrDefault(p => p.Id == productId);
+        var product = StaticStorefrontProductList.Cookies.FirstOrDefault(p => p.Id == productId);
         if (product == null) return;
 
         var existingItem = _cart.Items.FirstOrDefault(i => i.ProductId == productId); 
@@ -134,7 +134,7 @@ public class MockCartService : ICartService
     {
         foreach (var (productId, quantity) in items)
         {
-            var product = StaticProductList.Cookies.FirstOrDefault(p => p.Id == productId);
+            var product = StaticStorefrontProductList.Cookies.FirstOrDefault(p => p.Id == productId);
             if (product == null) continue;
             var existingItem = _cart.Items.FirstOrDefault(i => i.ProductId == productId); 
             if (existingItem is not null)

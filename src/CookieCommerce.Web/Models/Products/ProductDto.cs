@@ -1,19 +1,20 @@
-namespace CookieCommerce.Web.Models.Products;
+﻿namespace CookieCommerce.Web.Models.Products;
 
+/// <summary>
+/// The ProductDto represents the product information used for inventory management and internal operations.
+/// It contains all the necessary details about a product, including its unique identifier, reference code, 
+/// name, main image, stock quantity, active status, and associated variants. This DTO is designed for internal 
+/// use within the application and may not contain all the presentation-specific details required for storefront display.
+/// </summary>
 public class ProductDto
 {
-    public Guid Id { get; init; }
-    public string Title { get; init; } = string.Empty;
-    public string Description { get; init; } = string.Empty;
-    public string CurrencySymbol { get; init; } = "$";
-    public decimal Price { get; init; }
-    public string ImageUrl { get; init; } = string.Empty;
-    public string[] ImageUrls { get; init; } = [];
-    public bool IsBestSeller { get; init; }
+    public Guid ProductId { get; set; }
+    public string ProductReference { get; set; } = string.Empty;
+    public string ProductName { get; set; } = string.Empty;
+    public ProductImageDto? ProductMainImage { get; set; }
+    public int Stock { get; set; }
+    public bool Active { get; set; }
     public bool IsLimitedEdition { get; init; }
     public bool IsFeatured { get; init; } = false;
-    public string[] Ingredients { get; init; } = [];
-    public float Rating { get; init; } = 0.0f;
-    public int ReviewCount { get; init; } = 0;
-    public bool TopSeller { get; init; } = false;
+    public ICollection<ProductVariantDto> Variants { get; set; } = [];
 }

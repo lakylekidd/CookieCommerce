@@ -64,9 +64,9 @@ else
         @* Header Section *@
         <div class="p-8 border-b border-orange-50 dark:border-stone-700 bg-gradient-to-br from-white to-orange-50/30 dark:from-stone-800 dark:to-stone-900">
             <div class="flex items-center gap-4">
-                @if (!string.IsNullOrEmpty(InventoryItem.ProductImageUrl))
+                @if (InventoryItem.ProductMainImage is not null)
                 {
-                    <img src="@InventoryItem.ProductImageUrl"
+                    <img src="@InventoryItem.ProductMainImage.Url"
                          class="size-10 rounded-2xl object-cover shadow-orange-200 dark:shadow-none shadow-lg" />
                 }
                 else
@@ -109,6 +109,6 @@ else
 }
 
 @code {
-    [Parameter] public InventoryItemWithVariantsDto? InventoryItem { get; set; }
+    [Parameter] public ProductDto? InventoryItem { get; set; }
     [Parameter] public bool IsLoading { get; set; } = false;    
 }

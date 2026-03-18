@@ -14,13 +14,13 @@ public interface IBackofficeService
     Task<ProductVariantDto> GetVariantAsync(Guid variantId);
     Task<ICollection<ProductVariantSkuDto>> GetVariantSkus(Guid variantId);
     Task<QuotaDateOrdersDto> GetQuotaDateOrdersAsync(DateTime quotaDate);
-    Task<ICollection<InventoryItemWithVariantsDto>> GetInventoryItemsAsync();
+    Task<ICollection<ProductDto>> GetInventoryItemsAsync();
     Task ChangeProductStatusAsync(Guid productId, bool isActive);
     Task ChangeVariantStatusAsync(Guid variantId, bool isActive);
     Task ChangeVariantNameAsync(Guid variantId, string name);
     Task ChangeVariantPriceAsync(Guid variantId, decimal price);
     Task DeleteVariantAsync(Guid variantId);
-    Task<InventoryItemWithVariantsDto> GetInventoryItemAsync(Guid productId);
+    Task<ProductDto> GetInventoryItemAsync(Guid productId);
     Task AddVariantSkuAsync(Guid productId, Guid skuId, int quantity);
     Task RemoveVariantSku(Guid variantId, Guid skuId);
     Task UpdateVariantSkuQuantity(Guid variantId, Guid skuId, int quantity);

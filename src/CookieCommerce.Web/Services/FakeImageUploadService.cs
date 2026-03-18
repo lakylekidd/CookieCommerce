@@ -13,21 +13,17 @@ public class FakeImageUploadService(IBackofficeService backofficeService) : IIma
         if (imageToRemove != null)
         {
             variant.Images.Remove(imageToRemove);
-            if (imageToRemove.IsMain && variant.Images.Any())
-            {
-                variant.Images.First().IsMain = true;
-            }
         }
 
     }
 
-    public async Task<List<ProductVariantImageDto>> GetImagesForVariantAsync(Guid variantId)
+    public async Task<List<ProductImageDto>> GetImagesForVariantAsync(Guid variantId)
     {
         var variant = await backofficeService.GetVariantAsync(variantId);
         return variant.Images.ToList();
     }
 
-    public async Task<ProductVariantImageDto> ProcessImageUploadAsync(IBrowserFile file, Guid variantId)
+    public async Task<ProductImageDto> ProcessImageUploadAsync(IBrowserFile file, Guid variantId)
     {
         long maxAllowedSize = 10 * 1024 * 1024;
         if (file.Size > maxAllowedSize) return null;
@@ -43,12 +39,10 @@ public class FakeImageUploadService(IBackofficeService backofficeService) : IIma
         var url = $"data:{file.ContentType};base64,{base64}";
 
         // Create the new Image DTO
-        var newImage = new ProductVariantImageDto
+        var newImage = new ProductImageDto
         {
             Id = Guid.NewGuid(),
-            Url = url,
-            // If it's the first image, make it the main one automatically
-            IsMain = !variant.Images.Any(i => i.IsMain)
+            Url = url
         };
 
         variant.Images.Add(newImage);
@@ -58,24 +52,6 @@ public class FakeImageUploadService(IBackofficeService backofficeService) : IIma
             .Variants.FirstOrDefault(v => v.Id == variantId)?
             .Images.Add(newImage);
 
-        if (newImage.IsMain)
-        {
-            // Get product based on variant id
-            var productId = StaticInventoryList.InventoryItems
-                .FirstOrDefault(i => i.Variants.Any(v => v.Id == variantId))?
-                .ProductImageUrl = newImage.Url;
-        }
-
         return newImage;
-    }
-
-    public async Task SetPhotoAsMain(Guid imageId, Guid variantId)
-    {
-        var variant = await backofficeService.GetVariantAsync(variantId);
-
-        foreach (var img in variant.Images)
-        {
-            img.IsMain = false;
-        }
     }
 }

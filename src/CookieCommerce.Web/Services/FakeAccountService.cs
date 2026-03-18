@@ -43,12 +43,12 @@ public class FakeAccountService() : IAccountService
         return Task.FromResult(_favoriteProductIds.Contains(productId));
     }
 
-    public Task<ICollection<ProductDto>> GetFavoriteProductsAsync()
+    public Task<ICollection<StorefrontProductDto>> GetFavoriteProductsAsync()
     {
-        var favoriteProducts = StaticProductList.Cookies
+        var favoriteProducts = StaticStorefrontProductList.Cookies
             .Where(p => _favoriteProductIds.Contains(p.Id))
             .ToList();
-        return Task.FromResult((ICollection<ProductDto>)favoriteProducts);
+        return Task.FromResult((ICollection<StorefrontProductDto>)favoriteProducts);
     }
 
     public  Task<UserProfileDto> GetProfileAsync()

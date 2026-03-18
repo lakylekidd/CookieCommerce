@@ -71,7 +71,7 @@
 
 @code {
     [Parameter] public EventCallback<Guid?> OnProductSelected { get; set; }
-    [Parameter] public ICollection<InventoryItemWithVariantsDto> InventoryItems { get; set; } = [];
+    [Parameter] public ICollection<ProductDto> InventoryItems { get; set; } = [];
     [Parameter] public bool IsLoading { get; set; } = true;
     private Guid? SelectedProductId;
 

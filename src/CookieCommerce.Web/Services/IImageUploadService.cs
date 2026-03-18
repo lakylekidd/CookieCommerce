@@ -5,8 +5,7 @@ namespace CookieCommerce.Web.Services;
 
 public interface IImageUploadService
 {
-    Task<ProductVariantImageDto> ProcessImageUploadAsync(IBrowserFile file, Guid variantId);
-    Task SetPhotoAsMain(Guid imageId, Guid variantId);
+    Task<ProductImageDto> ProcessImageUploadAsync(IBrowserFile file, Guid variantId);
     Task DeletePhotoAsync(Guid imageId, Guid variantId);
-    Task<List<ProductVariantImageDto>> GetImagesForVariantAsync(Guid variantId);
+    Task<List<ProductImageDto>> GetImagesForVariantAsync(Guid variantId);
 }

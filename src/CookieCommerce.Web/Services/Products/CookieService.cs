@@ -5,21 +5,21 @@ namespace CookieCommerce.Web.Services.Products;
 
 public class CookieService : ICookieService
 {
-    public Task<IReadOnlyList<ProductDto>> GetFeaturedCookiesAsync(CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<StorefrontProductDto>> GetFeaturedCookiesAsync(CancellationToken cancellationToken = default)
     {
-        var cookies = StaticProductList.Cookies.Where(c => c.IsFeatured).ToList();
-        return Task.FromResult<IReadOnlyList<ProductDto>>(cookies);
+        var cookies = StaticStorefrontProductList.Cookies.Where(c => c.IsFeatured).ToList();
+        return Task.FromResult<IReadOnlyList<StorefrontProductDto>>(cookies);
     }
 
-    public Task<IReadOnlyList<ProductDto>> GetFavoriteCookiesAsync(CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<StorefrontProductDto>> GetFavoriteCookiesAsync(CancellationToken cancellationToken = default)
     {
-        var favorites = StaticProductList.Cookies.ToList();
-        return Task.FromResult<IReadOnlyList<ProductDto>>(favorites);
+        var favorites = StaticStorefrontProductList.Cookies.ToList();
+        return Task.FromResult<IReadOnlyList<StorefrontProductDto>>(favorites);
     }
 
-    public Task<ProductDto?> GetCookieByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task<StorefrontProductDto?> GetCookieByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var cookie = StaticProductList.Cookies.FirstOrDefault(c => c.Id == id);
+        var cookie = StaticStorefrontProductList.Cookies.FirstOrDefault(c => c.Id == id);
         return Task.FromResult(cookie);
     }
 
@@ -57,9 +57,9 @@ public class CookieService : ICookieService
         return reviews;
     }
 
-    public Task<IReadOnlyList<ProductDto>> GetTopRatedAsync()
+    public Task<IReadOnlyList<StorefrontProductDto>> GetTopRatedAsync()
     {
-        var topRated = StaticProductList.Cookies.OrderByDescending(c => c.Rating).Take(4).ToList();
-        return Task.FromResult<IReadOnlyList<ProductDto>>(topRated);
+        var topRated = StaticStorefrontProductList.Cookies.OrderByDescending(c => c.Rating).Take(4).ToList();
+        return Task.FromResult<IReadOnlyList<StorefrontProductDto>>(topRated);
     }
 }

@@ -11,34 +11,69 @@ public static class StaticSkuList
         Description = "A delicious chocolate chunk cookie.",
         Cost = 0.4m,
         Stock = 50,
-        SkuType = "Product"
+        SkuType = "Product",
+        Ingredients = ["Organic wheat flour", "70% Belgian dark chocolate", 
+            "Unsalted butter", "Brown sugar", "Free-range eggs", "Vanilla extract", 
+            "Maldon sea salt", "Baking soda"],
     };
     public static SkuDto SkuMatchaWhiteChocolateCookie = new()
     {
         Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-222222222222"),
-        Name = "Matcha White Choc Cookie",
+        Name = "Matcha White Chocolate Cookie",
         Description = "A delightful matcha white chocolate cookie.",
         Cost = 0.6m,
         Stock = 30,
-        SkuType = "Product"
+        SkuType = "Product",
+        Ingredients = ["Organic wheat flour", "Ceremonial Uji matcha powder", 
+            "Belgian white chocolate pearls", "Unsalted butter", "Cane sugar", 
+            "Free-range eggs", "Almond flour", "Baking powder"],
     };
-    public static SkuDto SkuTigerStripeCookie = new()
+    public static SkuDto SkuHazelnutPralineCookie = new()
     {
         Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-333333333333"),
-        Name = "Tiger Stripe Cookie",
-        Description = "A tasty tiger stripe cookie.",
-        Cost = 0.4m,
-        Stock = 20,
-        SkuType = "Product"
+        Name = "Hazelnut Praline Cookie",
+        Description = "A nutty hazelnut praline cookie.",
+        Cost = 0.6m,
+        Stock = 30,
+        SkuType = "Product",
+        Ingredients = ["Organic wheat flour", "Hazelnut praline paste", 
+            "Toasted hazelnuts", "Unsalted butter", "Brown sugar", 
+            "Free-range eggs", "Vanilla extract", "Baking soda"],
     };
-    public static SkuDto SkuVelvetTigerCookie = new()
+    public static SkuDto SkuRedVelvetCookie = new()
     {
         Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-444444444444"),
-        Name = "Velvet Tiger Cookie",
-        Description = "A scrumptious velvet tiger cookie.",
+        Name = "Red Velvet Cookie",
+        Description = "A scrumptious red velvet cookie.",
         Cost = 0.45m,
         Stock = 45,
-        SkuType = "Product"
+        SkuType = "Product",
+        Ingredients = ["Organic wheat flour", "Natural red food coloring from beetroot", 
+            "Cocoa powder", "Unsalted butter", "Cane sugar", "Free-range eggs", 
+            "Cream cheese chunks", "Vanilla extract", "Maldon sea salt", "Baking powder"]
+    };
+    public static SkuDto SkuCaramelSeaSaltCookie = new()
+    {
+        Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-555555555555"),
+        Name = "Caramel Sea Salt Cookie",
+        Description = "A delicious caramel sea salt cookie.",
+        Cost = 0.5m,
+        Stock = 45,
+        SkuType = "Product",
+        Ingredients = ["Organic wheat flour", "Salted caramel chunks", "Unsalted butter", 
+            "Brown sugar", "Free-range eggs", "Vanilla extract", "Maldon sea salt", "Baking soda"]
+    };
+    public static SkuDto SkuCocoaWhiteChocolateChipCookie = new()
+    {
+        Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-666666666666"),
+        Name = "Cocoa White Chocolate Chip Cookie",
+        Description = "A delightful cocoa white chocolate chip cookie.",
+        Cost = 0.55m,
+        Stock = 45,
+        SkuType = "Product",
+        Ingredients = ["Organic wheat flour", "Cocoa powder", "Belgian white chocolate chips", 
+            "Unsalted butter", "Brown sugar", "Free-range eggs", "Vanilla extract", 
+            "Maldon sea salt", "Baking soda"]
     };
 
     public static SkuDto SkuCellophaneTransparentBag = new()
@@ -50,7 +85,7 @@ public static class StaticSkuList
         Stock = 100,
         SkuType = "Packaging"
     };
-    public static SkuDto SkuBoxOf4Cookies = new()
+    public static SkuDto SkuBoxOf5Cookies = new()
     {
         Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-666666666666"),
         Name = "Box of 4 Cookies",
@@ -82,10 +117,12 @@ public static class StaticSkuList
         [
             SkuChocolateChunkCookie,
             SkuMatchaWhiteChocolateCookie,
-            SkuTigerStripeCookie,
-            SkuVelvetTigerCookie,
+            SkuHazelnutPralineCookie,
+            SkuRedVelvetCookie,
+            SkuCaramelSeaSaltCookie,
+            SkuCocoaWhiteChocolateChipCookie,
             SkuCellophaneTransparentBag,
-            SkuBoxOf4Cookies,
+            SkuBoxOf5Cookies,
             SkuBoxOf12Cookies,
             SkuBoxOf8Cookies            
         ];

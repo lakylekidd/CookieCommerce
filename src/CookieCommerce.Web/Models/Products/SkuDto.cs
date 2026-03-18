@@ -8,4 +8,5 @@ public class SkuDto
     public decimal Cost { get; set; }
     public int Stock { get; set; }
     public string SkuType { get; set; } = "Product";
+    public ICollection<string> Ingredients { get; set; } = [];
 }

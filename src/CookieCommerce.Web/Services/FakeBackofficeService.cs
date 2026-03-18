@@ -62,14 +62,14 @@ public class FakeBackofficeService : IBackofficeService
         return Task.Delay(500);
     }
 
-    public async Task<InventoryItemWithVariantsDto> GetInventoryItemAsync(Guid productId)
+    public async Task<ProductDto> GetInventoryItemAsync(Guid productId)
     {
         var item = StaticInventoryList.InventoryItems.FirstOrDefault(i => i.ProductId == productId);
         await Task.Delay(800);
         return item;
     }
 
-    public async Task<ICollection<InventoryItemWithVariantsDto>> GetInventoryItemsAsync()
+    public async Task<ICollection<ProductDto>> GetInventoryItemsAsync()
     {
         var inventoryItems = StaticInventoryList.InventoryItems;
         await Task.Delay(800);
@@ -180,7 +180,7 @@ public class FakeBackofficeService : IBackofficeService
     public Task CreateProductAsync(CreateProductDto createProductDto)
     {
         var newProductId = Guid.NewGuid();
-        StaticInventoryList.InventoryItems.Add(new InventoryItemWithVariantsDto
+        StaticInventoryList.InventoryItems.Add(new ProductDto
         {
             ProductId = newProductId,
             ProductReference = createProductDto.ProductReference,

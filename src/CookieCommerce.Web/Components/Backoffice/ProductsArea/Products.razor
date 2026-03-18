@@ -48,8 +48,8 @@
 
 
 @code {
-    private ICollection<InventoryItemWithVariantsDto> InventoryItems { get; set; } = [];
-    private InventoryItemWithVariantsDto? SelectedInventoryItem { get; set; } = null;
+    private ICollection<ProductDto> InventoryItems { get; set; } = [];
+    private ProductDto? SelectedInventoryItem { get; set; } = null;
     private bool IsLoadingInventoryTable { get; set; } = true;
     private bool IsLoadingSelectedInventoryItem { get; set; } = false;
     private CreateNewProductModal CreateModal { get; set; } = null!;

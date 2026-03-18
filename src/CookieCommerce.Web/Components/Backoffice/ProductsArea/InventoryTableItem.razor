@@ -8,9 +8,9 @@
            @(IsSelected ? "bg-orange-50/50 dark:bg-orange-900/10" : "hover:bg-orange-50/20 dark:hover:bg-gray-800/30")">
     <td class="px-6 py-6 hidden sm:table-cell">
         <div class="flex items-center gap-3">
-            @if (!string.IsNullOrEmpty(Item.ProductImageUrl))
+            @if (Item.ProductMainImage is not null)
             {
-                <img src="@Item.ProductImageUrl"
+                <img src="@Item.ProductMainImage.Url"
                      alt="@Item.ProductName"
                      class="size-10 rounded-full object-cover border-2 border-stone-100 dark:border-stone-800 shadow-sm">
             }
@@ -81,7 +81,7 @@
 </tr>
 
 @code {
-    [Parameter] public InventoryItemDto Item { get; set; } = default!;
+    [Parameter] public ProductDto Item { get; set; } = default!;
     [Parameter] public bool IsSelected { get; set; }
     [Parameter] public EventCallback<Guid> OnSelected { get; set; }
 

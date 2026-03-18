@@ -71,7 +71,7 @@ public static class MockDashboardData
 
     private static List<CookieRankDto> GetTopCookies()
     {
-        var cookies = StaticProductList.Cookies.Take(4).ToList();
+        var cookies = StaticStorefrontProductList.Cookies.Take(4).ToList();
 
         var random = new Random();
         var cookieData = cookies.Select((cookie, index) => new

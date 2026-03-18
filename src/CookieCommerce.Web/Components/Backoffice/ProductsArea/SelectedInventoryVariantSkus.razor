@@ -44,7 +44,7 @@
                         {
                             <div class="relative group flex-shrink-0">
                                 @* Added w-32 h-32 explicitly and aspect-square *@
-                                <div class="w-32 h-32 aspect-square rounded-3xl overflow-hidden border-2 transition-all relative @(photo.IsMain ? "border-primary shadow-lg shadow-primary/20 scale-105 z-10" : "border-transparent bg-stone-100 dark:bg-stone-800")">
+                                <div class="w-32 h-32 aspect-square rounded-3xl overflow-hidden border-2 transition-all relative border-transparent bg-stone-100 dark:bg-stone-800")">
 
                                     <img src="@photo.Url"
                                             class="w-full h-full object-cover block"
@@ -52,13 +52,6 @@
 
                                     @* Overlay Controls - Ensure z-index is high *@
                                     <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-20">
-                                        @if (!photo.IsMain)
-                                        {
-                                            <button @onclick="() => SetMainPhoto(photo)"
-                                                    class="bg-white text-primary text-[10px] font-black uppercase px-3 py-1 rounded-full transform hover:scale-105 transition-transform">
-                                                Make Main
-                                            </button>
-                                        }
                                         <button @onclick="() => DeletePhoto(photo)"
                                                 class="bg-red-500 text-white p-2 rounded-full transform hover:scale-110 transition-transform">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -67,14 +60,6 @@
                                         </button>
                                     </div>
                                 </div>
-
-                                @if (photo.IsMain)
-                                {
-                                    @* Adjust badge position to avoid clipping *@
-                                    <span class="absolute -top-1 -right-1 bg-primary text-white text-[8px] font-black uppercase px-2 py-1 rounded-full shadow-md z-30">
-                                        Main
-                                    </span>
-                                }
                             </div>
                         }
                     </div>
@@ -225,7 +210,7 @@
     [Parameter] public ICollection<ProductVariantSkuDto> VariantSkus { get; set; } = [];
     [Parameter] public EventCallback<ICollection<ProductVariantSkuDto>> VariantSkusChanged { get; set; }
     [Parameter] public bool isLoading { get; set; } = false;
-    [Parameter] public List<ProductVariantImageDto> VariantPhotos { get; set; } = [];
+    [Parameter] public List<ProductImageDto> VariantPhotos { get; set; } = [];
     private ICollection<SkuDto> AllAvailableSkus = [];
     private HashSet<Guid> deletingSkuIds = new();
     private int maxAllowedFiles = 5;
@@ -294,15 +279,7 @@
         StateHasChanged();
     }
 
-    private async Task SetMainPhoto(ProductVariantImageDto selectedImage)
-    {
-        // Set all to false, then the selected one to true
-        await ImageService.SetPhotoAsMain(selectedImage.Id, VariantId);
-        selectedImage.IsMain = true;
-        StateHasChanged();
-    }
-
-    private async Task DeletePhoto(ProductVariantImageDto image)
+    private async Task DeletePhoto(ProductImageDto image)
     {
         await ImageService.DeletePhotoAsync(image.Id, VariantId);
         VariantPhotos.Remove(image);

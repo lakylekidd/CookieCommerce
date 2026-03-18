@@ -71,9 +71,9 @@ public static class MockOrderData
         return orders.OrderByDescending(o => o.PlacedOn).ToList();
     }
 
-    private static ICollection<ProductDto> GetRandomProducts()
+    private static ICollection<StorefrontProductDto> GetRandomProducts()
     {
-        var allCookies = StaticProductList.Cookies;
+        var allCookies = StaticStorefrontProductList.Cookies;
         int count = _random.Next(1, 4); // Each order has 1-3 products
         return allCookies.OrderBy(_ => _random.Next()).Take(count).ToList();
     }

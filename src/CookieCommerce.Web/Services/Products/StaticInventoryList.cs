@@ -363,6 +363,7 @@ public static class StaticInventoryList
         },
         Stock = StaticSkuList.SkuCaramelSeaSaltCookie.Stock,
         Active = true,
+        IsLimitedEdition = true,
         Variants =
         [
             new ()

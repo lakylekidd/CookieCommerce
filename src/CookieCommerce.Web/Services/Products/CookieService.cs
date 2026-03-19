@@ -1,4 +1,4 @@
-using CookieCommerce.Web.Models.Products;
+﻿using CookieCommerce.Web.Models.Products;
 using CookieCommerce.Web.Models.Reviews;
 
 namespace CookieCommerce.Web.Services.Products;
@@ -52,6 +52,46 @@ public class CookieService : ICookieService
                 Author = "Charlie E.",
                 Content = "Not my favorite, but still enjoyable.",
                 Rating = 3
+            },
+            new ReviewDto
+            {
+                Id = Guid.NewGuid(),
+                CookieId = cookieId,
+                Author = "Leo T.",
+                Content = "Absolutely roar-some! The orange zest in the dough is a game changer. I pounced on the 12-pack and they were gone in a day. 🐯",
+                Rating = 5
+            },
+            new ReviewDto
+            {
+                Id = Guid.NewGuid(),
+                CookieId = cookieId,
+                Author = "Sarah Jenkins",
+                Content = "The best cookies in the jungle. They arrived so fresh, it felt like they were just pulled out of the oven! My kids loved the tiger paw shapes.",
+                Rating = 5
+            },
+            new ReviewDto
+            {
+                Id = Guid.NewGuid(),
+                CookieId = cookieId,
+                Author = "Marcus V.",
+                Content = "Order by 6 PM and they really were at my door the next day! Super impressive delivery and even better taste. 🐾",
+                Rating = 5
+            },
+            new ReviewDto
+            {
+                Id = Guid.NewGuid(),
+                CookieId = cookieId,
+                Author = "Emily 'Claws' Reed",
+                Content = "I'm a tough critic, but these are top-tier. Perfectly crunchy on the outside and soft on the inside. Worth every penny for the 12-pack!",
+                Rating = 4
+            },
+            new ReviewDto
+            {
+                Id = Guid.NewGuid(),
+                CookieId = cookieId,
+                Author = "BakeLover99",
+                Content = "Found my new favorite snack. The packaging is so cute (love the tiger stripes!), and the chocolate chunks are massive. 10/10 would pounce again.",
+                Rating = 5
             }
         };
         return reviews;

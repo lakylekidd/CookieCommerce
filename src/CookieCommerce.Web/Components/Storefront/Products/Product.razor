@@ -54,40 +54,12 @@ else
                         @cookie.Description
                     </p>
                     
-                    @if (cookie.Variants != null && cookie.Variants.Any())
-                    {
-                        <div class="mb-8">
-                            <h3 class="font-display font-bold text-lg text-text-light dark:text-text-dark mb-3 uppercase tracking-wide">
-                                Choose your size/pack
-                            </h3>
-                            <div class="flex flex-wrap gap-3">
-                                @foreach (var variant in cookie.Variants)
-                                {
-                                    @* 🐯 Determine if this is the 'Popular' one (the last one) *@
-                                    bool isPopular = variant == cookie.Variants.Last();
+                    <VariantSelector 
+                        Variants="@cookie.Variants" 
+                        SelectedVariant="@_selectedVariant" 
+                        CurrencySymbol="@cookie.CurrencySymbol" 
+                        OnVariantSelected="SelectVariant" />
 
-                                    <button @onclick="() => SelectVariant(variant)"
-                                            class="relative cursor-pointer px-6 py-3 rounded-2xl border-2 transition-all duration-300 text-sm font-bold flex flex-col items-start
-                                            @(_selectedVariant?.Id == variant.Id
-                                                                    ? "border-primary bg-primary/5 text-primary shadow-md shadow-primary/10 scale-[1.02]"
-                                                                    : "border-amber-100 dark:border-amber-800 text-gray-500 hover:border-primary/50")">
-
-                                        @if (isPopular)
-                                        {
-                                            @* 🐯 Cute Tiger Badge *@
-                                            <div class="absolute -top-4 -right-2 bg-amber-500 text-white text-[11px] px-2 py-1 rounded-lg shadow-sm flex items-center gap-1 animate-bounce-subtle">
-                                                <span>🐯</span>
-                                                <span>Popular</span>
-                                            </div>
-                                        }
-
-                                        <span>@variant.Title</span>
-                                        <span class="text-xs opacity-70">@cookie.CurrencySymbol@variant.Price.ToString("F2")</span>
-                                    </button>
-                                }
-                            </div>
-                        </div>
-                    }
                     <div class="mb-8">
                         <h3 class="font-display font-bold text-lg text-text-light dark:text-text-dark mb-3 uppercase tracking-wide">
                             Key Ingredients

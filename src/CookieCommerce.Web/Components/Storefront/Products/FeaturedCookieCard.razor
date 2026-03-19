@@ -5,107 +5,21 @@
 @inject ICartService CartService
 @inject ICookieService CookieService
 
-<style>
-    @@keyframes slideInFromRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-
-    @@keyframes slideOutToLeft {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        to {
-            transform: translateX(-100%);
-            opacity: 0;
-        }
-    }
-
-    @@keyframes slideInFromLeft {
-        from {
-            transform: translateX(-100%);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-
-    @@keyframes slideOutToRight {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-
-    /* Base class for animated images */
-    .variant-image-slide {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-        /* Ensure images don't overflow during animation */
-        will-change: transform, opacity;
-    }
-
-    /* Animation trigger classes */
-    .animate-enter-right {
-        animation: slideInFromRight 0.5s ease-in-out forwards;
-        z-index: 2;
-    }
-
-    .animate-exit-left {
-        animation: slideOutToLeft 0.5s ease-in-out forwards;
-        z-index: 1;
-    }
-
-    .animate-enter-left {
-        animation: slideInFromLeft 0.5s ease-in-out forwards;
-        z-index: 2;
-    }
-
-    .animate-exit-right {
-        animation: slideOutToRight 0.5s ease-in-out forwards;
-        z-index: 1;
-    }
-</style>
-
 <div class="group bg-surface-light dark:bg-surface-dark rounded-2xl p-4 cookie-shadow hover:-translate-y-2 transition-transform duration-300 flex flex-col h-full border border-transparent dark:border-amber-900/50">
     
     <a href="/shop/cookie/@Id">
         <div class="relative aspect-square rounded-xl overflow-hidden mb-4 bg-amber-50 dark:bg-black/20">
-            @if (_isAnimating && _previousVariantIndex.HasValue)
-            {
-                <img src="@Variants.ElementAt(_previousVariantIndex.Value).ImageUrls.First()"
-                     class="variant-image-slide @(_animationDirection == "next" ? "animate-exit-left" : "animate-exit-right")" />
-
-                <img src="@DisplayImage"
-                     class="variant-image-slide @(_animationDirection == "next" ? "animate-enter-right" : "animate-enter-left")" />
-            }
-            else
-            {
-                <img alt="@CookieTitle"
-                     class="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
-                     src="@DisplayImage" />
-            }
+            <div class="flex transition-transform duration-500 ease-in-out h-full"
+                 style="transform: translateX(-@(_currentVariantIndex * 100)%);">
+                @foreach (var imageUrl in AllImages)
+                {
+                    <div class="w-full h-full flex-shrink-0 overflow-hidden">
+                        <img alt="@CookieTitle"
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                             src="@imageUrl" />
+                    </div>
+                }
+            </div>
 
             <div class="absolute top-3 right-3 flex flex-col gap-2 z-10">
                 @if (IsBestSeller)
@@ -198,13 +112,14 @@
             : Array.Empty<StorefrontProductVariantDto>().AsReadOnly();
 
     private int _currentVariantIndex = 0;
-    private int? _previousVariantIndex = null;
-    private string _animationDirection = "none";
-    private bool _isAnimating = false;
     private bool isAddingToCart = false;
     private bool showCheckMark = false;
 
     // Helper Properties
+    private List<string> AllImages => Variants != null && Variants.Any()
+        ? Variants.Select(v => v.ImageUrls.FirstOrDefault() ?? ImageUrl).ToList()
+        : new List<string> { ImageUrl };
+
     private StorefrontProductVariantDto? CurrentVariant => Variants?.ElementAtOrDefault(_currentVariantIndex);
     private decimal DisplayPrice => CurrentVariant?.Price ?? Price;
     private string DisplayImage => CurrentVariant?.ImageUrls.FirstOrDefault() ?? ImageUrl;
@@ -214,25 +129,16 @@
         product = await CookieService.GetProductByIdAsync(Id);
     }
 
-    private void NextVariant() => TriggerAnimation("next", (_currentVariantIndex + 1) % Variants.Count);
-    private void PrevVariant() => TriggerAnimation("prev", (_currentVariantIndex - 1 + Variants.Count) % Variants.Count);
-
-    private void TriggerAnimation(string direction, int nextIndex)
+    private void NextVariant()
     {
-        if (Variants.Count <= 1 || _isAnimating) return;
-        _isAnimating = true;
-        _animationDirection = direction;
-        _previousVariantIndex = _currentVariantIndex;
-        _currentVariantIndex = nextIndex;
-        _ = CleanupAnimationAsync();
+        if (Variants.Count <= 1) return;
+        _currentVariantIndex = (_currentVariantIndex + 1) % Variants.Count;
     }
 
-    private async Task CleanupAnimationAsync()
+    private void PrevVariant()
     {
-        await Task.Delay(550);
-        _previousVariantIndex = null;
-        _isAnimating = false;
-        StateHasChanged();
+        if (Variants.Count <= 1) return;
+        _currentVariantIndex = (_currentVariantIndex - 1 + Variants.Count) % Variants.Count;
     }
 
     private async Task AddToCartAsync()

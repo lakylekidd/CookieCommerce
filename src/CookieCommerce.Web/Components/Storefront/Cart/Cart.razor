@@ -8,52 +8,6 @@
 @using CookieCommerce.Web.Services
 @inject ICartService CartService
 
-@code {
-    // Change property to nullable to resolve CS8618
-    private CartDto? CurrentCart { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        CartService.OnCartUpdated += HandleCartChanged;
-        await LoadCartAsync();
-    }
-
-    private async void HandleCartChanged()
-    {
-        await InvokeAsync(async () =>
-        {
-            await LoadCartAsync();
-            StateHasChanged();
-        });
-    }
-
-    private async Task LoadCartAsync()
-    {
-        CurrentCart = await CartService.GetCartAsync();
-    }
-
-    private async Task UpdateQuantity(Guid itemId, int newQuantity)
-    {
-        if (newQuantity < 1)
-        {
-            await CartService.RemoveItemAsync(itemId);
-            return;
-        }
-
-        await CartService.UpdateQuantityAsync(itemId, newQuantity);
-    }
-
-    private async Task RemoveItem(Guid itemId)
-    {
-        await CartService.RemoveItemAsync(itemId);
-    }
-
-    public void Dispose()
-    {
-        CartService.OnCartUpdated -= HandleCartChanged;
-    }
-}
-
 @if (CurrentCart == null || CurrentCart.Items.Count == 0)
 {
     <main class="flex-grow flex flex-col items-center justify-center py-16 px-6">
@@ -286,4 +240,49 @@ else
             </div>
         </div>
     </main>
+}
+
+@code {
+    private CartDto? CurrentCart { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CartService.OnCartUpdated += HandleCartChanged;
+        await LoadCartAsync();
+    }
+
+    private async void HandleCartChanged()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadCartAsync();
+            StateHasChanged();
+        });
+    }
+
+    private async Task LoadCartAsync()
+    {
+        CurrentCart = await CartService.GetCartAsync();
+    }
+
+    private async Task UpdateQuantity(Guid itemId, int newQuantity)
+    {
+        if (newQuantity < 1)
+        {
+            await CartService.RemoveItemAsync(itemId);
+            return;
+        }
+
+        await CartService.UpdateQuantityAsync(itemId, newQuantity);
+    }
+
+    private async Task RemoveItem(Guid itemId)
+    {
+        await CartService.RemoveItemAsync(itemId);
+    }
+
+    public void Dispose()
+    {
+        CartService.OnCartUpdated -= HandleCartChanged;
+    }
 }

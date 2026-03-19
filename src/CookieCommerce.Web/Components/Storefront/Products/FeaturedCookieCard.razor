@@ -159,7 +159,7 @@
         <button @onclick="async () => await AddToCartAsync()"
                 disabled="@(isAddingToCart || showCheckMark)"
                 aria-label="Add to cart"
-                class="size-9 flex-none rounded-full transition-all duration-300 flex items-center justify-center shadow-md active:scale-90 disabled:cursor-not-allowed
+                class="cursor-pointer size-9 flex-none rounded-full transition-all duration-300 flex items-center justify-center shadow-md active:scale-90 disabled:cursor-not-allowed
                    @(showCheckMark ? "bg-emerald-500 text-white shadow-emerald-200" : "bg-primary hover:bg-amber-700 text-white shadow-primary/30")">
 
             @if (isAddingToCart)

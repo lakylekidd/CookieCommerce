@@ -10,8 +10,10 @@
     @if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
     {
         <environment include="Production">
+
             <meta name="google-site-verification" content="qg_XKjLH1Q-HM5s9K4uKesiQHWIOwF9XdE7iOYomv64" />
             <meta name="google-adsense-account" content="ca-pub-2415952858841772">
+
             <!-- Google tag (gtag.js) for analytics -->
             <script async src="https://www.googletagmanager.com/gtag/js?id=G-HNS116Q0G5"></script>
             <script>
@@ -22,6 +24,7 @@
                 gtag('config', 'G-HNS116Q0G5');
             </script>
             <!-- Google Tag -->
+
             <!-- Matomo -->
             <script>
                 var _paq = window._paq = window._paq || [];
@@ -37,6 +40,17 @@
                 })();
             </script>
             <!-- End Matomo Code -->
+
+            <!-- Microsoft Clarity -->
+            <script type="text/javascript">
+                (function(c,l,a,r,i,t,y){
+                    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+                })(window, document, "clarity", "script", "vxvchlgg85");
+            </script>
+            <!-- End Microsoft Clarity -->
+
         </environment>
     }
     

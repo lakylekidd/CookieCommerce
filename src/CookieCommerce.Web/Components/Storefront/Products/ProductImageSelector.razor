@@ -1,0 +1,44 @@
+﻿@rendermode InteractiveServer
+@using CookieCommerce.Web.Models.Products
+
+<div class="w-full lg:w-1/2">
+    <div class="relative group">
+        <div class="absolute -inset-4 bg-primary/10 rounded-3xl blur-2xl group-hover:bg-primary/20 transition-colors">
+        </div>
+        <div class="relative bg-surface-light dark:bg-surface-dark rounded-3xl overflow-hidden shadow-2xl border border-amber-100 dark:border-amber-900/30">
+            <img alt="@Cookie.Title"
+                 class="w-full h-auto aspect-square object-cover transition-all duration-300"
+                 src="@CurrentVariantImage.VariantImage" />
+        </div>
+    </div>
+    <div class="grid grid-cols-4 gap-4 mt-6">
+        @foreach (var photo in Cookie.Variants
+                .SelectMany(x => x.ImageUrls.Select(url => new { x.Id, ImageUrl = url })))
+        {
+            <div @onclick="async () => await SelectImage(photo.Id, photo.ImageUrl)"
+                 class="aspect-square rounded-xl overflow-hidden border-2 cursor-pointer transition-transform hover:scale-105 @(photo.ImageUrl == CurrentVariantImage.VariantImage ? "border-primary" : "border-transparent")">
+                <img alt="@Cookie.Title" class="w-full h-full object-cover"
+                     src="@photo.ImageUrl" />
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public StorefrontProductDto Cookie { get; set; } = default!;
+    [Parameter] public (Guid VariantId, string VariantImage) CurrentVariantImage { get; set; } = (Guid.Empty, string.Empty);
+    [Parameter] public EventCallback<(Guid VariantId, string VariantImage)> CurrentVariantImageChanged { get; set; }
+    [Parameter] public EventCallback<StorefrontProductVariantDto> OnVariantSelected { get; set; }
+
+    private async Task SelectImage(Guid variantId, string imageUrl)
+    {
+        var imageSelection = (variantId, imageUrl);
+        await CurrentVariantImageChanged.InvokeAsync(imageSelection);
+
+        var variant = Cookie!.Variants?.FirstOrDefault(v => v.Id == variantId);
+        if (variant is not null)
+        {
+            await OnVariantSelected.InvokeAsync(variant);
+        }
+    }
+}

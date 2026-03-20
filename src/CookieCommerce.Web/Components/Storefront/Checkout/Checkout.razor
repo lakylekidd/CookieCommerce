@@ -28,63 +28,9 @@
                                 @bind-SameAsShipping="@SameAsShipping" />
 
 
-            <!-- Delivery Method -->
-            <div class="@(currentStep < 3 ? "opacity-60" : "cookie-shadow") bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
-                <div class="p-6 flex items-center justify-between border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
-                    <div class="flex items-center gap-4">
-                        <span class="@(currentStep >= 3 ? "bg-primary text-white" : "bg-gray-200 text-gray-500") w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">3</span>
-                        <h2 class="font-display font-bold text-xl dark:text-amber-50">Delivery Method</h2>
-                    </div>
-                    @if (currentStep > 3) {
-                        <button @onclick="() => GoToStep(4)" class="cursor-pointer ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
-                    }
-                </div>
-                @if(currentStep == 3)
-                {
-                    <div class="p-8 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label class="relative flex p-4 cursor-pointer rounded-2xl border-2 transition-all duration-200
-                                    @(selectedDelivery == "standard"
-                                                   ? "border-primary bg-amber-50/50 dark:bg-primary/10 shadow-md"
-                                                   : "border-amber-100 dark:border-amber-900/30 hover:border-amber-200 dark:hover:border-primary/40")">
-
-                                <input type="radio" name="delivery" value="standard"
-                                       class="mt-1 w-4 h-4 text-primary focus:ring-primary dark:bg-surface-dark border-amber-300 dark:border-amber-700"
-                                       checked="@(selectedDelivery == "standard")"
-                                       @onchange="@(() => selectedDelivery = "standard")" />
-
-                                <div class="ml-4">
-                                    <span class="block font-bold dark:text-amber-50">Standard Shipping</span>
-                                    <span class="block text-sm text-gray-500 dark:text-amber-100/50">3-5 business days</span>
-                                </div>
-                                <span class="ml-auto font-bold dark:text-amber-50">$4.95</span>
-                            </label>
-
-                            <label class="relative flex p-4 cursor-pointer rounded-2xl border-2 transition-all duration-200
-                                    @(selectedDelivery == "express"
-                                                   ? "border-primary bg-amber-50/50 dark:bg-primary/10 shadow-md"
-                                                   : "border-amber-100 dark:border-amber-900/30 hover:border-amber-200 dark:hover:border-primary/40")">
-
-                                <input type="radio" name="delivery" value="express"
-                                       class="mt-1 w-4 h-4 text-primary focus:ring-primary dark:bg-surface-dark border-amber-300 dark:border-amber-700"
-                                       checked="@(selectedDelivery == "express")"
-                                       @onchange="@(() => selectedDelivery = "express")" />
-
-                                <div class="ml-4">
-                                    <span class="block font-bold dark:text-amber-50">Express Roar</span>
-                                    <span class="block text-sm text-gray-500 dark:text-amber-100/50">Next day delivery</span>
-                                </div>
-                                <span class="ml-auto font-bold dark:text-amber-50">$12.50</span>
-                            </label>
-                        </div>
-                        <div class="flex justify-end pt-4">
-                            <button @onclick="() => GoToStep(4)" class="cursor-pointer bg-primary text-white px-8 py-3 rounded-full font-bold">Continue to Delivery</button>
-                        </div>
-                    </div>
-                }
-
-            </div>
-            <!-- Delivery Method -->
+            <DeliveryMethodSelector @bind-CurrentStep="@currentStep"
+                                    SelectedShippingAddress="@shippingAddressDto"
+                                    @bind-SelectedDelivery="@selectedDelivery" />
 
             <!-- Payment Method -->
             <div class=" @(currentStep < 4 ? "opacity-60" : "cookie-shadow") bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
@@ -165,7 +111,7 @@ private int currentStep = 1;
 private UserDto? User { get; set; }
 private CartDto? Cart { get; set; }
 private bool shouldCreateAccount = false;
-private string selectedDelivery = "standard";
+private DeliveryInfoDto? selectedDelivery;
 private string paymentMethod = "card";
 private bool IsLoadingAddress { get; set; }
 private bool IsLoadingBillingAddress { get; set; }

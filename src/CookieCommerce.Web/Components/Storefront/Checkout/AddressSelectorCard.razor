@@ -1,11 +1,14 @@
 @using CookieCommerce.Web.Models.Addresses
 
 <div @onclick="HandleClick"
-     class="cursor-pointer p-4 rounded-2xl border-2 transition-all @(IsSelected ? "border-primary bg-amber-50/50 shadow-sm" : "border-amber-100/50 hover:border-primary/50 bg-white/50 dark:bg-amber-900/5") group relative overflow-hidden">
+     class="cursor-pointer p-4 rounded-2xl border-2 transition-all 
+    @(IsSelected ? "border-primary bg-amber-50/50 border-5 shadow-sm dark:bg-amber-900/5"
+            : "border-amber-100/50 hover:border-primary/50 bg-white/50 dark:bg-amber-900/5") 
+    group relative overflow-hidden">
     @if (IsSelected)
     {
-        <div class="absolute -top-1 -right-1 bg-primary text-white p-1 rounded-bl-xl shadow-lg">
-            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+        <div class="absolute top-2 right-2 w-9 h-9 bg-primary text-white rounded-full shadow-lg z-10 flex items-center justify-center">
+            <span class="material-symbols-outlined !text-[24px]">check_circle</span>
         </div>
     }
 

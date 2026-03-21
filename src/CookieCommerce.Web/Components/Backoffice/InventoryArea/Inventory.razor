@@ -1,0 +1,34 @@
+﻿@page "/backoffice/inventory/"
+@using CookieCommerce.Web.Models.Backoffice
+@using CookieCommerce.Web.Models.Order
+@using CookieCommerce.Web.Services
+@using System.Globalization
+@rendermode InteractiveServer
+@layout BackofficeLayout
+@inject IInventoryService InventoryService
+
+
+<div class="p-4 bg-amber-50/30 dark:bg-zinc-950 min-h-screen transition-colors duration-300">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <BakedTodayCard 
+            Value="@inventory.OrderQuota.BakedToday" />
+        <RemainingToBakeCard 
+            Value="@inventory.OrderQuota.RemainingToBake" 
+            Target="@inventory.OrderQuota.TotalOrders" />
+        <QuotaProgressCard 
+            Percentage="@inventory.OrderQuota.DailyQuotaPercentage" 
+            UnitsLeft="@(inventory.OrderQuota.CurrentQuota - inventory.OrderQuota.BakedToday)" />
+        <OrderFulfillmentCard 
+            Fulfillable="@inventory.OrderQuota.OrdersReadyToFulfill" 
+            Total="@inventory.OrderQuota.TotalOrders" />
+    </div>
+</div>
+
+@code {
+    private InventoryAreaDto inventory = new InventoryAreaDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        inventory = await InventoryService.GetInventoryAsync();
+    }
+}

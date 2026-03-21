@@ -44,6 +44,7 @@ builder.Services.AddScoped<IBackofficeService, FakeBackofficeService>();
 builder.Services.AddScoped<IImageUploadService, FakeImageUploadService>();
 builder.Services.AddScoped<IOperationsService, FakeOperationsService>();
 builder.Services.AddScoped<IAccountService, FakeAccountService>();
+builder.Services.AddScoped<IInventoryService, FakeInventoryService>();
 
 builder.Services.AddAuthentication(options =>
 {

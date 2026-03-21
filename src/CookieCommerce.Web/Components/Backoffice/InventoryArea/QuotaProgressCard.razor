@@ -1,0 +1,19 @@
+@using System.Globalization
+
+<div class="p-4 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border border-amber-100/50 dark:border-zinc-800 flex flex-col justify-between h-28">
+    <div class="flex justify-between items-start">
+        <span class="text-[11px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">Daily Quota</span>
+        <div class="w-10 h-1 bg-gray-100 dark:bg-zinc-800 rounded-full mt-2 overflow-hidden">
+            <div class="bg-primary h-full" style="width: @((int)Math.Min(100, Percentage * 100))%"></div>
+        </div>
+    </div>
+    <div>
+        <h3 class="text-2xl font-black text-primary dark:text-amber-500">@Percentage.ToString("P1", CultureInfo.InvariantCulture)</h3>
+        <p class="text-[10px] text-gray-400 dark:text-zinc-600">@UnitsLeft.ToString("N0", CultureInfo.InvariantCulture) units left</p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public double Percentage { get; set; }
+    [Parameter] public int UnitsLeft { get; set; }
+}

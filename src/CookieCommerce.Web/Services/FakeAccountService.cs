@@ -1,6 +1,7 @@
 ﻿using CookieCommerce.Web.Models;
 using CookieCommerce.Web.Models.Account;
 using CookieCommerce.Web.Models.Addresses;
+using CookieCommerce.Web.Models.Auth;
 using CookieCommerce.Web.Models.Order;
 using CookieCommerce.Web.Models.Products;
 using CookieCommerce.Web.Models.Reviews;
@@ -41,7 +42,8 @@ public class FakeAccountService(IAuthService authService) : IAccountService
 
     public async Task<UserProfileDto?> GetProfileAsync()
     {
-        if (authService.CurrentUser is not { } user) return null;
+        await authService.InitializeAsync();
+        if (authService.CurrentUser is not UserDto user) return null;
         var profile = StaticProfileList.Profiles.FirstOrDefault(p => p.Id == user.Id);
         return profile;
     }
@@ -75,7 +77,7 @@ public class FakeAccountService(IAuthService authService) : IAccountService
 
     public async Task<IList<AddressBookItemDto>> GetAddressesAsync()
     {
-        if (await GetProfileAsync() is not { } profile) return [];
+        if (await GetProfileAsync() is not UserProfileDto profile) return [];
         return profile.Addresses.ToList();
     }
 

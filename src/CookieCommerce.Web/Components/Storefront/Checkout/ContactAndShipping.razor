@@ -55,36 +55,9 @@
                         @foreach (var address in addresses)
                         {
                             var isSelected = SelectedShippingAddress?.Index == address.Index;
-                            <div @onclick="() => SelectShippingAddress(address)"
-                                 class="cursor-pointer p-4 rounded-2xl border-2 transition-all @(isSelected ? "border-primary bg-amber-50/50 shadow-sm" : "border-amber-100/50 hover:border-primary/50 bg-white/50 dark:bg-amber-900/5") group relative overflow-hidden">
-                                @if (isSelected)
-                                {
-                                    <div class="absolute -top-1 -right-1 bg-primary text-white p-1 rounded-bl-xl shadow-lg">
-                                        <span class="material-symbols-outlined text-[18px]">check_circle</span>
-                                    </div>
-                                }
-
-                                <div class="flex items-start gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
-                                        <span class="material-symbols-outlined text-primary text-[20px]">@address.Icon</span>
-                                    </div>
-
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="font-bold text-gray-800 dark:text-amber-50 truncate">@address.Label</span>
-                                            @if (address.IsDefault)
-                                            {
-                                                <span class="text-[9px] bg-primary text-white px-2 py-0.5 rounded-full font-bold uppercase shrink-0">Default</span>
-                                            }
-                                        </div>
-                                        <div class="text-sm text-gray-600 dark:text-amber-100/70 space-y-0.5">
-                                            <p class="truncate font-medium">@address.FirstName @address.LastName</p>
-                                            <p class="truncate opacity-80">@address.Street @address.HouseNumber @address.HouseNumberAddition</p>
-                                            <p class="truncate opacity-80">@address.PostalCode @address.City</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <AddressSelectorCard Address="address"
+                                         IsSelected="isSelected"
+                                         OnClick="() => SelectShippingAddress(address)" />
                         }
 
                         <button @onclick="() => showAddAddressModal = true"
@@ -140,32 +113,9 @@
                             @foreach (var address in addresses)
                             {
                                 var isSelected = SelectedBillingAddress?.Index == address.Index;
-                                <div @onclick="() => SelectBillingAddress(address)"
-                                     class="cursor-pointer p-4 rounded-2xl border-2 transition-all @(isSelected ? "border-primary bg-amber-50/50 shadow-sm" : "border-amber-100/50 hover:border-primary/50 bg-white/50 dark:bg-amber-900/5") group relative overflow-hidden">
-                                    @if (isSelected)
-                                    {
-                                        <div class="absolute -top-1 -right-1 bg-primary text-white p-1 rounded-bl-xl shadow-lg">
-                                            <span class="material-symbols-outlined text-[18px]">check_circle</span>
-                                        </div>
-                                    }
-
-                                    <div class="flex items-start gap-3">
-                                        <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
-                                            <span class="material-symbols-outlined text-primary text-[20px]">@address.Icon</span>
-                                        </div>
-
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-center gap-2 mb-1">
-                                                <span class="font-bold text-gray-800 dark:text-amber-50 truncate">@address.Label</span>
-                                            </div>
-                                            <div class="text-sm text-gray-600 dark:text-amber-100/70 space-y-0.5">
-                                                <p class="truncate font-medium">@address.FirstName @address.LastName</p>
-                                                <p class="truncate opacity-80">@address.Street @address.HouseNumber @address.HouseNumberAddition</p>
-                                                <p class="truncate opacity-80">@address.PostalCode @address.City</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <AddressSelectorCard Address="address"
+                                         IsSelected="isSelected"
+                                         OnClick="() => SelectBillingAddress(address)" />
                             }
                         </div>
                     }

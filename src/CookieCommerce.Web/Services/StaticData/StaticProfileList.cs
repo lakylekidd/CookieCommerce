@@ -52,6 +52,7 @@ public static class StaticProfileList
     {
         return new UserProfileDto
         {
+            Id = fromUser.Id,
             FirstName = fromUser.FirstName,
             LastName = fromUser.LastName,
             Email = fromUser.Email,

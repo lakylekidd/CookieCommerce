@@ -43,7 +43,7 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IBackofficeService, FakeBackofficeService>();
 builder.Services.AddScoped<IImageUploadService, FakeImageUploadService>();
 builder.Services.AddScoped<IOperationsService, FakeOperationsService>();
-builder.Services.AddSingleton<IAccountService, FakeAccountService>();
+builder.Services.AddScoped<IAccountService, FakeAccountService>();
 
 builder.Services.AddAuthentication(options =>
 {

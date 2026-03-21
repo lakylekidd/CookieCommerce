@@ -1,17 +1,11 @@
 ﻿using CookieCommerce.Web.Models.Auth;
+using CookieCommerce.Web.Services.StaticData;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace CookieCommerce.Web.Services;
 
 public class FakeAuthService(ICartService cartService, ProtectedLocalStorage localStorage) : IAuthService
 {
-    // Static list to keep users in memory during the session
-    private static readonly List<UserDto> _users =
-    [
-        new UserDto { Role = "Admin", Email = "admin@cookie.com", Password = "123", FirstName = "Tiger", LastName = "van Cookie" },
-        new UserDto { Email = "customer@cookie.com", Password = "123", FirstName = "Cookie", LastName = "Lover" }
-    ];
-
     public event Action OnChange;
     private void NotifyStateChanged() => OnChange?.Invoke();
 
@@ -25,14 +19,14 @@ public class FakeAuthService(ICartService cartService, ProtectedLocalStorage loc
         var result = await localStorage.GetAsync<string>("user_email");
         if (result.Success && result.Value != null)
         {
-            CurrentUser = _users.FirstOrDefault(u => u.Email == result.Value);
+            CurrentUser = StaticUserList.Users.FirstOrDefault(u => u.Email == result.Value);
             NotifyStateChanged();
         }
     }
 
     public async Task<bool> SignInAsync(string email, string password)
     {
-        var user = _users.FirstOrDefault(u =>
+        var user = StaticUserList.Users.FirstOrDefault(u =>
             u.Email.Equals(email, StringComparison.OrdinalIgnoreCase) &&
             u.Password == password);
 
@@ -49,13 +43,13 @@ public class FakeAuthService(ICartService cartService, ProtectedLocalStorage loc
 
     public async Task<AuthResult> SignUpAsync(SignupDto signupForm)
     {
-        if (_users.Any(u => u.Email.Equals(signupForm.Email, StringComparison.OrdinalIgnoreCase)))
+        if (StaticUserList.Users.Any(u => u.Email.Equals(signupForm.Email, StringComparison.OrdinalIgnoreCase)))
         {
             return AuthResult.Failed("User already exists");
         }
 
         var newUser = new UserDto { FirstName = signupForm.FirstName, LastName = signupForm.LastName, Email = signupForm.Email, Password = signupForm.Password };
-        _users.Add(newUser);
+        StaticUserList.Users.Add(newUser);
         CurrentUser = newUser;
         return AuthResult.Succeeded();
     }

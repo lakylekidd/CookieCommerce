@@ -25,7 +25,8 @@
             <ContactAndShipping @bind-CurrentStep="@currentStep"
                                 @bind-SelectedShippingAddress="@shippingAddressDto"
                                 @bind-SelectedBillingAddress="@billingAddressDto"
-                                @bind-SameAsShipping="@SameAsShipping" />
+                                @bind-SameAsShipping="@SameAsShipping"
+                                HasExistingAccount="@(User is not null)" />
 
 
             <DeliveryMethodSelector @bind-CurrentStep="@currentStep"

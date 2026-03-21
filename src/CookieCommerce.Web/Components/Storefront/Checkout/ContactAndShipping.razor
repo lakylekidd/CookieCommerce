@@ -4,7 +4,6 @@
 @inject IAccountService AccountService
 
 <div class="@(CurrentStep < 2 ? "opacity-60" : "cookie-shadow") bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
-
     <div class="p-6 flex items-center gap-4 border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
         <span class="@(CurrentStep >= 2 ? "bg-primary text-white" : "bg-gray-200 text-gray-500") w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">2</span>
         <h2 class="font-display font-bold text-xl dark:text-amber-50">Contact & Shipping</h2>
@@ -14,77 +13,104 @@
             <button @onclick="() => GoToStep(2)" class="cursor-pointer ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
         }
     </div>
+
     @if (CurrentStep == 2)
     {
         <div class="p-8 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">First Name</label>
+                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                           placeholder="Roary"
+                           @bind="ShippingFirstNameInput"
+                           @bind:event="oninput"
+                           type="text" />
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Last Name</label>
+                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                           placeholder="Tiger"
+                           @bind="ShippingLastNameInput"
+                           @bind:event="oninput"
+                           type="text" />
+                </div>
+            </div>
 
             <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
                 <span class="material-symbols-outlined text-xl">local_shipping</span>
                 Shipping Address
             </h3>
 
-            @if (addresses == null)
+            @if (HasExistingAccount)
             {
-                <div class="animate-pulse space-y-4">
-                    <div class="h-32 bg-amber-50/50 rounded-2xl border-2 border-amber-100"></div>
-                </div>
-            }
-            else
-            {
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                @if (addresses == null)
+                {
+                    <div class="animate-pulse space-y-4">
+                        <div class="h-32 bg-amber-50/50 rounded-2xl border-2 border-amber-100"></div>
+                    </div>
+                }
+                else
+                {
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         @foreach (var address in addresses)
-                    {
-                        var isSelected = SelectedShippingAddress?.Index == address.Index;
-                        <div @onclick="() => SelectShippingAddress(address)" 
-                             class="cursor-pointer p-4 rounded-2xl border-2 transition-all @(isSelected ? "border-primary bg-amber-50/50 shadow-sm" : "border-amber-100/50 hover:border-primary/50 bg-white/50 dark:bg-amber-900/5") group relative overflow-hidden">
-
-                            
-                            @if (isSelected)
-                            {
-                                <div class="absolute -top-1 -right-1 bg-primary text-white p-1 rounded-bl-xl shadow-lg">
-                                    <span class="material-symbols-outlined text-[18px]">check_circle</span>
-                                </div>
-                            }
-
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
-                                    <span class="material-symbols-outlined text-primary text-[20px]">@address.Icon</span>
-                                </div>
-                                
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="font-bold text-gray-800 dark:text-amber-50 truncate">@address.Label</span>
-                                        @if (address.IsDefault)
-                                        {
-                                            <span class="text-[9px] bg-primary text-white px-2 py-0.5 rounded-full font-bold uppercase shrink-0">Default</span>
-                                        }
+                        {
+                            var isSelected = SelectedShippingAddress?.Index == address.Index;
+                            <div @onclick="() => SelectShippingAddress(address)"
+                                 class="cursor-pointer p-4 rounded-2xl border-2 transition-all @(isSelected ? "border-primary bg-amber-50/50 shadow-sm" : "border-amber-100/50 hover:border-primary/50 bg-white/50 dark:bg-amber-900/5") group relative overflow-hidden">
+                                @if (isSelected)
+                                {
+                                    <div class="absolute -top-1 -right-1 bg-primary text-white p-1 rounded-bl-xl shadow-lg">
+                                        <span class="material-symbols-outlined text-[18px]">check_circle</span>
                                     </div>
-                                    <div class="text-sm text-gray-600 dark:text-amber-100/70 space-y-0.5">
-                                        <p class="truncate font-medium">@address.FirstName @address.LastName</p>
-                                        <p class="truncate opacity-80">@address.Street @address.HouseNumber @address.HouseNumberAddition</p>
-                                        <p class="truncate opacity-80">@address.PostalCode @address.City</p>
+                                }
+
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-primary text-[20px]">@address.Icon</span>
+                                    </div>
+
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="font-bold text-gray-800 dark:text-amber-50 truncate">@address.Label</span>
+                                            @if (address.IsDefault)
+                                            {
+                                                <span class="text-[9px] bg-primary text-white px-2 py-0.5 rounded-full font-bold uppercase shrink-0">Default</span>
+                                            }
+                                        </div>
+                                        <div class="text-sm text-gray-600 dark:text-amber-100/70 space-y-0.5">
+                                            <p class="truncate font-medium">@address.FirstName @address.LastName</p>
+                                            <p class="truncate opacity-80">@address.Street @address.HouseNumber @address.HouseNumberAddition</p>
+                                            <p class="truncate opacity-80">@address.PostalCode @address.City</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    }
-                    
-                    <button @onclick="() => showAddAddressModal = true"
-                            type="button"
-                            class="cursor-pointer p-4 rounded-2xl border-2 border-dashed border-amber-200 dark:border-amber-900/30 hover:border-primary hover:bg-amber-50/30 dark:hover:bg-amber-900/20 transition-all flex flex-col items-center justify-center gap-2 group min-h-[120px]">
-                        <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/20 group-hover:bg-primary/20 flex items-center justify-center transition-colors">
-                            <span class="material-symbols-outlined text-primary">add</span>
-                        </div>
-                        <span class="font-bold text-amber-800/80 dark:text-amber-100/60 group-hover:text-primary text-sm">Add New Spot</span>
-                    </button>
-                    
-                    @if (showAddAddressModal)
-                    {
-                        <AddAddressModal OnCancel="() => showAddAddressModal = false" OnSave="OnAddressAdded" />
-                    }
-                </div>
-            }
+                        }
 
+                        <button @onclick="() => showAddAddressModal = true"
+                                type="button"
+                                class="cursor-pointer p-4 rounded-2xl border-2 border-dashed border-amber-200 dark:border-amber-900/30 hover:border-primary hover:bg-amber-50/30 dark:hover:bg-amber-900/20 transition-all flex flex-col items-center justify-center gap-2 group min-h-[120px]">
+                            <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/20 group-hover:bg-primary/20 flex items-center justify-center transition-colors">
+                                <span class="material-symbols-outlined text-primary">add</span>
+                            </div>
+                            <span class="font-bold text-amber-800/80 dark:text-amber-100/60 group-hover:text-primary text-sm">Add New Spot</span>
+                        </button>
+
+                        @if (showAddAddressModal)
+                        {
+                            <AddAddressModal OnCancel="() => showAddAddressModal = false" OnSave="OnAddressAdded" />
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <DutchAddressLookup ShowResults="true"
+                                    OnAddressFound="HandleShippingAddressUpdated"
+                                    @bind-PostalCode="ShippingPostalCodeInput"
+                                    @bind-HouseNumber="ShippingHouseNumberInput"
+                                    @bind-HouseNumberAddition="ShippingHouseNumberAdditionInput" />
+            }
 
             <div>
                 <label class="flex items-center gap-3 cursor-pointer group">
@@ -106,57 +132,60 @@
                     Billing Address
                 </h3>
 
-                @if (addresses != null)
+                @if (HasExistingAccount)
                 {
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        @foreach (var address in addresses)
-                        {
-                            var isSelected = SelectedBillingAddress?.Index == address.Index;
-                            <div @onclick="() => SelectBillingAddress(address)" 
-                                 class="cursor-pointer p-4 rounded-2xl border-2 transition-all @(isSelected ? "border-primary bg-amber-50/50 shadow-sm" : "border-amber-100/50 hover:border-primary/50 bg-white/50 dark:bg-amber-900/5") group relative overflow-hidden">
-
-                                
-                                @if (isSelected)
-                                {
-                                    <div class="absolute -top-1 -right-1 bg-primary text-white p-1 rounded-bl-xl shadow-lg">
-                                        <span class="material-symbols-outlined text-[18px]">check_circle</span>
-                                    </div>
-                                }
-
-                                <div class="flex items-start gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
-                                        <span class="material-symbols-outlined text-primary text-[20px]">@address.Icon</span>
-                                    </div>
-                                    
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="font-bold text-gray-800 dark:text-amber-50 truncate">@address.Label</span>
+                    @if (addresses != null)
+                    {
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            @foreach (var address in addresses)
+                            {
+                                var isSelected = SelectedBillingAddress?.Index == address.Index;
+                                <div @onclick="() => SelectBillingAddress(address)"
+                                     class="cursor-pointer p-4 rounded-2xl border-2 transition-all @(isSelected ? "border-primary bg-amber-50/50 shadow-sm" : "border-amber-100/50 hover:border-primary/50 bg-white/50 dark:bg-amber-900/5") group relative overflow-hidden">
+                                    @if (isSelected)
+                                    {
+                                        <div class="absolute -top-1 -right-1 bg-primary text-white p-1 rounded-bl-xl shadow-lg">
+                                            <span class="material-symbols-outlined text-[18px]">check_circle</span>
                                         </div>
-                                        <div class="text-sm text-gray-600 dark:text-amber-100/70 space-y-0.5">
-                                            <p class="truncate font-medium">@address.FirstName @address.LastName</p>
-                                            <p class="truncate opacity-80">@address.Street @address.HouseNumber @address.HouseNumberAddition</p>
-                                            <p class="truncate opacity-80">@address.PostalCode @address.City</p>
+                                    }
+
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
+                                            <span class="material-symbols-outlined text-primary text-[20px]">@address.Icon</span>
+                                        </div>
+
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="font-bold text-gray-800 dark:text-amber-50 truncate">@address.Label</span>
+                                            </div>
+                                            <div class="text-sm text-gray-600 dark:text-amber-100/70 space-y-0.5">
+                                                <p class="truncate font-medium">@address.FirstName @address.LastName</p>
+                                                <p class="truncate opacity-80">@address.Street @address.HouseNumber @address.HouseNumberAddition</p>
+                                                <p class="truncate opacity-80">@address.PostalCode @address.City</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        }
-                    </div>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <DutchAddressLookup ShowResults="true"
+                                        OnAddressFound="HandleBillingAddressUpdated"
+                                        @bind-PostalCode="BillingPostalCodeInput"
+                                        @bind-HouseNumber="BillingHouseNumberInput"
+                                        @bind-HouseNumberAddition="BillingHouseNumberAdditionInput" />
                 }
             }
-
 
             <div class="flex justify-end pt-4">
                 <button @onclick="() => GoToStep(3)"
                         disabled="@DisableContinueFromStep2()"
-                        class="px-8 py-3 rounded-full font-bold transition-all 
-                                @(DisableContinueFromStep2()
-                                    ? "bg-gray-300 cursor-not-allowed text-gray-500" 
-                                    : "bg-primary hover:bg-amber-700 shadow-xl cursor-pointer text-white")">
+                        class="px-8 py-3 rounded-full font-bold transition-all @(DisableContinueFromStep2() ? "bg-gray-300 cursor-not-allowed text-gray-500" : "bg-primary hover:bg-amber-700 shadow-xl cursor-pointer text-white")">
                     Continue to Delivery Method
                 </button>
-
-
             </div>
         </div>
     }
@@ -175,13 +204,52 @@
     [Parameter] public bool SameAsShipping { get; set; } = true;
     [Parameter] public EventCallback<bool> SameAsShippingChanged { get; set; }
 
+    [Parameter] public bool HasExistingAccount { get; set; }
+
     private IList<AddressBookItemDto>? addresses;
     private bool showAddAddressModal = false;
+    private bool? lastAccountMode;
 
-    protected override async Task OnInitializedAsync()
+    private string ShippingPostalCodeInput { get; set; } = string.Empty;
+    private string ShippingHouseNumberInput { get; set; } = string.Empty;
+    private string ShippingHouseNumberAdditionInput { get; set; } = string.Empty;
+    private string ShippingFirstNameInput { get; set; } = string.Empty;
+    private string ShippingLastNameInput { get; set; } = string.Empty;
+
+    private string BillingPostalCodeInput { get; set; } = string.Empty;
+    private string BillingHouseNumberInput { get; set; } = string.Empty;
+    private string BillingHouseNumberAdditionInput { get; set; } = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
     {
+        if (CurrentStep != 2)
+        {
+            lastAccountMode = null;
+            addresses = null;
+            return;
+        }
+
+        if (lastAccountMode != HasExistingAccount)
+        {
+            lastAccountMode = HasExistingAccount;
+            addresses = null;
+            showAddAddressModal = false;
+            await ClearSelectedAddressesAsync();
+            ClearLookupInputs();
+        }
+
+        if (!HasExistingAccount)
+        {
+            return;
+        }
+
+        if (addresses is not null)
+        {
+            return;
+        }
+
         addresses = await AccountService.GetAddressesAsync();
-        
+
         if (addresses?.Any() == true && SelectedShippingAddress == null)
         {
             var defaultAddress = addresses.FirstOrDefault(a => a.IsDefault) ?? addresses.First();
@@ -193,22 +261,21 @@
     {
         showAddAddressModal = false;
         addresses = await AccountService.GetAddressesAsync();
-        
+
         if (addresses?.Any() == true)
         {
-             var newAddress = addresses.OrderByDescending(a => a.Index).FirstOrDefault();
-             if (newAddress != null)
-             {
-                 await SelectShippingAddress(newAddress);
-             }
+            var defaultAddress = addresses.FirstOrDefault(a => a.IsDefault) ?? addresses.First();
+            await SelectShippingAddress(defaultAddress);
         }
+
         StateHasChanged();
     }
 
     private async Task SelectShippingAddress(AddressBookItemDto address)
     {
         SelectedShippingAddress = address;
-        await SelectedShippingAddressChanged.InvokeAsync(SelectedShippingAddress);
+        ApplyLookupInputsFromAddress(address, true);
+        await SelectedShippingAddressChanged.InvokeAsync(address);
 
         if (SameAsShipping)
         {
@@ -221,52 +288,141 @@
     private async Task SelectBillingAddress(AddressBookItemDto address)
     {
         SelectedBillingAddress = address;
-        await SelectedBillingAddressChanged.InvokeAsync(SelectedBillingAddress);
+        ApplyLookupInputsFromAddress(address, false);
+        await SelectedBillingAddressChanged.InvokeAsync(address);
         StateHasChanged();
     }
-
 
     private async Task SyncBillingToShipping()
     {
         SelectedBillingAddress = SelectedShippingAddress;
+        CopyShippingLookupInputsToBilling();
         await SelectedBillingAddressChanged.InvokeAsync(SelectedBillingAddress);
         StateHasChanged();
     }
 
-
     private async Task GoToStep(int step) => await CurrentStepChanged.InvokeAsync(step);
 
-    private async Task UpdateSameAsShipping() { 
+    private async Task UpdateSameAsShipping()
+    {
         await SameAsShippingChanged.InvokeAsync(SameAsShipping);
-        if (SameAsShipping) {
+
+        if (SameAsShipping)
+        {
             await SyncBillingToShipping();
         }
+        else
+        {
+            SelectedBillingAddress = null;
+            await SelectedBillingAddressChanged.InvokeAsync(null);
+        }
+    }
+
+    private void ClearLookupInputs()
+    {
+        ShippingPostalCodeInput = string.Empty;
+        ShippingHouseNumberInput = string.Empty;
+        ShippingHouseNumberAdditionInput = string.Empty;
+        ShippingFirstNameInput = string.Empty;
+        ShippingLastNameInput = string.Empty;
+        BillingPostalCodeInput = string.Empty;
+        BillingHouseNumberInput = string.Empty;
+        BillingHouseNumberAdditionInput = string.Empty;
+    }
+
+    private void ApplyLookupInputsFromAddress(AddressBookItemDto address, bool isShipping)
+    {
+        if (isShipping)
+        {
+            ShippingPostalCodeInput = address.PostalCode;
+            ShippingHouseNumberInput = address.HouseNumber;
+            ShippingHouseNumberAdditionInput = address.HouseNumberAddition;
+            return;
+        }
+
+        BillingPostalCodeInput = address.PostalCode;
+        BillingHouseNumberInput = address.HouseNumber;
+        BillingHouseNumberAdditionInput = address.HouseNumberAddition;
+    }
+
+    private void CopyShippingLookupInputsToBilling()
+    {
+        BillingPostalCodeInput = ShippingPostalCodeInput;
+        BillingHouseNumberInput = ShippingHouseNumberInput;
+        BillingHouseNumberAdditionInput = ShippingHouseNumberAdditionInput;
+    }
+
+    private async Task HandleShippingAddressUpdated(DutchAddressLookup.AddressUpdateEventArgs e)
+    {
+        SelectedShippingAddress = BuildAddressDto(e, true);
+        await SelectedShippingAddressChanged.InvokeAsync(SelectedShippingAddress);
+
+        if (SameAsShipping)
+        {
+            await SyncBillingToShipping();
+        }
+    }
+
+    private async Task HandleBillingAddressUpdated(DutchAddressLookup.AddressUpdateEventArgs e)
+    {
+        SelectedBillingAddress = BuildAddressDto(e, false);
+        await SelectedBillingAddressChanged.InvokeAsync(SelectedBillingAddress);
+    }
+
+    private AddressBookItemDto BuildAddressDto(DutchAddressLookup.AddressUpdateEventArgs e, bool isShipping)
+    {
+        var firstName = ShippingFirstNameInput;
+        var lastName = ShippingLastNameInput;
+        var label = isShipping ? "Shipping Address" : "Billing Address";
+
+        return new AddressBookItemDto
+        {
+            Index = 0,
+            Icon = "home",
+            Label = label,
+            FirstName = firstName,
+            LastName = lastName,
+            Street = e.Street,
+            HouseNumber = e.HouseNumber,
+            HouseNumberAddition = e.HouseNumberAddition ?? string.Empty,
+            City = e.City,
+            PostalCode = e.PostalCode,
+            Province = e.Province,
+            Country = "The Netherlands",
+            Phone = string.Empty,
+            IsDefault = isShipping && (SelectedShippingAddress?.IsDefault ?? false)
+        };
     }
 
     private bool DisableContinueFromStep2()
     {
         if (SelectedShippingAddress == null ||
             string.IsNullOrWhiteSpace(SelectedShippingAddress.FirstName) ||
-            string.IsNullOrWhiteSpace(SelectedShippingAddress.LastName) ||
-            string.IsNullOrWhiteSpace(SelectedShippingAddress.Street) ||
-            string.IsNullOrWhiteSpace(SelectedShippingAddress.HouseNumber) ||
-            string.IsNullOrWhiteSpace(SelectedShippingAddress.City) ||
-            string.IsNullOrWhiteSpace(SelectedShippingAddress.PostalCode))
+            string.IsNullOrWhiteSpace(SelectedShippingAddress.LastName))
+        {
             return true;
+        }
 
         if (!SameAsShipping)
         {
             if (SelectedBillingAddress == null ||
                 string.IsNullOrWhiteSpace(SelectedBillingAddress.FirstName) ||
-                string.IsNullOrWhiteSpace(SelectedBillingAddress.LastName) ||
-                string.IsNullOrWhiteSpace(SelectedBillingAddress.Street) ||
-                string.IsNullOrWhiteSpace(SelectedBillingAddress.HouseNumber) ||
-                string.IsNullOrWhiteSpace(SelectedBillingAddress.City) ||
-                string.IsNullOrWhiteSpace(SelectedBillingAddress.PostalCode))
+                string.IsNullOrWhiteSpace(SelectedBillingAddress.LastName))
+            {
                 return true;
+            }
         }
+
         return false;
     }
 
+    private async Task ClearSelectedAddressesAsync()
+    {
+        SelectedShippingAddress = null;
+        SelectedBillingAddress = null;
+        await SelectedShippingAddressChanged.InvokeAsync(null);
+        await SelectedBillingAddressChanged.InvokeAsync(null);
+    }
 }
+
 

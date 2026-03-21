@@ -5,82 +5,91 @@ using CookieCommerce.Web.Models.Order;
 using CookieCommerce.Web.Models.Products;
 using CookieCommerce.Web.Models.Reviews;
 using CookieCommerce.Web.Services.Products;
+using CookieCommerce.Web.Services.StaticData;
 
 namespace CookieCommerce.Web.Services;
 
-public class FakeAccountService() : IAccountService
+public class FakeAccountService(IAuthService authService) : IAccountService
 {
-    private List<Guid> _favoriteProductIds = 
-        [
-            Guid.Parse("d8f5a8e1-1234-4567-89ab-444444444444"),
-            Guid.Parse("d8f5a8e1-1234-4567-89ab-222222222222"),
-        ];
-
-    private UserProfileDto _profile = new UserProfileDto
+    public async Task AddToFavoritesAsync(Guid productId)
     {
-        FirstName = "Cookie",
-        LastName = "Lover",
-        Email = "hello@tigercookie.com",
-        Gender = "male",
-        DateOfBirth = new DateTime(1986, 11, 18)
-    };
-
-    public Task AddToFavoritesAsync(Guid productId)
-    {
-        if (_favoriteProductIds.Contains(productId)) return Task.CompletedTask;
-        _favoriteProductIds.Add(productId);
-        return Task.CompletedTask;
+        if (await GetProfileAsync() is not { } profile) return;
+        if (profile.FavoriteProducts.Contains(productId)) return;
+        profile.FavoriteProducts.Add(productId);
     }
 
-    public Task RemoveFromFavoritesAsync(Guid productId)
+    public async Task RemoveFromFavoritesAsync(Guid productId)
     {
-        _favoriteProductIds.Remove(productId);
-        return Task.CompletedTask;
+        if (await GetProfileAsync() is not { } profile) return;
+        profile.FavoriteProducts.Remove(productId);
     }
 
-    public Task<bool> IsFavoriteAsync(Guid productId)
+    public async Task<bool> IsFavoriteAsync(Guid productId)
     {
-        return Task.FromResult(_favoriteProductIds.Contains(productId));
+        if (await GetProfileAsync() is not { } profile) return false;
+        return profile.FavoriteProducts.Contains(productId);
     }
 
-    public Task<ICollection<StorefrontProductDto>> GetFavoriteProductsAsync()
+    public async Task<ICollection<StorefrontProductDto>> GetFavoriteProductsAsync()
     {
-        var favoriteProducts = StaticStorefrontProductList.Cookies
-            .Where(p => _favoriteProductIds.Contains(p.Id))
-            .ToList();
-        return Task.FromResult((ICollection<StorefrontProductDto>)favoriteProducts);
+        if (await GetProfileAsync() is not { } profile) return [];
+        return profile.FavoriteProducts
+            .Select(id => StaticStorefrontProductList.Cookies.FirstOrDefault(p => p.Id == id))
+            .Where(p => p is not null)
+            .ToList()!;
     }
 
-    public  Task<UserProfileDto> GetProfileAsync()
+    public async Task<UserProfileDto?> GetProfileAsync()
     {
-        return Task.FromResult(_profile);
+        if (authService.CurrentUser is not { } user) return null;
+        var profile = StaticProfileList.Profiles.FirstOrDefault(p => p.Id == user.Id);
+        return profile;
     }
 
-    public Task<ResultDto> UpdateProfileAsync(UserProfileDto profile)
+    public async Task<ResultDto> UpdateProfileAsync(UserProfileDto profile)
     {
-        _profile = profile;
+        if (await GetProfileAsync() is not { } userProfile)
+        {
+            return new ResultDto { Success = false, Message = "Sign in to update your profile" };
+        }
+
+        var existingProfile = StaticProfileList.Profiles.FirstOrDefault(p => p.Id == userProfile.Id);
+        if (existingProfile is null)
+        {
+            return new ResultDto { Success = false, Message = "Profile not found" };
+        }
+
+        existingProfile.DateOfBirth = profile.DateOfBirth;
+        existingProfile.FirstName = profile.FirstName;
+        existingProfile.LastName = profile.LastName;
+        existingProfile.Email = profile.Email;
+        existingProfile.Gender = profile.Gender;
 
         var result = new ResultDto
         {
             Success = true,
             Message = "Profile updated successfully"
         };
-        return Task.FromResult(result);
+        return result;
     }
 
-    public Task<IList<AddressBookItemDto>> GetAddressesAsync()
+    public async Task<IList<AddressBookItemDto>> GetAddressesAsync()
     {
-        var addresses = StaticData.StaticAddressList.Addresses;
-        return Task.FromResult((IList<AddressBookItemDto>)addresses);
+        if (await GetProfileAsync() is not { } profile) return [];
+        return profile.Addresses.ToList();
     }
 
-    public Task<ResultDto> AddAddressAsync(AddressBookItemDto address)
+    public async Task<ResultDto> AddAddressAsync(AddressBookItemDto address)
     {
-        var addresses = StaticData.StaticAddressList.Addresses;
-        address.Index = addresses.Count > 0 ? addresses.Max(a => a.Index) + 1 : 1;
-        addresses.Add(address);
+        if (await GetProfileAsync() is not { } profile)
+        {
+            return new ResultDto { Success = false, Message = "Sign in to add an address" };
+        }
 
-        foreach (var a in addresses)
+        address.Index = profile.Addresses.Count > 0 ? profile.Addresses.Max(a => a.Index) + 1 : 1;
+        profile.Addresses.Add(address);
+
+        foreach (var a in profile.Addresses)
         {
             a.IsDefault = a.Index == address.Index;
         }
@@ -90,22 +99,26 @@ public class FakeAccountService() : IAccountService
             Success = true,
             Message = "Address added successfully"
         };
-        return Task.FromResult(result);
+        return result;
     }
 
-    public Task<ResultDto> DeleteAddressAsync(int index)
+    public async Task<ResultDto> DeleteAddressAsync(int index)
     {
-        var addresses = StaticData.StaticAddressList.Addresses;
-        var addressToRemove = addresses.FirstOrDefault(a => a.Index == index);
+        if (await GetProfileAsync() is not { } profile)
+        {
+            return new ResultDto { Success = false, Message = "Sign in to delete an address" };
+        }
+
+        var addressToRemove = profile.Addresses.FirstOrDefault(a => a.Index == index);
         if (addressToRemove != null)
         {
-            addresses.Remove(addressToRemove);
+            profile.Addresses.Remove(addressToRemove);
             var result = new ResultDto
             {
                 Success = true,
                 Message = "Address deleted successfully"
             };
-            return Task.FromResult(result);
+            return result;
         }
         else
         {
@@ -114,14 +127,18 @@ public class FakeAccountService() : IAccountService
                 Success = false,
                 Message = "Address not found"
             };
-            return Task.FromResult(result);
+            return result;
         }
     }
 
-    public Task<ResultDto> SetAsPrimaryAsync(int index)
+    public async Task<ResultDto> SetAsPrimaryAsync(int index)
     {
-        var addresses = StaticData.StaticAddressList.Addresses;
-        foreach (var address in addresses)
+        if (await GetProfileAsync() is not { } profile)
+        {
+            return new ResultDto { Success = false, Message = "Sign in to set a primary address" };
+        }
+
+        foreach (var address in profile.Addresses)
         {
             address.IsDefault = address.Index == index;
         }
@@ -131,16 +148,14 @@ public class FakeAccountService() : IAccountService
             Success = true,
             Message = "Primary address set successfully"
         };
-        return Task.FromResult(result);
+        return result;
     }
 
-    public Task<AddressBookItemDto>? GetPrimaryAddressAsync()
+    public async Task<AddressBookItemDto?> GetPrimaryAddressAsync()
     {
-        var addresses = StaticData.StaticAddressList.Addresses;
-        var primaryAddress = addresses.FirstOrDefault(a => a.IsDefault);
-        if (primaryAddress is not null)
-            return Task.FromResult(primaryAddress);
-        return Task.FromResult<AddressBookItemDto?>(null);
+        if (await GetProfileAsync() is not { } profile) return null;
+        var primaryAddress = profile.Addresses.FirstOrDefault(a => a.IsDefault);
+        return primaryAddress;
     }
 
     public Task<ICollection<OrderListItemDto>> GetOrdersAsync(int page, int pageSize)
@@ -154,7 +169,7 @@ public class FakeAccountService() : IAccountService
 
     public Task<int> GetTotalOrdersCountAsync() => Task.FromResult(StaticData.StaticOrders.Orders.Count);
 
-    public Task<OrderDto> GetOrderByIdAsync(Guid orderId)
+    public Task<OrderDto?> GetOrderByIdAsync(Guid orderId)
     {
         var order = StaticData.StaticOrders.OrdersE.FirstOrDefault(o => o.Id == orderId);
         if (order is not null)
@@ -171,7 +186,7 @@ public class FakeAccountService() : IAccountService
         return Task.FromResult(count);
     }
 
-    public Task<TrackingDto> GetTrackingAsync(Guid orderId)
+    public Task<TrackingDto?> GetTrackingAsync(Guid orderId)
     {
         var order = StaticData.StaticOrders.OrdersE.FirstOrDefault(o => o.Id == orderId);
         if (order is not null)
@@ -193,8 +208,9 @@ public class FakeAccountService() : IAccountService
         return Task.FromResult((false, 0));
     }
 
-    public Task<bool> HasBirthdateAsync()
+    public async Task<bool> HasBirthdateAsync()
     {
-        return Task.FromResult(_profile.DateOfBirth.HasValue);
+        if (await GetProfileAsync() is not { } profile) return false;
+        return profile.DateOfBirth.HasValue;
     }
 }

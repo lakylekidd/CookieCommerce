@@ -16,6 +16,7 @@ This README provides an overview of the architecture, conventions, and developme
 - MassTransit for integration events (with Outbox pattern)
 - Blazor UI for customer‑facing and admin experiences
 - Checkout delivery methods are resolved from the selected shipping address
+- Anonymous-safe account reads return empty/null values instead of throwing
 - Field‑level encryption for sensitive PII
 - Vertical Slice Architecture for clean separation by feature
 - Aspire for orchestration, service discovery, and local infrastructure

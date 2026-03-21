@@ -14,18 +14,18 @@ public interface IAccountService
     Task<bool> IsFavoriteAsync(Guid productId);
     Task<ICollection<StorefrontProductDto>> GetFavoriteProductsAsync();
     Task<bool> HasBirthdateAsync();
-    Task<UserProfileDto> GetProfileAsync();
+    Task<UserProfileDto?> GetProfileAsync();
     Task<ResultDto> UpdateProfileAsync(UserProfileDto profile);
     Task<IList<AddressBookItemDto>> GetAddressesAsync();
     Task<ResultDto> AddAddressAsync(AddressBookItemDto address);
     Task<ResultDto> DeleteAddressAsync(int index);
     Task<ResultDto> SetAsPrimaryAsync(int index);
-    Task<AddressBookItemDto>? GetPrimaryAddressAsync();
+    Task<AddressBookItemDto?> GetPrimaryAddressAsync();
     Task<ICollection<OrderListItemDto>> GetOrdersAsync(int page, int pageSize);
     Task<int> GetTotalOrdersCountAsync();
-    Task<OrderDto> GetOrderByIdAsync(Guid orderId);
+    Task<OrderDto?> GetOrderByIdAsync(Guid orderId);
     Task<int> GetOrderCountInNeedOfAttentionAsync();
-    Task<TrackingDto> GetTrackingAsync(Guid orderId);
+    Task<TrackingDto?> GetTrackingAsync(Guid orderId);
     Task SubmitReviewAsync(Guid productId, ReviewSubmitRequest review);
     Task<(bool,int)> HasAlreadyReviewedProductIdAsync(Guid productId);
 }

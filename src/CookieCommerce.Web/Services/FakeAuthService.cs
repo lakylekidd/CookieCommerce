@@ -4,23 +4,44 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace CookieCommerce.Web.Services;
 
-public class FakeAuthService(ICartService cartService, ProtectedLocalStorage localStorage) : IAuthService
+public class FakeAuthService(
+    ICartService cartService,    
+    ProtectedLocalStorage localStorage) : IAuthService
 {
     public event Action OnChange;
+
     private void NotifyStateChanged() => OnChange?.Invoke();
 
-    public UserDto? CurrentUser { get; private set; }
-    public bool IsLoggedIn => CurrentUser != null;
-    public bool IsAdmin => CurrentUser?.Role == "Admin";
+    private UserDto? currentUser;
+    private bool storageInitialized;
+    private string storedKey = "user_email";
+
+    public UserDto? CurrentUser => currentUser;
+    public bool IsLoggedIn => currentUser != null;
+    public bool IsAdmin => currentUser?.Role == "Admin";
 
     public async Task InitializeAsync()
     {
-        // Look for the "Identity" in the browser's pocket
-        var result = await localStorage.GetAsync<string>("user_email");
-        if (result.Success && result.Value != null)
+        if (storageInitialized)
         {
-            CurrentUser = StaticUserList.Users.FirstOrDefault(u => u.Email == result.Value);
-            NotifyStateChanged();
+            return;
+        }
+
+        try
+        {
+            // Look for the "Identity" in the browser's pocket
+            var result = await localStorage.GetAsync<string>(storedKey);
+            if (result.Success && result.Value != null)
+            {
+                currentUser = StaticUserList.Users.FirstOrDefault(u => u.Email == result.Value);
+                NotifyStateChanged();
+            }
+
+            storageInitialized = true;
+        }
+        catch (InvalidOperationException)
+        {
+            // Prerendering blocks JS interop; try again after the app becomes interactive.
         }
     }
 
@@ -32,8 +53,8 @@ public class FakeAuthService(ICartService cartService, ProtectedLocalStorage loc
 
         if (user != null)
         {
-            CurrentUser = user;
-            await localStorage.SetAsync("user_email", user.Email);
+            currentUser = user;
+            await localStorage.SetAsync(storedKey, user.Email);
             await AssignUserToCartAsync();
             NotifyStateChanged();
             return true;
@@ -50,7 +71,10 @@ public class FakeAuthService(ICartService cartService, ProtectedLocalStorage loc
 
         var newUser = new UserDto { FirstName = signupForm.FirstName, LastName = signupForm.LastName, Email = signupForm.Email, Password = signupForm.Password };
         StaticUserList.Users.Add(newUser);
-        CurrentUser = newUser;
+        currentUser = newUser;
+        await localStorage.SetAsync("user_email", newUser.Email);
+        await AssignUserToCartAsync();
+        NotifyStateChanged();
         return AuthResult.Succeeded();
     }
 
@@ -63,7 +87,8 @@ public class FakeAuthService(ICartService cartService, ProtectedLocalStorage loc
 
     public void Logout()
     {
-        CurrentUser = null;
+        currentUser = null;
+        storageInitialized = true;
         localStorage.DeleteAsync("user_email");
         NotifyStateChanged();
     }

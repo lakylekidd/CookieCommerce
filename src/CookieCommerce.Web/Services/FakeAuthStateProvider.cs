@@ -5,22 +5,26 @@ namespace CookieCommerce.Web.Services;
 
 public class FakeAuthStateProvider(IAuthService authService) : AuthenticationStateProvider
 {
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        // First, ensure the service has loaded data from LocalStorage
+        if (authService.CurrentUser == null) await authService.InitializeAsync();
+
         var identity = new ClaimsIdentity();
 
-        if (authService.IsLoggedIn && authService.CurrentUser != null)
+        if (authService.CurrentUser is { } user)
         {
             var claims = new List<Claim>
             {
-                new(ClaimTypes.Name, authService.CurrentUser.Email),
-                new(ClaimTypes.Email, authService.CurrentUser.Email),
-                new(ClaimTypes.Role, authService.CurrentUser.Role ?? "User") // Assign the role!
+                new(ClaimTypes.Name, user.FirstName),
+                new(ClaimTypes.Surname, user.LastName),
+                new(ClaimTypes.Email, user.Email),
+                new(ClaimTypes.Role, user.Role ?? "User") // Assign the role!
             };
             identity = new ClaimsIdentity(claims, "FakeAuth");
         }
 
-        return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity)));
+        return new AuthenticationState(new ClaimsPrincipal(identity));
     }
 
     public void NotifyUserAuthentication(string email, string role)

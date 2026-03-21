@@ -17,6 +17,8 @@ This README provides an overview of the architecture, conventions, and developme
 - Blazor UI for customer‑facing and admin experiences
 - Checkout delivery methods are resolved from the selected shipping address
 - Anonymous-safe account reads return empty/null values instead of throwing
+- Checkout address entry switches between address-book selection and Dutch lookup based on account state
+- Fake auth state persists in browser local storage across scoped requests
 - Field‑level encryption for sensitive PII
 - Vertical Slice Architecture for clean separation by feature
 - Aspire for orchestration, service discovery, and local infrastructure

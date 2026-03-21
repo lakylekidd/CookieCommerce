@@ -9,11 +9,11 @@ public static class StaticProfileList
     public static readonly UserProfileDto AdminUserProfile = GetAdminProfile();
     public static readonly UserProfileDto RegularUserProfile = GetRegularUserProfile();
 
-    public static readonly List<UserProfileDto> Profiles = new List<UserProfileDto>
-    {
+    public static readonly List<UserProfileDto> Profiles =
+    [
         AdminUserProfile,
         RegularUserProfile
-    };
+    ];
 
     private static UserProfileDto GetAdminProfile()
     {

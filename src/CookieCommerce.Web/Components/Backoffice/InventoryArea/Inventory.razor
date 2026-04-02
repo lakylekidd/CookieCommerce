@@ -8,8 +8,9 @@
 @inject IInventoryService InventoryService
 
 
-<div class="p-4 bg-amber-50/30 dark:bg-zinc-950 min-h-screen transition-colors duration-300">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="transition-colors duration-300">
+
+    <div class="grid grid-cols-12 gap-4 mb-5">
         <BakedTodayCard 
             Value="@inventory.OrderQuota.BakedToday" />
         <RemainingToBakeCard 
@@ -22,10 +23,33 @@
             Fulfillable="@inventory.OrderQuota.OrdersReadyToFulfill" 
             Total="@inventory.OrderQuota.TotalOrders" />
     </div>
+
+    <div class="grid grid-cols-12 gap-6 mb-8 items-start">
+        <div class="col-span-12 lg:col-span-4 xl:col-span-4">
+            <CookieInventoryVsRequired IsLoading="isLoading"
+                                       QuotaItems="inventory.InventoryQuota" />
+        </div>
+        <div class="col-span-12 lg:col-span-8 xl:col-span-8">
+            @if(inventory.Batches.Count > 0)
+            {
+                <BatchesTableCard Batches="@inventory.Batches" />
+            }
+            else
+            {
+                @* 
+                    Add a message indicating no batches are available
+                    and allow the user to create a new batch
+                *@
+            }
+        </div>
+    </div>
 </div>
+
+
 
 @code {
     private InventoryAreaDto inventory = new InventoryAreaDto();
+    private bool isLoading = false;
 
     protected override async Task OnInitializedAsync()
     {

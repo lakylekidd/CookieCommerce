@@ -1,6 +1,6 @@
 ﻿namespace CookieCommerce.Web.Models.Products;
 
-public class BatchRunDto
+public class OldBatchRunDto
 {
     public Guid Id { get; init; }
     public DateTime BakedOn { get; init; }

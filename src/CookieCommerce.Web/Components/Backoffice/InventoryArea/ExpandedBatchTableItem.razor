@@ -1,0 +1,30 @@
+﻿@using CookieCommerce.Web.Models.Backoffice
+
+<tr>
+    <td class="p-0 border-primary border-l-4 border-r-4 border-b border-t bg-orange-50/20 dark:bg-gray-800/20" colspan="6">
+        @if (IsLoading)
+        {
+            @* Skeleton Loader with Shimmer *@
+            
+        }
+        else
+        {
+            @* The actual displayed order *@
+            <div class="bg-white dark:bg-card-dark/50 p-8 border-b border-orange-100 dark:border-gray-800">
+                <table class="w-full border-separate border-spacing-y-2">
+                    <tbody>
+                        @foreach (var item in Batch.BatchRuns)
+                        {
+                            <BatchTableItemRun BatchRun="item" />
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </td>
+</tr>
+
+@code {
+    [Parameter] public BatchDto Batch { get; set; } = new ();
+    [Parameter] public bool IsLoading { get; set; } = false;
+}

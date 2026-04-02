@@ -1,0 +1,39 @@
+﻿@using CookieCommerce.Web.Models.Backoffice
+
+<div class="relative bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+    <div class="@(IsLoading ? "opacity-20 pointer-events-none" : "opacity-100") transition-opacity duration-500">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-widest font-bold">
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Product</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Created On</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Status</th>                           
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell relative overflow-visible">
+                            Quantity (<span class="text-primary">P</span>/<span class="text-green-600 dark:text-green-400">A</span>/<span class="text-red-600 dark:text-red-400">D</span>)
+                        </th>
+                        <th class="p-6 py-4 font-bold"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    @foreach(var batch in Batches)
+                    {
+                        <BatchTableItem Batch="batch" />
+                    }
+                </tbody>
+            </table>
+        </div>
+        @* 3. Pagination Bar *@
+        <div class="p-6 bg-gray-50/50 dark:bg-gray-800/50 border-t border-orange-100 dark:border-gray-800 flex justify-between items-center">
+            <span class="text-sm text-gray-500 font-medium">
+                Showing <span class="text-primary font-bold">2</span> of 5 batches 🐯
+            </span>
+        </div>
+    </div>
+    
+</div>
+
+@code {
+    [Parameter] public ICollection<BatchDto> Batches { get; set; } = [];
+    [Parameter] public bool IsLoading { get; set; } = false;
+}

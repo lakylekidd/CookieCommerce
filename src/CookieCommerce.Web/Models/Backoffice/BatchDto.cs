@@ -10,9 +10,9 @@ public class BatchDto
     /// </summary>
     public Guid Id { get; set; }
     /// <summary>
-    /// The unique identifier for the product being produced in this batch.
+    /// The product being produced in this batch.
     /// </summary>
-    public Guid ProductId { get; set; }
+    public BatchProductDto Product { get; set; } = new();
     /// <summary>
     /// The reference code for the batch, which can be used to track and 
     /// identify the batch in the production process. These can be printed as QR codes

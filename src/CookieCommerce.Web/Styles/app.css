@@ -159,6 +159,14 @@ nav a.active {
     background-image: radial-gradient(#FEF3C7 1px, transparent 1px);
 }
 
+details > summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq-category-title {
+    @apply font-display text-2xl font-bold mt-12 mb-6 text-primary flex items-center gap-3;
+}
+
 input:focus {
     @apply ring-primary border-primary;
 }
@@ -166,14 +174,6 @@ input:focus {
 .input-focus-ring:focus-within {
     ring: 2px;
     ring-color: #D97706;
-}
-
-details > summary::-webkit-details-marker {
-    display: none;
-}
-
-.faq-category-title {
-    @apply font-display text-2xl font-bold mt-12 mb-6 text-primary flex items-center gap-3;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {

@@ -11,6 +11,88 @@
         {
             @* The actual displayed order *@
             <div class="bg-white dark:bg-card-dark/50 p-8 border-b border-orange-100 dark:border-gray-800">
+
+                @* --- 🟢 BATCH DETAILS EDITOR SECTION --- *@
+                <div class="mb-10 p-6 rounded-[2rem] bg-orange-50/30 dark:bg-stone-900/40 border border-orange-100/50 dark:border-stone-700/50">
+                    <div class="flex items-center gap-2 mb-6">
+                        <span class="material-symbols-outlined text-primary">Settings</span>
+                        <h3 class="text-xs font-black uppercase tracking-[0.2em] text-stone-500">Batch Configuration</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+                        @* 📋 Status Selector *@
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Batch Status</span>
+                            <div class="mt-1 relative group">
+                                <select @bind="Batch.BatchStatus"
+                                        class="w-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs font-bold rounded-lg pl-2 pr-10 h-[38px] outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-none shadow-sm cursor-pointer transition-all">
+                                    @foreach (BatchStatus status in Enum.GetValues(typeof(BatchStatus)))
+                                    {
+                                        <option value="@status">@status.ToString()</option>
+                                    }
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-stone-400 group-hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-[18px]">unfold_more</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* 🔢 Quantities (Planned / Actual / Defective) *@
+                        <div class="lg:col-span-2 flex items-center gap-3">
+                            @* 📦 Planned Quantity *@
+                            <div class="flex flex-col gap-1 flex-1">
+                                <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Planned</span>
+                                <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200 
+                                            dark:border-stone-700 rounded-lg px-3 h-[38px] focus-within:ring-2 
+                                            focus-within:ring-primary/20 transition-all text-stone-600 px-2 py-1">
+                                    <span class="material-symbols-outlined text-[16px] text-primary mr-2">inventory_2</span>
+                                    <input type="number" @bind="Batch.PlannedQuantity"
+                                           class="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none tabular-nums focus:outline-none" />
+                                </div>
+                            </div>
+
+                            @* ✅ Actual Quantity *@
+                            <div class="flex flex-col gap-1 flex-1">
+                                <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Actual</span>
+                                <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200 
+                                            dark:border-stone-700 rounded-lg px-3 h-[38px] focus-within:ring-2 
+                                            focus-within:ring-primary/20 transition-all text-stone-600 px-2 py-1 ">
+                                    <span class="material-symbols-outlined text-[16px] text-green-500 mr-2">check_circle</span>
+                                    <input type="number" @bind="Batch.ActualQuantity"
+                                           class="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none tabular-nums focus:outline-none" />
+                                </div>
+                            </div>
+
+                            @* ⚠️ Defective Quantity *@
+                            <div class="flex flex-col gap-1 flex-1">
+                                <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Defects</span>
+                                <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200 
+                                            dark:border-stone-700 rounded-lg px-3 h-[38px] focus-within:ring-2 
+                                            focus-within:ring-primary/20 transition-all text-stone-600 px-2 py-1 ">
+                                    <span class="material-symbols-outlined text-[16px] text-red-500 mr-2">heart_broken</span>
+                                    <input type="number" @bind="Batch.DefectiveQuantity"
+                                           class="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none tabular-nums focus:outline-none" />
+                                </div>
+                            </div>
+                        </div>
+
+                        @* ✍️ Remarks *@
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Notes / Remarks</span>
+                            <div class="mt-1">
+                                <input type="text" @bind="Batch.Remarks" placeholder="Add production notes..."
+                                       class="w-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs font-bold rounded-lg px-3 h-[38px] outline-none focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-stone-300 italic" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* --- 🟠 BATCH RUNS TABLE SECTION --- *@
+                <div class="flex items-center gap-2 mb-4 px-2">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-primary">Production Line History</span>
+                    <div class="h-[1px] flex-grow bg-orange-100 dark:bg-stone-800"></div>
+                </div>
+
                 <table class="w-full border-separate border-spacing-y-2">
                     <tbody>
                         @foreach (var item in Batch.BatchRuns)

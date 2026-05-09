@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["dotnet-sdk_10"]
+
+[variables]
+DOTNET_ROOT = "/nix/store"

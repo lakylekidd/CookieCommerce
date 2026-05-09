@@ -20,34 +20,71 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+                        
                         @* 📋 Status Selector *@
                         <div class="flex flex-col gap-1">
                             <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Batch Status</span>
                             <div class="mt-1 relative group">
-                                <select @bind="Batch.BatchStatus"
-                                        class="w-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs font-bold rounded-lg pl-2 pr-10 h-[38px] outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-none shadow-sm cursor-pointer transition-all">
+                                <select value="@Batch.BatchStatus"
+                                        disabled="@IsSaving("BatchStatus")"
+                                        @onchange="@(e => HandleAutoSave("BatchStatus", e.Value))"
+                                        class="w-full bg-white dark:bg-stone-800 border border-stone-200 
+                                               dark:border-stone-700 text-xs font-bold rounded-lg pl-2 pr-10 h-[38px] 
+                                               outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20 
+                                               appearance-none bg-none
+                                    @(IsSaving("BatchStatus") ? "opacity-60 cursor-not-allowed" : "cursor-pointer")">
                                     @foreach (BatchStatus status in Enum.GetValues(typeof(BatchStatus)))
                                     {
                                         <option value="@status">@status.ToString()</option>
                                     }
                                 </select>
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-stone-400 group-hover:text-primary transition-colors">
-                                    <span class="material-symbols-outlined text-[18px]">unfold_more</span>
+
+                                @* 🐾 Dynamic Icon Slot: Chevron or Spinner *@
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none transition-colors">
+                                    @if (IsSaving("BatchStatus"))
+                                    {
+                                        <span class="material-symbols-outlined text-[18px] text-primary animate-spin">
+                                            progress_activity
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="material-symbols-outlined text-[18px] text-stone-400 group-hover:text-primary">
+                                            unfold_more
+                                        </span>
+                                    }
                                 </div>
                             </div>
                         </div>
 
                         @* 🔢 Quantities (Planned / Actual / Defective) *@
                         <div class="lg:col-span-2 flex items-center gap-3">
+
                             @* 📦 Planned Quantity *@
                             <div class="flex flex-col gap-1 flex-1">
                                 <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Planned</span>
                                 <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200 
                                             dark:border-stone-700 rounded-lg px-3 h-[38px] focus-within:ring-2 
-                                            focus-within:ring-primary/20 transition-all text-stone-600 px-2 py-1">
-                                    <span class="material-symbols-outlined text-[16px] text-primary mr-2">inventory_2</span>
-                                    <input type="number" @bind="Batch.PlannedQuantity"
-                                           class="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none tabular-nums focus:outline-none" />
+                                            focus-within:ring-primary/20 transition-all text-stone-600 px-2 py-1
+                                            @(IsSaving("Planned") ? "opacity-60 cursor-not-allowed" : "")">
+
+                                    @if (IsSaving("Planned"))
+                                    {
+                                        @* 🐯 The Spinning Loader *@
+                                        <span class="material-symbols-outlined text-[16px] text-primary mr-2 animate-spin">
+                                            progress_activity
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="material-symbols-outlined text-[16px] text-primary mr-2">inventory_2</span>
+                                    }
+
+                                    <input type="number"
+                                           value="@Batch.PlannedQuantity"
+                                           disabled="@IsSaving("Planned")"
+                                           @onchange="@(e => HandleAutoSave("Planned", e.Value))"
+                                           class="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none tabular-nums focus:outline-none disabled:cursor-not-allowed" />
                                 </div>
                             </div>
 
@@ -55,11 +92,27 @@
                             <div class="flex flex-col gap-1 flex-1">
                                 <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Actual</span>
                                 <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200 
-                                            dark:border-stone-700 rounded-lg px-3 h-[38px] focus-within:ring-2 
-                                            focus-within:ring-primary/20 transition-all text-stone-600 px-2 py-1 ">
-                                    <span class="material-symbols-outlined text-[16px] text-green-500 mr-2">check_circle</span>
-                                    <input type="number" @bind="Batch.ActualQuantity"
-                                           class="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none tabular-nums focus:outline-none" />
+                                            dark:border-stone-700 rounded-lg h-[38px] px-2 py-1 focus-within:ring-2 
+                                            focus-within:ring-primary/20 transition-all text-stone-600
+                                            @(IsSaving("Actual") ? "opacity-60 cursor-not-allowed" : "")">
+
+                                    @if (IsSaving("Actual"))
+                                    {
+                                        @* 🐯 Spinner replaces the icon during save *@
+                                        <span class="material-symbols-outlined text-[16px] text-primary mr-2 animate-spin">
+                                            progress_activity
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="material-symbols-outlined text-[16px] text-green-500 mr-2">check_circle</span>
+                                    }
+
+                                    <input type="number"
+                                           value="@Batch.ActualQuantity"
+                                           disabled="@IsSaving("Actual")"
+                                           @onchange="@(e => HandleAutoSave("Actual", e.Value))"
+                                           class="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none tabular-nums focus:outline-none disabled:cursor-not-allowed" />
                                 </div>
                             </div>
 
@@ -67,11 +120,27 @@
                             <div class="flex flex-col gap-1 flex-1">
                                 <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Defects</span>
                                 <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200 
-                                            dark:border-stone-700 rounded-lg px-3 h-[38px] focus-within:ring-2 
-                                            focus-within:ring-primary/20 transition-all text-stone-600 px-2 py-1 ">
-                                    <span class="material-symbols-outlined text-[16px] text-red-500 mr-2">heart_broken</span>
-                                    <input type="number" @bind="Batch.DefectiveQuantity"
-                                           class="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none tabular-nums focus:outline-none" />
+                                            dark:border-stone-700 rounded-lg h-[38px] px-2 py-1 focus-within:ring-2 
+                                            focus-within:ring-primary/20 transition-all text-stone-600
+                                            @(IsSaving("Defects") ? "opacity-60 cursor-not-allowed" : "")">
+
+                                    @if (IsSaving("Defects"))
+                                    {
+                                        @* 🐯 Spinner for the save state *@
+                                        <span class="material-symbols-outlined text-[16px] text-primary mr-2 animate-spin">
+                                            progress_activity
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="material-symbols-outlined text-[16px] text-red-500 mr-2">heart_broken</span>
+                                    }
+
+                                    <input type="number"
+                                           value="@Batch.DefectiveQuantity"
+                                           disabled="@IsSaving("Defects")"
+                                           @onchange="@(e => HandleAutoSave("Defects", e.Value))"
+                                           class="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none tabular-nums focus:outline-none disabled:cursor-not-allowed" />
                                 </div>
                             </div>
                         </div>
@@ -79,9 +148,27 @@
                         @* ✍️ Remarks *@
                         <div class="flex flex-col gap-1">
                             <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Notes / Remarks</span>
-                            <div class="mt-1">
-                                <input type="text" @bind="Batch.Remarks" placeholder="Add production notes..."
-                                       class="w-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs font-bold rounded-lg px-3 h-[38px] outline-none focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-stone-300 italic" />
+                            <div class="mt-1 relative">
+                                <input type="text"
+                                       value="@Batch.Remarks"
+                                       disabled="@IsSaving("Remarks")"
+                                       @onchange="@(e => HandleAutoSave("Remarks", e.Value))"
+                                       placeholder="Add production notes..."
+                                       class="w-full bg-white dark:bg-stone-800 border border-stone-200 
+                                              dark:border-stone-700 text-xs font-bold rounded-lg pl-3 pr-10 h-[38px] 
+                                              outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20 
+                                              placeholder:text-stone-300 italic
+                                              @(IsSaving("Remarks") ? "opacity-60 cursor-not-allowed" : "")" />
+
+                                @* 🐾 Spinner Slot (Right Aligned) *@
+                                @if (IsSaving("Remarks"))
+                                {
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <span class="material-symbols-outlined text-[18px] text-primary animate-spin">
+                                            progress_activity
+                                        </span>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
@@ -109,4 +196,59 @@
 @code {
     [Parameter] public BatchDto Batch { get; set; } = new ();
     [Parameter] public bool IsLoading { get; set; } = false;
+
+    // Track which field is currently saving to show the spinner in the right place
+    private string? _currentlySavingField;
+
+    private bool IsSaving(string fieldName) => _currentlySavingField == fieldName;
+
+    private async Task HandleAutoSave(string fieldName, object? value)
+    {
+        if (value == null) return;
+
+        _currentlySavingField = fieldName;
+        StateHasChanged();
+
+        switch (fieldName)
+        {
+            case "BatchStatus":
+                if (Enum.TryParse<BatchStatus>(value.ToString(), out var newStatus))
+                {
+                    await HandleStatusSave(newStatus);
+                }
+                break;
+            case "Planned":
+            case "Actual":
+            case "Defects":
+                if (int.TryParse(value.ToString(), out var newQuantity))
+                {
+                    await HandleQuantitySave(fieldName, newQuantity);
+                }
+                break;
+            case "Remarks":
+                await HandleRemarkSave(value.ToString()!);
+                break;
+        }
+
+        await Task.Delay(800);
+        _currentlySavingField = null;
+        StateHasChanged();
+    }
+
+    private async Task HandleStatusSave(BatchStatus newStatus)
+    {
+        
+    }
+
+    private async Task HandleQuantitySave(string fieldName, int newValue)
+    {
+        if (fieldName == "Planned") Batch.PlannedQuantity = newValue;
+        if (fieldName == "Actual") Batch.ActualQuantity = newValue;
+        if (fieldName == "Defects") Batch.DefectiveQuantity = newValue;
+    }
+
+    private async Task HandleRemarkSave(string newRemark)
+    {
+        
+    }
 }

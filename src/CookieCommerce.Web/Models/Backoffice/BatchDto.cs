@@ -25,10 +25,15 @@ public class BatchDto
     /// </summary>
     public BatchStatus BatchStatus { get; set; } = BatchStatus.Scheduled;
     /// <summary>
-    /// This is the date and time when the batch was created. This can be used to track how long the batch 
+    /// This is the date and time when the batch was created. This can be used to track how long the batch
     /// has been in production and to identify any potential bottlenecks or delays in the production process.
     /// </summary>
     public DateTime CreatedOn { get; set; }
+    /// <summary>
+    /// The date this batch is intended to fulfil orders for. Batches created after 19:00 on day D
+    /// contribute to day D+1's quota; batches created before 19:00 contribute to day D.
+    /// </summary>
+    public DateOnly DeliveryDate { get; set; }
     /// <summary>
     /// This is the planned quantity of cookies to be produced in this batch.
     /// </summary>

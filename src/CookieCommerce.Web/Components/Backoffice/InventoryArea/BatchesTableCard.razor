@@ -1,39 +1,192 @@
-﻿@using CookieCommerce.Web.Models.Backoffice
+@using CookieCommerce.Web.Models.Backoffice
 
 <div class="relative bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
     <div class="@(IsLoading ? "opacity-20 pointer-events-none" : "opacity-100") transition-opacity duration-500">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-widest font-bold">
-                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Product</th>
-                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Created On</th>
-                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Status</th>                           
-                        <th class="p-6 py-4 font-bold hidden sm:table-cell relative overflow-visible">
-                            Quantity (<span class="text-primary">P</span>/<span class="text-green-600 dark:text-green-400">A</span>/<span class="text-red-600 dark:text-red-400">D</span>)
-                        </th>
-                        <th class="p-6 py-4 font-bold"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                    @foreach(var batch in Batches)
-                    {
-                        <BatchTableItem Batch="batch" />
-                    }
-                </tbody>
-            </table>
+
+        @* Card Header *@
+        <div class="px-6 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
+            <h3 class="font-bold text-gray-900 dark:text-white">Batches</h3>
+            <button @onclick="() => showAddBatchModal = true" type="button"
+                    class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 active:scale-95 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-base">add</span>
+                Add Batch
+            </button>
         </div>
-        @* 3. Pagination Bar *@
-        <div class="p-6 bg-gray-50/50 dark:bg-gray-800/50 border-t border-orange-100 dark:border-gray-800 flex justify-between items-center">
-            <span class="text-sm text-gray-500 font-medium">
-                Showing <span class="text-primary font-bold">2</span> of 5 batches 🐯
-            </span>
-        </div>
+
+        @if (Batches.Count == 0)
+        {
+            <div class="flex flex-col items-center justify-center py-16 text-center">
+                <span class="material-symbols-outlined text-5xl text-gray-200 dark:text-gray-700 mb-3">cookie</span>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">No batches for this day</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Click "Add Batch" to create one</p>
+            </div>
+        }
+        else
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-widest font-bold">
+                            <th class="p-6 py-4 font-bold hidden sm:table-cell">Product</th>
+                            <th class="p-6 py-4 font-bold hidden sm:table-cell">Created On</th>
+                            <th class="p-6 py-4 font-bold hidden sm:table-cell">Status</th>
+                            <th class="p-6 py-4 font-bold hidden sm:table-cell relative overflow-visible">
+                                Quantity (<span class="text-primary">P</span>/<span
+                                class="text-green-600 dark:text-green-400">A</span>/<span
+                                class="text-red-600 dark:text-red-400">D</span>)
+                            </th>
+                            <th class="p-6 py-4 font-bold"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @foreach (var batch in PagedBatches)
+                        {
+                            <BatchTableItem Batch="batch" />
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @* Pagination Bar *@
+            <div class="px-6 py-4 bg-gray-50/50 dark:bg-gray-800/50 border-t border-orange-100 dark:border-gray-800 flex flex-wrap gap-4 justify-between items-center">
+
+                @* Left: entry summary *@
+                <span class="text-sm text-gray-500 font-medium">
+                    Showing
+                    <span class="text-primary font-bold">@StartItem–@EndItem</span>
+                    of
+                    <span class="font-bold text-gray-700 dark:text-gray-300">@Batches.Count</span>
+                    batches 🐯
+                </span>
+
+                @* Right: page size selector + navigation *@
+                <div class="flex items-center gap-4">
+
+                    @* Page size buttons *@
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs text-gray-400 dark:text-gray-500 font-medium">Show:</span>
+                        @foreach (var size in PageSizeOptions)
+                        {
+                            <button @onclick="() => SetPageSize(size)" class="@(pageSize == size
+                                ? "bg-primary border-primary text-white"
+                                : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-primary hover:text-primary cursor-pointer")
+                                text-xs font-bold px-3 py-1.5 rounded-lg border transition-all">
+                                @size
+                            </button>
+                        }
+                    </div>
+
+                    @* Page navigation *@
+                    <div class="flex items-center gap-1">
+
+                        @* Previous *@
+                        <button @onclick="PreviousPage" disabled="@(currentPage == 1)"
+                                class="@(currentPage == 1
+                                    ? "opacity-40 cursor-not-allowed"
+                                    : "hover:bg-primary hover:text-white hover:border-primary cursor-pointer")
+                                flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 rounded-full transition-all">
+                            <span class="material-symbols-outlined text-base">chevron_left</span>
+                        </button>
+
+                        @* Page number buttons *@
+                        @foreach (var page in VisiblePages)
+                        {
+                            @if (page == Ellipsis)
+                            {
+                                <span class="w-8 text-center text-xs text-gray-400 dark:text-gray-500 select-none">…</span>
+                            }
+                            else
+                            {
+                                <button @onclick="() => GoToPage(page)"
+                                        class="@(page == currentPage
+                                            ? "bg-primary border-primary text-white"
+                                            : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-primary hover:text-primary cursor-pointer")
+                                        flex items-center justify-center w-8 h-8 border rounded-full text-xs font-bold transition-all">
+                                    @(page)
+                                </button>
+                            }
+                        }
+
+                        @* Next *@
+                        <button @onclick="NextPage" disabled="@(currentPage == TotalPages)"
+                                class="@(currentPage == TotalPages
+                                    ? "opacity-40 cursor-not-allowed"
+                                    : "hover:bg-primary hover:text-white hover:border-primary cursor-pointer")
+                                flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 rounded-full transition-all">
+                            <span class="material-symbols-outlined text-base">chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
-    
 </div>
+
+@if (showAddBatchModal)
+{
+    <AddBatchModal Products="@Products"
+                   OnSubmit="HandleBatchAdded"
+                   OnClose="() => showAddBatchModal = false" />
+}
 
 @code {
     [Parameter] public ICollection<BatchDto> Batches { get; set; } = [];
+    [Parameter] public IReadOnlyList<BatchProductDto> Products { get; set; } = [];
+    [Parameter] public EventCallback<BatchDto> OnBatchAdded { get; set; }
     [Parameter] public bool IsLoading { get; set; } = false;
+
+    private static readonly int[] PageSizeOptions = [5, 10, 20];
+    private const int Ellipsis = -1;
+
+    private int currentPage = 1;
+    private int pageSize = 5;
+    private bool showAddBatchModal = false;
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(Batches.Count / (double)pageSize));
+    private int StartItem => Batches.Count == 0 ? 0 : (currentPage - 1) * pageSize + 1;
+    private int EndItem => Math.Min(currentPage * pageSize, Batches.Count);
+
+    private IEnumerable<BatchDto> PagedBatches =>
+        Batches
+            .OrderByDescending(b => b.CreatedOn)
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize);
+
+    private IEnumerable<int> VisiblePages
+    {
+        get
+        {
+            if (TotalPages <= 5)
+                return Enumerable.Range(1, TotalPages);
+
+            var pages = new List<int> { 1 };
+            if (currentPage > 3) pages.Add(Ellipsis);
+            for (var p = Math.Max(2, currentPage - 1); p <= Math.Min(TotalPages - 1, currentPage + 1); p++)
+                pages.Add(p);
+            if (currentPage < TotalPages - 2) pages.Add(Ellipsis);
+            pages.Add(TotalPages);
+            return pages;
+        }
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page < 1 || page > TotalPages) return;
+        currentPage = page;
+    }
+
+    private void PreviousPage() => GoToPage(currentPage - 1);
+    private void NextPage() => GoToPage(currentPage + 1);
+
+    private void SetPageSize(int size)
+    {
+        pageSize = size;
+        currentPage = 1;
+    }
+
+    private async Task HandleBatchAdded(BatchDto newBatch)
+    {
+        showAddBatchModal = false;
+        await OnBatchAdded.InvokeAsync(newBatch);
+    }
 }

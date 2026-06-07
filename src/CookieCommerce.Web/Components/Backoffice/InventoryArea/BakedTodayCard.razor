@@ -1,10 +1,19 @@
 @using System.Globalization
 
 <div class="group p-4 rounded-xl bg-surface-light col-span-6 sm:col-span-6 lg:col-span-3 xl:col-span-2
-            dark:bg-surface-dark shadow-sm border border-amber-100/50 
+            dark:bg-surface-dark shadow-sm border border-amber-100/50
             dark:border-zinc-800 flex flex-col justify-between h-28 transition-all">
     <div class="flex justify-between items-start">
-        <span class="text-[11px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">Baked Today</span>
+        <span class="text-[11px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">
+            @if (SelectedDate == DateOnly.FromDateTime(DateTime.Today))
+            {
+                @:Baked Today
+            }
+            else
+            {
+                @:Baked on @SelectedDate.ToString("ddd d MMM")
+            }
+        </span>
     </div>
     <div>
         <h3 class="text-2xl font-black text-primary dark:text-amber-500">@Value.ToString("N0", CultureInfo.InvariantCulture)</h3>
@@ -15,4 +24,5 @@
 @code {
     [Parameter] public int Value { get; set; }
     [Parameter] public double PercentageChange { get; set; }
+    [Parameter] public DateOnly SelectedDate { get; set; }
 }

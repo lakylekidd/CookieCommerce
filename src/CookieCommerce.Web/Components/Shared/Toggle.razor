@@ -1,0 +1,19 @@
+<label class="relative inline-flex items-center cursor-pointer select-none">
+    <input type="checkbox"
+           checked="@Value"
+           @onchange="e => ValueChanged.InvokeAsync((bool)e.Value!)"
+           class="sr-only peer" />
+    <div class="w-10 h-[22px] rounded-full transition-colors duration-200
+                bg-gray-200 dark:bg-gray-700
+                peer-checked:bg-primary
+                after:content-[''] after:absolute after:top-[2px] after:start-[2px]
+                after:bg-white after:rounded-full after:h-[18px] after:w-[18px]
+                after:transition-all after:duration-200
+                peer-checked:after:translate-x-[18px]">
+    </div>
+</label>
+
+@code {
+    [Parameter] public bool Value { get; set; }
+    [Parameter] public EventCallback<bool> ValueChanged { get; set; }
+}

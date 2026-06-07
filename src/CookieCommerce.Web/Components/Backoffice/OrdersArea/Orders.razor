@@ -2,6 +2,7 @@
 @using CookieCommerce.Web.Models.Backoffice
 @using CookieCommerce.Web.Models.Order
 @using CookieCommerce.Web.Services
+@using CookieCommerce.Web.Services.StaticData
 @rendermode InteractiveServer
 @layout BackofficeLayout
 @inject IBackofficeService BackofficeService
@@ -31,7 +32,8 @@
     </div>
     <div class="col-span-12 lg:col-span-8 xl:col-span-9">
         <QuotaOrdersTable Orders="quotaDateOrders.Orders"
-                          IsLoading="isLoadingTodaysQuotaOrders" />
+                          IsLoading="isLoadingTodaysQuotaOrders"
+                          Shortfalls="shortfalls" />
     </div>
 </div>
 
@@ -39,6 +41,7 @@
 
     private QuotaDateOrdersDto quotaDateOrders = new();
     private bool isLoadingTodaysQuotaOrders = false;
+    private Dictionary<Guid, IReadOnlyList<MissingCookieDto>> shortfalls = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -49,6 +52,32 @@
     {
         isLoadingTodaysQuotaOrders = true;
         quotaDateOrders = await BackofficeService.GetQuotaDateOrdersAsync(DateTime.Now.Date);
+        shortfalls = ComputeFifoShortfalls(quotaDateOrders.Orders);
         isLoadingTodaysQuotaOrders = false;
+    }
+
+    private static Dictionary<Guid, IReadOnlyList<MissingCookieDto>> ComputeFifoShortfalls(
+        IEnumerable<QuotaOrderDto> orders)
+    {
+        var date = DateOnly.FromDateTime(DateTime.Now.Date);
+        var stock = MockInventoryData.GetAvailableStockForDate(date);
+        var result = new Dictionary<Guid, IReadOnlyList<MissingCookieDto>>();
+
+        foreach (var order in orders.OrderBy(o => o.PlacedOn))
+        {
+            var missing = new List<MissingCookieDto>();
+            foreach (var line in order.Items)
+            {
+                if (string.IsNullOrEmpty(line.ProductReference)) continue;
+                int available = stock.GetValueOrDefault(line.ProductReference, 0);
+                int fulfilled = Math.Min(available, line.Quantity);
+                stock[line.ProductReference] = available - fulfilled;
+                int missingQty = line.Quantity - fulfilled;
+                if (missingQty > 0)
+                    missing.Add(new MissingCookieDto(line.ProductName, missingQty));
+            }
+            result[order.Id] = missing;
+        }
+        return result;
     }
 }

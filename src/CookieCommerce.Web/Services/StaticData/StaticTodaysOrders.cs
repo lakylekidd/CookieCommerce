@@ -21,8 +21,8 @@ public static class StaticTodaysOrders
         },
         Status = new OrderStatusDto
         {
-            StatusId = 2,
-            Status = "Confirmed"
+            StatusId = 4,
+            Status = "Processing"
         },
         ShippingInformation = new ShippingInformationDto
         {
@@ -79,7 +79,7 @@ public static class StaticTodaysOrders
             City = "Amsterdam",
             Country = "Netherlands"
         },
-        Status = new OrderStatusDto { StatusId = 2, Status = "Confirmed" },
+        Status = new OrderStatusDto { StatusId = 4, Status = "Processing" },
         ShippingInformation = new ShippingInformationDto
         {
             Icon = "pedal_bike",
@@ -189,6 +189,7 @@ public static class StaticTodaysOrders
         return new QuotaOrderItemDto
         {
             ProductId = product.Id,
+            ProductReference = product.ProductReference,
             ProductImageUrl = product.ImageUrl,
             ProductName = product.Title,
             Quantity = quantity

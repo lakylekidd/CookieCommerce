@@ -67,7 +67,9 @@
                     {
                         foreach(var item in Orders.OrderBy(o => o.PlacedOn))
                         {
-                            <QuotaOrderTableItem Order="item" IsLoading="@IsLoading" />
+                            <QuotaOrderTableItem Order="item"
+                                                 IsLoading="@IsLoading"
+                                                 Shortfalls="@(Shortfalls.GetValueOrDefault(item.Id) ?? [])" />
                         }
                     }
                 </tbody>
@@ -79,6 +81,7 @@
 @code  {
     [Parameter] public ICollection<QuotaOrderDto> Orders { get; set; } = [];
     [Parameter] public bool IsLoading { get; set; } = true;
+    [Parameter] public Dictionary<Guid, IReadOnlyList<MissingCookieDto>> Shortfalls { get; set; } = new();
 
     private int ordersCount => Orders.Count;
     private int currentPage = 1;

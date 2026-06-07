@@ -1,6 +1,695 @@
-﻿@page "/backoffice/settings/"
-@using CookieCommerce.Web.Models.Backoffice
-@using CookieCommerce.Web.Services
+@page "/backoffice/settings/"
 @rendermode InteractiveServer
 @layout BackofficeLayout
-@inject IBackofficeService BackofficeService
+
+<div class="transition-colors duration-300 space-y-6">
+
+    @* ── Page header ─────────────────────────────────────────────────────── *@
+    <div>
+        <h1 class="text-2xl font-bold font-display text-gray-900 dark:text-white">Settings</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Configure your store behaviour, commerce rules, and operational preferences.</p>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-6 items-start">
+
+        @* ── Sidebar navigation ──────────────────────────────────────────── *@
+        <div class="w-full lg:w-52 flex-shrink-0">
+            <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-2">
+                <nav class="flex lg:flex-col gap-1 overflow-x-auto">
+                    @foreach (var s in Sections)
+                    {
+                        <button @onclick="() => SetSection(s.Key)"
+                                class="@(activeSection == s.Key
+                                    ? "bg-primary/10 text-primary"
+                                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white")
+                                    flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap cursor-pointer w-full text-left">
+                            <span class="material-symbols-outlined text-[19px]">@s.Value.Icon</span>
+                            @s.Value.Label
+                        </button>
+                    }
+                </nav>
+            </div>
+        </div>
+
+        @* ── Content pane ────────────────────────────────────────────────── *@
+        <div class="flex-1 min-w-0 space-y-4">
+
+            @* Section header *@
+            <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 px-6 py-4 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="size-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-primary" style="font-size:20px">@Sections[activeSection].Icon</span>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-gray-900 dark:text-white">@Sections[activeSection].Label</h2>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">@Sections[activeSection].Description</p>
+                    </div>
+                </div>
+                <button @onclick="SaveSection"
+                        class="@(savedVisible
+                            ? "bg-green-500 text-white"
+                            : "bg-primary text-white hover:bg-primary/90")
+                            flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-sm">
+                    <span class="material-symbols-outlined text-base">@(savedVisible ? "check_circle" : "save")</span>
+                    @(savedVisible ? "Saved!" : "Save Changes")
+                </button>
+            </div>
+
+            @* ═══════════════════════════════════════════════════════════════
+               COMMERCE
+               ══════════════════════════════════════════════════════════════ *@
+            @if (activeSection == SettingsSection.Commerce)
+            {
+                <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+
+                    @* Order prefix *@
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Order Reference Prefix</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Short prefix prepended to every order number (e.g. @orderReferencePrefix-1234).</p>
+                        </div>
+                        <input type="text" @bind="orderReferencePrefix" maxlength="8"
+                               class="w-28 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 font-mono uppercase focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                    </div>
+
+                    @* Free shipping threshold *@
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Free Shipping Threshold</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Customers who spend above this amount receive free shipping.</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <span class="text-sm font-bold text-gray-500 dark:text-gray-400">€</span>
+                            <input type="number" @bind="freeShippingThreshold" min="0" step="5"
+                                   class="w-24 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                        </div>
+                    </div>
+
+                    @* Shipping cost *@
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Standard Shipping Cost</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Flat shipping fee applied to orders below the free shipping threshold.</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <span class="text-sm font-bold text-gray-500 dark:text-gray-400">€</span>
+                            <input type="number" @bind="standardShippingCost" min="0" step="0.5"
+                                   class="w-24 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                        </div>
+                    </div>
+
+                    @* VAT *@
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">VAT Rate</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Applied to all product sales. Currently @vatRate% is the Dutch reduced rate for food.</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <input type="number" @bind="vatRate" min="0" max="100" step="0.5"
+                                   class="w-20 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                            <span class="text-sm font-bold text-gray-500 dark:text-gray-400">%</span>
+                        </div>
+                    </div>
+
+                    @* Delivery cutoff *@
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Next-Day Delivery Cutoff</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Orders placed before this time qualify for next-day delivery.</p>
+                        </div>
+                        <input type="time" @bind="nextDayDeliveryCutoff"
+                               class="px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                    </div>
+
+                    @* Guest checkout *@
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Allow Guest Checkout</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Let customers complete purchases without creating an account.</p>
+                        </div>
+                        <Toggle @bind-Value="allowGuestCheckout" />
+                    </div>
+
+                    @* Order notes *@
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Allow Order Notes</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Show a free-text field during checkout for special delivery instructions.</p>
+                        </div>
+                        <Toggle @bind-Value="allowOrderNotes" />
+                    </div>
+
+                    @* Max quantity *@
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Max Items per Order</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Hard limit on the total number of cookie items a single order can contain.</p>
+                        </div>
+                        <input type="number" @bind="maxItemsPerOrder" min="1" max="500" step="1"
+                               class="w-24 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                    </div>
+                </div>
+            }
+
+            @* ═══════════════════════════════════════════════════════════════
+               PROMOTIONS
+               ══════════════════════════════════════════════════════════════ *@
+            @if (activeSection == SettingsSection.Promotions)
+            {
+                <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                        <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">Active Promo Codes</p>
+                        <button @onclick="() => showAddPromoForm = !showAddPromoForm"
+                                class="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all cursor-pointer">
+                            <span class="material-symbols-outlined text-base">@(showAddPromoForm ? "close" : "add")</span>
+                            @(showAddPromoForm ? "Cancel" : "Add Code")
+                        </button>
+                    </div>
+
+                    @* Add promo form *@
+                    @if (showAddPromoForm)
+                    {
+                        <div class="px-6 py-4 bg-gray-50/70 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800 space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Code</label>
+                                    <input type="text" @bind="newPromo.Code" placeholder="e.g. SUMMER20"
+                                           class="mt-1 w-full px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl font-mono uppercase focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</label>
+                                    <input type="text" @bind="newPromo.Description" placeholder="e.g. 20% summer discount"
+                                           class="mt-1 w-full px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Discount Amount</label>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <input type="number" @bind="newPromo.Discount" min="0" step="1"
+                                               class="w-24 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                                        <span class="text-sm text-gray-500">@(newPromo.IsPercentage ? "%" : "€")</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</label>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <label class="flex items-center gap-2 cursor-pointer text-sm">
+                                            <input type="radio" name="newPromoType" value="true"
+                                                   checked="@newPromo.IsPercentage"
+                                                   @onchange="() => newPromo.IsPercentage = true"
+                                                   class="accent-primary" />
+                                            Percentage
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer text-sm">
+                                            <input type="radio" name="newPromoType" value="false"
+                                                   checked="@(!newPromo.IsPercentage)"
+                                                   @onchange="() => newPromo.IsPercentage = false"
+                                                   class="accent-primary" />
+                                            Fixed (€)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-end">
+                                <button @onclick="AddPromoCode"
+                                        class="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-all cursor-pointer shadow-sm">
+                                    <span class="material-symbols-outlined text-base">add_circle</span>
+                                    Add Promo Code
+                                </button>
+                            </div>
+                        </div>
+                    }
+
+                    @* Promo code list *@
+                    @if (!promoCodes.Any())
+                    {
+                        <div class="px-6 py-12 text-center text-gray-400 dark:text-gray-500">
+                            <span class="material-symbols-outlined text-4xl">sell</span>
+                            <p class="text-sm mt-2">No promo codes yet</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                            @foreach (var promo in promoCodes)
+                            {
+                                <div class="flex items-center gap-4 px-6 py-4">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="font-mono font-bold text-sm text-gray-900 dark:text-white">@promo.Code</span>
+                                            <span class="text-xs font-bold px-2 py-0.5 rounded-full @(promo.IsPercentage ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400")">
+                                                @(promo.IsPercentage ? $"{promo.Discount}% off" : $"€{promo.Discount:F2} off")
+                                            </span>
+                                            @if (!promo.IsActive)
+                                            {
+                                                <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">Inactive</span>
+                                            }
+                                        </div>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">@promo.Description</p>
+                                    </div>
+                                    <div class="flex items-center gap-3 flex-shrink-0">
+                                        <Toggle @bind-Value="promo.IsActive" />
+                                        <button @onclick="() => promoCodes.Remove(promo)"
+                                                class="flex items-center justify-center size-8 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all cursor-pointer">
+                                            <span class="material-symbols-outlined text-base">delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            @* ═══════════════════════════════════════════════════════════════
+               LOYALTY & REWARDS
+               ══════════════════════════════════════════════════════════════ *@
+            @if (activeSection == SettingsSection.Loyalty)
+            {
+                <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Points Earned per €1 Spent</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">How many reward points a customer earns for every euro they spend.</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <input type="number" @bind="pointsPerEuro" min="1" max="100" step="1"
+                                   class="w-20 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                            <span class="text-xs font-medium text-gray-400">pts / €</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Minimum Order to Earn Points</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Orders below this value do not earn reward points. Set to 0 for any order.</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <span class="text-sm font-bold text-gray-500 dark:text-gray-400">€</span>
+                            <input type="number" @bind="minOrderToEarnPoints" min="0" step="1"
+                                   class="w-24 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Minimum Points to Redeem</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Customers need at least this many points before they can redeem them at checkout.</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <input type="number" @bind="minPointsToRedeem" min="0" step="50"
+                                   class="w-24 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                            <span class="text-xs font-medium text-gray-400">pts</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Allow Points Redemption at Checkout</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Let customers apply accumulated points as a discount during checkout.</p>
+                        </div>
+                        <Toggle @bind-Value="allowPointRedemption" />
+                    </div>
+
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Show Reward Points on Storefront</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Display the reward points balance on the customer account page and in the cart.</p>
+                        </div>
+                        <Toggle @bind-Value="showPointsOnStorefront" />
+                    </div>
+
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Double Points on Birthday</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Customers earn 2× reward points on all orders placed on their birthday.</p>
+                        </div>
+                        <Toggle @bind-Value="doubleBirthdayPoints" />
+                    </div>
+                </div>
+            }
+
+            @* ═══════════════════════════════════════════════════════════════
+               INVENTORY & PRODUCTION
+               ══════════════════════════════════════════════════════════════ *@
+            @if (activeSection == SettingsSection.Inventory)
+            {
+                <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Default Baking Temperature</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Pre-filled temperature when creating a new batch. Bakers can still override per-batch.</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <input type="number" @bind="defaultBakingTemp" min="100" max="300" step="5"
+                                   class="w-20 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                            <span class="text-xs font-medium text-gray-400">°C</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Default Baking Duration</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Pre-filled bake time when creating a new batch run.</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <input type="number" @bind="defaultBakingDuration" min="1" max="120" step="1"
+                                   class="w-20 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                            <span class="text-xs font-medium text-gray-400">min</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Daily Production Quota</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Target number of cookies to bake each day. Shown on the inventory dashboard progress bar.</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <input type="number" @bind="dailyQuotaTarget" min="1" step="10"
+                                   class="w-24 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                            <span class="text-xs font-medium text-gray-400">cookies</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Low Stock Alert Threshold</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">A notification is triggered when any SKU's stock drops below this number of units.</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <input type="number" @bind="lowStockThreshold" min="1" step="5"
+                                   class="w-20 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                            <span class="text-xs font-medium text-gray-400">units</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Max Defect Rate Warning</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Flag a batch in the dashboard when its defective cookie percentage exceeds this threshold.</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <input type="number" @bind="maxDefectRatePercent" min="0" max="100" step="1"
+                                   class="w-20 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                            <span class="text-xs font-medium text-gray-400">%</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Auto-Schedule Batch on Low Stock</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Automatically create a pending batch when a product's stock falls below the alert threshold.</p>
+                        </div>
+                        <Toggle @bind-Value="autoCreateBatchOnLowStock" />
+                    </div>
+                </div>
+            }
+
+            @* ═══════════════════════════════════════════════════════════════
+               NOTIFICATIONS
+               ══════════════════════════════════════════════════════════════ *@
+            @if (activeSection == SettingsSection.Notifications)
+            {
+                @* Admin contact *@
+                <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+                    <div class="px-6 py-3">
+                        <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Admin Contact</p>
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Admin Email Address</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">All backoffice alert emails are sent to this address.</p>
+                        </div>
+                        <input type="email" @bind="adminEmail"
+                               class="w-64 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                    </div>
+                </div>
+
+                @* Email triggers *@
+                <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+                    <div class="px-6 py-3">
+                        <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Email Alerts</p>
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">New Order Placed</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Receive an email each time a customer completes a purchase.</p>
+                        </div>
+                        <Toggle @bind-Value="notifyOnNewOrder" />
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Low Stock Warning</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Get alerted when a product SKU drops below the inventory threshold.</p>
+                        </div>
+                        <Toggle @bind-Value="notifyOnLowStock" />
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">New Customer Registered</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Receive an email when a new account is created on the storefront.</p>
+                        </div>
+                        <Toggle @bind-Value="notifyOnNewCustomer" />
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">High Defect Rate Batch</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Alert when a completed batch's defect rate exceeds the configured maximum.</p>
+                        </div>
+                        <Toggle @bind-Value="notifyOnHighDefects" />
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Daily Summary Report</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Receive a morning email with yesterday's orders, revenue, and baking output.</p>
+                        </div>
+                        <Toggle @bind-Value="dailySummaryReport" />
+                    </div>
+                </div>
+
+                @* In-app *@
+                <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+                    <div class="px-6 py-3">
+                        <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">In-App</p>
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Sound Alert on New Order</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Play a chime sound in the backoffice when a new order arrives.</p>
+                        </div>
+                        <Toggle @bind-Value="soundAlertOnNewOrder" />
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Browser Push Notifications</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Show OS-level push notifications for new orders, even when the tab is in the background.</p>
+                        </div>
+                        <Toggle @bind-Value="browserPushNotifications" />
+                    </div>
+                </div>
+            }
+
+            @* ═══════════════════════════════════════════════════════════════
+               APPEARANCE
+               ══════════════════════════════════════════════════════════════ *@
+            @if (activeSection == SettingsSection.Appearance)
+            {
+                @* Storefront copy *@
+                <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+                    <div class="px-6 py-3">
+                        <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Storefront Copy</p>
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Store Tagline</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Short phrase displayed beneath the logo on the storefront hero section.</p>
+                        </div>
+                        <input type="text" @bind="storeTagline" maxlength="60"
+                               class="w-64 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Flavor of the Month</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Product featured in the countdown timer section on the storefront homepage.</p>
+                        </div>
+                        <select @bind="flavorOfTheMonth"
+                                class="px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer">
+                            @foreach (var cookie in CookieOptions)
+                            {
+                                <option value="@cookie.Ref">@cookie.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Featured Products to Display</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Number of products shown in the "Featured" grid on the storefront.</p>
+                        </div>
+                        <select @bind="featuredProductCount"
+                                class="min-w-[5rem] px-3 py-2 pr-8 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer">
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="6">6</option>
+                        </select>
+                    </div>
+                </div>
+
+                @* Theme *@
+                <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+                    <div class="px-6 py-3">
+                        <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Theme</p>
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Default to Dark Mode</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">New visitors see the dark theme on first load. They can still toggle it manually.</p>
+                        </div>
+                        <Toggle @bind-Value="defaultDarkMode" />
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Show "Limited Edition" Badge</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Display the orange "Limited" badge on products marked as limited edition.</p>
+                        </div>
+                        <Toggle @bind-Value="showLimitedBadge" />
+                    </div>
+                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Show "Top Seller" Badge</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Display the green "Top Seller" badge on best-selling products.</p>
+                        </div>
+                        <Toggle @bind-Value="showTopSellerBadge" />
+                    </div>
+                </div>
+
+                @* Color theme note *@
+                <div class="flex items-center gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-xl text-amber-700 dark:text-amber-400">
+                    <span class="material-symbols-outlined text-base flex-shrink-0">info</span>
+                    <p class="text-xs font-medium">Brand colour customisation (primary orange, background tones, typography) is managed through the <a href="/backoffice/branding" class="underline">Branding</a> section and requires a CSS rebuild to take effect.</p>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+@code {
+    @* ── Section definitions ──────────────────────────────────────────────── *@
+    private enum SettingsSection { Commerce, Promotions, Loyalty, Inventory, Notifications, Appearance }
+
+    private record SectionMeta(string Label, string Icon, string Description);
+
+    private static readonly Dictionary<SettingsSection, SectionMeta> Sections = new()
+    {
+        [SettingsSection.Commerce]      = new("Commerce",          "payments",       "Shipping costs, VAT, order flow, and checkout behaviour."),
+        [SettingsSection.Promotions]    = new("Promotions",        "sell",           "Manage discount codes and promotional campaigns."),
+        [SettingsSection.Loyalty]       = new("Loyalty & Rewards", "star",           "Configure the reward points programme for customers."),
+        [SettingsSection.Inventory]     = new("Inventory",         "inventory_2",    "Batch production defaults and stock alert thresholds."),
+        [SettingsSection.Notifications] = new("Notifications",     "notifications",  "Admin alerts for orders, low stock, and customer events."),
+        [SettingsSection.Appearance]    = new("Appearance",        "palette",        "Storefront copy, product badges, and theme preferences."),
+    };
+
+    private static readonly (string Ref, string Name)[] CookieOptions =
+    [
+        ("COOKIE-001", "Chocolate Chunk"),
+        ("COOKIE-002", "Matcha White Chocolate"),
+        ("COOKIE-003", "Hazelnut Praline"),
+        ("COOKIE-004", "Red Velvet"),
+        ("COOKIE-005", "Caramel Sea Salt"),
+        ("COOKIE-006", "Cocoa White Chocolate Chip"),
+    ];
+
+    @* ── Active section ──────────────────────────────────────────────────── *@
+    private SettingsSection activeSection = SettingsSection.Commerce;
+    private void SetSection(SettingsSection s) { activeSection = s; savedVisible = false; }
+
+    @* ── Save state ───────────────────────────────────────────────────────── *@
+    private bool savedVisible = false;
+
+    private async Task SaveSection()
+    {
+        savedVisible = true;
+        StateHasChanged();
+        await Task.Delay(2400);
+        savedVisible = false;
+    }
+
+    @* ── Commerce ─────────────────────────────────────────────────────────── *@
+    private string orderReferencePrefix = "TGR";
+    private decimal freeShippingThreshold = 40m;
+    private decimal standardShippingCost = 4.95m;
+    private decimal vatRate = 7m;
+    private TimeOnly nextDayDeliveryCutoff = new TimeOnly(14, 0);
+    private bool allowGuestCheckout = true;
+    private bool allowOrderNotes = true;
+    private int maxItemsPerOrder = 120;
+
+    @* ── Promotions ───────────────────────────────────────────────────────── *@
+    private class PromoCodeEntry
+    {
+        public string Code { get; set; } = "";
+        public string Description { get; set; } = "";
+        public decimal Discount { get; set; } = 10;
+        public bool IsPercentage { get; set; } = true;
+        public bool IsActive { get; set; } = true;
+    }
+
+    private List<PromoCodeEntry> promoCodes = new()
+    {
+        new() { Code = "DISCOUNT10", Description = "10% off any order",       Discount = 10, IsPercentage = true,  IsActive = true  },
+        new() { Code = "WELCOME5",   Description = "€5 off your first order", Discount = 5,  IsPercentage = false, IsActive = false },
+    };
+
+    private PromoCodeEntry newPromo = new();
+    private bool showAddPromoForm = false;
+
+    private void AddPromoCode()
+    {
+        if (string.IsNullOrWhiteSpace(newPromo.Code)) return;
+        promoCodes.Add(new PromoCodeEntry
+        {
+            Code = newPromo.Code.ToUpper().Trim(),
+            Description = newPromo.Description,
+            Discount = newPromo.Discount,
+            IsPercentage = newPromo.IsPercentage,
+            IsActive = true
+        });
+        newPromo = new();
+        showAddPromoForm = false;
+    }
+
+    @* ── Loyalty ──────────────────────────────────────────────────────────── *@
+    private int pointsPerEuro = 10;
+    private decimal minOrderToEarnPoints = 0m;
+    private int minPointsToRedeem = 100;
+    private bool allowPointRedemption = true;
+    private bool showPointsOnStorefront = true;
+    private bool doubleBirthdayPoints = false;
+
+    @* ── Inventory ────────────────────────────────────────────────────────── *@
+    private int defaultBakingTemp = 180;
+    private int defaultBakingDuration = 12;
+    private int dailyQuotaTarget = 50;
+    private int lowStockThreshold = 10;
+    private int maxDefectRatePercent = 5;
+    private bool autoCreateBatchOnLowStock = false;
+
+    @* ── Notifications ────────────────────────────────────────────────────── *@
+    private string adminEmail = "admin@tigervancookie.nl";
+    private bool notifyOnNewOrder = true;
+    private bool notifyOnLowStock = true;
+    private bool notifyOnNewCustomer = false;
+    private bool notifyOnHighDefects = true;
+    private bool dailySummaryReport = true;
+    private bool soundAlertOnNewOrder = false;
+    private bool browserPushNotifications = false;
+
+    @* ── Appearance ───────────────────────────────────────────────────────── *@
+    private string storeTagline = "Freshly Baked Every Morning";
+    private string flavorOfTheMonth = "COOKIE-002";
+    private int featuredProductCount = 4;
+    private bool defaultDarkMode = false;
+    private bool showLimitedBadge = true;
+    private bool showTopSellerBadge = true;
+}

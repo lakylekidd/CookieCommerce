@@ -30,7 +30,7 @@
     <span class="material-icons-round text-xl">shopping_bag</span>
 
     @* Added the conditional 'animate-pop' class *@
-    <span class="absolute top-1 right-1 bg-primary text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full border-2 border-background-light dark:border-background-dark @(isPopping ? "animate-pop" : "")">
+    <span class="absolute -top-1 -right-1 bg-primary text-white text-xs font-bold min-w-[22px] h-[22px] flex items-center justify-center rounded-full px-1 border-2 border-background-light dark:border-background-dark @(isPopping ? "animate-pop" : "")">
         @CartItemCount
     </span>
 </a>

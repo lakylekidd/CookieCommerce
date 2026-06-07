@@ -1,3 +1,186 @@
-﻿@page "/contact"
+@page "/contact"
 @using CookieCommerce.Web.Components.Storefront.Shop
+@using CookieCommerce.Web.Services
 @layout ShopLayout
+@inject IContactService ContactService
+@rendermode InteractiveServer
+
+<PageTitle>Contact Us – Tiger van Cookie</PageTitle>
+
+<main class="flex-grow">
+    <!-- Hero -->
+    <section class="relative overflow-hidden pt-20 pb-16">
+        <div class="absolute inset-0 pattern-bg pointer-events-none"></div>
+        <div class="container mx-auto px-6 relative z-10 flex flex-col items-center text-center">
+            <div class="mb-6 w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center border-4 border-white shadow-xl">
+                <span class="material-symbols-outlined text-primary text-4xl">mail</span>
+            </div>
+            <h1 class="font-display text-5xl md:text-7xl font-bold mb-4 text-text-light dark:text-text-dark tracking-tight">
+                Get in <span class="text-primary">Touch</span>
+            </h1>
+            <p class="text-lg md:text-xl max-w-lg text-amber-900/70 dark:text-amber-100/70 font-medium">
+                Have a question, a custom order idea, or just want to talk cookies? We'd love to hear from you.
+            </p>
+        </div>
+    </section>
+
+    <!-- Form -->
+    <section class="container mx-auto px-6 pb-24 max-w-2xl">
+        @if (_submitted)
+        {
+            <div class="bg-white dark:bg-surface-dark rounded-3xl border border-amber-100 dark:border-amber-900/30 cookie-shadow p-12 flex flex-col items-center text-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div class="w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-4xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                </div>
+                <div>
+                    <h2 class="font-display text-3xl font-bold text-text-light dark:text-text-dark mb-2">Message Sent!</h2>
+                    <p class="text-amber-900/70 dark:text-amber-100/70">
+                        Thanks for reaching out. We'll get back to you as soon as possible.
+                    </p>
+                </div>
+                <button @onclick="Reset"
+                        class="cursor-pointer px-8 py-3 rounded-full bg-primary text-white font-bold hover:scale-[1.02] active:scale-95 transition-all">
+                    Send Another Message
+                </button>
+            </div>
+        }
+        else if (_sendFailed)
+        {
+            <div class="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 flex items-start gap-3">
+                <span class="material-symbols-outlined text-red-500 mt-0.5">error</span>
+                <div>
+                    <p class="font-bold text-red-700 dark:text-red-400">Something went wrong</p>
+                    <p class="text-sm text-red-600/80 dark:text-red-300/70">We couldn't send your message. Please try again or email us directly at <a href="mailto:info@tigervancookie.nl" class="underline">info@tigervancookie.nl</a>.</p>
+                </div>
+            </div>
+        }
+
+        @if (!_submitted)
+        {
+            <div class="bg-white dark:bg-surface-dark rounded-3xl border border-amber-100 dark:border-amber-900/30 cookie-shadow overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div class="p-6 border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
+                    <h2 class="font-display font-bold text-xl dark:text-amber-50">Send us a message</h2>
+                </div>
+
+                <EditForm Model="_model" OnValidSubmit="HandleSubmit" class="p-8 space-y-6">
+                    <DataAnnotationsValidator />
+
+                    <!-- From email -->
+                    <div>
+                        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Your Email</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary/50 text-xl">email</span>
+                            <InputText @bind-Value="_model.FromEmail"
+                                       type="email"
+                                       placeholder="you@example.com"
+                                       class="w-full pl-11 pr-5 py-3 rounded-full border border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500" />
+                        </div>
+                        <ValidationMessage For="() => _model.FromEmail" class="text-red-500 text-sm mt-1 ml-4" />
+                    </div>
+
+                    <!-- Subject / Title -->
+                    <div>
+                        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Subject</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary/50 text-xl">subject</span>
+                            <InputText @bind-Value="_model.Subject"
+                                       placeholder="What's it about?"
+                                       class="w-full pl-11 pr-5 py-3 rounded-full border border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500" />
+                        </div>
+                        <ValidationMessage For="() => _model.Subject" class="text-red-500 text-sm mt-1 ml-4" />
+                    </div>
+
+                    <!-- Message -->
+                    <div>
+                        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Message</label>
+                        <InputTextArea @bind-Value="_model.Message"
+                                       rows="6"
+                                       placeholder="Tell us everything..."
+                                       class="w-full px-5 py-3 rounded-2xl border border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500 resize-none" />
+                        <ValidationMessage For="() => _model.Message" class="text-red-500 text-sm mt-1 ml-4" />
+                    </div>
+
+                    <div class="flex justify-end pt-2">
+                        <button type="submit"
+                                disabled="@_sending"
+                                class="cursor-pointer flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-white font-bold hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100">
+                            @if (_sending)
+                            {
+                                <span class="material-symbols-outlined animate-spin text-xl">progress_activity</span>
+                                <span>Sending...</span>
+                            }
+                            else
+                            {
+                                <span class="material-symbols-outlined text-xl">send</span>
+                                <span>Send Message</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+
+            <!-- Direct contact info -->
+            <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="mailto:info@tigervancookie.nl"
+                   class="flex items-center gap-3 px-6 py-4 rounded-2xl bg-white dark:bg-surface-dark border border-amber-100 dark:border-amber-900/30 hover:border-primary hover:shadow-md transition-all group">
+                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                        <span class="material-symbols-outlined text-primary text-xl">mail</span>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-widest text-amber-900/50 dark:text-amber-100/40">Email</p>
+                        <p class="font-bold text-text-light dark:text-text-dark">info@tigervancookie.nl</p>
+                    </div>
+                </a>
+            </div>
+        }
+    </section>
+</main>
+
+@code {
+    private readonly ContactFormModel _model = new();
+    private bool _sending;
+    private bool _submitted;
+    private bool _sendFailed;
+
+    private async Task HandleSubmit()
+    {
+        _sending = true;
+        _sendFailed = false;
+
+        var success = await ContactService.SendContactEmailAsync(
+            _model.FromEmail!,
+            _model.Subject!,
+            _model.Message!);
+
+        _sending = false;
+
+        if (success)
+            _submitted = true;
+        else
+            _sendFailed = true;
+    }
+
+    private void Reset()
+    {
+        _model.FromEmail = null;
+        _model.Subject = null;
+        _model.Message = null;
+        _submitted = false;
+        _sendFailed = false;
+    }
+
+    private sealed class ContactFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Please enter your email address.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Please enter a valid email address.")]
+        public string? FromEmail { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Please enter a subject.")]
+        [System.ComponentModel.DataAnnotations.MaxLength(100, ErrorMessage = "Subject must be 100 characters or fewer.")]
+        public string? Subject { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Please enter a message.")]
+        [System.ComponentModel.DataAnnotations.MinLength(10, ErrorMessage = "Message must be at least 10 characters.")]
+        public string? Message { get; set; }
+    }
+}

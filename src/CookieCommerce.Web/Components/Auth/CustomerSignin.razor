@@ -106,12 +106,7 @@
 
         if (success && Auth.CurrentUser != null)
         {
-            var customProvider = (FakeAuthStateProvider)AuthStateProvider;
-            customProvider.NotifyUserAuthentication(Auth.CurrentUser.Email, Auth.CurrentUser.Role);
-
-            // Redirect back to where they came from, or home if empty
             Nav.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/storefront" : ReturnUrl);
-            StateHasChanged();
         }
         else
         {

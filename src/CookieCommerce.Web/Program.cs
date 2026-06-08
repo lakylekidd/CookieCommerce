@@ -3,6 +3,7 @@ using CookieCommerce.Web.Components;
 using CookieCommerce.Web.Services;
 using CookieCommerce.Web.Services.Products;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 
@@ -33,10 +34,28 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddScoped<ThemeService>();
-builder.Services.AddScoped<AuthenticationStateProvider, FakeAuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider, KeycloakAuthStateProvider>();
 builder.Services.AddScoped<ICookieService, CookieService>();
 builder.Services.AddSingleton<ICartService, MockCartService>();
-builder.Services.AddScoped<IAuthService, FakeAuthService>();
+builder.Services.AddHttpClient("auth-api", client =>
+{
+    client.BaseAddress = new Uri("http://auth-api");
+    client.Timeout = TimeSpan.FromSeconds(60);
+})
+.AddStandardResilienceHandler(options =>
+{
+    options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(30);
+    options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
+    options.Retry.MaxRetryAttempts = 1;
+    options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(60);
+});
+builder.Services.AddScoped<IAuthService>(sp =>
+{
+    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("auth-api");
+    var cartService = sp.GetRequiredService<ICartService>();
+    var localStorage = sp.GetRequiredService<ProtectedLocalStorage>();
+    return new KeycloakAuthService(httpClient, cartService, localStorage);
+});
 builder.Services.AddSingleton<IContentService, FakeContentService>();
 builder.Services.AddSingleton<ICheckoutService, FakeCheckoutService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
@@ -50,17 +69,11 @@ builder.Services.AddScoped<IContactService, SmtpContactService>();
 
 builder.Services.AddAuthentication(options =>
 {
-    // If you are using OpenIddict/Identity, these usually default to 
-    // IdentityConstants.ApplicationScheme
-    //options.DefaultScheme = "Identity.Application";
-    //options.DefaultSignInScheme = "Identity.Application";
-    options.DefaultScheme = "FakeCookies";
-    options.DefaultChallengeScheme = "FakeCookies";
+    options.DefaultScheme = "Cookies";
+    options.DefaultChallengeScheme = "Cookies";
 })
-//.AddCookie(); // Or .AddIdentityCookies() if using ASP.NET Core Identity
-.AddCookie("FakeCookies", options =>
+.AddCookie("Cookies", options =>
 {
-    // Tell the app where to send people if they aren't authorized
     options.LoginPath = "/auth/signin";
     options.AccessDeniedPath = "/access-denied";
 });

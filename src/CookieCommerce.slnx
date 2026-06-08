@@ -17,6 +17,12 @@
     <Project Path="CookieCommerce.ProductDomain.Infrastructure/CookieCommerce.ProductDomain.Infrastructure.csproj" />
     <Project Path="CookieCommerce.ProductDomain.Tests/CookieCommerce.ProductDomain.Tests.csproj" />
   </Folder>
+  <Folder Name="/Domains/AuthDomain/">
+    <Project Path="CookieCommerce.AuthDomain.Api/CookieCommerce.AuthDomain.Api.csproj" />
+    <Project Path="CookieCommerce.AuthDomain.Application/CookieCommerce.AuthDomain.Application.csproj" />
+    <Project Path="CookieCommerce.AuthDomain.Domain/CookieCommerce.AuthDomain.Domain.csproj" />
+    <Project Path="CookieCommerce.AuthDomain.Infrastructure/CookieCommerce.AuthDomain.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/Domains/OrderDomain/">
     <Project Path="CookieCommerce.OrderDomain.Application/CookieCommerce.OrderDomain.Application.csproj" />
     <Project Path="CookieCommerce.OrderDomain.Domain/CookieCommerce.OrderDomain.Domain.csproj" />

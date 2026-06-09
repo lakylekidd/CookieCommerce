@@ -10,7 +10,7 @@ var postgres = builder.AddPostgres("postgres").WithPassword(password).WithHostPo
 // Add the databases
 var customerDb = postgres.AddDatabase("CustomerDomain");
 var productDb = postgres.AddDatabase("ProductDomain");
-var authDb = postgres.AddDatabase("AuthDomain");
+var authenticationManagementDb = postgres.AddDatabase("AuthenticationManagement");
 
 var rabbit = builder.AddRabbitMQ("Messaging");
 
@@ -40,13 +40,13 @@ var productApi = builder.AddProject<CookieCommerce_ProductDomain_Api>("product-a
     .WithReference(rabbit)
     .WaitFor(rabbit)
     .WithScalarUi();
-var authApi = builder.AddProject<CookieCommerce_AuthDomain_Api>("auth-api")
-    .WithReference(authDb).WaitFor(authDb)
+var authenticationManagementApi = builder.AddProject<CookieCommerce_AuthenticationManagement_Api>("authentication-management-api")
+    .WithReference(authenticationManagementDb).WaitFor(authenticationManagementDb)
     .WithReference(keycloak).WaitFor(keycloak)
     .WithReference(rabbit).WaitFor(rabbit)
     .WithScalarUi();
 
 builder.AddProject<CookieCommerce_Web>("cookiecommerce-web")
-    .WithReference(authApi);
+    .WithReference(authenticationManagementApi);
 
 builder.Build().Run();

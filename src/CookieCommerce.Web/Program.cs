@@ -37,9 +37,9 @@ builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<AuthenticationStateProvider, KeycloakAuthStateProvider>();
 builder.Services.AddScoped<ICookieService, CookieService>();
 builder.Services.AddSingleton<ICartService, MockCartService>();
-builder.Services.AddHttpClient("auth-api", client =>
+builder.Services.AddHttpClient("authentication-management-api", client =>
 {
-    client.BaseAddress = new Uri("http://auth-api");
+    client.BaseAddress = new Uri("http://authentication-management-api");
     client.Timeout = TimeSpan.FromSeconds(60);
 })
 .AddStandardResilienceHandler(options =>
@@ -51,7 +51,7 @@ builder.Services.AddHttpClient("auth-api", client =>
 });
 builder.Services.AddScoped<IAuthService>(sp =>
 {
-    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("auth-api");
+    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("authentication-management-api");
     var cartService = sp.GetRequiredService<ICartService>();
     var localStorage = sp.GetRequiredService<ProtectedLocalStorage>();
     return new KeycloakAuthService(httpClient, cartService, localStorage);

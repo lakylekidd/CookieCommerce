@@ -19,7 +19,7 @@
 
   <Target Name="Tailwind" AfterTargets="Build">
     <Message Importance="high" Text="Building Tailwind CSS..." />
-    <Exec Command="npx @tailwindcss/cli -i ./Styles/app.css -o ./wwwroot/css/app.min.css --minify" />
+    <Exec Command="npx tailwindcss -i ./Styles/app.css -o ./wwwroot/css/app.min.css --minify" />
   </Target>
 
 </Project>

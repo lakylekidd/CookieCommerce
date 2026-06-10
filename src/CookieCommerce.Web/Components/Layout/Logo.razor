@@ -1,0 +1,20 @@
+﻿@if (Small)
+{
+    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-primary border-2 border-primary group-hover:rotate-12 transition-transform duration-300 overflow-hidden">
+        <span class="material-icons-round text-white text-m">pets</span>
+    </div>
+    <span class="font-display font-bold text-xl tracking-tight ml-1">Tiger</span>
+    <span class="font-display font-bold text-xl text-primary tracking-tight ml-1">van Cookie</span>
+}
+else
+{
+    <div class="w-10 h-10 flex items-center justify-center rounded-full bg-primary border-2 border-primary group-hover:rotate-12 transition-transform duration-300 overflow-hidden">
+        <span class="material-icons-round text-white text-2xl">pets</span>
+    </div>
+    <span class="font-display font-bold text-2xl tracking-tight">Tiger</span>
+    <span class="font-display font-bold text-2xl text-primary tracking-tight -ml-1">van Cookie</span>
+}
+
+@code {
+    [Parameter] public bool Small { get; set; } = false;
+}

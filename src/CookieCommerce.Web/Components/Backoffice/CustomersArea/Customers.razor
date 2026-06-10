@@ -1,0 +1,22 @@
+@page "/backoffice/customers/"
+@using CookieCommerce.Web.Models.Customers
+@using CookieCommerce.Web.Services
+@rendermode InteractiveServer
+@layout BackofficeLayout
+@inject ICustomerService CustomerService
+
+<div class="transition-colors duration-300">
+    <CustomersTableCard Customers="customers" IsLoading="isLoading" />
+</div>
+
+@code {
+    private ICollection<CustomerDto> customers = [];
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        customers = await CustomerService.GetCustomersAsync();
+        isLoading = false;
+    }
+}

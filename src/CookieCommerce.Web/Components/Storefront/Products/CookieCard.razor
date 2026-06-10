@@ -1,0 +1,38 @@
+﻿@using CookieCommerce.Web.Services
+@rendermode InteractiveServer
+@inject ICartService CartService
+
+@if (IsFeatured)
+{
+    <FeaturedCookieCard Id="@Id"
+                        ImageUrl="@ImageUrl"
+                        CookieTitle="@CookieTitle"
+                        Description="@Description"
+                        CurrencySymbol="@CurrencySymbol"
+                        Price="@Price"
+                        IsBestSeller="@IsBestSeller"
+                        IsLimitedEdition="@IsLimitedEdition" />
+}
+else
+{
+    <RegularCookieCard Id="@Id"
+                       ImageUrl="@ImageUrl"
+                       CookieTitle="@CookieTitle"
+                       Description="@Description"
+                       CurrencySymbol="@CurrencySymbol"
+                       Price="@Price"
+                       IsBestSeller="@IsBestSeller"
+                       IsLimitedEdition="@IsLimitedEdition" />
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public bool IsFeatured { get; set; }
+    [Parameter] public bool IsBestSeller { get; set; }
+    [Parameter] public bool IsLimitedEdition { get; set; }
+    [Parameter] public string ImageUrl { get; set; } = string.Empty;
+    [Parameter] public string CookieTitle { get; set; } = string.Empty;
+    [Parameter] public string Description { get; set; } = string.Empty;
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [Parameter] public decimal Price { get; set; }
+}

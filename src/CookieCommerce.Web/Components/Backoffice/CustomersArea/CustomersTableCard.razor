@@ -1,0 +1,325 @@
+@using CookieCommerce.Web.Models.Customers
+
+<div class="relative bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+    <div class="@(IsLoading ? "opacity-20 pointer-events-none" : "opacity-100") transition-opacity duration-500">
+
+        @* ── Search & Filter header ────────────────────────────────────────── *@
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex flex-wrap gap-3 items-center justify-between">
+
+            @* Search input *@
+            <div class="relative flex-1 min-w-[200px] max-w-sm">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px] select-none">
+                    search
+                </span>
+                <input type="text"
+                       @bind="SearchQuery"
+                       @bind:event="oninput"
+                       placeholder="Search by name or email…"
+                       class="w-full pl-9 pr-4 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+            </div>
+
+            @* Status filter buttons *@
+            <div class="flex items-center gap-1.5">
+                @foreach (var f in FilterOptions)
+                {
+                    <button @onclick="() => SetFilter(f)"
+                            class="@(activeFilter == f
+                                ? "bg-primary border-primary text-white"
+                                : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-primary hover:text-primary cursor-pointer")
+                                text-xs font-bold px-3 py-1.5 rounded-lg border transition-all">
+                        @f
+                    </button>
+                }
+            </div>
+        </div>
+
+        @* ── Table ─────────────────────────────────────────────────────────── *@
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-widest font-bold">
+                        <th class="p-6 py-4 font-bold">Customer</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Email</th>
+                        <th class="p-6 py-4 font-bold hidden lg:table-cell">Address</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">
+                            <button @onclick="() => ToggleSort(SortColumn.Orders)"
+                                    class="flex items-center gap-1 cursor-pointer transition-colors hover:text-primary @(sortColumn == SortColumn.Orders ? "text-primary" : "")">
+                                <span>Orders</span>
+                                <span class="material-symbols-outlined text-sm leading-none">
+                                    @(sortColumn == SortColumn.Orders
+                                        ? (sortAscending ? "arrow_upward" : "arrow_downward")
+                                        : "unfold_more")
+                                </span>
+                            </button>
+                        </th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">
+                            <button @onclick="() => ToggleSort(SortColumn.Spent)"
+
+                                    class="flex items-center gap-1 cursor-pointer transition-colors hover:text-primary @(sortColumn == SortColumn.Spent ? "text-primary" : "")">
+                                <span>Total Spent</span>
+                                <span class="material-symbols-outlined text-sm leading-none">
+                                    @(sortColumn == SortColumn.Spent
+                                        ? (sortAscending ? "arrow_upward" : "arrow_downward")
+                                        : "unfold_more")
+                                </span>
+                            </button>
+                        </th>
+                        <th class="p-6 py-4 font-bold"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    @if (IsLoading)
+                    {
+                        @for (int i = 0; i < pageSize; i++)
+                        {
+                            <tr class="animate-skeleton">
+                                @* Avatar + name skeleton *@
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <div class="size-9 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0"></div>
+                                        <div class="space-y-2">
+                                            <div class="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-28"></div>
+                                            <div class="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-20"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                @* Email skeleton *@
+                                <td class="px-6 py-5 hidden sm:table-cell">
+                                    <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-36"></div>
+                                </td>
+                                @* Address skeleton *@
+                                <td class="px-6 py-5 hidden lg:table-cell">
+                                    <div class="space-y-2">
+                                        <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+                                        <div class="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-24"></div>
+                                    </div>
+                                </td>
+                                @* Orders skeleton *@
+                                <td class="px-6 py-5 hidden sm:table-cell">
+                                    <div class="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-8"></div>
+                                </td>
+                                @* Total spent skeleton *@
+                                <td class="px-6 py-5 hidden sm:table-cell">
+                                    <div class="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                                </td>
+                                @* Action skeleton *@
+                                <td class="px-6 py-5">
+                                    <div class="size-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else if (!PagedCustomers.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="px-6 py-16 text-center">
+                                <div class="flex flex-col items-center gap-2 text-gray-400 dark:text-gray-500">
+                                    <span class="material-symbols-outlined text-4xl">person_search</span>
+                                    <p class="text-sm font-medium">No customers found</p>
+                                    @if (!string.IsNullOrWhiteSpace(searchQuery))
+                                    {
+                                        <p class="text-xs">Try adjusting your search or filter</p>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var customer in PagedCustomers)
+                        {
+                            <CustomerTableItem Customer="customer" />
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @* ── Pagination bar ────────────────────────────────────────────────── *@
+        <div class="px-6 py-4 bg-gray-50/50 dark:bg-gray-800/50 border-t border-orange-100 dark:border-gray-800 flex flex-wrap gap-4 justify-between items-center">
+
+            @* Entry summary *@
+            <span class="text-sm text-gray-500 font-medium">
+                Showing
+                <span class="text-primary font-bold">@StartItem–@EndItem</span>
+                of
+                <span class="font-bold text-gray-700 dark:text-gray-300">@TotalFiltered</span>
+                customers 🐯
+            </span>
+
+            @* Page size + navigation *@
+            <div class="flex items-center gap-4">
+
+                @* Page size buttons *@
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xs text-gray-400 dark:text-gray-500 font-medium">Show:</span>
+                    @foreach (var size in PageSizeOptions)
+                    {
+                        <button @onclick="() => SetPageSize(size)"
+                                class="@(pageSize == size
+                                    ? "bg-primary border-primary text-white"
+                                    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-primary hover:text-primary cursor-pointer")
+                                    text-xs font-bold px-3 py-1.5 rounded-lg border transition-all">
+                            @size
+                        </button>
+                    }
+                </div>
+
+                @* Page navigation *@
+                <div class="flex items-center gap-1">
+
+                    @* Previous *@
+                    <button @onclick="PreviousPage"
+                            disabled="@(currentPage == 1)"
+                            class="@(currentPage == 1
+                                ? "opacity-40 cursor-not-allowed"
+                                : "hover:bg-primary hover:text-white hover:border-primary cursor-pointer")
+                                flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 rounded-full transition-all">
+                        <span class="material-symbols-outlined text-base">chevron_left</span>
+                    </button>
+
+                    @* Page number buttons *@
+                    @foreach (var pg in VisiblePages)
+                    {
+                        @if (pg == Ellipsis)
+                        {
+                            <span class="w-8 text-center text-xs text-gray-400 dark:text-gray-500 select-none">…</span>
+                        }
+                        else
+                        {
+                            <button @onclick="() => GoToPage(pg)"
+                                    class="@(pg == currentPage
+                                        ? "bg-primary border-primary text-white"
+                                        : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-primary hover:text-primary cursor-pointer")
+                                        flex items-center justify-center w-8 h-8 border rounded-full text-xs font-bold transition-all">
+                                @(pg)
+                            </button>
+                        }
+                    }
+
+                    @* Next *@
+                    <button @onclick="NextPage"
+                            disabled="@(currentPage == TotalPages)"
+                            class="@(currentPage == TotalPages
+                                ? "opacity-40 cursor-not-allowed"
+                                : "hover:bg-primary hover:text-white hover:border-primary cursor-pointer")
+                                flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 rounded-full transition-all">
+                        <span class="material-symbols-outlined text-base">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    [Parameter] public ICollection<CustomerDto> Customers { get; set; } = [];
+    [Parameter] public bool IsLoading { get; set; } = false;
+
+    private enum SortColumn { None, Orders, Spent }
+
+    private static readonly int[] PageSizeOptions = [5, 10, 20];
+    private static readonly string[] FilterOptions = ["All", "Active", "Inactive"];
+    private const int Ellipsis = -1;
+
+    private int currentPage = 1;
+    private int pageSize = 5;
+    private string activeFilter = "All";
+    private SortColumn sortColumn = SortColumn.None;
+    private bool sortAscending = false;
+
+    private string searchQuery = "";
+    private string SearchQuery
+    {
+        get => searchQuery;
+        set { searchQuery = value; currentPage = 1; }
+    }
+
+    private IEnumerable<CustomerDto> FilteredCustomers
+    {
+        get
+        {
+            var result = Customers
+                .Where(c => activeFilter switch
+                {
+                    "Active"   => c.IsActive,
+                    "Inactive" => !c.IsActive,
+                    _          => true
+                })
+                .Where(c =>
+                    string.IsNullOrWhiteSpace(searchQuery) ||
+                    c.FullName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    c.Email.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+
+            return sortColumn switch
+            {
+                SortColumn.Orders => sortAscending
+                    ? result.OrderBy(c => c.TotalOrders)
+                    : result.OrderByDescending(c => c.TotalOrders),
+                SortColumn.Spent => sortAscending
+                    ? result.OrderBy(c => c.TotalSpent)
+                    : result.OrderByDescending(c => c.TotalSpent),
+                _ => result
+            };
+        }
+    }
+
+    private int TotalFiltered => FilteredCustomers.Count();
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalFiltered / (double)pageSize));
+    private int StartItem => TotalFiltered == 0 ? 0 : (currentPage - 1) * pageSize + 1;
+    private int EndItem => Math.Min(currentPage * pageSize, TotalFiltered);
+
+    private IEnumerable<CustomerDto> PagedCustomers =>
+        FilteredCustomers.Skip((currentPage - 1) * pageSize).Take(pageSize);
+
+    private IEnumerable<int> VisiblePages
+    {
+        get
+        {
+            if (TotalPages <= 5)
+                return Enumerable.Range(1, TotalPages);
+
+            var pages = new List<int> { 1 };
+            if (currentPage > 3) pages.Add(Ellipsis);
+            for (var p = Math.Max(2, currentPage - 1); p <= Math.Min(TotalPages - 1, currentPage + 1); p++)
+                pages.Add(p);
+            if (currentPage < TotalPages - 2) pages.Add(Ellipsis);
+            pages.Add(TotalPages);
+            return pages;
+        }
+    }
+
+    private void SetFilter(string filter)
+    {
+        activeFilter = filter;
+        currentPage = 1;
+    }
+
+    private void ToggleSort(SortColumn column)
+    {
+        if (sortColumn == column)
+            sortAscending = !sortAscending;
+        else
+        {
+            sortColumn = column;
+            sortAscending = false;
+        }
+        currentPage = 1;
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page < 1 || page > TotalPages) return;
+        currentPage = page;
+    }
+
+    private void PreviousPage() => GoToPage(currentPage - 1);
+    private void NextPage() => GoToPage(currentPage + 1);
+
+    private void SetPageSize(int size)
+    {
+        pageSize = size;
+        currentPage = 1;
+    }
+}

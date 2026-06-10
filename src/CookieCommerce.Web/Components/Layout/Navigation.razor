@@ -1,5 +1,6 @@
-﻿@using CookieCommerce.Web.Components.Layout
-@using CookieCommerce.Web.Components.Features.Cart
+﻿@using CookieCommerce.Web.Components.Auth
+@using CookieCommerce.Web.Components.Layout
+@using CookieCommerce.Web.Components.Storefront.Cart
 @using CookieCommerce.Web.Components.Shared
 @using CookieCommerce.Web.Services
 @rendermode InteractiveServer
@@ -10,7 +11,7 @@
     <div class="container mx-auto px-6 py-4 flex justify-between items-center">
         
         <a class="flex items-center gap-3 group" href="/storefront">
-            <_Logo />
+            <Logo />
         </a>
 
         <div class="hidden md:flex items-center gap-8 font-semibold">
@@ -23,23 +24,8 @@
         <div class="hidden md:flex items-center gap-4">
 
             <ToggleNightMode />
-
             <ShoppingBag />
-
-            @if(Auth.IsLoggedIn)
-            {
-                <span class="px-6 py-2 text-xs font-bold uppercase opacity-50 sm:hidden">Welcome, @Auth.CurrentUser!.FirstName</span>
-                <button @onclick="Auth.Logout" class="cursor-pointer sm:hidden bg-primary-subtle flex items-center gap-3 px-6 py-4 rounded-2xl text-red-500 hover:bg-red-50">
-                    <span class="material-symbols-outlined">logout</span>
-                    Sign Out
-                </button>
-            }
-            else
-            {
-                <a class="hidden lg:block bg-primary hover:bg-amber-700 text-white px-5 py-2 rounded-full font-bold transition-transform active:scale-95 shadow-lg shadow-amber-500/30" href="/auth/signin">
-                    Sign In
-                </a>
-            }            
+            <AuthUserButton />          
 
         </div>
 
@@ -124,9 +110,7 @@
     private void HandleStatusChange()
     {
         InvokeAsync(StateHasChanged);
-    }
-
-    
+    }    
 
     private void ToggleMenu()
     {

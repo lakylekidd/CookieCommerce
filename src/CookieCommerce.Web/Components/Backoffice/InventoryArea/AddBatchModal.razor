@@ -1,0 +1,137 @@
+@using CookieCommerce.Web.Models.Backoffice
+
+<div class="fixed inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-sm" @onclick="HandleClose">
+    <div class="relative z-50 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4" @onclick:stopPropagation="true">
+
+        @* Header *@
+        <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">New Batch</h2>
+            <button @onclick="HandleClose" type="button"
+                    class="flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300 transition-all">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+        </div>
+
+        @* Body *@
+        <div class="px-6 py-5 space-y-5">
+
+            @* Cookie Dropdown *@
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Cookie</label>
+                <div class="relative">
+
+                    @* Trigger *@
+                    <button @onclick="ToggleDropdown" type="button"
+                            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl border @(dropdownOpen ? "border-primary" : "border-gray-200 dark:border-gray-700") bg-white dark:bg-gray-800 hover:border-primary transition-colors text-left">
+                        @if (selectedProduct != null)
+                        {
+                            <img src="@selectedProduct.ImageUrl" alt="@selectedProduct.Name"
+                                 class="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+                            <span class="flex-1 text-sm font-medium text-gray-800 dark:text-gray-200">@selectedProduct.Name</span>
+                        }
+                        else
+                        {
+                            <div class="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex-shrink-0 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-gray-400 text-base">cookie</span>
+                            </div>
+                            <span class="flex-1 text-sm text-gray-400">Select a cookie...</span>
+                        }
+                        <span class="material-symbols-outlined text-gray-400 transition-transform duration-200 @(dropdownOpen ? "rotate-180" : "")">expand_more</span>
+                    </button>
+
+                    @if (dropdownOpen)
+                    {
+                        @* Transparent backdrop to close dropdown on outside click *@
+                        <div class="fixed inset-0 z-10" @onclick="CloseDropdown"></div>
+
+                        @* Dropdown list *@
+                        <div class="absolute top-full left-0 right-0 z-20 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden">
+                            @foreach (var product in Products)
+                            {
+                                <button @onclick="() => SelectProduct(product)" type="button"
+                                        class="w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50 dark:hover:bg-gray-700 transition-colors @(selectedProduct?.Id == product.Id ? "bg-orange-50 dark:bg-gray-700" : "")">
+                                    <img src="@product.ImageUrl" alt="@product.Name"
+                                         class="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                                    <span class="flex-1 text-sm font-medium text-gray-800 dark:text-gray-200 text-left">@product.Name</span>
+                                    @if (selectedProduct?.Id == product.Id)
+                                    {
+                                        <span class="material-symbols-outlined text-primary text-base">check</span>
+                                    }
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* Planned Quantity *@
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Planned Quantity</label>
+                <input type="number" @bind="plannedQuantity" min="1"
+                       class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                       placeholder="e.g. 24" />
+            </div>
+        </div>
+
+        @* Footer *@
+        <div class="flex gap-3 justify-end px-6 py-5 border-t border-gray-100 dark:border-gray-800">
+            <button @onclick="HandleClose" type="button"
+                    class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">
+                Cancel
+            </button>
+            <button @onclick="HandleSubmit" type="button"
+                    disabled="@(selectedProduct == null || plannedQuantity < 1)"
+                    class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-primary text-white hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                Create Batch
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public IReadOnlyList<BatchProductDto> Products { get; set; } = [];
+    [Parameter] public EventCallback<BatchDto> OnSubmit { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private BatchProductDto? selectedProduct;
+    private int plannedQuantity = 12;
+    private bool dropdownOpen = false;
+
+    private void ToggleDropdown() => dropdownOpen = !dropdownOpen;
+    private void CloseDropdown() => dropdownOpen = false;
+
+    private void SelectProduct(BatchProductDto product)
+    {
+        selectedProduct = product;
+        dropdownOpen = false;
+    }
+
+    private async Task HandleClose()
+    {
+        selectedProduct = null;
+        plannedQuantity = 12;
+        dropdownOpen = false;
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (selectedProduct == null || plannedQuantity < 1) return;
+
+        var newBatch = new BatchDto
+        {
+            Id = Guid.NewGuid(),
+            Product = selectedProduct,
+            BatchReference = $"REF-{DateTime.Now:yyMMddHHmmss}",
+            BatchStatus = BatchStatus.Scheduled,
+            CreatedOn = DateTime.Now,
+            DeliveryDate = DateOnly.FromDateTime(DateTime.Today),
+            PlannedQuantity = plannedQuantity,
+            ActualQuantity = 0,
+            DefectiveQuantity = 0
+        };
+
+        await OnSubmit.InvokeAsync(newBatch);
+        await HandleClose();
+    }
+}

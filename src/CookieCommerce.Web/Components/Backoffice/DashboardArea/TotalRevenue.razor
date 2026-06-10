@@ -1,0 +1,41 @@
+﻿@using System.Globalization
+<div class="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-orange-50 dark:border-stone-700 hover:shadow-md transition-shadow group">
+    <div class="flex justify-between items-start mb-4">
+        <div class="flex items-center justify-center w-12 h-12  bg-blue-100 dark:bg-blue-900/30 rounded-full">
+            <span class="material-icons-round text-blue-500 text-xl">payments</span>
+        </div>
+        @if (IsLoading)
+        {
+            <div class="w-16 h-6 animate-skeleton rounded-lg"></div>
+        }
+        else
+        {
+            <span class="flex items-center text-xs font-bold px-2 py-1 rounded-lg
+                          @(PercentageChange >= 0
+                                                        ? "text-green-600 bg-green-100 dark:bg-green-900/30"
+                                                        : "text-red-600 bg-red-100 dark:bg-red-900/30")">
+
+                @(PercentageChange > 0 ? "+" : "")@PercentageChange%
+
+                <span class="material-icons-round text-sm ml-1">
+                    @(PercentageChange >= 0 ? "trending_up" : "trending_down")
+                </span>
+            </span>
+        }
+    </div>
+    <h3 class="text-stone-500 dark:text-stone-400 text-sm font-semibold mb-1">Total Revenue</h3>
+    @if(IsLoading)
+    {
+        <div class="h-9 w-24 animate-skeleton rounded-xl mt-1"></div>
+    }
+    else
+    {
+        <p class="text-3xl font-display font-bold text-primary dark:text-white">€@Total.ToString("N2", CultureInfo.GetCultureInfo("nl-NL"))</p>
+    }
+</div>
+
+@code {
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public decimal Total { get; set; }
+    [Parameter] public decimal PercentageChange { get; set; }
+}

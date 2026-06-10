@@ -1,0 +1,241 @@
+﻿@page "/shop/cookie/{id:guid}"
+@layout ShopLayout
+@rendermode InteractiveServer
+@using CookieCommerce.Web.Components.Shared
+@using CookieCommerce.Web.Components.Storefront.Reviews
+@using CookieCommerce.Web.Components.Storefront.Shop
+@using CookieCommerce.Web.Models
+@using CookieCommerce.Web.Services
+@using CookieCommerce.Web.Services.Products
+@using CookieCommerce.Web.Models.Products
+@inject NavigationManager Navigation
+@inject ICookieService CookieService
+@inject ICartService CartService
+@inject IAuthService Auth
+@inject IAccountService AccountService
+@inject IOperationsService OperationsService
+
+@if (cookie is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <main class="relative min-h-screen pt-8 pb-12">
+        <div class="absolute inset-0 pattern-bg pointer-events-none"></div>
+        <div class="container mx-auto px-6 relative z-10">
+            <Breadcrumbs />
+            <div class="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
+                <ProductImageSelector 
+                    Cookie="@cookie"
+                    @bind-CurrentVariantImage="@currentVariantImage"
+                    OnVariantSelected="@(v => _selectedVariant = v)" />
+                <div class="w-full lg:w-1/2 flex flex-col">
+                    <div class="mb-2">
+                        <span class="text-primary font-bold tracking-widest text-sm uppercase">
+                            Signature Collection
+                        </span>
+                    </div>
+                    <h1 class="font-display font-bold text-4xl lg:text-6xl text-text-light dark:text-text-dark mb-4 leading-tight">
+                        @cookie.Title
+                    </h1>
+                    <div class="flex items-center gap-4 mb-6">
+                        @* 🐯 Dynamic Price based on selection *@
+                        <span class="text-3xl font-display font-bold text-primary">
+                            @cookie.CurrencySymbol@((_selectedVariant?.Price ?? cookie.Price).ToString("F2"))
+                        </span>
+
+                        <div class="flex items-center gap-1 bg-amber-100 dark:bg-amber-900/40 px-3 py-1 rounded-full">
+                            <span class="material-icons-round text-primary text-sm">star</span>
+                            <span class="text-sm font-bold text-primary">@cookie.Rating.ToString("F1") (@cookie.ReviewCount reviews)</span>
+                        </div>
+                    </div>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                        @cookie.Description
+                    </p>
+                    
+                    <VariantSelector 
+                        Variants="@cookie.Variants" 
+                        SelectedVariant="@_selectedVariant" 
+                        CurrencySymbol="@cookie.CurrencySymbol" 
+                        OnVariantSelected="SelectVariant" />
+
+                    <IngredientList Ingredients="@cookie.Ingredients" />
+
+                    <div class="mb-6">
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+
+                            <div class="flex items-center justify-center mx-auto max-w-fit bg-surface-light dark:bg-surface-dark border-2 border-amber-100 dark:border-amber-800 rounded-full overflow-hidden">
+                                <button @onclick="DecreaseQuantity" 
+                                        class="p-4 hover:text-primary transition-colors cursor-pointer flex items-center justify-center">
+                                    <span class="material-icons-round text-xl">remove</span>
+                                </button>
+                                <input class="w-12 text-center bg-transparent border-none focus:ring-0 font-bold text-lg appearance-none"
+                                       readonly type="number" 
+                                       value="@Quantity" />
+                                <button @onclick="IncreaseQuantity" 
+                                        class="p-4 hover:text-primary transition-colors cursor-pointer flex items-center justify-center">
+                                    <span class="material-icons-round text-xl">add</span>
+                                </button>    
+                            </div>
+                            
+                            <button @onclick="async () => await AddToCartAsync()"
+                                    disabled="@isAddingToCart"
+                                    class="cursor-pointer flex-grow bg-primary hover:bg-amber-700 text-white px-8 py-4 rounded-full font-bold text-xl shadow-lg shadow-primary/30 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-80 disabled:cursor-not-allowed">
+
+                                @if (isAddingToCart)
+                                {
+                                    @* 🐯 Spinning Loader *@
+                                    <svg class="animate-spin size-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span>Adding...</span>
+                                }
+                                else
+                                {
+                                    <span class="material-symbols-outlined text-white">shopping_bag</span>
+                                    <span>Add to Cart</span>
+                                }
+                        </button>
+
+                            <button @onclick="ToggleFavorite" 
+                                    class="group cursor-pointer flex items-center justify-center p-4 bg-surface-light dark:bg-surface-dark border-2 transition-all duration-300 rounded-full
+                                           @(IsInFavorites 
+                                             ? "border-red-100 dark:border-red-900/30 text-red-500 shadow-lg shadow-red-500/10" 
+                                             : "border-amber-100 dark:border-amber-800 text-gray-400 hover:text-red-500")">
+    
+                                <span class="material-icons-round transition-transform duration-300 @(IsInFavorites ? "scale-110" : "group-active:scale-90")">
+                                    @(IsInFavorites ? "favorite" : "favorite_border")
+                                </span>
+                            </button>
+
+                        </div>
+                        <div class="flex items-center gap-2 mt-4 px-2">
+                            <span class="material-symbols-outlined text-green-500 text-xl font-bold"
+                                  style="font-variation-settings: 'FILL' 1, 'wght' 700">check_circle</span>
+                            <p class="text-gray-500 dark:text-gray-400 font-semibold text-sm">
+                                In stock, ready to ship
+                                today!
+                            </p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+                        
+                        @if(store is not null)
+                        {
+                            <div class="flex items-start gap-4 p-4 bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 shadow-sm">
+                                <div class="w-10 h-10 flex-shrink-0 bg-primary/10 rounded-xl flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-primary">local_shipping</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm">Fast Delivery</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        Next day delivery for orders before @(DateTime.Today.Add(store!.NextDayDeliveryBeforeTime).ToString("H:mm"))
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                        
+
+                        <div class="flex items-start gap-4 p-4 bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 shadow-sm">
+                            <div class="w-10 h-10 flex-shrink-0 bg-primary/10 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary">verified_user</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm">Fresh Guarantee</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    Baked fresh every single morning.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <AddReview />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <ProductReviews Id="@cookie.Id" />
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private StoreDto? store;
+
+    private (Guid VariantId, string VariantImage) currentVariantImage = (Guid.Empty, string.Empty);
+    private int Quantity { get; set; } = 1;
+    private StorefrontProductDto? cookie;
+    private StorefrontProductVariantDto? _selectedVariant;
+    private bool IsInFavorites { get; set; }
+    private bool isAddingToCart = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cookie = await CookieService.GetProductByIdAsync(Id);
+        ArgumentNullException.ThrowIfNull(cookie, nameof(cookie));
+
+        _selectedVariant = cookie.Variants?.FirstOrDefault();
+        currentVariantImage = (
+            _selectedVariant?.Id ?? Guid.Empty, 
+            _selectedVariant?.ImageUrls.FirstOrDefault() ?? string.Empty);
+
+        store = await OperationsService.GetStoreAsync();
+
+        if (Auth.IsLoggedIn)
+        {
+            IsInFavorites = await AccountService.IsFavoriteAsync(cookie.Id);
+        }
+    }
+
+    private void SelectVariant(StorefrontProductVariantDto variant)
+    {
+        _selectedVariant = variant;
+        UpdateDisplay();
+    }
+
+    private void UpdateDisplay()
+    {
+        // If variant has specific images, use them; otherwise fallback to base cookie images
+        var images = _selectedVariant?.ImageUrls.Any() == true
+                     ? _selectedVariant.ImageUrls.ToList()
+                     : cookie!.ImageUrls.ToList();
+
+        currentVariantImage = (_selectedVariant?.Id ?? Guid.Empty, images.First());
+    }
+
+    private void IncreaseQuantity() => Quantity++;
+
+    private void DecreaseQuantity() => Quantity = Math.Max(1, Quantity - 1);
+
+    private async Task AddToCartAsync()
+    {
+        if (cookie is null || _selectedVariant is null || isAddingToCart) return;
+
+        isAddingToCart = true;
+        await CartService.AddToCartAsync(cookie.Id, _selectedVariant.Id, Quantity);
+        isAddingToCart = false;
+    }
+
+    private async Task ToggleFavorite()
+    {
+        if (!Auth.IsLoggedIn)
+        {
+            Navigation.NavigateTo($"/auth/signin?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+            return;
+        }
+
+        if (cookie is not null)
+        {
+            if (IsInFavorites) await AccountService.RemoveFromFavoritesAsync(Id);
+            else await AccountService.AddToFavoritesAsync(Id);
+        }
+
+        IsInFavorites = await AccountService.IsFavoriteAsync(Id);
+        StateHasChanged();
+    }
+}
+

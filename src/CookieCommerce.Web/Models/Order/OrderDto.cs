@@ -1,4 +1,4 @@
-﻿using CookieCommerce.Web.Components.Features.Legal;
+﻿using CookieCommerce.Web.Components.Storefront.Legal;
 using CookieCommerce.Web.Models.Addresses;
 using CookieCommerce.Web.Models.Cart;
 

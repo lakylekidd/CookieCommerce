@@ -19,34 +19,6 @@ public class MockCartService : ICartService
         };
     }
 
-    public async Task AddToCartAsync(Guid productId, int quantity)
-    {
-        var product = StaticCookieList.Cookies.FirstOrDefault(p => p.Id == productId);
-        if (product == null) return;
-
-        var existingItem = _cart.Items.FirstOrDefault(i => i.ProductId == productId); 
-        if (existingItem is not null)
-        {
-            existingItem.Quantity += quantity;
-            NotifyStateChanged();
-            return;
-        }
-
-        _cart.Items.Add(new CartItemDto
-        {
-            CartItemId = Guid.NewGuid(),
-            ProductImageUrl = product.ImageUrls[0],
-            ProductId = product.Id,
-            ProductName = product.Title,
-            ProductVariantName = "1 item",
-            Quantity = quantity,
-            UnitPrice = product.Price,
-            IsLimitedEdition = product.IsLimitedEdition
-        });
-
-        NotifyStateChanged();
-    }
-
     public Task<CartDto> GetCartAsync()
     {
         return Task.FromResult(_cart);
@@ -130,32 +102,74 @@ public class MockCartService : ICartService
         return Task.FromResult(new ResultDto { Success = false, Message = "Promotion code not found in cart." });
     }
 
-    public Task AddMultipleToCartAsync(IEnumerable<(Guid productId, int quantity)> items)
+    public async Task AddToCartAsync(Guid productId, int quantity)
+    {
+        var productVariantId = StaticStorefrontProductList
+            .Cookies
+            .FirstOrDefault(p => p.Id == productId)
+            ?.Variants.FirstOrDefault()?.Id;
+
+        ArgumentNullException.ThrowIfNull(productVariantId, nameof(productVariantId));
+
+        await AddToCartAsync(productId, productVariantId.Value, quantity);
+    }
+
+    public async Task AddToCartAsync(Guid productId, Guid productVariantId, int quantity)
+    {
+        await AddSingleToCartAsync(productId, productVariantId, quantity);
+        await Task.Delay(800);
+        NotifyStateChanged();
+    }
+
+    public async Task AddMultipleToCartAsync(IEnumerable<(Guid productId, Guid productVariantId, int quantity)> items)
+    {
+        foreach (var (productId, productVariantId, quantity) in items)
+        {
+            await AddSingleToCartAsync(productId, productVariantId, quantity);
+        }
+
+        await Task.Delay(800);
+        NotifyStateChanged();
+    }
+
+    public async Task AddMultipleToCartAsync(IEnumerable<(Guid productId, int quantity)> items)
     {
         foreach (var (productId, quantity) in items)
         {
-            var product = StaticCookieList.Cookies.FirstOrDefault(p => p.Id == productId);
-            if (product == null) continue;
-            var existingItem = _cart.Items.FirstOrDefault(i => i.ProductId == productId); 
-            if (existingItem is not null)
-            {
-                existingItem.Quantity += quantity;
-                continue;
-            }
-            _cart.Items.Add(new CartItemDto
-            {
-                CartItemId = Guid.NewGuid(),
-                ProductImageUrl = product.ImageUrls[0],
-                ProductId = product.Id,
-                ProductName = product.Title,
-                ProductVariantName = "1 item",
-                Quantity = quantity,
-                UnitPrice = product.Price,
-                IsLimitedEdition = product.IsLimitedEdition
-            });
+            await AddToCartAsync(productId, quantity);
         }
-        
-        NotifyStateChanged();
-        return Task.CompletedTask;
+
+        await Task.Delay(800);
+        NotifyStateChanged();        
+    }
+
+    private async Task AddSingleToCartAsync(Guid productId, Guid productVariantId, int quantity)
+    {
+        var product = StaticStorefrontProductList.Cookies.FirstOrDefault(p => p.Id == productId);
+        var variant = product?.Variants.FirstOrDefault(v => v.Id == productVariantId);
+        if (product == null || variant == null)
+        {
+            return;
+        }
+
+        var existingItem = _cart.Items.FirstOrDefault(i => i.ProductVariantId == productVariantId);
+        if (existingItem is not null)
+        {
+            existingItem.Quantity += quantity;
+            NotifyStateChanged();
+            return;
+        }
+
+        _cart.Items.Add(new CartItemDto
+        {
+            CartItemId = Guid.NewGuid(),
+            ProductImageUrl = variant.ImageUrls.First(),
+            ProductVariantId = variant.Id,
+            ProductName = product.Title,
+            ProductVariantName = variant.Title,
+            Quantity = quantity,
+            UnitPrice = variant.Price,
+            IsLimitedEdition = product.IsLimitedEdition
+        });
     }
 }

@@ -1,0 +1,92 @@
+﻿<div class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-orange-50 dark:border-stone-700 overflow-hidden">
+    <div class="p-6 border-b border-orange-50 dark:border-stone-700 flex justify-between items-center">
+        <h3 class="text-lg font-bold font-display text-secondary dark:text-stone-200">Recent Orders</h3>
+        <div class="flex gap-2">
+            <button class="px-3 py-1.5 text-xs font-bold text-white bg-primary rounded-lg shadow-sm hover:bg-primary/90">
+                All
+            </button>
+            <button class="px-3 py-1.5 text-xs font-bold text-stone-500 hover:text-primary dark:text-stone-400">
+                Pending
+            </button>
+            <button class="px-3 py-1.5 text-xs font-bold text-stone-500 hover:text-primary dark:text-stone-400">
+                Completed
+            </button>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-stone-50 dark:bg-stone-800/50 text-stone-500 dark:text-stone-400 text-xs uppercase tracking-wider">
+                    <th class="p-4 font-semibold">Order ID</th>
+                    <th class="p-4 font-semibold">Customer</th>
+                    <th class="p-4 font-semibold">Product</th>
+                    <th class="p-4 font-semibold">Date</th>
+                    <th class="p-4 font-semibold">Amount</th>
+                    <th class="p-4 font-semibold">Status</th>
+                    <th class="p-4 font-semibold">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-orange-50 dark:divide-stone-800 text-sm">
+                <tr class="hover:bg-orange-50/30 dark:hover:bg-stone-800/30 transition-colors">
+                    <td class="p-4 font-bold text-secondary dark:text-stone-300">#ORD-0092</td>
+                    <td class="p-4 flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
+                            JD
+                        </div>
+                        <span class="font-medium dark:text-stone-200">John Doe</span>
+                    </td>
+                    <td class="p-4 text-stone-600 dark:text-stone-400">Box of 6 Assorted</td>
+                    <td class="p-4 text-stone-500">Oct 24, 2023</td>
+                    <td class="p-4 font-bold text-stone-700 dark:text-stone-200">$24.00</td>
+                    <td class="p-4">
+                        <span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-md text-xs font-bold">Delivered</span>
+                    </td>
+                    <td class="p-4">
+                        <button class="text-stone-400 hover:text-primary transition-colors">
+                            <span class="material-icons-round text-lg">more_vert</span>
+                        </button>
+                    </td>
+                </tr>
+                <tr class="hover:bg-orange-50/30 dark:hover:bg-stone-800/30 transition-colors">
+                    <td class="p-4 font-bold text-secondary dark:text-stone-300">#ORD-0091</td>
+                    <td class="p-4 flex items-center gap-3">
+                        <img alt="user" class="w-8 h-8 rounded-full"
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuAp5zN-ED9CHXs4AZXHqgfs_XdqgeSsUCRV9kKxDP5Eaf1FslRnPrJYisRIA07Y_2vUhIhsyLTmm9agm0Dcrr1QNpqe1wDqYn9LQc6ATQAc9wXTUW5h4a-kuVFAC_oEWvr9XeqUCyvgbudRCCXWcjreOPWj7tC_cGsEB7eqjCgK1uDFyq8VPTL_X4CbxLh4HzQZViaUtcijJy5sMsrhn6yKv7ezEw7SXjOB0paIaQK0SDqOLEIVdso4CQhMpcMLPi12xetpiV3DhQ" />
+                        <span class="font-medium dark:text-stone-200">Alice Smith</span>
+                    </td>
+                    <td class="p-4 text-stone-600 dark:text-stone-400">Monster Choco (x12)</td>
+                    <td class="p-4 text-stone-500">Oct 24, 2023</td>
+                    <td class="p-4 font-bold text-stone-700 dark:text-stone-200">$42.50</td>
+                    <td class="p-4">
+                        <span class="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 px-2 py-1 rounded-md text-xs font-bold">Processing</span>
+                    </td>
+                    <td class="p-4">
+                        <button class="text-stone-400 hover:text-primary transition-colors">
+                            <span class="material-icons-round text-lg">more_vert</span>
+                        </button>
+                    </td>
+                </tr>
+                <tr class="hover:bg-orange-50/30 dark:hover:bg-stone-800/30 transition-colors">
+                    <td class="p-4 font-bold text-secondary dark:text-stone-300">#ORD-0090</td>
+                    <td class="p-4 flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs">
+                            RK
+                        </div>
+                        <span class="font-medium dark:text-stone-200">Robert King</span>
+                    </td>
+                    <td class="p-4 text-stone-600 dark:text-stone-400">Vegan Delight Box</td>
+                    <td class="p-4 text-stone-500">Oct 23, 2023</td>
+                    <td class="p-4 font-bold text-stone-700 dark:text-stone-200">$35.00</td>
+                    <td class="p-4">
+                        <span class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-md text-xs font-bold">Shipped</span>
+                    </td>
+                    <td class="p-4">
+                        <button class="text-stone-400 hover:text-primary transition-colors">
+                            <span class="material-icons-round text-lg">more_vert</span>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

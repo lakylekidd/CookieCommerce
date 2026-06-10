@@ -1,0 +1,45 @@
+﻿@using Models.Backoffice;
+
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-wider @GetStatusStyles()">
+    @* 🐾 Dynamic Status Dot *@
+    <span class="w-1.5 h-1.5 rounded-full @GetDotStyles()"></span>
+
+    @GetStatusText()
+</div>
+
+@code {
+    [Parameter] public BatchStatus Status { get; set; } = BatchStatus.PendingAssignment;
+
+    private string GetStatusStyles() => Status switch
+    {
+        BatchStatus.PendingAssignment => "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-900/40 dark:text-slate-400 dark:border-slate-800",
+        BatchStatus.Scheduled => "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800",
+        BatchStatus.Mixing => "bg-amber-50 text-amber-700 border-amber-200 animate-pulse dark:bg-amber-900/40 dark:text-amber-400 dark:border-amber-800",
+        BatchStatus.Resting => "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/40 dark:text-purple-400 dark:border-purple-800",
+        BatchStatus.Completed => "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/40 dark:text-green-400 dark:border-green-800",
+        BatchStatus.Cancelled => "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800",
+        _ => "bg-gray-50 text-gray-600 border-gray-200"
+    };
+
+    private string GetDotStyles() => Status switch
+    {
+        BatchStatus.PendingAssignment => "bg-slate-400",
+        BatchStatus.Scheduled => "bg-blue-500",
+        BatchStatus.Mixing => "bg-amber-500",
+        BatchStatus.Resting => "bg-purple-500",
+        BatchStatus.Completed => "bg-green-500",
+        BatchStatus.Cancelled => "bg-red-500",
+        _ => "bg-gray-400"
+    };
+
+    private string GetStatusText() => Status switch
+    {
+        BatchStatus.PendingAssignment => "Pending",
+        BatchStatus.Scheduled => "Scheduled",
+        BatchStatus.Mixing => "Mixing",
+        BatchStatus.Resting => "Resting",
+        BatchStatus.Completed => "Completed",
+        BatchStatus.Cancelled => "Cancelled",
+        _ => Status.ToString()
+    };
+}

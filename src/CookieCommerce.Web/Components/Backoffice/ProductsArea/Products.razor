@@ -1,0 +1,95 @@
+﻿@page "/backoffice/products/"
+@page "/backoffice/products/{ActiveProductId:guid}"
+@using CookieCommerce.Web.Components.Backoffice.ProductsArea.CreateProductModalArea
+@using CookieCommerce.Web.Models.Backoffice
+@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Services
+@rendermode InteractiveServer
+@layout BackofficeLayout
+@inject IBackofficeService BackofficeService
+
+<div class="flex items-center justify-start mb-8">
+    <button @onclick="HandleCreateProduct"
+            class="group flex items-center justify-center gap-2 w-48 py-3
+                   text-sm font-black uppercase tracking-widest
+                   text-primary bg-white dark:bg-stone-900
+                   border-2 border-primary/20 rounded-2xl
+                   hover:border-primary hover:bg-primary hover:text-white
+                   shadow-sm hover:shadow-orange-200/50 dark:hover:shadow-none
+                   transition-all duration-300 active:scale-95 cursor-pointer">
+        @* Dynamic Plus Icon *@
+        <svg xmlns="http://www.w3.org/2000/svg"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="3"
+             stroke-linecap="round"
+             stroke-linejoin="round"
+             class="size-4 transition-transform group-hover:rotate-90">
+            <path d="M12 5v14M5 12h14" />
+        </svg>
+        <span>New Product</span>
+    </button>
+    <CreateNewProductModal @ref="CreateModal" OnProductCreated="StateHasChanged" />
+</div>
+
+<div class="grid grid-cols-12 gap-6 mb-8 items-start">
+    <div class="col-span-12 lg:col-span-5">
+        <InventoryTable InventoryItems="@InventoryItems"
+                        IsLoading="@IsLoadingInventoryTable"
+                        OnProductSelected="UpdateActiveId" />
+    </div>
+    <div class="col-span-12 lg:col-span-7">
+        <SelectedInventoryItem 
+            InventoryItem="@SelectedInventoryItem"
+            IsLoading="@IsLoadingSelectedInventoryItem" />
+    </div>
+</div>
+
+
+@code {
+    private ICollection<ProductDto> InventoryItems { get; set; } = [];
+    private ProductDto? SelectedInventoryItem { get; set; } = null;
+    private bool IsLoadingInventoryTable { get; set; } = true;
+    private bool IsLoadingSelectedInventoryItem { get; set; } = false;
+    private CreateNewProductModal CreateModal { get; set; } = null!;
+    [Parameter] public Guid? ActiveProductId { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshInventory();
+        await LoadActiveInventoryItem();
+    }
+
+    private async Task RefreshInventory()
+    {
+        IsLoadingInventoryTable = true;
+        InventoryItems = await BackofficeService.GetInventoryItemsAsync();
+        IsLoadingInventoryTable = false;
+    }
+
+    private async Task LoadActiveInventoryItem()
+    {
+        SelectedInventoryItem = null;
+        IsLoadingSelectedInventoryItem = true;
+
+        if (ActiveProductId.HasValue)
+        {
+            SelectedInventoryItem = await BackofficeService.GetInventoryItemAsync(ActiveProductId.Value);
+        }
+
+        IsLoadingSelectedInventoryItem = false;
+    }
+
+    private async Task UpdateActiveId(Guid? id)
+    {
+        ActiveProductId = id;
+        await LoadActiveInventoryItem();
+    }
+
+    private async Task HandleCreateProduct()
+    {
+        CreateModal?.Open();
+    }
+}

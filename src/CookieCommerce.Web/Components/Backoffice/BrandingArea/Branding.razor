@@ -1,0 +1,74 @@
+﻿@page "/backoffice/branding/"
+@using CookieCommerce.Web.Models.Backoffice
+@using CookieCommerce.Web.Services
+@rendermode InteractiveServer
+@layout BackofficeLayout
+@inject IBackofficeService BackofficeService
+
+<div class="flex flex-col items-center justify-center p-8 bg-stone-100 rounded-[3rem] border-4 border-dashed border-stone-200">
+
+    <svg viewBox="0 0 300 300" class="size-64 drop-shadow-2xl animate-in zoom-in duration-700">
+        <defs>
+            @* Main Title Path (Outer) *@
+            <path id="topCurve" d="M 35, 150 a 115,115 0 1,1 230,0" />
+
+            @* URL Path (Inner) - Radius is 12px smaller than the title path *@
+            <path id="urlCurve" d="M 47, 150 a 103,103 0 1,1 206,0" />
+
+            @* Bottom Text Path *@
+            <path id="bottomCurve" d="M 35, 150 a 115,115 0 1,0 230,0" />
+
+            <clipPath id="logoCircle">
+                <circle cx="150" cy="150" r="85" />
+            </clipPath>
+
+            <clipPath id="qrRounded">
+                <rect x="232" y="131" width="45" height="45" rx="8" />
+            </clipPath>
+        </defs>
+
+        @* Main Sticker Background *@
+        <circle cx="150" cy="150" r="140" fill="#FFFBF2" stroke="#442c1e" stroke-width="4" />
+        <circle cx="150" cy="150" r="134" fill="none" stroke="#f2994a" stroke-width="1" stroke-dasharray="3" />
+
+        @* 1. Top Title: TIGER VAN COOKIE *@
+        <text font-family="Fredoka, sans-serif" font-size="16" font-weight="900" fill="#451a03" letter-spacing="3">
+            <textPath href="#topCurve" startOffset="50%" text-anchor="middle">
+                TIGER <tspan fill="#D97706">VAN COOKIE</tspan>
+            </textPath>
+        </text>
+
+        @* 2. Website URL: Right under the title in a smaller font *@
+        <text font-family="Nunito, sans-serif" font-size="9" font-weight="600" fill="#451a03" letter-spacing="1">
+            <textPath href="#urlCurve" startOffset="50%" text-anchor="middle">
+                HTTPS://TIGERVANCOOKIE.NL
+            </textPath>
+        </text>
+
+        @* 3. Bottom Text: HOMEMADE COOKIES *@
+        <text font-family="Nunito, sans-serif" font-size="13" font-weight="700" fill="#f2994a" letter-spacing="2">
+            <textPath href="#bottomCurve" startOffset="50%" text-anchor="middle">
+                HOMEMADE COOKIES
+            </textPath>
+        </text>
+
+        @* --- LOGO --- *@
+        <image href="/images/logo.png" x="65" y="65" height="170" width="170" clip-path="url(#logoCircle)" />
+
+        @* --- INSTAGRAM QR --- *@
+        <g>
+            <rect x="229" y="128" width="51" height="51" fill="white" rx="10" stroke="#442c1e" stroke-width="1" />
+            <image href="/images/instagram_qr.png" x="232" y="131" height="45" width="45" clip-path="url(#qrRounded)" />
+            <rect x="242" y="174" width="25" height="10" rx="4" fill="#f2994a" />
+            <text x="254.5" y="182" font-size="7" fill="white" text-anchor="middle" font-weight="bold" font-family="sans-serif">SCAN</text>
+        </g>
+
+        @* Separator Dots *@
+        <circle cx="35" cy="150" r="3" fill="#f2994a" />
+        <circle cx="265" cy="150" r="3" fill="#f2994a" />
+    </svg>
+
+    <p class="mt-6 text-stone-400 font-bold text-xs uppercase tracking-widest text-center">
+        Full Brand Stamp 🐯
+    </p>
+</div>

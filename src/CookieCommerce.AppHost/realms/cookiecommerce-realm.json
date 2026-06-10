@@ -1,0 +1,19 @@
+{
+  "realm": "cookiecommerce",
+  "enabled": true,
+  "loginWithEmailAllowed": true,
+  "registrationAllowed": false,
+  "clients": [
+    {
+      "clientId": "cookiecommerce-backend",
+      "name": "CookieCommerce Backend",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "cookiecommerce-secret",
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+@using CookieCommerce.Web.Models.Customers
+
+<tr class="hover:bg-orange-50/30 dark:hover:bg-gray-800/30 transition-all">
+
+    @* Customer: avatar + full name + member since *@
+    <td class="px-6 py-5">
+        <div class="flex items-center gap-3">
+            <div class="flex-shrink-0 size-9 rounded-full flex items-center justify-center font-bold text-sm @AvatarClass">
+                @Initials
+            </div>
+            <div>
+                <p class="font-bold text-gray-800 dark:text-gray-100 text-sm leading-tight">@Customer.FullName</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                    Member since @Customer.MemberSince.ToString("MMM yyyy")
+                </p>
+            </div>
+        </div>
+    </td>
+
+    @* Email *@
+    <td class="px-6 py-5 hidden sm:table-cell">
+        <p class="text-sm text-gray-600 dark:text-gray-300 truncate max-w-[200px]">@Customer.Email</p>
+    </td>
+
+    @* Address *@
+    <td class="px-6 py-5 hidden lg:table-cell">
+        @if (Customer.PrimaryAddress is not null)
+        {
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-200 leading-tight">
+                @Customer.PrimaryAddress.Street @Customer.PrimaryAddress.HouseNumber@Customer.PrimaryAddress.HouseNumberAddition
+            </p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                @Customer.PrimaryAddress.PostalCode @Customer.PrimaryAddress.City
+            </p>
+        }
+        else
+        {
+            <span class="text-xs text-gray-400 dark:text-gray-500 italic">No address on file</span>
+        }
+    </td>
+
+    @* Total Orders *@
+    <td class="px-6 py-5 hidden sm:table-cell">
+        <span class="font-bold text-gray-800 dark:text-gray-100">@Customer.TotalOrders</span>
+    </td>
+
+    @* Total Spent *@
+    <td class="px-6 py-5 hidden sm:table-cell">
+        <span class="font-bold text-primary">€@Customer.TotalSpent.ToString("N2")</span>
+    </td>
+
+    @* Action *@
+    <td class="px-6 py-5">
+        <div class="flex items-center justify-end">
+            <div class="relative group">
+                <a href="/backoffice/customers/@Customer.Id"
+                   class="cursor-pointer flex items-center justify-center w-10 h-10 bg-white dark:bg-gray-800 border border-primary text-primary hover:bg-primary hover:text-white rounded-full transition-all shadow-sm active:scale-90">
+                    <span class="material-symbols-outlined text-xl">visibility</span>
+                </a>
+                <span class="absolute -top-10 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 text-[11px] text-white whitespace-nowrap z-50 shadow-xl pointer-events-none">
+                    View customer
+                    <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
+                </span>
+            </div>
+        </div>
+    </td>
+
+</tr>
+
+@code {
+    [Parameter] public CustomerDto Customer { get; set; } = new();
+
+    private string Initials =>
+        $"{Customer.FirstName.FirstOrDefault()}{Customer.LastName.FirstOrDefault()}".ToUpper();
+
+    private string AvatarClass => char.ToUpper(Customer.FirstName.FirstOrDefault()) switch
+    {
+        >= 'A' and <= 'D' => "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300",
+        >= 'E' and <= 'H' => "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300",
+        >= 'I' and <= 'L' => "bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300",
+        >= 'M' and <= 'P' => "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-300",
+        >= 'Q' and <= 'T' => "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300",
+        _ => "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-300"
+    };
+}

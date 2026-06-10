@@ -1,0 +1,63 @@
+﻿@using CookieCommerce.Web.Models.Backoffice
+
+<div class="relative group flex flex-col gap-1 w-full p-2.5 rounded-xl hover:bg-orange-50/50 dark:hover:bg-white/5 transition-all border border-transparent hover:border-orange-100 dark:hover:border-white/10">
+
+    <div class="flex items-center gap-3">
+        @* Product Image with "Tiger" Glow if completed *@
+        <div class="w-10 h-10 flex-shrink-0 rounded-full border-2 @(IsCompleted ? "border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" : "border-primary") bg-orange-100 flex items-center justify-center shadow-md overflow-hidden group-hover:scale-105 transition-transform">
+            <img src="@Item.Product.ProductImageUrl"
+                 alt="@Item.Product.ProductName"
+                 class="w-full h-full object-cover" />
+        </div>
+
+        <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-center mb-0.5">
+                <span class="font-bold text-stone-700 dark:text-stone-200 text-sm truncate">
+                    @Item.Product.ProductName
+                </span>
+
+                @* Status Badge with cute icons *@
+                <span class="text-[10px] font-black uppercase px-2 py-0.5 mb-1 rounded-md @StatusClass">
+                    @StatusText
+                </span>
+            </div>
+
+            @* Mini Tiger Stripe Progress Bar *@
+            <div class="w-full h-1.5 bg-stone-200 dark:bg-stone-800 rounded-full overflow-hidden flex">
+                <div class="h-full bg-primary transition-all duration-500 ease-out"
+                     style="width: @(ProgressPercentage)%"></div>
+            </div>
+        </div>
+
+        @* Counter Badge: Ready / Required *@
+        <div class="ml-2 flex flex-col items-center justify-center min-w-[45px]">
+            <span class="text-sm font-black text-primary dark:text-orange-400">@Item.QuantityReadyForFulfillment</span>
+            <div class="h-[1px] w-full bg-stone-300 dark:bg-stone-700 my-0.5"></div>
+            <span class="text-sm font-bold text-stone-400">@Item.QuantityRequired</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public InventoryQuotaItemDto Item { get; set; } = new();
+
+    private bool IsCompleted => Item.QuantityReadyForFulfillment >= Item.QuantityRequired;
+
+    private double ProgressPercentage => Item.QuantityRequired > 0
+        ? Math.Min(100, (double)Item.QuantityReadyForFulfillment / Item.QuantityRequired * 100)
+        : 0;
+
+    private string StatusText => Item.Status switch
+    {
+        InventoryQuotaItemStatus.NotStarted => "Waiting 🐾",
+        _ when IsCompleted => "Ready! 🐯",
+        _ => "In Progress... 🔥"
+    };
+
+    private string StatusClass => Item.Status switch
+    {
+        InventoryQuotaItemStatus.NotStarted => "bg-stone-100 text-stone-400 dark:bg-stone-800",
+        _ when IsCompleted => "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30",
+        _ => "bg-orange-100 text-orange-600 dark:bg-orange-900/30 animate-pulse"
+    };
+}

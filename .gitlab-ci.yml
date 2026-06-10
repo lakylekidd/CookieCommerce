@@ -26,6 +26,9 @@ before_script:
   - apt-get install -y nodejs
   - node --version
   - npm --version
+  - cd src/CookieCommerce.Web
+  - npm ci
+  - cd ../..
   - dotnet --info
   - dotnet restore "$SOLUTION_PATH"
 

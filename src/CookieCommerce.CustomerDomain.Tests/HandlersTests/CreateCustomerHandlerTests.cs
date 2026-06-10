@@ -8,6 +8,7 @@ using CookieCommerce.DomainBuildingBlocks;
 using Marten;
 using Marten.Events;
 using NSubstitute;
+using System.Globalization;
 
 namespace CookieCommerce.CustomerDomain.Tests.HandlerTests;
 
@@ -33,7 +34,10 @@ public class CreateCustomerHandlerTests
         encryption.Encrypt("Doe", Arg.Any<byte[]>()).Returns("encrypted-last-name");
         encryption.Encrypt("Male", Arg.Any<byte[]>()).Returns("encrypted-gender");
         // Handler formats dates using the round-trip format specifier ("O")
-        encryption.Encrypt(DateTime.Parse("18/11/1986").ToString("O"), Arg.Any<byte[]>()).Returns("encrypted-date-of-birth");
+        encryption.Encrypt(DateTime.ParseExact(
+            "18/11/1986",
+            "dd/MM/yyyy",
+            CultureInfo.InvariantCulture).ToString("O"), Arg.Any<byte[]>()).Returns("encrypted-date-of-birth");
 
         var handler = new CreateCustomerHandler(session, keyStore, encryption, publisher);
 

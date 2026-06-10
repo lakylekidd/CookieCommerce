@@ -44,8 +44,8 @@ public class CreateCustomerHandlerTests
                 "test@example.com", 
                 "John", 
                 "Doe", 
-                Domain.ValueObjects.Gender.Male, 
-                DateTime.Parse("18/11/1986")), 
+                Domain.ValueObjects.Gender.Male,
+                new DateTime(1986, 11, 18)), 
             default);
 
         // Assert

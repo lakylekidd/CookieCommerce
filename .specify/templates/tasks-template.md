@@ -9,7 +9,7 @@ description: "Task list template for feature implementation"
 
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
+**Tests**: Tests are REQUIRED for behavioral changes. Include the lowest useful level of tests and add integration/contract tests when persistence, projections, APIs, messaging, or cross-domain behavior changes.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -21,10 +21,11 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
-- **Single project**: `src/`, `tests/` at repository root
-- **Web app**: `backend/src/`, `frontend/src/`
-- **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume single project - adjust based on plan.md structure
+- **Bounded context**: `src/CookieCommerce.{Domain}.Api/`, `.Application/`, `.Domain/`, `.Infrastructure/`, `.Tests/`
+- **Blazor UI**: `src/CookieCommerce.Web/`
+- **Shared platform**: `src/CookieCommerce.DomainBuildingBlocks/`, `src/CookieCommerce.CookieMassTransit/`, `src/CookieCommerce.ServiceDefaults/`, `src/CookieCommerce.AppHost/`
+- **Documentation**: `README.md`, `CLAUDE.md`, `Documentation/backend-documentation.md` when service interfaces change
+- Paths shown below are examples - adjust based on plan.md structure
 
 <!--
   ============================================================================
@@ -63,12 +64,13 @@ description: "Task list template for feature implementation"
 
 Examples of foundational tasks (adjust based on your project):
 
-- [ ] T004 Setup database schema and migrations framework
-- [ ] T005 [P] Implement authentication/authorization framework
-- [ ] T006 [P] Setup API routing and middleware structure
-- [ ] T007 Create base models/entities that all stories depend on
-- [ ] T008 Configure error handling and logging infrastructure
-- [ ] T009 Setup environment configuration management
+- [ ] T004 Setup Marten schema/projection configuration in src/CookieCommerce.{Domain}.Infrastructure/
+- [ ] T005 [P] Implement authentication/authorization integration where required
+- [ ] T006 [P] Setup API routing, DTO mapping, and middleware structure in src/CookieCommerce.{Domain}.Api/
+- [ ] T007 Create aggregate/value object/read model foundations that all stories depend on
+- [ ] T008 Configure domain exception mapping, ProblemDetails, logging, and health/telemetry integration
+- [ ] T009 Setup Aspire/appsettings/user-secrets/environment-variable configuration management
+- [ ] T010 Add or update Dockerfile for each affected bounded-context runtime and register/verify it in src/CookieCommerce.AppHost
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -80,21 +82,23 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 1 ⚠️
 
-> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+> **NOTE: Write required tests first when practical; ensure they fail for the intended reason before implementation.**
 
-- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T011 [P] [US1] Unit test for aggregate/domain invariant in src/CookieCommerce.{Domain}.Tests/[Feature]/[Name]Tests.cs
+- [ ] T012 [P] [US1] Integration or contract test for API/projection/message behavior in src/CookieCommerce.{Domain}.Tests/[Feature]/[Name]Tests.cs
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
-- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T016 [US1] Add validation and error handling
-- [ ] T017 [US1] Add logging for user story 1 operations
+- [ ] T013 [P] [US1] Create/update aggregate or value object in src/CookieCommerce.{Domain}.Domain/[Feature]/[Name].cs
+- [ ] T014 [P] [US1] Create/update domain event or read model in src/CookieCommerce.{Domain}.Domain/ or .Infrastructure/
+- [ ] T015 [US1] Implement command/query handler in src/CookieCommerce.{Domain}.Application/[Feature]/[Name].cs (depends on T013, T014)
+- [ ] T016 [US1] Implement API endpoint or Blazor UI feature in src/CookieCommerce.{Domain}.Api/ or src/CookieCommerce.Web/
+- [ ] T017 [US1] Add validation and domain exception handling
+- [ ] T018 [US1] Apply backend standards for thin controllers, focused async handlers with cancellation tokens, explicit DTO mapping, and isolated infrastructure concerns
+- [ ] T019 [US1] Add logging, ProblemDetails/domain exception mapping, and PII handling for user story 1 operations
+- [ ] T020 [US1] Apply frontend standards for Razor components, typed services, scoped styles/JS interop, accessibility, and responsive behavior if UI changes are included
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -106,17 +110,17 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 2 ⚠️
 
-- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T021 [P] [US2] Unit test for aggregate/domain invariant in src/CookieCommerce.{Domain}.Tests/[Feature]/[Name]Tests.cs
+- [ ] T022 [P] [US2] Integration or contract test for API/projection/message behavior in src/CookieCommerce.{Domain}.Tests/[Feature]/[Name]Tests.cs
 
 ### Implementation for User Story 2
 
-- [ ] T020 [P] [US2] Create [Entity] model in src/models/[entity].py
-- [ ] T021 [US2] Implement [Service] in src/services/[service].py
-- [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T023 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T023 [P] [US2] Create/update aggregate, event, projection, or read model in the owning CookieCommerce project
+- [ ] T024 [US2] Implement command/query handler in src/CookieCommerce.{Domain}.Application/[Feature]/[Name].cs
+- [ ] T025 [US2] Implement API endpoint or Blazor UI feature in src/CookieCommerce.{Domain}.Api/ or src/CookieCommerce.Web/
+- [ ] T026 [US2] Integrate with User Story 1 components or local snapshots (if needed)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -128,16 +132,16 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 3 ⚠️
 
-- [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T027 [P] [US3] Unit test for aggregate/domain invariant in src/CookieCommerce.{Domain}.Tests/[Feature]/[Name]Tests.cs
+- [ ] T028 [P] [US3] Integration or contract test for API/projection/message behavior in src/CookieCommerce.{Domain}.Tests/[Feature]/[Name]Tests.cs
 
 ### Implementation for User Story 3
 
-- [ ] T026 [P] [US3] Create [Entity] model in src/models/[entity].py
-- [ ] T027 [US3] Implement [Service] in src/services/[service].py
-- [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T029 [P] [US3] Create/update aggregate, event, projection, or read model in the owning CookieCommerce project
+- [ ] T030 [US3] Implement command/query handler in src/CookieCommerce.{Domain}.Application/[Feature]/[Name].cs
+- [ ] T031 [US3] Implement API endpoint or Blazor UI feature in src/CookieCommerce.{Domain}.Api/ or src/CookieCommerce.Web/
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -151,12 +155,15 @@ Examples of foundational tasks (adjust based on your project):
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] TXXX [P] Documentation updates in docs/
+- [ ] TXXX [P] Documentation updates in README.md, CLAUDE.md, Documentation/backend-documentation.md, or docs/ as applicable
 - [ ] TXXX Code cleanup and refactoring
 - [ ] TXXX Performance optimization across all stories
-- [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
-- [ ] TXXX Security hardening
-- [ ] TXXX Run quickstart.md validation
+- [ ] TXXX [P] Additional unit/integration tests in src/CookieCommerce.{Domain}.Tests/ where coverage gaps remain
+- [ ] TXXX Security hardening, including encrypted PII and erasure behavior checks
+- [ ] TXXX Frontend accessibility and responsive behavior validation for UI changes
+- [ ] TXXX Build affected Docker image(s) and verify AppHost registration for affected bounded-context runtimes
+- [ ] TXXX Run quickstart.md validation when present
+- [ ] TXXX Run `dotnet build src` and the smallest relevant `dotnet test` command; run `dotnet test src` for broad domain/persistence/messaging/API changes
 
 ---
 
@@ -179,7 +186,7 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Within Each User Story
 
-- Tests (if included) MUST be written and FAIL before implementation
+- Required tests MUST be written before or alongside implementation and SHOULD fail for the intended reason before implementation when test-first work is practical
 - Models before services
 - Services before endpoints
 - Core implementation before integration
@@ -199,13 +206,13 @@ Examples of foundational tasks (adjust based on your project):
 ## Parallel Example: User Story 1
 
 ```bash
-# Launch all tests for User Story 1 together (if tests requested):
-Task: "Contract test for [endpoint] in tests/contract/test_[name].py"
-Task: "Integration test for [user journey] in tests/integration/test_[name].py"
+# Launch all tests for User Story 1 together:
+Task: "Unit test for aggregate/domain invariant in src/CookieCommerce.{Domain}.Tests/[Feature]/[Name]Tests.cs"
+Task: "Integration or contract test for API/projection/message behavior in src/CookieCommerce.{Domain}.Tests/[Feature]/[Name]Tests.cs"
 
-# Launch all models for User Story 1 together:
-Task: "Create [Entity1] model in src/models/[entity1].py"
-Task: "Create [Entity2] model in src/models/[entity2].py"
+# Launch independent domain/read-model work for User Story 1 together:
+Task: "Create/update aggregate or value object in src/CookieCommerce.{Domain}.Domain/[Feature]/[Name].cs"
+Task: "Create/update domain event or read model in src/CookieCommerce.{Domain}.Domain/ or .Infrastructure/"
 ```
 
 ---
@@ -246,7 +253,12 @@ With multiple developers:
 - [P] tasks = different files, no dependencies
 - [Story] label maps task to specific user story for traceability
 - Each user story should be independently completable and testable
-- Verify tests fail before implementing
+- Verify tests fail before implementing when test-first work is practical
+- Do not introduce synchronous runtime HTTP calls between bounded contexts
+- Update Documentation/backend-documentation.md whenever Web service interfaces change
+- Keep backend code layered: thin controllers, focused async handlers, persistence-ignorant domain code, explicit DTO mapping, and isolated infrastructure concerns
+- Keep each bounded-context runtime containerized with a Dockerfile and registered/runnable through Aspire AppHost
+- Keep Razor components small, accessible, responsive, and routed through typed Web services for backend access
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence

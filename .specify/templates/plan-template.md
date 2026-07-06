@@ -18,17 +18,17 @@
   the iteration process.
 -->
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+**Language/Version**: [.NET 10 / C# 14, Blazor, or NEEDS CLARIFICATION]
 
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+**Primary Dependencies**: [Marten, MediatR, MassTransit, Aspire, Blazor, or NEEDS CLARIFICATION]
 
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+**Storage**: [Marten/PostgreSQL event store + read models, files, or N/A]
 
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+**Testing**: [xUnit, FluentAssertions, Testcontainers, WebApplicationFactory, or NEEDS CLARIFICATION]
 
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Target Platform**: [Aspire-orchestrated web/services, Blazor UI, or NEEDS CLARIFICATION]
 
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
+**Project Type**: [bounded-context API/application/domain/infrastructure, Blazor web, shared library, or NEEDS CLARIFICATION]
 
 **Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
 
@@ -40,7 +40,17 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- **Domain boundaries**: Does the feature belong to a named bounded context, and are API/Application/Domain/Infrastructure/Test responsibilities placed in the established `src/CookieCommerce.{Domain}.*` layout?
+- **Backend standards**: Are controllers thin, handlers focused and async with cancellation tokens, DTOs mapped explicitly, domain code persistence-ignorant, and infrastructure concerns isolated?
+- **Event sourcing + CQRS**: Are state changes modeled through aggregate events and command handlers, with affected read models/projections identified?
+- **Testing discipline**: Are aggregate invariants, projections, API contracts, message consumers, or persistence behavior covered by unit/integration/contract tests as applicable?
+- **Async integration**: Does cross-domain communication use integration events, the transactional outbox, and local snapshots/read models instead of synchronous runtime HTTP calls?
+- **Privacy + operations**: Is sensitive PII encrypted before event storage, is erasure/key-shredding behavior preserved, and are logging/health/ProblemDetails behaviors accounted for?
+- **Aspire + containerization**: Does each affected bounded-context runtime have a Dockerfile, avoid baked-in secrets, and remain registered/runnable through `src/CookieCommerce.AppHost`?
+- **Frontend standards**: For `src/CookieCommerce.Web` changes, are components placed in the correct folder, API access routed through typed services, scoped styles/JS interop used appropriately, and accessibility/responsive behavior covered?
+- **Documentation impact**: If `src/CookieCommerce.Web/Services/**/*.cs` interfaces change, does the plan include an update to `Documentation/backend-documentation.md`?
+
+Any failed gate MUST be listed in Complexity Tracking with a justification, the simpler alternative rejected, and the migration or mitigation path.
 
 ## Project Structure
 
@@ -65,39 +75,21 @@ specs/[###-feature]/
 -->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
+# Bounded context change
 src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+├── CookieCommerce.{Domain}.Api/        # includes Dockerfile for runtime service
+├── CookieCommerce.{Domain}.Application/
+├── CookieCommerce.{Domain}.Domain/
+├── CookieCommerce.{Domain}.Infrastructure/
+└── CookieCommerce.{Domain}.Tests/
 
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+# Shared platform or UI change
+src/
+├── CookieCommerce.DomainBuildingBlocks/
+├── CookieCommerce.CookieMassTransit/
+├── CookieCommerce.ServiceDefaults/
+├── CookieCommerce.AppHost/
+└── CookieCommerce.Web/                 # includes Dockerfile for Blazor runtime
 ```
 
 **Structure Decision**: [Document the selected structure and reference the real

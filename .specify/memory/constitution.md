@@ -32,7 +32,7 @@ Follow-up TODOs:
 - `dotnet format` MUST pass with zero violations before any code is merged.
 - API layer messages MUST use `*Request` / `*Response` suffixes.
 - Use-case layer messages MUST use `*Command` / `*Query` suffixes.
-- Interfaces and their implementations must not reside in the same project.
+- Interfaces and their implementations must not reside in the same project (Except in the Web Project)!
 
 Backend code MUST follow these additional standards:
 - Controllers MUST stay thin: accept requests, delegate to MediatR/application
@@ -106,6 +106,7 @@ Frontend code in `src/CookieCommerce.Web` MUST follow these standards:
 - Moq MUST be used.
 - Unit and integration tests MUST be separated into distinct projects or folders. 
 - Only code with business logic under the teams' control MUST be tested; framework code MUST NOT be tested. 
+- Do NOT add any tests for behavioral orchestration or bootstraping projects.
 
 ### III. Centralized Configuration via Aspire
 - All service configuration and service discovery must be managed by the Aspire AppHost project.

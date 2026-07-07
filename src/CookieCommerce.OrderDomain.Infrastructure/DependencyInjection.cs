@@ -15,7 +15,7 @@ public static class DependencyInjection
             // Register consumers for customer integration events
             x.AddConsumer<CustomerSnapshotPublishedConsumer>();
             x.AddConsumer<CustomerDeletedConsumer>();
-            
+
             x.SetKebabCaseEndpointNameFormatter();
 
             x.UsingRabbitMq((ctx, cfg) =>
@@ -23,7 +23,7 @@ public static class DependencyInjection
                 var connectionString = configuration.GetConnectionString("Messaging");
                 ArgumentNullException.ThrowIfNull(connectionString, "Connection string 'Messaging' not found.");
                 cfg.Host(connectionString);
-                
+
                 cfg.ConfigureEndpoints(ctx);
             });
         });

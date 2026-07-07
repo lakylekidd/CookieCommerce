@@ -50,7 +50,8 @@ public static class StaticTodaysOrders
             City = "Rotterdam",
             Country = "Netherlands"
         },
-        Status = new OrderStatusDto {
+        Status = new OrderStatusDto
+        {
             StatusId = 2,
             Status = "Confirmed"
         },

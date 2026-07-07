@@ -27,7 +27,7 @@ public class MarkOrderAsPaidHandlerTests
         var orderId = Guid.CreateVersion7();
         var customerId = Guid.CreateVersion7();
         var productId = Guid.CreateVersion7();
-        
+
         var order = new OrderAggregate();
         order.PlaceOrder(orderId, customerId);
         order.AddOrderLine(productId, 1, 10m);
@@ -44,7 +44,7 @@ public class MarkOrderAsPaidHandlerTests
         // Assert
         order.Status.Should().Be(OrderStatus.Paid);
         order.PaidAtUtc.Should().NotBeNull();
-        
+
         await _session.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -53,7 +53,7 @@ public class MarkOrderAsPaidHandlerTests
     {
         // Arrange
         var orderId = Guid.CreateVersion7();
-        
+
         _session.Events.AggregateStreamAsync<OrderAggregate>(orderId, token: Arg.Any<CancellationToken>())
             .Returns((OrderAggregate?)null);
 
@@ -62,7 +62,7 @@ public class MarkOrderAsPaidHandlerTests
         // Act & Assert
         var exception = await Assert.ThrowsAsync<OrderNotFoundException>(() =>
             _handler.Handle(command, CancellationToken.None));
-        
+
         exception.OrderId.Should().Be(orderId);
     }
 }

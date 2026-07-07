@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace CookieCommerce.CustomerDomain.Api.Middleware;
 
 /// <summary>
-/// Middleware that catches domain exceptions and maps them to appropriate HTTP status codes
+/// Middleware that catches domain exceptions and maps them to appropriate HTTP status codes.
+/// CustomerProfileValidationException with field errors → 422 ValidationProblemDetails.
 /// </summary>
 public class DomainExceptionMiddleware
 {
@@ -33,6 +34,29 @@ public class DomainExceptionMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
+        _logger.LogError(exception, "An exception occurred: {ExceptionType}", exception.GetType().Name);
+
+        context.Response.ContentType = "application/problem+json";
+
+        // CustomerProfileValidationException with field-level errors → 422 ValidationProblemDetails
+        if (exception is CustomerProfileValidationException profileValidation
+            && profileValidation.FieldErrors.Count > 0)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
+            var vpd = new ValidationProblemDetails(
+                profileValidation.FieldErrors.ToDictionary(
+                    kv => kv.Key,
+                    kv => kv.Value))
+            {
+                Status = (int)HttpStatusCode.UnprocessableEntity,
+                Title = "Profile Validation Failed",
+                Instance = context.Request.Path
+            };
+            await context.Response.WriteAsync(JsonSerializer.Serialize(vpd,
+                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+            return;
+        }
+
         var (statusCode, problemDetails) = exception switch
         {
             CustomerNotFoundException notFound => (
@@ -42,6 +66,66 @@ public class DomainExceptionMiddleware
                     Status = (int)HttpStatusCode.NotFound,
                     Title = "Customer Not Found",
                     Detail = notFound.Message,
+                    Instance = context.Request.Path
+                }
+            ),
+            MissingCustomerProfileException missingProfile => (
+                HttpStatusCode.NotFound,
+                new ProblemDetails
+                {
+                    Status = (int)HttpStatusCode.NotFound,
+                    Title = "Profile Not Found",
+                    Detail = "Customer profile does not exist or has been forgotten.",
+                    Instance = context.Request.Path
+                }
+            ),
+            DuplicateCustomerEmailException => (
+                HttpStatusCode.Conflict,
+                new ProblemDetails
+                {
+                    Status = (int)HttpStatusCode.Conflict,
+                    Title = "Email Address Conflict",
+                    Detail = "Email address is already associated with another account.",
+                    Instance = context.Request.Path
+                }
+            ),
+            CustomerProfileValidationException validation => (
+                HttpStatusCode.UnprocessableEntity,
+                new ProblemDetails
+                {
+                    Status = (int)HttpStatusCode.UnprocessableEntity,
+                    Title = "Profile Validation Failed",
+                    Detail = validation.Message,
+                    Instance = context.Request.Path
+                }
+            ),
+            UnauthorizedCustomerProfileAccessException => (
+                HttpStatusCode.Forbidden,
+                new ProblemDetails
+                {
+                    Status = (int)HttpStatusCode.Forbidden,
+                    Title = "Forbidden",
+                    Detail = "You are not authorised to access this profile.",
+                    Instance = context.Request.Path
+                }
+            ),
+            InvalidEmailVerificationTokenException invalidToken => (
+                HttpStatusCode.UnprocessableEntity,
+                new ProblemDetails
+                {
+                    Status = (int)HttpStatusCode.UnprocessableEntity,
+                    Title = "Invalid Email Verification Token",
+                    Detail = invalidToken.Message,
+                    Instance = context.Request.Path
+                }
+            ),
+            ExpiredEmailVerificationTokenException expiredToken => (
+                HttpStatusCode.Gone,
+                new ProblemDetails
+                {
+                    Status = (int)HttpStatusCode.Gone,
+                    Title = "Expired Email Verification Token",
+                    Detail = expiredToken.Message,
                     Instance = context.Request.Path
                 }
             ),
@@ -77,9 +161,6 @@ public class DomainExceptionMiddleware
             )
         };
 
-        _logger.LogError(exception, "An exception occurred: {ExceptionType}", exception.GetType().Name);
-
-        context.Response.ContentType = "application/problem+json";
         context.Response.StatusCode = (int)statusCode;
 
         var json = JsonSerializer.Serialize(problemDetails, new JsonSerializerOptions

@@ -4,7 +4,7 @@ namespace CookieCommerce.Web.Services.Products;
 
 public static class StaticInventoryList
 {
-    public static string ChocolateChipCookieReference = "COOKIE-001";    
+    public static string ChocolateChipCookieReference = "COOKIE-001";
     public static string MatchaWhiteChocCookieReference = "COOKIE-002";
     public static string HazelnutPralineCookieReference = "COOKIE-003";
     public static string RedVelvetCookieReference = "COOKIE-004";
@@ -102,8 +102,8 @@ public static class StaticInventoryList
         ProductId = Guid.Parse("94143a80-d56d-4728-b77a-dd9cc048d0a9"),
         ProductReference = MatchaWhiteChocCookieReference,
         ProductName = "Matcha White Chocolate",
-        ProductMainImage = new() 
-        { 
+        ProductMainImage = new()
+        {
             Id = Guid.Parse("d6c51ca7-6405-4f54-9cae-dfbeb8f0f3ad"),
             Url = "/fake-images/cookies/cookie002/top-tr.png"
         },
@@ -115,7 +115,7 @@ public static class StaticInventoryList
             new ()
             {
                 Id = Guid.Parse("acb0218d-1862-4d49-98f2-57ebe76b4ad8"),
-                Active = true, 
+                Active = true,
                 CurrencySymbol = "€",
                 Images =
                 [

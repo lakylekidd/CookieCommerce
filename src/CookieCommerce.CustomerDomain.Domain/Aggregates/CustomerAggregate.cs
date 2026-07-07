@@ -15,6 +15,9 @@ public class CustomerAggregate : AggregateBase
     public string EncryptedGender { get; private set; } = default!;
     public string? EncryptedDateOfBirth { get; private set; } = default!;
     public string EncryptedEmail { get; private set; } = default!;
+    public string? EncryptedPendingEmail { get; private set; }
+    public string? VerificationTokenReference { get; private set; }
+    public DateTimeOffset? VerificationExpiresAtUtc { get; private set; }
     public DateTime? ForgottenDateUtc { get; private set; } = null;
 
     public CustomerAggregate() { }
@@ -49,11 +52,70 @@ public class CustomerAggregate : AggregateBase
         });
     }
 
+    public void UpdateProfile(
+        string encryptedFirstName,
+        string encryptedLastName,
+        string? encryptedGender,
+        string? encryptedDateOfBirth)
+    {
+        if (string.IsNullOrWhiteSpace(encryptedFirstName))
+            throw new CustomerProfileValidationException("First name is required.");
+
+        if (string.IsNullOrWhiteSpace(encryptedLastName))
+            throw new CustomerProfileValidationException("Last name is required.");
+
+        Apply(new CustomerProfileUpdated
+        {
+            CustomerId = Id,
+            EncryptedFirstName = encryptedFirstName,
+            EncryptedLastName = encryptedLastName,
+            EncryptedGender = encryptedGender,
+            EncryptedDateOfBirth = encryptedDateOfBirth,
+            UpdatedAtUtc = DateTimeOffset.UtcNow
+        });
+    }
+
+    public void RequestEmailChange(
+        string encryptedPendingEmail,
+        string verificationTokenReference,
+        DateTimeOffset requestedAtUtc,
+        DateTimeOffset expiresAtUtc)
+    {
+        if (string.IsNullOrWhiteSpace(encryptedPendingEmail))
+            throw new CustomerProfileValidationException("Pending email is required.");
+
+        if (string.IsNullOrWhiteSpace(verificationTokenReference))
+            throw new CustomerProfileValidationException("Verification token reference is required.");
+
+        Apply(new CustomerEmailChangeRequested
+        {
+            CustomerId = Id,
+            EncryptedPendingEmail = encryptedPendingEmail,
+            VerificationTokenReference = verificationTokenReference,
+            RequestedAtUtc = requestedAtUtc,
+            ExpiresAtUtc = expiresAtUtc
+        });
+    }
+
+    public void VerifyPendingEmailChange(DateTimeOffset verifiedAtUtc)
+    {
+        if (string.IsNullOrWhiteSpace(EncryptedPendingEmail))
+            throw new CustomerProfileValidationException("No pending email change exists for this customer.");
+
+        Apply(new CustomerVerifiedEmailChanged
+        {
+            CustomerId = Id,
+            EncryptedPreviousEmail = EncryptedEmail,
+            EncryptedVerifiedEmail = EncryptedPendingEmail,
+            VerifiedAtUtc = verifiedAtUtc
+        });
+    }
+
     public void Forget()
     {
         Apply(new CustomerForgotten(Id));
     }
-    
+
     public void AddAddress(Address address)
     {
         if (_addresses.Any(a => a.Label == address.Label))
@@ -75,6 +137,15 @@ public class CustomerAggregate : AggregateBase
         switch (@event)
         {
             case CustomerCreated e:
+                Handle(e);
+                break;
+            case CustomerProfileUpdated e:
+                Handle(e);
+                break;
+            case CustomerEmailChangeRequested e:
+                Handle(e);
+                break;
+            case CustomerVerifiedEmailChanged e:
                 Handle(e);
                 break;
             case CustomerForgotten e:
@@ -99,6 +170,30 @@ public class CustomerAggregate : AggregateBase
         EncryptedDateOfBirth = e.EncryptedDateOfBirth;
     }
 
+    private void Handle(CustomerProfileUpdated e)
+    {
+        EncryptedFirstName = e.EncryptedFirstName;
+        EncryptedLastName = e.EncryptedLastName;
+        if (e.EncryptedGender != null)
+            EncryptedGender = e.EncryptedGender;
+        EncryptedDateOfBirth = e.EncryptedDateOfBirth;
+    }
+
+    private void Handle(CustomerEmailChangeRequested e)
+    {
+        EncryptedPendingEmail = e.EncryptedPendingEmail;
+        VerificationTokenReference = e.VerificationTokenReference;
+        VerificationExpiresAtUtc = e.ExpiresAtUtc;
+    }
+
+    private void Handle(CustomerVerifiedEmailChanged e)
+    {
+        EncryptedEmail = e.EncryptedVerifiedEmail;
+        EncryptedPendingEmail = null;
+        VerificationTokenReference = null;
+        VerificationExpiresAtUtc = null;
+    }
+
     private void Handle(CustomerForgotten e)
     {
         ForgottenDateUtc = DateTime.UtcNow;
@@ -114,7 +209,7 @@ public class CustomerAggregate : AggregateBase
                     addr.UnsetPrimary();
             }
         }
-        
+
         _addresses.Add(e.Address);
     }
 

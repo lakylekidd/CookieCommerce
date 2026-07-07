@@ -53,11 +53,73 @@ public class AuthUserAggregate : AggregateBase
         });
     }
 
+    public void ChangeVerifiedEmail(string verifiedEmail, DateTimeOffset changedAtUtc)
+    {
+        if (string.IsNullOrWhiteSpace(verifiedEmail))
+            throw new InvalidCredentialsException("Verified email is required.");
+
+        if (string.Equals(Email, verifiedEmail, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        Apply(new AuthUserEmailChanged
+        {
+            UserId = Id,
+            PreviousEmail = Email,
+            VerifiedEmail = verifiedEmail,
+            ChangedAtUtc = changedAtUtc
+        });
+    }
+
+    public bool ChangeProfile(
+        string firstName,
+        string lastName,
+        string? gender,
+        DateOnly? dateOfBirth,
+        DateTimeOffset changedAtUtc)
+    {
+        if (string.IsNullOrWhiteSpace(firstName))
+            throw new InvalidCredentialsException("First name is required.");
+        if (string.IsNullOrWhiteSpace(lastName))
+            throw new InvalidCredentialsException("Last name is required.");
+
+        if (string.Equals(FirstName, firstName, StringComparison.Ordinal)
+            && string.Equals(LastName, lastName, StringComparison.Ordinal))
+            return false;
+
+        Apply(new AuthUserProfileChanged
+        {
+            UserId = Id,
+            FirstName = firstName,
+            LastName = lastName,
+            Gender = gender,
+            DateOfBirth = dateOfBirth,
+            ChangedAtUtc = changedAtUtc
+        });
+
+        return true;
+    }
+
+    public void Forget(DateTimeOffset forgottenAtUtc, string reason)
+    {
+        if (!IsActive)
+            return;
+
+        Apply(new AuthUserForgotten
+        {
+            UserId = Id,
+            ForgottenAtUtc = forgottenAtUtc,
+            Reason = reason
+        });
+    }
+
     protected override void When(object @event)
     {
         switch (@event)
         {
             case AuthUserRegistered e: Handle(e); break;
+            case AuthUserEmailChanged e: Handle(e); break;
+            case AuthUserProfileChanged e: Handle(e); break;
+            case AuthUserForgotten e: Handle(e); break;
             case AuthUserLoggedIn: break;
             case AuthUserLoggedOut: break;
         }
@@ -72,5 +134,21 @@ public class AuthUserAggregate : AggregateBase
         LastName = e.LastName;
         IsActive = true;
         RegisteredAt = e.RegisteredAt;
+    }
+
+    private void Handle(AuthUserEmailChanged e)
+    {
+        Email = e.VerifiedEmail;
+    }
+
+    private void Handle(AuthUserProfileChanged e)
+    {
+        FirstName = e.FirstName;
+        LastName = e.LastName;
+    }
+
+    private void Handle(AuthUserForgotten e)
+    {
+        IsActive = false;
     }
 }

@@ -28,7 +28,7 @@ public class OutboxBackgroundPublisher : BackgroundService
     private readonly TimeSpan _pollingInterval = TimeSpan.FromSeconds(30);
     private const int BatchSize = 100;
     private const string NotificationChannel = "outbox_channel";
-    
+
     private readonly Channel<bool> _notificationChannel;
     private NpgsqlConnection? _listenerConnection;
     private Task? _listenerTask;
@@ -60,7 +60,7 @@ public class OutboxBackgroundPublisher : BackgroundService
                 {
                     // Wait for either a notification or timeout
                     var notificationReceived = await WaitForNotificationOrTimeoutAsync(stoppingToken);
-                    
+
                     if (notificationReceived)
                     {
                         _logger.LogDebug("Processing outbox messages triggered by NOTIFY event.");
@@ -136,9 +136,9 @@ public class OutboxBackgroundPublisher : BackgroundService
                 // Set up notification handler
                 _listenerConnection.Notification += (sender, args) =>
                 {
-                    _logger.LogDebug("Received PostgreSQL NOTIFY on channel '{Channel}' with payload: {Payload}", 
+                    _logger.LogDebug("Received PostgreSQL NOTIFY on channel '{Channel}' with payload: {Payload}",
                         args.Channel, args.Payload);
-                    
+
                     // Signal the processing loop
                     _notificationChannel.Writer.TryWrite(true);
                 };
@@ -163,7 +163,7 @@ public class OutboxBackgroundPublisher : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in LISTEN/NOTIFY connection. Will retry in 30 seconds.");
-                
+
                 // Clean up the connection
                 if (_listenerConnection != null)
                 {
@@ -290,7 +290,7 @@ public class OutboxBackgroundPublisher : BackgroundService
         }
 
         await session.SaveChangesAsync(cancellationToken);
-        
+
         _logger.LogInformation("Completed processing {Count} outbox messages.", unprocessedMessages.Count);
     }
 

@@ -20,7 +20,7 @@ public class CreateProductHandler(IDocumentSession session, IIntegrationEventPub
         product.Create(productId, request.Name, request.Description, request.Price);
 
         session.Events.StartStream<ProductAggregate>(productId, product.DomainEvents);
-        
+
         // Publish integration event via outbox (stored in same transaction)
         await publisher.PublishAsync(
             new ProductSnapshotPublished(
@@ -30,7 +30,7 @@ public class CreateProductHandler(IDocumentSession session, IIntegrationEventPub
                 request.Price,
                 IsActive: true),
             cancellationToken);
-        
+
         await session.SaveChangesAsync(cancellationToken);
 
         return productId;

@@ -29,7 +29,7 @@ public static class StaticStorefrontProductList
     public static StorefrontProductDto CookieRedVelve => GetProduct(StaticInventoryList.InventoryRedVelvet);
     public static StorefrontProductDto CookieCaramelSeaSalt => GetProduct(StaticInventoryList.InventoryCaramelSeaSalt);
     public static StorefrontProductDto CookieCocoaWhiteChocolateChip => GetProduct(StaticInventoryList.InventoryCocoaWhiteChocolateChip);
-    
+
 
     public static List<StorefrontProductDto> Cookies { get; } = new()
     {
@@ -63,7 +63,7 @@ public static class StaticStorefrontProductList
             IsLimitedEdition = product.IsLimitedEdition,
             Rating = ratingInfo.Rating,
             ReviewCount = ratingInfo.Reviews,
-            Ingredients = sku.Ingredients, 
+            Ingredients = sku.Ingredients,
             CurrencySymbol = variant.CurrencySymbol,
             Variants = product.Variants.Select(v => new StorefrontProductVariantDto()
             {

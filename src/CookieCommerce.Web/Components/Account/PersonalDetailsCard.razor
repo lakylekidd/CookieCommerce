@@ -1,7 +1,9 @@
-﻿@using CookieCommerce.Web.Models.Account
+@using CookieCommerce.Web.Models.Account
 @using CookieCommerce.Web.Services
-@inject IAccountService AccountService
+@inject CustomerProfileService ProfileService
+@inject CustomerProfileState ProfileState
 @rendermode InteractiveServer
+@implements IDisposable
 
 <div class="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
     <div class="flex justify-between items-start mb-6">
@@ -10,66 +12,73 @@
             Edit
         </button>
     </div>
-    <div class="space-y-4">
-        <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-gray-800 flex items-center justify-center text-primary">
-                <span class="material-icons">badge</span>
-            </div>
-            <div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
-                    Full Name
-                </p>
-                <p class="font-medium">@profile.FirstName @profile.LastName</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-gray-800 flex items-center justify-center text-primary">
-                <span class="material-icons">email</span>
-            </div>
-            <div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
-                    Email
-                </p>
-                <p class="font-medium">@profile.Email</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-gray-800 flex items-center justify-center text-primary">
-                <span class="material-icons">cake</span>
-            </div>
-            <div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
-                    Birthdate
-                </p>
-                @if (profile.DateOfBirth.HasValue)
-                {
-                    <p class="font-medium dark:text-white">
-                        @profile.DateOfBirth.Value.ToString("MMM dd, yyyy")
-                    </p>
-                }
-                else
-                {
-                    <button type="button" @onclick="() => IsEditModalOpen = true"
-                            class="group relative flex items-center gap-1.5 cursor-pointer focus:outline-none">
 
-                        <p class="text-sm font-medium text-orange-400 dark:text-orange-300 italic group-hover:text-primary transition-colors">
-                            Missing a birthday cookie?
+    @if (isLoading)
+    {
+        <div class="space-y-4 animate-pulse">
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+        </div>
+    }
+    else if (loadError)
+    {
+        <p class="text-sm text-red-500">Unable to load your profile. Please refresh the page.</p>
+    }
+    else
+    {
+        <div class="space-y-4">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-gray-800 flex items-center justify-center text-primary">
+                    <span class="material-icons">badge</span>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Full Name</p>
+                    <p class="font-medium">@profile.FirstName @profile.LastName</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-gray-800 flex items-center justify-center text-primary">
+                    <span class="material-icons">email</span>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Email</p>
+                    <p class="font-medium">@profile.Email</p>
+                    @if (!string.IsNullOrWhiteSpace(profile.PendingEmail))
+                    {
+                        <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                            Verification pending for <span class="font-semibold">@profile.PendingEmail</span>. 
+                            Continue signing in with your current email.
                         </p>
-                        <span class="material-icons text-xs text-orange-300 animate-bounce group-hover:text-primary">redeem</span>
-
-                        <span class="absolute -top-12 left-1/2 -translate-x-1/2 scale-0 transition-all duration-200
-                             rounded-lg bg-primary p-2.5 text-white group-hover:scale-100 -top-10 text-xs
-                             whitespace-nowrap shadow-xl z-10 border-b-2 border-primary">
-                            <span class="flex items-center gap-5 p-2">
-                                Tell Tiger your birthday for a special treat! 🐾 🍪
-                            </span>
-                            <span class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-secondary"></span>
-                        </span>
-                    </button>
-                }
+                    }
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-gray-800 flex items-center justify-center text-primary">
+                    <span class="material-icons">cake</span>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Birthdate</p>
+                    @if (profile.DateOfBirth.HasValue)
+                    {
+                        <p class="font-medium dark:text-white">
+                            @profile.DateOfBirth.Value.ToString("MMM dd, yyyy")
+                        </p>
+                    }
+                    else
+                    {
+                        <button type="button" @onclick="() => IsEditModalOpen = true"
+                                class="group relative flex items-center gap-1.5 cursor-pointer focus:outline-none">
+                            <p class="text-sm font-medium text-orange-400 dark:text-orange-300 italic group-hover:text-primary transition-colors">
+                                Missing a birthday cookie?
+                            </p>
+                            <span class="material-icons text-xs text-orange-300 animate-bounce group-hover:text-primary">redeem</span>
+                        </button>
+                    }
+                </div>
             </div>
         </div>
-    </div>
+    }
 </div>
 
 @if (IsEditModalOpen)
@@ -80,11 +89,41 @@
 
 @code {
     [Parameter] public bool IsEditModalOpen { get; set; } = false;
+
     private UserProfileDto profile = new();
+    private bool isLoading = true;
+    private bool loadError = false;
 
     protected override async Task OnInitializedAsync()
     {
-        await GetProfile();
+        ProfileState.OnProfileChanged += OnProfileStateChanged;
+        await LoadProfile();
+    }
+
+    private async Task LoadProfile()
+    {
+        isLoading = true;
+        loadError = false;
+
+        var loaded = await ProfileService.GetProfileAsync();
+        if (loaded is not null)
+        {
+            profile = loaded;
+        }
+        else
+        {
+            loadError = true;
+        }
+
+        isLoading = false;
+    }
+
+    private void OnProfileStateChanged()
+    {
+        if (ProfileState.Profile is { } updated)
+            profile = updated;
+
+        InvokeAsync(StateHasChanged);
     }
 
     private void CloseModal()
@@ -94,15 +133,13 @@
 
     private async Task HandleSave()
     {
-        await GetProfile();
+        // Profile state already refreshed by EditProfileModal via CustomerProfileState
         IsEditModalOpen = false;
+        await Task.CompletedTask;
     }
 
-    private async Task GetProfile()
+    public void Dispose()
     {
-        if (await AccountService.GetProfileAsync() is { } data)
-        {
-            profile = data;
-        }
+        ProfileState.OnProfileChanged -= OnProfileStateChanged;
     }
 }

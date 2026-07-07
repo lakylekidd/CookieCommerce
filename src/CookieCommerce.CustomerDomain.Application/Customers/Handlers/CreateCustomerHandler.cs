@@ -9,14 +9,14 @@ using MediatR;
 namespace CookieCommerce.CustomerDomain.Application.Customers.Handlers;
 
 public class CreateCustomerHandler(
-    IDocumentSession session, 
-    ICustomerKeyStore keyStore, 
+    IDocumentSession session,
+    ICustomerKeyStore keyStore,
     IEncryptionService encryptionService,
     IIntegrationEventPublisher publisher) : IRequestHandler<CreateCustomer, Guid>
 {
     public async Task<Guid> Handle(CreateCustomer request, CancellationToken cancellationToken)
     {
-        var customerId = Guid.CreateVersion7();
+        var customerId = request.CustomerId ?? Guid.CreateVersion7();
 
         var key = await keyStore.CreateKeyForCustomerAsync(customerId, cancellationToken);
 

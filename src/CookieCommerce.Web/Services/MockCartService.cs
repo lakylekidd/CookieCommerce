@@ -7,15 +7,15 @@ namespace CookieCommerce.Web.Services;
 public class MockCartService : ICartService
 {
     private CartDto _cart;
-    
+
     public event Action? OnCartUpdated;
 
     public MockCartService()
     {
-       _cart = new CartDto
+        _cart = new CartDto
         {
-           CartId = Guid.NewGuid(),
-           Items = []
+            CartId = Guid.NewGuid(),
+            Items = []
         };
     }
 
@@ -56,7 +56,7 @@ public class MockCartService : ICartService
 
     private void NotifyStateChanged() => OnCartUpdated?.Invoke();
 
-    public  Task ConvertToUserCartAsync(Guid userId)
+    public Task ConvertToUserCartAsync(Guid userId)
     {
         if (_cart.UserId != null)
         {
@@ -86,7 +86,7 @@ public class MockCartService : ICartService
             NotifyStateChanged();
             return Task.FromResult(new ResultDto { Success = true, Message = "Promotion code applied successfully." });
         }
-        
+
         return Task.FromResult(new ResultDto { Success = false, Message = "Invalid promotion code." });
     }
 
@@ -98,7 +98,7 @@ public class MockCartService : ICartService
             NotifyStateChanged();
             return Task.FromResult(new ResultDto { Success = true, Message = "Promotion code removed successfully." });
         }
-        
+
         return Task.FromResult(new ResultDto { Success = false, Message = "Promotion code not found in cart." });
     }
 
@@ -140,7 +140,7 @@ public class MockCartService : ICartService
         }
 
         await Task.Delay(800);
-        NotifyStateChanged();        
+        NotifyStateChanged();
     }
 
     private async Task AddSingleToCartAsync(Guid productId, Guid productVariantId, int quantity)

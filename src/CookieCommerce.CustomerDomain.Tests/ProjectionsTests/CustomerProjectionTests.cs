@@ -34,8 +34,8 @@ public class CustomerProjectionTests
         encryption.Decrypt("encrypted-first", key).Returns("John");
         encryption.Decrypt("encrypted-last", key).Returns("Doe");
         encryption.Decrypt("encrypted-gender", key).Returns("Male");
-        var dob = DateTime.Parse("1986-11-18");
-        encryption.Decrypt("encrypted-dob", key).Returns(dob.ToString("O"));
+        var dob = new DateOnly(1986, 11, 18);
+        encryption.Decrypt("encrypted-dob", key).Returns(dob.ToString("yyyy-MM-dd"));
 
         var projection = new CustomerProjection(encryption);
 
@@ -58,9 +58,9 @@ public class CustomerProjectionTests
         result.Email.Should().Be("test@example.com");
         result.FirstName.Should().Be("John");
         result.LastName.Should().Be("Doe");
-        result.Gender.Should().Be(Gender.Male);
+        result.Gender.Should().Be(CustomerProfileGender.Male);
         result.DateOfBirth.Should().NotBeNull();
-        result.DateOfBirth!.Value.Date.Should().Be(dob.Date);
+        result.DateOfBirth!.Value.Should().Be(dob);
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class CustomerProjectionTests
             Email = "test@example.com",
             FirstName = "John",
             LastName = "Doe",
-            Gender = Gender.Male,
+            Gender = CustomerProfileGender.Male,
             Addresses = new List<CustomerAddressReadModel>()
         };
 
@@ -143,7 +143,7 @@ public class CustomerProjectionTests
             Email = "test@example.com",
             FirstName = "John",
             LastName = "Doe",
-            Gender = Gender.Male,
+            Gender = CustomerProfileGender.Male,
             Addresses = new List<CustomerAddressReadModel>
             {
                 new CustomerAddressReadModel

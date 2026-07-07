@@ -50,6 +50,10 @@ public class KeycloakAuthService(
         {
             // Prerendering blocks JS interop; try again after app becomes interactive.
         }
+        catch (OperationCanceledException)
+        {
+            // Circuit was canceled (e.g., during navigation or disconnect); ignore gracefully.
+        }
     }
 
     public async Task<bool> SignInAsync(string email, string password)
@@ -63,7 +67,7 @@ public class KeycloakAuthService(
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (result == null) return false;
 
-            _currentUser = new UserDto
+            _currentUser = ParseJwtToUserDto(result.AccessToken) ?? new UserDto
             {
                 Id = result.UserId,
                 Email = result.Email,
@@ -106,6 +110,16 @@ public class KeycloakAuthService(
         {
             return AuthResult.Failed(ex.Message);
         }
+    }
+
+    public void UpdateCurrentUserProfile(string firstName, string lastName, string email)
+    {
+        if (_currentUser is null) return;
+
+        _currentUser.FirstName = firstName;
+        _currentUser.LastName = lastName;
+        _currentUser.Email = email;
+        NotifyStateChanged();
     }
 
     public void Logout()

@@ -3,20 +3,19 @@ using CookieCommerce.CustomerDomain.Application.Customers.Integration;
 using CookieCommerce.CustomerDomain.Application.Customers.ReadModels;
 using CookieCommerce.CustomerDomain.Application.Security;
 using CookieCommerce.CustomerDomain.Domain.Aggregates;
-using CookieCommerce.DomainBuildingBlocks;
 using Marten;
 using MediatR;
 
 namespace CookieCommerce.CustomerDomain.Application.Customers.Handlers;
 
 public class ForgetCustomerHandler(
-    IDocumentSession session, 
+    IDocumentSession session,
     ICustomerKeyStore keyStore,
-    IIntegrationEventPublisher publisher) : IRequestHandler<ForgetCustomer>
+    ICustomerForgottenOutboxPublisher forgottenOutboxPublisher) : IRequestHandler<ForgetCustomer>
 {
     private readonly IDocumentSession _session = session;
     private readonly ICustomerKeyStore _keyStore = keyStore;
-    private readonly IIntegrationEventPublisher _publisher = publisher;
+    private readonly ICustomerForgottenOutboxPublisher _forgottenOutboxPublisher = forgottenOutboxPublisher;
 
     public async Task Handle(ForgetCustomer request, CancellationToken cancellationToken)
     {
@@ -31,6 +30,12 @@ public class ForgetCustomerHandler(
         _session.Events.Append(request.CustomerId, customer.DomainEvents);
         await _session.SaveChangesAsync(cancellationToken);
 
-        await _publisher.PublishAsync(new CustomerDeletedIntegrationEvent(request.CustomerId), cancellationToken);
+        await _forgottenOutboxPublisher.PublishCustomerForgottenAsync(
+            request.CustomerId,
+            request.CustomerId.ToString(),
+            "CustomerForgotten",
+            DateTimeOffset.UtcNow,
+            Guid.CreateVersion7().ToString(),
+            cancellationToken);
     }
 }

@@ -1,0 +1,50 @@
+@page "/account/email-verification/confirm"
+@using CookieCommerce.Web.Services
+@inject CustomerProfileService CustomerProfileService
+
+<PageTitle>Email verification</PageTitle>
+
+<section class="email-verification-confirm" aria-labelledby="email-verification-title">
+    <h1 id="email-verification-title">Email verification</h1>
+
+    @if (_isLoading)
+    {
+        <p>Confirming your email verification link…</p>
+    }
+    else if (_success)
+    {
+        <div class="alert alert-success" role="status">
+            @_message
+        </div>
+        <p>You can continue using your account. Your sign-in email may update after account processing completes.</p>
+    }
+    else
+    {
+        <div class="alert alert-danger" role="alert">
+            @_message
+        </div>
+        <p>Open your profile to request a new verification email if needed.</p>
+    }
+</section>
+
+@code {
+    [SupplyParameterFromQuery(Name = "tokenReference")]
+    public string? TokenReference { get; set; }
+
+    [SupplyParameterFromQuery(Name = "token")]
+    public string? Token { get; set; }
+
+    private bool _isLoading = true;
+    private bool _success;
+    private string _message = "Confirming your email verification link…";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = !string.IsNullOrWhiteSpace(Token) ? Token : TokenReference;
+        var result = await CustomerProfileService.ConfirmEmailVerificationAsync(token ?? string.Empty);
+
+        _success = result.Success;
+        _message = result.Message;
+        _isLoading = false;
+    }
+}

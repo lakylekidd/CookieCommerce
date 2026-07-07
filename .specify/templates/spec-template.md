@@ -73,10 +73,14 @@
 <!--
   ACTION REQUIRED: The content in this section represents placeholders.
   Fill them out with the right edge cases.
+  Include eventual-consistency, duplicate-message/retry, projection lag, and PII
+  handling cases when the feature touches persistence or cross-domain behavior.
 -->
 
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
+- If integration events are involved, how does the system handle duplicate or delayed messages?
+- If PII is involved, how is encrypted storage and erasure behavior preserved?
 
 ## Requirements *(mandatory)*
 
@@ -92,6 +96,9 @@
 - **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-006**: System MUST identify the owning bounded context and affected aggregate, projection, read model, API, or UI surface when applicable
+- **FR-007**: System MUST use integration events and local read models for cross-domain data needed at runtime
+- **FR-008**: System MUST preserve encrypted-at-rest handling for sensitive PII and document any erasure impact
 
 *Example of marking unclear requirements:*
 
@@ -102,6 +109,18 @@
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
+
+### Architecture & Compliance Notes *(mandatory when applicable)*
+
+- **Bounded Context**: [Owning context and why]
+- **Backend/API Impact**: [Controllers, handlers, DTOs, validation, exception mapping, infrastructure concerns, or N/A]
+- **State Changes**: [Aggregate/domain events or N/A]
+- **Read Models/Projections**: [Affected projections/read models or N/A]
+- **Integration Events**: [Published/consumed events and idempotency expectations or N/A]
+- **PII/Data Protection**: [Encrypted fields, clear-text boundaries, erasure impact, or N/A]
+- **Frontend/UI Impact**: [Affected Razor components, typed services, accessibility/responsive requirements, or N/A]
+- **Aspire/Containerization Impact**: [Dockerfile/AppHost registration/configuration changes or N/A]
+- **Service Interface Documentation**: [Whether `Documentation/backend-documentation.md` must change]
 
 ## Success Criteria *(mandatory)*
 

@@ -59,7 +59,7 @@ public class OutboxIntegrationTests : IClassFixture<TestWebApplicationFactory>, 
     {
         // Arrange
         var mediator = _scope!.ServiceProvider.GetRequiredService<ISender>();
-        
+
         // First create a product
         var createCommand = new CreateProduct("Test Product", "Test Description", 99.99m);
         var productId = await mediator.Send(createCommand, CancellationToken.None);
@@ -84,7 +84,7 @@ public class OutboxIntegrationTests : IClassFixture<TestWebApplicationFactory>, 
     {
         // Arrange
         await using var session = _store!.LightweightSession();
-        
+
         var message1 = new OutboxMessage
         {
             Id = Guid.CreateVersion7(),

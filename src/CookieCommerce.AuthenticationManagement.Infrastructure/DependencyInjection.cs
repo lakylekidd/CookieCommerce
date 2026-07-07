@@ -1,5 +1,7 @@
 using CookieCommerce.AuthenticationManagement.Application.Keycloak;
+using CookieCommerce.AuthenticationManagement.Infrastructure.Consumers;
 using CookieCommerce.AuthenticationManagement.Infrastructure.Keycloak;
+using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,5 +31,12 @@ public static class DependencyInjection
         services.AddHostedService<KeycloakBootstrapService>();
 
         return services;
+    }
+
+    public static void AddAuthenticationManagementConsumers(this IBusRegistrationConfigurator configurator)
+    {
+        configurator.AddConsumer<CustomerProfileUpdatedConsumer>();
+        configurator.AddConsumer<VerifiedCustomerEmailChangedConsumer>();
+        configurator.AddConsumer<CustomerForgottenConsumer>();
     }
 }

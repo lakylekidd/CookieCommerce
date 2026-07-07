@@ -7,13 +7,13 @@ public class CustomerNotFoundException : Exception
 {
     public Guid CustomerId { get; }
 
-    public CustomerNotFoundException(Guid customerId) 
+    public CustomerNotFoundException(Guid customerId)
         : base($"Customer with ID '{customerId}' was not found.")
     {
         CustomerId = customerId;
     }
 
-    public CustomerNotFoundException(Guid customerId, string message) 
+    public CustomerNotFoundException(Guid customerId, string message)
         : base(message)
     {
         CustomerId = customerId;

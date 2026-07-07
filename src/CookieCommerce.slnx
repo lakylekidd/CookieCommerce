@@ -22,6 +22,7 @@
     <Project Path="CookieCommerce.AuthenticationManagement.Application/CookieCommerce.AuthenticationManagement.Application.csproj" />
     <Project Path="CookieCommerce.AuthenticationManagement.Domain/CookieCommerce.AuthenticationManagement.Domain.csproj" />
     <Project Path="CookieCommerce.AuthenticationManagement.Infrastructure/CookieCommerce.AuthenticationManagement.Infrastructure.csproj" />
+    <Project Path="CookieCommerce.AuthenticationManagement.Tests/CookieCommerce.AuthenticationManagement.Tests.csproj" />
   </Folder>
   <Folder Name="/Domains/OrderDomain/">
     <Project Path="CookieCommerce.OrderDomain.Application/CookieCommerce.OrderDomain.Application.csproj" />
@@ -39,5 +40,6 @@
   <Project Path="CookieCommerce.AppHost/CookieCommerce.AppHost.csproj" />
   <Project Path="CookieCommerce.ServiceDefaults/CookieCommerce.ServiceDefaults.csproj" />
   <Project Path="CookieCommerce.Web/CookieCommerce.Web.csproj" />
+  <Project Path="CookieCommerce.Web.Tests/CookieCommerce.Web.Tests.csproj" />
   <Project Path="CookieCommerce/CookieCommerce.csproj" />
 </Solution>

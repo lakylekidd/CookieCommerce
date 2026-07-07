@@ -41,11 +41,11 @@ public class CreateCustomerHandlerTests
         // Act
         var id = await handler.Handle(
             new CreateCustomer(
-                "test@example.com", 
-                "John", 
-                "Doe", 
+                "test@example.com",
+                "John",
+                "Doe",
                 Domain.ValueObjects.Gender.Male,
-                new DateTime(1986, 11, 18)), 
+                new DateTime(1986, 11, 18)),
             default);
 
         // Assert

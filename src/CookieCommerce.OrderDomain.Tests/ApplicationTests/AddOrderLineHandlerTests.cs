@@ -27,7 +27,7 @@ public class AddOrderLineHandlerTests
         var orderId = Guid.CreateVersion7();
         var productId = Guid.CreateVersion7();
         var customerId = Guid.CreateVersion7();
-        
+
         var order = new OrderAggregate();
         order.PlaceOrder(orderId, customerId);
 
@@ -44,7 +44,7 @@ public class AddOrderLineHandlerTests
         order.OrderLines.First().ProductId.Should().Be(productId);
         order.OrderLines.First().Quantity.Should().Be(2);
         order.OrderLines.First().UnitPrice.Should().Be(10.50m);
-        
+
         await _session.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -54,7 +54,7 @@ public class AddOrderLineHandlerTests
         // Arrange
         var orderId = Guid.CreateVersion7();
         var productId = Guid.CreateVersion7();
-        
+
         _session.Events.AggregateStreamAsync<OrderAggregate>(orderId, token: Arg.Any<CancellationToken>())
             .Returns((OrderAggregate?)null);
 
@@ -63,7 +63,7 @@ public class AddOrderLineHandlerTests
         // Act & Assert
         var exception = await Assert.ThrowsAsync<OrderNotFoundException>(() =>
             _handler.Handle(command, CancellationToken.None));
-        
+
         exception.OrderId.Should().Be(orderId);
     }
 }

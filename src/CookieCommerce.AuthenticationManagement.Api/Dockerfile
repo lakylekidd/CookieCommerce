@@ -15,7 +15,8 @@ WORKDIR /build/src/CookieCommerce.AuthenticationManagement.Api
 RUN dotnet publish "CookieCommerce.AuthenticationManagement.Api.csproj" \
     -c Release \
     -o /app/publish \
-    /p:UseAppHost=false
+    /p:UseAppHost=false \
+    /p:EnableSourceControlManagerQueries=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app

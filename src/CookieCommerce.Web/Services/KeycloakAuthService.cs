@@ -112,6 +112,16 @@ public class KeycloakAuthService(
         }
     }
 
+    public void UpdateCurrentUserProfile(string firstName, string lastName, string email)
+    {
+        if (_currentUser is null) return;
+
+        _currentUser.FirstName = firstName;
+        _currentUser.LastName = lastName;
+        _currentUser.Email = email;
+        NotifyStateChanged();
+    }
+
     public void Logout()
     {
         var token = _refreshToken;

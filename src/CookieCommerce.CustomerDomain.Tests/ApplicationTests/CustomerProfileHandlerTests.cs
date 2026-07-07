@@ -99,6 +99,7 @@ public class CustomerProfileHandlerTests
         IEmailVerificationTokenStore tokenStore,
         IEmailVerificationDeliverySender deliverySender)
     {
+        var profileOutboxPublisher = Substitute.For<ICustomerProfileOutboxPublisher>();
         var options = Options.Create(new EmailVerificationDeliverySettings
         {
             VerificationBaseUrl = "https://example.com",
@@ -111,9 +112,11 @@ public class CustomerProfileHandlerTests
             querySession,
             keyStore,
             encryption,
+            new CustomerProfileValidator(),
             uniquenessService,
             tokenStore,
             deliverySender,
+            profileOutboxPublisher,
             options,
             NullLogger<UpdateCustomerProfileCommandHandler>.Instance);
     }

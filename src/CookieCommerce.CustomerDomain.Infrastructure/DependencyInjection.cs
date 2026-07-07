@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddScoped<ICustomerKeyStore, CustomerKeyStore>();
         services.AddScoped<IEncryptionService, EncryptionService>();
         services.AddScoped<CustomerProfileEncryption>();
+        services.AddScoped<CustomerProfileValidator>();
         services.AddScoped<CustomerEmailUniquenessService>();
         services.AddScoped<ICustomerEmailUniquenessChecker, MartenCustomerEmailUniquenessChecker>();
 
@@ -28,6 +29,8 @@ public static class DependencyInjection
         // US1: Concrete token store and external delivery sender
         services.AddScoped<IEmailVerificationTokenStore, EmailVerificationTokenStore>();
         services.AddScoped<IEmailVerificationDeliverySender, ExternalEmailVerificationSender>();
+        services.AddScoped<ICustomerProfileOutboxPublisher, CustomerProfileOutboxPublisher>();
+        services.AddScoped<ICustomerForgottenOutboxPublisher, CustomerForgottenOutboxPublisher>();
 
         // Named HTTP client for external email delivery dependency
         services.AddHttpClient("email-delivery");

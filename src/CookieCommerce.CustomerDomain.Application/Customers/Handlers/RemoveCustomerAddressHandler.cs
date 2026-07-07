@@ -10,7 +10,7 @@ public class RemoveCustomerAddressHandler(IDocumentSession session) : IRequestHa
 {
     public async Task Handle(RemoveCustomerAddress request, CancellationToken cancellationToken)
     {
-        if (await session.Events.AggregateStreamAsync<CustomerAggregate>(request.CustomerId, token: cancellationToken) 
+        if (await session.Events.AggregateStreamAsync<CustomerAggregate>(request.CustomerId, token: cancellationToken)
             is not CustomerAggregate customer)
             throw new CustomerNotFoundException(request.CustomerId);
 

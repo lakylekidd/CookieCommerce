@@ -16,9 +16,11 @@ public class UpdateCustomerProfileCommandHandler(
     IQuerySession querySession,
     ICustomerKeyStore keyStore,
     CustomerProfileEncryption profileEncryption,
+    CustomerProfileValidator profileValidator,
     CustomerEmailUniquenessService emailUniquenessService,
     IEmailVerificationTokenStore tokenStore,
     IEmailVerificationDeliverySender deliverySender,
+    ICustomerProfileOutboxPublisher profileOutboxPublisher,
     IOptions<EmailVerificationDeliverySettings> deliveryOptions,
     ILogger<UpdateCustomerProfileCommandHandler> logger)
     : IRequestHandler<UpdateCustomerProfileCommand, CustomerProfileResult>
@@ -27,6 +29,17 @@ public class UpdateCustomerProfileCommandHandler(
         UpdateCustomerProfileCommand request,
         CancellationToken cancellationToken)
     {
+        // ── Validate plaintext fields before any aggregate/persistence work ──
+        var validationResult = profileValidator.Validate(
+            request.FirstName,
+            request.LastName,
+            request.Email,
+            request.Gender,
+            request.DateOfBirth);
+
+        if (!validationResult.IsValid)
+            throw new CustomerProfileValidationException(validationResult.Errors);
+
         var readModel = await querySession.LoadAsync<CustomerReadModel>(request.CustomerId, cancellationToken);
         if (readModel is null)
             throw new MissingCustomerProfileException(request.CustomerId);
@@ -126,6 +139,16 @@ public class UpdateCustomerProfileCommandHandler(
 
         session.Events.Append(request.CustomerId, customer.DomainEvents);
         await session.SaveChangesAsync(cancellationToken);
+
+        await profileOutboxPublisher.PublishProfileUpdatedAsync(
+            request.CustomerId,
+            request.FirstName,
+            request.LastName,
+            request.Gender?.ToString(),
+            request.DateOfBirth,
+            request.RequestedAtUtc,
+            request.CorrelationId,
+            cancellationToken);
 
         // Reload fresh read model after projection update
         var updatedModel = await querySession.LoadAsync<CustomerReadModel>(request.CustomerId, cancellationToken)

@@ -117,20 +117,20 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T052 [P] [US2] Add domain validation tests for required names, supported gender, and past date of birth in `src/CookieCommerce.CustomerDomain.Tests/DomainTests/CustomerAggregate_ProfileValidation_Tests.cs`
-- [ ] T053 [P] [US2] Add application validation-message tests for email format and pre-existing duplicate verified/pending email failures in `src/CookieCommerce.CustomerDomain.Tests/ApplicationTests/UpdateCustomerProfileValidationTests.cs`
-- [ ] T054 [P] [US2] Add API validation problem contract tests for invalid profile updates in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/CustomerProfileValidationApiTests.cs`
-- [ ] T055 [P] [US2] Add Web validation mapping tests for field-level messages and unchanged form state in `src/CookieCommerce.Web.Tests/Services/CustomerProfileValidationTests.cs`
+- [X] T052 [P] [US2] Add domain validation tests for required names, supported gender, and past date of birth in `src/CookieCommerce.CustomerDomain.Tests/DomainTests/CustomerAggregate_ProfileValidation_Tests.cs`
+- [X] T053 [P] [US2] Add application validation-message tests for email format and pre-existing duplicate verified/pending email failures in `src/CookieCommerce.CustomerDomain.Tests/ApplicationTests/UpdateCustomerProfileValidationTests.cs`
+- [X] T054 [P] [US2] Add API validation problem contract tests for invalid profile updates in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/CustomerProfileValidationApiTests.cs`
+- [X] T055 [P] [US2] Add Web validation mapping tests for field-level messages and unchanged form state in `src/CookieCommerce.Web.Tests/Services/CustomerProfileValidationTests.cs`
 
 ### Implementation for User Story 2
 
-- [ ] T056 [US2] Implement boundary validation for required names, email format, supported gender, and past date of birth in `src/CookieCommerce.CustomerDomain.Application/Customers/Profile/CustomerProfileValidator.cs`
-- [ ] T057 [US2] Refine duplicate-email validation messages and field-level error mapping using the Foundation/US1 uniqueness checker in `src/CookieCommerce.CustomerDomain.Application/Customers/Profile/CustomerEmailUniquenessService.cs`
-- [ ] T058 [US2] Wire validation and duplicate email failures into `UpdateCustomerProfileCommandHandler` without appending events in `src/CookieCommerce.CustomerDomain.Application/Customers/Handlers/UpdateCustomerProfileCommandHandler.cs`
-- [ ] T059 [US2] Return field-level validation and conflict responses from CustomerDomain API mappings in `src/CookieCommerce.CustomerDomain.Api/Models/Customers/CustomerProfileMappings.cs`
-- [ ] T060 [US2] Display field-specific validation feedback in the profile edit form in `src/CookieCommerce.Web/Components/Account/EditProfileModal.razor`
-- [ ] T061 [US2] Add user-safe service failure and validation-result mapping in `src/CookieCommerce.Web/Services/CustomerProfileService.cs`
-- [ ] T062 [US2] Run validation verification with `dotnet test src --filter ProfileValidation` using `src/CookieCommerce.slnx`
+- [X] T056 [US2] Implement boundary validation for required names, email format, supported gender, and past date of birth in `src/CookieCommerce.CustomerDomain.Application/Customers/Profile/CustomerProfileValidator.cs`
+- [X] T057 [US2] Refine duplicate-email validation messages and field-level error mapping using the Foundation/US1 uniqueness checker in `src/CookieCommerce.CustomerDomain.Application/Customers/Profile/CustomerEmailUniquenessService.cs`
+- [X] T058 [US2] Wire validation and duplicate email failures into `UpdateCustomerProfileCommandHandler` without appending events in `src/CookieCommerce.CustomerDomain.Application/Customers/Handlers/UpdateCustomerProfileCommandHandler.cs`
+- [X] T059 [US2] Return field-level validation and conflict responses from CustomerDomain API mappings in `src/CookieCommerce.CustomerDomain.Api/Models/Customers/CustomerProfileMappings.cs`
+- [X] T060 [US2] Display field-specific validation feedback in the profile edit form in `src/CookieCommerce.Web/Components/Account/EditProfileModal.razor`
+- [X] T061 [US2] Add user-safe service failure and validation-result mapping in `src/CookieCommerce.Web/Services/CustomerProfileService.cs`
+- [X] T062 [US2] Run validation verification with `dotnet test src --filter ProfileValidation` using `src/CookieCommerce.slnx`
 
 **Checkpoint**: User Stories 1 and 2 both work independently without invalid updates changing saved state.
 
@@ -144,31 +144,31 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T063 [P] [US3] Add CustomerDomain authorization tests for unauthenticated and cross-customer profile access in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/CustomerProfileAuthorizationTests.cs`
-- [ ] T064 [P] [US3] Add email verification token success, invalid, expired, and mismatched-token tests in `src/CookieCommerce.CustomerDomain.Tests/ApplicationTests/VerifyCustomerEmailChangeTests.cs`
-- [ ] T065 [P] [US3] Add projection tests for verified email promotion clearing pending email/token reference in `src/CookieCommerce.CustomerDomain.Tests/ProjectionsTests/CustomerProjection_EmailVerification_Tests.cs`
-- [ ] T066 [P] [US3] Add outbox integration-event tests for verified-email and forgotten/deleted-customer publication in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/CustomerProfileOutboxTests.cs`
-- [ ] T067 [P] [US3] Add AuthenticationManagement verified-email consumer idempotency tests in `src/CookieCommerce.AuthenticationManagement.Tests/ConsumerTests/VerifiedCustomerEmailChangedConsumerTests.cs`
-- [ ] T068 [P] [US3] Add AuthenticationManagement forgotten/deleted-customer consumer idempotency and email-reuse tests in `src/CookieCommerce.AuthenticationManagement.Tests/ConsumerTests/CustomerForgottenConsumerTests.cs`
-- [ ] T069 [P] [US3] Add GDPR crypto-shredding tests for full name, verified email, pending email, gender, and date of birth in immutable events and read models in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/CustomerProfileGdprErasureTests.cs`
-- [ ] T070 [P] [US3] Add operational logging redaction tests proving profile update, email verification, and customer deletion/forgetting logs contain no first name, last name, email address, date of birth, gender, or raw verification tokens in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/CustomerProfileOperationalLoggingTests.cs`
+- [X] T063 [P] [US3] Add CustomerDomain authorization tests for unauthenticated and cross-customer profile access in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/CustomerProfileAuthorizationTests.cs`
+- [X] T064 [P] [US3] Add email verification token success, invalid, expired, and mismatched-token tests in `src/CookieCommerce.CustomerDomain.Tests/ApplicationTests/VerifyCustomerEmailChangeTests.cs`
+- [X] T065 [P] [US3] Add projection tests for verified email promotion clearing pending email/token reference in `src/CookieCommerce.CustomerDomain.Tests/ProjectionsTests/CustomerProjection_EmailVerification_Tests.cs`
+- [X] T066 [P] [US3] Add outbox integration-event tests for verified-email and forgotten/deleted-customer publication in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/CustomerProfileOutboxTests.cs`
+- [X] T067 [P] [US3] Add AuthenticationManagement verified-email consumer idempotency tests in `src/CookieCommerce.AuthenticationManagement.Tests/ConsumerTests/VerifiedCustomerEmailChangedConsumerTests.cs`
+- [X] T068 [P] [US3] Add AuthenticationManagement forgotten/deleted-customer consumer idempotency and email-reuse tests in `src/CookieCommerce.AuthenticationManagement.Tests/ConsumerTests/CustomerForgottenConsumerTests.cs`
+- [X] T069 [P] [US3] Add GDPR crypto-shredding tests for full name, verified email, pending email, gender, and date of birth in immutable events and read models in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/CustomerProfileGdprErasureTests.cs`
+- [X] T070 [P] [US3] Add operational logging redaction tests proving profile update, email verification, and customer deletion/forgetting logs contain no first name, last name, email address, date of birth, gender, or raw verification tokens in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/CustomerProfileOperationalLoggingTests.cs`
 
 ### Implementation for User Story 3
 
-- [ ] T071 [US3] Enforce authenticated `/me` ownership resolution in CustomerDomain profile handlers in `src/CookieCommerce.CustomerDomain.Application/Customers/Profile/CurrentCustomerResolver.cs`
-- [ ] T072 [US3] Implement `VerifyCustomerEmailChangeCommandHandler` with token validation, expiry checks, pending-email promotion, and verified-email event enqueueing in `src/CookieCommerce.CustomerDomain.Application/Customers/Handlers/VerifyCustomerEmailChangeCommandHandler.cs`
-- [ ] T073 [US3] Implement `POST /api/customer/me/email-verification/confirm` endpoint in `src/CookieCommerce.CustomerDomain.Api/Controllers/CustomerController.cs`
-- [ ] T074 [US3] Update aggregate verification behavior to clear pending email/token reference and preserve old login boundary in `src/CookieCommerce.CustomerDomain.Domain/Aggregates/CustomerAggregate.cs`
-- [ ] T075 [US3] Publish verified customer email changed integration events through the CustomerDomain outbox in `src/CookieCommerce.CustomerDomain.Infrastructure/Integration/CustomerProfileOutboxPublisher.cs`
-- [ ] T076 [US3] Publish PII-free customer forgotten/deleted integration events through the CustomerDomain outbox in `src/CookieCommerce.CustomerDomain.Infrastructure/Integration/CustomerForgottenOutboxPublisher.cs`
-- [ ] T077 [US3] Update CustomerDomain deletion flow to crypto-shred profile PII and remove read-model copies without touching AuthenticationManagement login state in `src/CookieCommerce.CustomerDomain.Application/Customers/Handlers/DeleteCustomerCommandHandler.cs`
-- [ ] T078 [US3] Implement AuthenticationManagement verified-email consumer application use case in `src/CookieCommerce.AuthenticationManagement.Application/Auth/ConsumeVerifiedCustomerEmailChangedCommandHandler.cs`
-- [ ] T079 [US3] Implement AuthenticationManagement forgotten/deleted-customer cleanup use case in `src/CookieCommerce.AuthenticationManagement.Application/Auth/ConsumeCustomerForgottenCommandHandler.cs`
-- [ ] T080 [US3] Implement MassTransit consumers and idempotency guards for verified-email and forgotten/deleted-customer events in `src/CookieCommerce.AuthenticationManagement.Infrastructure/Consumers/CustomerProfileIntegrationConsumers.cs`
-- [ ] T081 [US3] Register AuthenticationManagement consumers, idempotency storage, and message mappings in `src/CookieCommerce.AuthenticationManagement.Infrastructure/DependencyInjection.cs`
-- [ ] T082 [US3] Add Web email verification confirmation route and user-safe result display in `src/CookieCommerce.Web/Components/Account/EmailVerificationConfirm.razor`
-- [ ] T083 [US3] Refresh verified profile email after successful confirmation while leaving login credential messaging tied to AuthenticationManagement consumption in `src/CookieCommerce.Web/Services/CustomerProfileState.cs`
-- [ ] T084 [US3] Run identity/privacy verification with `dotnet test src --filter "Authorization|EmailVerification|CustomerForgotten|Gdpr|OperationalLogging"` using `src/CookieCommerce.slnx`
+- [X] T071 [US3] Enforce authenticated `/me` ownership resolution in CustomerDomain profile handlers in `src/CookieCommerce.CustomerDomain.Application/Customers/Profile/CurrentCustomerResolver.cs`
+- [X] T072 [US3] Implement `VerifyCustomerEmailChangeCommandHandler` with token validation, expiry checks, pending-email promotion, and verified-email event enqueueing in `src/CookieCommerce.CustomerDomain.Application/Customers/Handlers/VerifyCustomerEmailChangeCommandHandler.cs`
+- [X] T073 [US3] Implement `POST /api/customer/me/email-verification/confirm` endpoint in `src/CookieCommerce.CustomerDomain.Api/Controllers/CustomerController.cs`
+- [X] T074 [US3] Update aggregate verification behavior to clear pending email/token reference and preserve old login boundary in `src/CookieCommerce.CustomerDomain.Domain/Aggregates/CustomerAggregate.cs`
+- [X] T075 [US3] Publish verified customer email changed integration events through the CustomerDomain outbox in `src/CookieCommerce.CustomerDomain.Infrastructure/Integration/CustomerProfileOutboxPublisher.cs`
+- [X] T076 [US3] Publish PII-free customer forgotten/deleted integration events through the CustomerDomain outbox in `src/CookieCommerce.CustomerDomain.Infrastructure/Integration/CustomerForgottenOutboxPublisher.cs`
+- [X] T077 [US3] Update CustomerDomain deletion flow to crypto-shred profile PII and remove read-model copies without touching AuthenticationManagement login state in `src/CookieCommerce.CustomerDomain.Application/Customers/Handlers/DeleteCustomerCommandHandler.cs`
+- [X] T078 [US3] Implement AuthenticationManagement verified-email consumer application use case in `src/CookieCommerce.AuthenticationManagement.Application/Auth/ConsumeVerifiedCustomerEmailChangedCommandHandler.cs`
+- [X] T079 [US3] Implement AuthenticationManagement forgotten/deleted-customer cleanup use case in `src/CookieCommerce.AuthenticationManagement.Application/Auth/ConsumeCustomerForgottenCommandHandler.cs`
+- [X] T080 [US3] Implement MassTransit consumers and idempotency guards for verified-email and forgotten/deleted-customer events in `src/CookieCommerce.AuthenticationManagement.Infrastructure/Consumers/CustomerProfileIntegrationConsumers.cs`
+- [X] T081 [US3] Register AuthenticationManagement consumers, idempotency storage, and message mappings in `src/CookieCommerce.AuthenticationManagement.Infrastructure/DependencyInjection.cs`
+- [X] T082 [US3] Add Web email verification confirmation route and user-safe result display in `src/CookieCommerce.Web/Components/Account/EmailVerificationConfirm.razor`
+- [X] T083 [US3] Refresh verified profile email after successful confirmation while leaving login credential messaging tied to AuthenticationManagement consumption in `src/CookieCommerce.Web/Services/CustomerProfileState.cs`
+- [X] T084 [US3] Run identity/privacy verification with `dotnet test src --filter "Authorization|EmailVerification|CustomerForgotten|Gdpr|OperationalLogging"` using `src/CookieCommerce.slnx`
 
 **Checkpoint**: All user stories are independently functional and cross-domain identity/privacy behavior is verified.
 
@@ -178,16 +178,16 @@
 
 **Purpose**: Final quality gates, documentation, and Aspire validation across the feature.
 
-- [ ] T085 [P] Update backend/profile integration documentation in `Documentation/backend-documentation.md`
-- [ ] T086 [P] Update quickstart validation notes for email delivery handoff and test projects in `specs/001-update-customer-profile/quickstart.md`
-- [ ] T087 [P] Verify affected service registration and service discovery in `src/CookieCommerce.AppHost/AppHost.cs`
-- [ ] T088 Verify CustomerDomain API container configuration still builds using `src/CookieCommerce.CustomerDomain.Api/Dockerfile`
-- [ ] T089 Verify AuthenticationManagement API container configuration still builds using `src/CookieCommerce.AuthenticationManagement.Api/Dockerfile`
-- [ ] T090 Verify Web container/configuration still builds and has no hard-coded profile API localhost dependency using `src/CookieCommerce.Web/Dockerfile`
-- [ ] T091 Run formatting for changed code with `dotnet format src/CookieCommerce.slnx` using `src/CookieCommerce.slnx`
-- [ ] T092 Run full build with `dotnet build src` using `src/CookieCommerce.slnx`
-- [ ] T093 Run full regression suite with `dotnet test src` using `src/CookieCommerce.slnx`
-- [ ] T094 Validate Aspire composition by starting `dotnet run --project src/CookieCommerce.AppHost` and confirming CustomerDomain API, AuthenticationManagement API, RabbitMQ, Keycloak, PostgreSQL, and Web are healthy in `src/CookieCommerce.AppHost/AppHost.cs`
+- [X] T085 [P] Update backend/profile integration documentation in `Documentation/backend-documentation.md`
+- [X] T086 [P] Update quickstart validation notes for email delivery handoff and test projects in `specs/001-update-customer-profile/quickstart.md`
+- [X] T087 [P] Verify affected service registration and service discovery in `src/CookieCommerce.AppHost/AppHost.cs`
+- [X] T088 Verify CustomerDomain API container configuration still builds using `src/CookieCommerce.CustomerDomain.Api/Dockerfile`
+- [X] T089 Verify AuthenticationManagement API container configuration still builds using `src/CookieCommerce.AuthenticationManagement.Api/Dockerfile`
+- [X] T090 Verify Web container/configuration still builds and has no hard-coded profile API localhost dependency using `src/CookieCommerce.Web/Dockerfile`
+- [X] T091 Run formatting for changed code with `dotnet format src/CookieCommerce.slnx` using `src/CookieCommerce.slnx`
+- [X] T092 Run full build with `dotnet build src` using `src/CookieCommerce.slnx`
+- [X] T093 Run full regression suite with `dotnet test src` using `src/CookieCommerce.slnx`
+- [X] T094 Validate Aspire composition by starting `dotnet run --project src/CookieCommerce.AppHost` and confirming CustomerDomain API, AuthenticationManagement API, RabbitMQ, Keycloak, PostgreSQL, and Web are healthy in `src/CookieCommerce.AppHost/AppHost.cs`
 
 ---
 

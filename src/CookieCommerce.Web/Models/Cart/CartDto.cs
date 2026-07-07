@@ -20,8 +20,8 @@ public class CartDto
     public decimal SubTotalPrice => Items.Sum(item => item.UnitPrice * item.Quantity);
     public decimal TotalPrice => SubTotalPrice + (!TaxIncluded ? Tax : 0) + Shipping - GetPromotionDiscount();
     public decimal ToGoUntilFreeShipping => Shipping == 0 ? 0 : FREE_SHIPPING_THRESHOLD - SubTotalPrice;
-    public string FreeShippingMessage => Shipping == 0 
-        ? "You have free shipping!" 
+    public string FreeShippingMessage => Shipping == 0
+        ? "You have free shipping!"
         : $"Add another box of Tiger Strips to unlock free delivery!";
 
     public decimal GetPromotionDiscount()

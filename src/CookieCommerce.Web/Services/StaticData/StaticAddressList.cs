@@ -52,9 +52,9 @@ public static class StaticAddressList
         Country = "The Netherlands"
     };
 
-    public static AddressBookItemDto ToAddressBookItem(this AddressDto address, 
-        int index, string label, string phone, 
-        string firstName, string lastName, 
+    public static AddressBookItemDto ToAddressBookItem(this AddressDto address,
+        int index, string label, string phone,
+        string firstName, string lastName,
         string icon, bool isDefault = false)
     {
         return new AddressBookItemDto

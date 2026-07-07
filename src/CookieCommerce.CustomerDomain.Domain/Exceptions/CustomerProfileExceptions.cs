@@ -2,8 +2,25 @@ namespace CookieCommerce.CustomerDomain.Domain.Exceptions;
 
 public class CustomerProfileValidationException : Exception
 {
+    /// <summary>
+    /// Field-keyed validation errors (camelCase keys). Empty when the exception carries
+    /// only a top-level message without per-field detail.
+    /// </summary>
+    public IReadOnlyDictionary<string, string[]> FieldErrors { get; }
+
+    /// <summary>Single-message validation failure (no field-level breakdown).</summary>
     public CustomerProfileValidationException(string message) : base(message)
     {
+        FieldErrors = new Dictionary<string, string[]>();
+    }
+
+    /// <summary>Field-level validation failure (carries per-field error messages).</summary>
+    public CustomerProfileValidationException(
+        IReadOnlyDictionary<string, string[]> fieldErrors,
+        string message = "Profile validation failed.")
+        : base(message)
+    {
+        FieldErrors = fieldErrors;
     }
 }
 

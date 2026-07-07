@@ -20,13 +20,13 @@ public class CustomerSnapshotPublishedConsumer(
     public async Task Consume(ConsumeContext<CustomerSnapshotPublished> context)
     {
         var @event = context.Message;
-        
+
         _logger.LogInformation(
-            "Received CustomerSnapshotPublished for customer {CustomerId}", 
+            "Received CustomerSnapshotPublished for customer {CustomerId}",
             @event.CustomerId);
 
         // Upsert customer snapshot in local read model
-        var snapshot = await _session.LoadAsync<CustomerSnapshotReadModel>(@event.CustomerId) 
+        var snapshot = await _session.LoadAsync<CustomerSnapshotReadModel>(@event.CustomerId)
             ?? new CustomerSnapshotReadModel { Id = @event.CustomerId };
 
         snapshot.FirstName = @event.FirstName;

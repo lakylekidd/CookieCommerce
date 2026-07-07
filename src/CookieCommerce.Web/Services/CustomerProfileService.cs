@@ -100,14 +100,22 @@ public sealed class CustomerProfileService
                 firstName = profile.FirstName,
                 lastName = profile.LastName,
                 email = profile.Email,
-                gender = profile.Gender,
+                gender = MapGenderForApi(profile.Gender),
                 dateOfBirth = profile.DateOfBirth?.ToString("yyyy-MM-dd")
             };
 
             var response = await client.PatchAsJsonAsync("api/customer/me/profile", request, JsonOptions);
 
             if (response.StatusCode == HttpStatusCode.Conflict)
-                return ResultDto.Fail("Email address is already in use by another account.");
+                return new ResultDto
+                {
+                    Success = false,
+                    Message = "Some fields are invalid. Please correct and try again.",
+                    FieldErrors = new Dictionary<string, string[]>
+                    {
+                        ["email"] = ["Email address is already in use by another account."]
+                    }
+                };
 
             if (response.StatusCode == HttpStatusCode.UnprocessableEntity)
             {
@@ -131,7 +139,9 @@ public sealed class CustomerProfileService
             var updated = await response.Content.ReadFromJsonAsync<CustomerProfileApiResponse>(JsonOptions);
             if (updated is not null)
             {
-                _profileState.SetProfile(MapToDto(updated, user));
+                var updatedProfile = MapToDto(updated, user);
+                _profileState.SetProfile(updatedProfile);
+                _authService.UpdateCurrentUserProfile(updatedProfile.FirstName, updatedProfile.LastName, updatedProfile.Email);
             }
 
             return ResultDto.Ok("Profile updated successfully.");
@@ -170,6 +180,50 @@ public sealed class CustomerProfileService
         }
     }
 
+    /// <summary>
+    /// Confirms a pending email change and refreshes shared profile state from the success response.
+    /// AuthenticationManagement may still need to consume the verified-email event before login changes.
+    /// </summary>
+    public async Task<ResultDto> ConfirmEmailVerificationAsync(string token)
+    {
+        await _authService.InitializeAsync();
+        var user = _authService.CurrentUser;
+        if (user is null) return ResultDto.Fail("Sign in to confirm your email change.");
+
+        if (string.IsNullOrWhiteSpace(token))
+            return ResultDto.Fail("The email verification link is invalid.");
+
+        try
+        {
+            var client = CreateAuthorizedClient(user.Id);
+            var response = await client.PostAsJsonAsync(
+                "api/customer/me/email-verification/confirm",
+                new { token },
+                JsonOptions);
+
+            if (response.StatusCode == HttpStatusCode.Gone)
+                return ResultDto.Fail("This email verification link has expired. Request a new verification email from your profile.");
+
+            if (!response.IsSuccessStatusCode)
+                return ResultDto.Fail("We could not confirm this email verification link.");
+
+            var updated = await response.Content.ReadFromJsonAsync<CustomerProfileApiResponse>(JsonOptions);
+            if (updated is not null)
+            {
+                var updatedProfile = MapToDto(updated, user);
+                _profileState.SetProfile(updatedProfile);
+                _authService.UpdateCurrentUserProfile(updatedProfile.FirstName, updatedProfile.LastName, updatedProfile.Email);
+            }
+
+            return ResultDto.Ok("Email verified. Your profile email is updated; sign-in may change after account processing completes.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ConfirmEmailVerificationAsync failed for customer {CustomerId}", user.Id);
+            return ResultDto.Fail("We could not confirm this email verification link.");
+        }
+    }
+
     /// <summary>Returns true if the customer has a date of birth on record.</summary>
     public async Task<bool> HasBirthdateAsync()
     {
@@ -203,6 +257,15 @@ public sealed class CustomerProfileService
             Addresses = []
         };
     }
+
+    private static int? MapGenderForApi(string? gender) => gender switch
+    {
+        null or "" => null,
+        "Male" => 1,
+        "Female" => 2,
+        "PreferNotToDisclose" => 3,
+        _ => null
+    };
 
     private static async Task<Dictionary<string, string[]>> TryReadValidationErrors(HttpResponseMessage response)
     {

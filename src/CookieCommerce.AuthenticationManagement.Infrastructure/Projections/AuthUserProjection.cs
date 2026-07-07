@@ -16,4 +16,20 @@ public class AuthUserProjection : SingleStreamProjection<AuthUserReadModel, Guid
         IsActive = true,
         CreatedAt = e.RegisteredAt
     };
+
+    public void Apply(AuthUserEmailChanged e, AuthUserReadModel current)
+    {
+        current.Email = e.VerifiedEmail;
+    }
+
+    public void Apply(AuthUserProfileChanged e, AuthUserReadModel current)
+    {
+        current.FirstName = e.FirstName;
+        current.LastName = e.LastName;
+    }
+
+    public void Apply(AuthUserForgotten e, AuthUserReadModel current)
+    {
+        current.IsActive = false;
+    }
 }

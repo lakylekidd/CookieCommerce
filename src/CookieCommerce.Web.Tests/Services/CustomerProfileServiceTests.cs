@@ -22,7 +22,9 @@ public class CustomerProfileServiceTests
 
     private static (CustomerProfileService Service, CustomerProfileState State) Build(
         HttpResponseMessage getResponse,
-        HttpResponseMessage? patchResponse = null)
+        HttpResponseMessage? patchResponse = null,
+        Func<HttpRequestMessage, Task>? onPatch = null,
+        Action<Mock<IAuthService>>? configureAuth = null)
     {
         var mockHandler = new Mock<HttpMessageHandler>();
 
@@ -40,7 +42,13 @@ public class CustomerProfileServiceTests
                     "SendAsync",
                     ItExpr.Is<HttpRequestMessage>(r => r.Method == HttpMethod.Patch),
                     ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(patchResponse);
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, _) =>
+                {
+                    if (onPatch is not null)
+                        await onPatch(request);
+
+                    return patchResponse;
+                });
         }
 
         var httpClient = new HttpClient(mockHandler.Object)
@@ -60,6 +68,7 @@ public class CustomerProfileServiceTests
             FirstName = "Jamie",
             LastName = "Baker"
         });
+        configureAuth?.Invoke(mockAuth);
 
         var state = new CustomerProfileState();
         var service = new CustomerProfileService(
@@ -192,6 +201,77 @@ public class CustomerProfileServiceTests
     }
 
     [Fact]
+    public async Task UpdateProfileAsync_UpdatesAuthCurrentUser_ForHeaderRefresh()
+    {
+        var profileId = Guid.NewGuid();
+        var updatedApi = new
+        {
+            id = profileId,
+            firstName = "NewFirst",
+            lastName = "NewLast",
+            email = "new@example.com",
+            pendingEmail = (string?)null,
+            emailVerificationStatus = "Verified",
+            gender = (int?)null,
+            dateOfBirth = (string?)null
+        };
+
+        var authUpdated = false;
+        var (service, _) = Build(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = ProfileJson(updatedApi) },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = ProfileJson(updatedApi) },
+            configureAuth: auth => auth
+                .Setup(a => a.UpdateCurrentUserProfile("NewFirst", "NewLast", "new@example.com"))
+                .Callback(() => authUpdated = true));
+
+        var result = await service.UpdateProfileAsync(new UserProfileDto
+        {
+            Id = profileId,
+            FirstName = "NewFirst",
+            LastName = "NewLast",
+            Email = "new@example.com"
+        });
+
+        result.Success.Should().BeTrue();
+        authUpdated.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_SendsPreferNotToDiscloseAsApiEnumNumber()
+    {
+        var profileId = Guid.NewGuid();
+        var updatedApi = new
+        {
+            id = profileId,
+            firstName = "Jamie",
+            lastName = "Baker",
+            email = "jamie@example.com",
+            pendingEmail = (string?)null,
+            emailVerificationStatus = "Verified",
+            gender = 3,
+            dateOfBirth = (string?)null
+        };
+
+        JsonDocument? captured = null;
+        var (service, _) = Build(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = ProfileJson(updatedApi) },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = ProfileJson(updatedApi) },
+            async request => captured = JsonDocument.Parse(await request.Content!.ReadAsStringAsync()));
+
+        await service.UpdateProfileAsync(new UserProfileDto
+        {
+            Id = profileId,
+            FirstName = "Jamie",
+            LastName = "Baker",
+            Email = "jamie@example.com",
+            Gender = "PreferNotToDisclose"
+        });
+
+        captured.Should().NotBeNull();
+        captured!.RootElement.GetProperty("gender").GetInt32().Should().Be(3);
+    }
+
+    [Fact]
     public async Task UpdateProfileAsync_ReturnsFail_WhenApiReturns409()
     {
         var (service, _) = Build(
@@ -201,7 +281,8 @@ public class CustomerProfileServiceTests
         var result = await service.UpdateProfileAsync(new UserProfileDto { Email = "dup@example.com" });
 
         result.Success.Should().BeFalse();
-        result.Message.Should().Contain("already in use");
+        result.FieldErrors.Should().ContainKey("email");
+        result.FieldErrors["email"].Should().Contain(m => m.Contains("already in use"));
     }
 
     [Fact]

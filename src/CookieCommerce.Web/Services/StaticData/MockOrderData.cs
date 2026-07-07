@@ -18,7 +18,7 @@ public static class MockOrderData
         DateTime yesterday = DateTime.Now.AddDays(-1);
 
         string[] cities = ["Amsterdam", "Rotterdam", "Utrecht", "The Hague", "Eindhoven"];
-        (string Icon, string Name)[] carriers = [("pedal_bike", "Peddler"), ("local_shipping","Easy2Send"), ("flight", "Skynet"), ("help", "Unassigned")];
+        (string Icon, string Name)[] carriers = [("pedal_bike", "Peddler"), ("local_shipping", "Easy2Send"), ("flight", "Skynet"), ("help", "Unassigned")];
         (int Id, string Name)[] statuses = [(1, "Pending"), (2, "Processing"), (3, "Shipped"), (4, "Delivered")];
 
         for (int i = 1; i <= 5; i++)
@@ -63,7 +63,7 @@ public static class MockOrderData
                     ProductName = p.Title,
                     Quantity = _random.Next(1, 4),
                     ProductImageUrl = p.ImageUrl
-                 }).ToList()
+                }).ToList()
             });
         }
 

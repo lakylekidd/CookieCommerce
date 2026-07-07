@@ -11,14 +11,14 @@ public class AddCustomerAddressHandler(IDocumentSession session) : IRequestHandl
 {
     public async Task Handle(AddCustomerAddress request, CancellationToken cancellationToken)
     {
-        if (await session.Events.AggregateStreamAsync<CustomerAggregate>(request.CustomerId,token: cancellationToken) 
+        if (await session.Events.AggregateStreamAsync<CustomerAggregate>(request.CustomerId, token: cancellationToken)
             is not CustomerAggregate customer)
             throw new CustomerNotFoundException(request.CustomerId);
 
-        var address = new Address(request.Label, 
-            request.Street, 
+        var address = new Address(request.Label,
+            request.Street,
             request.City,
-            request.PostalCode, 
+            request.PostalCode,
             request.Country,
             request.IsPrimary);
         customer.AddAddress(address);

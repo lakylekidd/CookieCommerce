@@ -28,9 +28,9 @@ public static class StaticProfileList
                 StaticAddressList.Address001.ToAddressBookItem(0, "Home Base", "123-456-7890", profile.FirstName, profile.LastName, "home", true),
                 StaticAddressList.Address002.ToAddressBookItem(1, "Work", "098-765-4321", profile.FirstName, profile.LastName, "work")
             ];
-        profile.FavoriteProducts = 
+        profile.FavoriteProducts =
             [
-                StaticStorefrontProductList.CookieRedVelve.Id, 
+                StaticStorefrontProductList.CookieRedVelve.Id,
                 StaticStorefrontProductList.CookieChocolateChunk.Id
             ];
         return profile;

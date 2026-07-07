@@ -163,7 +163,7 @@ public class FakeBackofficeService : IBackofficeService
                 if (sku != null)
                 {
                     sku.Quantity = quantity;
-                }                
+                }
             });
         return Task.Delay(500);
     }

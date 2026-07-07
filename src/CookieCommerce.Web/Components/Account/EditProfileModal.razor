@@ -66,34 +66,34 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="space-y-2">
                     <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider" for="first_name">First Name</label>
+                    <input class="w-full px-4 py-3 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-primary focus:border-primary text-primary dark:text-white font-medium"
+                           @bind="profile.FirstName" @bind:event="oninput" maxlength="@CustomerProfileClientValidator.MaxNameLength" id="first_name" type="text" />
                     @if (fieldErrors.TryGetValue("firstName", out var fnErr))
                     {
                         <p class="text-xs text-red-500">@fnErr[0]</p>
                     }
-                    <input class="w-full px-4 py-3 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-primary focus:border-primary text-primary dark:text-white font-medium"
-                           @bind="profile.FirstName" id="first_name" type="text" />
                 </div>
                 <div class="space-y-2">
                     <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider" for="last_name">Last Name</label>
+                    <input class="w-full px-4 py-3 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-primary focus:border-primary text-primary dark:text-white font-medium"
+                           @bind="profile.LastName" @bind:event="oninput" maxlength="@CustomerProfileClientValidator.MaxNameLength" id="last_name" type="text" />
                     @if (fieldErrors.TryGetValue("lastName", out var lnErr))
                     {
                         <p class="text-xs text-red-500">@lnErr[0]</p>
                     }
-                    <input class="w-full px-4 py-3 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-primary focus:border-primary text-primary dark:text-white font-medium"
-                           @bind="profile.LastName" id="last_name" type="text" />
                 </div>
             </div>
             <div class="space-y-2">
                 <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider" for="email">Email Address</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">mail</span>
+                    <input class="w-full pl-12 pr-4 py-3 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-primary focus:border-primary text-primary dark:text-white font-medium"
+                           @bind="profile.Email" @bind:event="oninput" id="email" type="email" />
+                </div>
                 @if (fieldErrors.TryGetValue("email", out var emailErr))
                 {
                     <p class="text-xs text-red-500">@emailErr[0]</p>
                 }
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">mail</span>
-                    <input class="w-full pl-12 pr-4 py-3 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-primary focus:border-primary text-primary dark:text-white font-medium"
-                           @bind="profile.Email" id="email" type="email" />
-                </div>
                 <p class="text-xs text-gray-400 italic">Changing your email will send a verification link to the new address.</p>
             </div>
             <div class="space-y-2">
@@ -115,24 +115,28 @@
                         </label>
                     }
                 </div>
+                @if (fieldErrors.TryGetValue("gender", out var genderErr))
+                {
+                    <p class="text-xs text-red-500">@genderErr[0]</p>
+                }
             </div>
             <div class="space-y-2">
                 <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider" for="dob">Date of Birth</label>
-                @if (fieldErrors.TryGetValue("dateOfBirth", out var dobErr))
-                {
-                    <p class="text-xs text-red-500">@dobErr[0]</p>
-                }
                 <div class="flex gap-2">
                     <div class="relative flex-grow">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">cake</span>
                         <input class="w-full pl-12 pr-4 py-3 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-primary focus:border-primary text-primary dark:text-white font-medium"
-                               @bind="profile.DateOfBirth" id="dob" type="date" />
+                               @bind="profile.DateOfBirth" max="@DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)).ToString("yyyy-MM-dd")" id="dob" type="date" />
                     </div>
                     <button class="px-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors flex items-center justify-center group"
                             @onclick="ClearBirthDate" title="Clear date" type="button">
                         <span class="cursor-pointer material-symbols-outlined">backspace</span>
                     </button>
                 </div>
+                @if (fieldErrors.TryGetValue("dateOfBirth", out var dobErr))
+                {
+                    <p class="text-xs text-red-500">@dobErr[0]</p>
+                }
                 <p class="text-xs text-gray-400 italic">We might send a surprise on your birthday!</p>
             </div>
             <div class="flex items-center justify-end gap-4 pt-4 border-t border-gray-100 dark:border-gray-800">
@@ -188,6 +192,14 @@
         successMessage = string.Empty;
         errorMessage = string.Empty;
         fieldErrors = new();
+
+        fieldErrors = CustomerProfileClientValidator.Validate(profile);
+        if (fieldErrors.Count > 0)
+        {
+            errorMessage = "Please correct the highlighted fields and try again.";
+            isSaving = false;
+            return;
+        }
 
         var result = await ProfileService.UpdateProfileAsync(profile);
 

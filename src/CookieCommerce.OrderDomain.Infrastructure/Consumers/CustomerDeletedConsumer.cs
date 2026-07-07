@@ -19,9 +19,9 @@ public class CustomerDeletedConsumer(
     public async Task Consume(ConsumeContext<CustomerDeletedIntegrationEvent> context)
     {
         var @event = context.Message;
-        
+
         _logger.LogInformation(
-            "Received CustomerDeletedIntegrationEvent for customer {CustomerId}", 
+            "Received CustomerDeletedIntegrationEvent for customer {CustomerId}",
             @event.CustomerId);
 
         _session.Delete<CustomerSnapshotReadModel>(@event.CustomerId);

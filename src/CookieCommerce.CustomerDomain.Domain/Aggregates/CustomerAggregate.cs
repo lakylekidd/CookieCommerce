@@ -97,11 +97,25 @@ public class CustomerAggregate : AggregateBase
         });
     }
 
+    public void VerifyPendingEmailChange(DateTimeOffset verifiedAtUtc)
+    {
+        if (string.IsNullOrWhiteSpace(EncryptedPendingEmail))
+            throw new CustomerProfileValidationException("No pending email change exists for this customer.");
+
+        Apply(new CustomerVerifiedEmailChanged
+        {
+            CustomerId = Id,
+            EncryptedPreviousEmail = EncryptedEmail,
+            EncryptedVerifiedEmail = EncryptedPendingEmail,
+            VerifiedAtUtc = verifiedAtUtc
+        });
+    }
+
     public void Forget()
     {
         Apply(new CustomerForgotten(Id));
     }
-    
+
     public void AddAddress(Address address)
     {
         if (_addresses.Any(a => a.Label == address.Label))
@@ -195,7 +209,7 @@ public class CustomerAggregate : AggregateBase
                     addr.UnsetPrimary();
             }
         }
-        
+
         _addresses.Add(e.Address);
     }
 

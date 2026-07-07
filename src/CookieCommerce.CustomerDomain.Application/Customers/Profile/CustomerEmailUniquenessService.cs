@@ -51,7 +51,12 @@ public sealed class CustomerEmailUniquenessService
 
         if (!result.IsAvailable)
         {
-            throw new DuplicateCustomerEmailException();
+            var message = result.ConflictKind == CustomerEmailConflictKind.PendingEmail
+                ? "This email address is already pending verification for another account."
+                : "This email address is already registered to another account.";
+
+            throw new CustomerProfileValidationException(
+                new Dictionary<string, string[]> { ["email"] = [message] });
         }
     }
 }

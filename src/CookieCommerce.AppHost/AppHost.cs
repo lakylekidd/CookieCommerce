@@ -21,7 +21,7 @@ var kcAdminUsername = builder.AddParameter("keycloak-admin-username", "admin");
 var kcAdminPassword = builder.AddParameter("keycloak-admin-password", "admin");
 
 var keycloak = builder.AddKeycloak(
-    name: "keycloak", 
+    name: "keycloak",
     port: 8080,
     adminUsername: kcAdminUsername,
     adminPassword: kcAdminPassword)

@@ -23,7 +23,7 @@ public class OrderDetailsProjectionTests
         var orderId = Guid.NewGuid();
         var customerId = Guid.NewGuid();
         var placedAt = DateTime.UtcNow;
-        
+
         var orderPlaced = new OrderPlaced
         {
             OrderId = orderId,
@@ -53,7 +53,7 @@ public class OrderDetailsProjectionTests
         var orderId = Guid.NewGuid();
         var productId = Guid.NewGuid();
         var orderLine = new OrderLine(productId, quantity: 2, unitPrice: 10.00m);
-        
+
         var current = new OrderDetailsReadModel
         {
             Id = orderId,
@@ -91,11 +91,11 @@ public class OrderDetailsProjectionTests
             Id = orderId,
             OrderLines = new List<OrderLineReadModel>
             {
-                new() { 
-                    ProductId = Guid.NewGuid(), 
-                    Quantity = 1, 
+                new() {
+                    ProductId = Guid.NewGuid(),
+                    Quantity = 1,
                     PriceInfo = new PriceInfo { BasePrice = 10.00m, TaxType = TaxType.Percentage, TaxValue = 0.10m, IsTaxIncluded = false },
-                    LineTotal = 10.00m 
+                    LineTotal = 10.00m
                 }
             },
             SubTotal = 10.00m,
@@ -127,23 +127,23 @@ public class OrderDetailsProjectionTests
         var orderId = Guid.NewGuid();
         var productId1 = Guid.NewGuid();
         var productId2 = Guid.NewGuid();
-        
+
         var current = new OrderDetailsReadModel
         {
             Id = orderId,
             OrderLines = new List<OrderLineReadModel>
             {
-                new() { 
-                    ProductId = productId1, 
-                    Quantity = 2, 
+                new() {
+                    ProductId = productId1,
+                    Quantity = 2,
                     PriceInfo = new PriceInfo { BasePrice = 10.00m, TaxType = TaxType.Percentage, TaxValue = 0.10m, IsTaxIncluded = false },
-                    LineTotal = 20.00m 
+                    LineTotal = 20.00m
                 },
-                new() { 
-                    ProductId = productId2, 
-                    Quantity = 1, 
+                new() {
+                    ProductId = productId2,
+                    Quantity = 1,
                     PriceInfo = new PriceInfo { BasePrice = 15.00m, TaxType = TaxType.Percentage, TaxValue = 0.10m, IsTaxIncluded = false },
-                    LineTotal = 15.00m 
+                    LineTotal = 15.00m
                 }
             },
             SubTotal = 35.00m,

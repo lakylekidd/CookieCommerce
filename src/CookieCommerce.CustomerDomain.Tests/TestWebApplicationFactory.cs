@@ -27,12 +27,12 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             services.AddMarten(opts =>
             {
                 opts.Connection(connectionString);
-                
+
                 // Register projections with factory
                 opts.Projections.Add(new Infrastructure.Projections.CustomerProjection(
-                    new Infrastructure.Security.EncryptionService()), 
+                    new Infrastructure.Security.EncryptionService()),
                     JasperFx.Events.Projections.ProjectionLifecycle.Inline);
-                
+
                 opts.AutoCreateSchemaObjects = JasperFx.AutoCreate.All;
             }).ApplyAllDatabaseChangesOnStartup();
 

@@ -14,8 +14,8 @@ public class ChangeProductPriceHandler(IDocumentSession session) : IRequestHandl
     public async Task Handle(ChangeProductPrice request, CancellationToken cancellationToken)
     {
         var product = await session.Events.AggregateStreamAsync<ProductAggregate>(
-            request.ProductId, 
-            token: cancellationToken) 
+            request.ProductId,
+            token: cancellationToken)
             ?? throw new ProductNotFoundException(request.ProductId);
 
         product.ChangePrice(request.NewPrice);

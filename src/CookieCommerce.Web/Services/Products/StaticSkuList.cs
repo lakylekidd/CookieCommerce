@@ -12,8 +12,8 @@ public static class StaticSkuList
         Cost = 0.4m,
         Stock = 50,
         SkuType = "Product",
-        Ingredients = ["Organic wheat flour", "70% Belgian dark chocolate", 
-            "Unsalted butter", "Brown sugar", "Free-range eggs", "Vanilla extract", 
+        Ingredients = ["Organic wheat flour", "70% Belgian dark chocolate",
+            "Unsalted butter", "Brown sugar", "Free-range eggs", "Vanilla extract",
             "Maldon sea salt", "Baking soda"],
     };
     public static SkuDto SkuMatchaWhiteChocolateCookie = new()
@@ -24,8 +24,8 @@ public static class StaticSkuList
         Cost = 0.6m,
         Stock = 30,
         SkuType = "Product",
-        Ingredients = ["Organic wheat flour", "Ceremonial Uji matcha powder", 
-            "Belgian white chocolate pearls", "Unsalted butter", "Cane sugar", 
+        Ingredients = ["Organic wheat flour", "Ceremonial Uji matcha powder",
+            "Belgian white chocolate pearls", "Unsalted butter", "Cane sugar",
             "Free-range eggs", "Almond flour", "Baking powder"],
     };
     public static SkuDto SkuHazelnutPralineCookie = new()
@@ -36,8 +36,8 @@ public static class StaticSkuList
         Cost = 0.6m,
         Stock = 30,
         SkuType = "Product",
-        Ingredients = ["Organic wheat flour", "Hazelnut praline paste", 
-            "Toasted hazelnuts", "Unsalted butter", "Brown sugar", 
+        Ingredients = ["Organic wheat flour", "Hazelnut praline paste",
+            "Toasted hazelnuts", "Unsalted butter", "Brown sugar",
             "Free-range eggs", "Vanilla extract", "Baking soda"],
     };
     public static SkuDto SkuRedVelvetCookie = new()
@@ -48,8 +48,8 @@ public static class StaticSkuList
         Cost = 0.45m,
         Stock = 45,
         SkuType = "Product",
-        Ingredients = ["Organic wheat flour", "Natural red food coloring from beetroot", 
-            "Cocoa powder", "Unsalted butter", "Cane sugar", "Free-range eggs", 
+        Ingredients = ["Organic wheat flour", "Natural red food coloring from beetroot",
+            "Cocoa powder", "Unsalted butter", "Cane sugar", "Free-range eggs",
             "Cream cheese chunks", "Vanilla extract", "Maldon sea salt", "Baking powder"]
     };
     public static SkuDto SkuCaramelSeaSaltCookie = new()
@@ -60,7 +60,7 @@ public static class StaticSkuList
         Cost = 0.5m,
         Stock = 45,
         SkuType = "Product",
-        Ingredients = ["Organic wheat flour", "Salted caramel chunks", "Unsalted butter", 
+        Ingredients = ["Organic wheat flour", "Salted caramel chunks", "Unsalted butter",
             "Brown sugar", "Free-range eggs", "Vanilla extract", "Maldon sea salt", "Baking soda"]
     };
     public static SkuDto SkuCocoaWhiteChocolateChipCookie = new()
@@ -71,8 +71,8 @@ public static class StaticSkuList
         Cost = 0.55m,
         Stock = 45,
         SkuType = "Product",
-        Ingredients = ["Organic wheat flour", "Cocoa powder", "Belgian white chocolate chips", 
-            "Unsalted butter", "Brown sugar", "Free-range eggs", "Vanilla extract", 
+        Ingredients = ["Organic wheat flour", "Cocoa powder", "Belgian white chocolate chips",
+            "Unsalted butter", "Brown sugar", "Free-range eggs", "Vanilla extract",
             "Maldon sea salt", "Baking soda"]
     };
 
@@ -124,6 +124,6 @@ public static class StaticSkuList
             SkuCellophaneTransparentBag,
             SkuBoxOf5Cookies,
             SkuBoxOf12Cookies,
-            SkuBoxOf8Cookies            
+            SkuBoxOf8Cookies
         ];
 }

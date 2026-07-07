@@ -50,4 +50,16 @@ public static class CustomerProfileMappings
             RequestedAtUtc: DateTimeOffset.UtcNow,
             CorrelationId: correlationId);
     }
+
+    public static VerifyCustomerEmailChangeCommand ToCommand(
+        this ConfirmCustomerEmailVerificationRequest request,
+        Guid customerId,
+        string correlationId)
+    {
+        return new VerifyCustomerEmailChangeCommand(
+            CustomerId: customerId,
+            Token: request.Token,
+            VerifiedAtUtc: DateTimeOffset.UtcNow,
+            CorrelationId: correlationId);
+    }
 }

@@ -14,7 +14,7 @@ public class GetCurrentCustomerProfileQueryHandler(IQuerySession querySession)
     : IRequestHandler<GetCurrentCustomerProfileQuery, CustomerProfileResult>
 {
     public async Task<CustomerProfileResult> Handle(
-        GetCurrentCustomerProfileQuery request, 
+        GetCurrentCustomerProfileQuery request,
         CancellationToken cancellationToken)
     {
         var readModel = await querySession.LoadAsync<CustomerReadModel>(request.CustomerId, cancellationToken);

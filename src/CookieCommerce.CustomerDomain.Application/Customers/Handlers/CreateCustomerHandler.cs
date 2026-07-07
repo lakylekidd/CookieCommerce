@@ -9,8 +9,8 @@ using MediatR;
 namespace CookieCommerce.CustomerDomain.Application.Customers.Handlers;
 
 public class CreateCustomerHandler(
-    IDocumentSession session, 
-    ICustomerKeyStore keyStore, 
+    IDocumentSession session,
+    ICustomerKeyStore keyStore,
     IEncryptionService encryptionService,
     IIntegrationEventPublisher publisher) : IRequestHandler<CreateCustomer, Guid>
 {

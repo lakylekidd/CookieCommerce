@@ -62,6 +62,7 @@ public class KeycloakAdminService : IKeycloakAdminService
             lastName = lastName,
             enabled = true,
             emailVerified = true,
+            attributes = new Dictionary<string, string[]>(),
             credentials = new[]
             {
                 new { type = "password", value = password, temporary = false }
@@ -112,6 +113,106 @@ public class KeycloakAdminService : IKeycloakAdminService
         };
     }
 
+    public async Task UpdateUserEmailAsync(string keycloakId, string verifiedEmail, CancellationToken ct = default)
+    {
+        var adminToken = await GetAdminTokenAsync(ct);
+        var client = _httpClientFactory.CreateClient("keycloak");
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminToken);
+
+        var payload = new
+        {
+            username = verifiedEmail,
+            email = verifiedEmail,
+            emailVerified = true,
+            enabled = true
+        };
+
+        var response = await client.PutAsJsonAsync(
+            $"/admin/realms/{_options.Realm}/users/{Uri.EscapeDataString(keycloakId)}",
+            payload,
+            ct);
+
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task UpdateUserProfileAsync(
+        string keycloakId,
+        string firstName,
+        string lastName,
+        string? gender,
+        DateOnly? dateOfBirth,
+        CancellationToken ct = default)
+    {
+        var adminToken = await GetAdminTokenAsync(ct);
+        var client = _httpClientFactory.CreateClient("keycloak");
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminToken);
+
+        var existing = await GetUserByIdAsync(client, keycloakId, ct);
+        var attributes = existing?.Attributes is null
+            ? new Dictionary<string, string[]>()
+            : new Dictionary<string, string[]>(existing.Attributes);
+
+        UpsertOrRemoveAttribute(attributes, "gender", gender);
+        UpsertOrRemoveAttribute(attributes, "dateOfBirth", dateOfBirth?.ToString("yyyy-MM-dd"));
+
+        var payload = new
+        {
+            username = existing?.Username,
+            email = existing?.Email,
+            emailVerified = existing?.EmailVerified,
+            firstName,
+            lastName,
+            enabled = existing?.Enabled ?? true,
+            attributes
+        };
+
+        var response = await client.PutAsJsonAsync(
+            $"/admin/realms/{_options.Realm}/users/{Uri.EscapeDataString(keycloakId)}",
+            payload,
+            ct);
+
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task DisableUserAsync(string keycloakId, CancellationToken ct = default)
+    {
+        var adminToken = await GetAdminTokenAsync(ct);
+        var client = _httpClientFactory.CreateClient("keycloak");
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminToken);
+
+        var payload = new { enabled = false };
+        var response = await client.PutAsJsonAsync(
+            $"/admin/realms/{_options.Realm}/users/{Uri.EscapeDataString(keycloakId)}",
+            payload,
+            ct);
+
+        response.EnsureSuccessStatusCode();
+    }
+
+    private async Task<KeycloakUserResponse?> GetUserByIdAsync(HttpClient client, string keycloakId, CancellationToken ct)
+    {
+        var response = await client.GetAsync(
+            $"/admin/realms/{_options.Realm}/users/{Uri.EscapeDataString(keycloakId)}",
+            ct);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            return null;
+
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<KeycloakUserResponse>(cancellationToken: ct);
+    }
+
+    private static void UpsertOrRemoveAttribute(Dictionary<string, string[]> attributes, string key, string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            attributes.Remove(key);
+        else
+            attributes[key] = [value];
+    }
+
     private sealed class AdminTokenResponse
     {
         [JsonPropertyName("access_token")]
@@ -123,13 +224,25 @@ public class KeycloakAdminService : IKeycloakAdminService
         [JsonPropertyName("id")]
         public string Id { get; set; } = default!;
 
+        [JsonPropertyName("username")]
+        public string Username { get; set; } = default!;
+
         [JsonPropertyName("email")]
         public string Email { get; set; } = default!;
+
+        [JsonPropertyName("enabled")]
+        public bool Enabled { get; set; } = true;
+
+        [JsonPropertyName("emailVerified")]
+        public bool? EmailVerified { get; set; }
 
         [JsonPropertyName("firstName")]
         public string FirstName { get; set; } = default!;
 
         [JsonPropertyName("lastName")]
         public string LastName { get; set; } = default!;
+
+        [JsonPropertyName("attributes")]
+        public Dictionary<string, string[]>? Attributes { get; set; }
     }
 }

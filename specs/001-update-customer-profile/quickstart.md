@@ -19,6 +19,13 @@ dotnet build src
 dotnet test src
 ```
 
+For the new runnable test projects, a quick discovery smoke test can be run directly when diagnosing setup issues:
+
+```powershell
+dotnet test src/CookieCommerce.Web.Tests/CookieCommerce.Web.Tests.csproj --no-restore --list-tests
+dotnet test src/CookieCommerce.AuthenticationManagement.Tests/CookieCommerce.AuthenticationManagement.Tests.csproj --no-restore --list-tests
+```
+
 Expected outcome:
 
 - Build completes with zero errors.
@@ -95,6 +102,8 @@ Expected outcome:
 - The customer cannot sign in with the new email before verification succeeds.
 - The profile GET endpoint `GET /api/customer/me` returns `email` as the old verified email and `pendingEmail` as the requested new email.
 - CustomerDomain has created/stored a verification token reference and handed off delivery to the external email dependency without logging the raw token.
+- The delivery handoff can be validated through the registered `IEmailVerificationSender`/external adapter path: payload includes pending recipient, customer id, token or safe reference, expiry, verification route/URL, purpose `CustomerEmailChange`, correlation id, and idempotency key.
+- Re-sending verification uses the current pending email and retry-safe handoff metadata; it must not create multiple active pending email states or expose the token in user-facing messages/logs.
 - US1 validation stops here: no login credential promotion or verified email replacement is expected until the US3 verification-confirmation flow succeeds.
 
 ## 7. Verify email verification and login promotion (US3 boundary)
@@ -183,7 +192,7 @@ Review:
 - `src/CookieCommerce.slnx`
 - `src/CookieCommerce.Web.Tests/CookieCommerce.Web.Tests.csproj`
 - `src/CookieCommerce.AuthenticationManagement.Tests/CookieCommerce.AuthenticationManagement.Tests.csproj`
-- `src/CookieCommerce.Web/Services/CustomerProfileService.cs` or the concrete Web profile service used by the feature
+- `src/CookieCommerce.Web/Services/CustomerProfileService.cs` and `src/CookieCommerce.Web/Services/CustomerProfileState.cs`
 - `specs/001-update-customer-profile/contracts/customer-profile-api.md`
 - `specs/001-update-customer-profile/profile-display-inventory.md`
 

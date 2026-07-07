@@ -29,7 +29,7 @@ public class PlaceOrderHandlerTests
         var shippingAddress = new OrderAddress("123 Main St", "Springfield", "IL", "62701", "USA");
         var billingAddress = new OrderAddress("456 Elm St", "Springfield", "IL", "62702", "USA");
         var command = new PlaceOrder(customerId, shippingAddress, billingAddress);
-        
+
         var customer = new CustomerSnapshotReadModel
         {
             Id = customerId,
@@ -58,14 +58,14 @@ public class PlaceOrderHandlerTests
         var shippingAddress = new OrderAddress("123 Main St", "Springfield", "IL", "62701", "USA");
         var billingAddress = new OrderAddress("456 Elm St", "Springfield", "IL", "62702", "USA");
         var command = new PlaceOrder(customerId, shippingAddress, billingAddress);
-        
+
         _session.LoadAsync<CustomerSnapshotReadModel>(customerId, Arg.Any<CancellationToken>())
             .Returns((CustomerSnapshotReadModel?)null);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<CustomerNotFoundException>(() =>
             _handler.Handle(command, CancellationToken.None));
-        
+
         exception.CustomerId.Should().Be(customerId);
         await _session.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
@@ -78,7 +78,7 @@ public class PlaceOrderHandlerTests
         var shippingAddress = new OrderAddress("123 Main St", "Springfield", "IL", "62701", "USA");
         var billingAddress = new OrderAddress("456 Elm St", "Springfield", "IL", "62702", "USA");
         var command = new PlaceOrder(customerId, shippingAddress, billingAddress);
-        
+
         // Customer hasn't been replicated yet (eventual consistency gap)
         _session.LoadAsync<CustomerSnapshotReadModel>(customerId, Arg.Any<CancellationToken>())
             .Returns((CustomerSnapshotReadModel?)null);
@@ -95,7 +95,7 @@ public class PlaceOrderHandlerTests
         var shippingAddress = new OrderAddress("123 Main St", "Springfield", "IL", "62701", "USA");
         var billingAddress = new OrderAddress("456 Elm St", "Springfield", "IL", "62702", "USA");
         var command = new PlaceOrder(Guid.Empty, shippingAddress, billingAddress);
-        
+
         var customer = new CustomerSnapshotReadModel
         {
             Id = Guid.Empty,
@@ -120,7 +120,7 @@ public class PlaceOrderHandlerTests
         var shippingAddress = new OrderAddress("123 Main St", "Springfield", "IL", "62701", "USA");
         var billingAddress = new OrderAddress("456 Elm St", "Springfield", "IL", "62702", "USA");
         var command = new PlaceOrder(customerId, shippingAddress, billingAddress);
-        
+
         var customer = new CustomerSnapshotReadModel
         {
             Id = customerId,
@@ -137,7 +137,7 @@ public class PlaceOrderHandlerTests
 
         // Assert - verify customer snapshot was loaded from local read model
         await _session.Received(1).LoadAsync<CustomerSnapshotReadModel>(customerId, Arg.Any<CancellationToken>());
-        
+
         // Verify StartStream was called with customer snapshot
         _session.Events.Received(1).StartStream<OrderAggregate>(
             Arg.Any<Guid>(),

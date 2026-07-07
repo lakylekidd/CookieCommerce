@@ -95,7 +95,10 @@ public sealed class MartenCustomerEmailUniquenessCheckerTests : IAsyncLifetime
 
         var act = () => service.EnsureEmailAvailableForPendingChangeAsync("pending@example.com", Guid.NewGuid(), CancellationToken.None);
 
-        await act.Should().ThrowAsync<DuplicateCustomerEmailException>();
+        await act.Should().ThrowAsync<CustomerProfileValidationException>()
+            .WithMessage("*");
+        // The service now throws CustomerProfileValidationException with an "email" field error
+        // rather than DuplicateCustomerEmailException, providing field-level UI feedback.
     }
 
     [Fact]

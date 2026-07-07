@@ -21,27 +21,27 @@ public static class StaticOrders
             Total = 34.5m,
             Products = new List<OrderListItemProductDto>
             {
-                new OrderListItemProductDto 
-                { 
-                    ProductImageUrl = "/fake-images/matcha.png", 
+                new OrderListItemProductDto
+                {
+                    ProductImageUrl = "/fake-images/matcha.png",
                     ProductName = "Matcha Cookies",
                     Quantity = 3
                 },
-                new OrderListItemProductDto 
-                { 
-                    ProductImageUrl = "/fake-images/peanut-butter.png", 
+                new OrderListItemProductDto
+                {
+                    ProductImageUrl = "/fake-images/peanut-butter.png",
                     ProductName = "Peanut Butter Cookies",
                     Quantity = 1
                 },
-                new OrderListItemProductDto 
-                { 
-                    ProductImageUrl = "/fake-images/oatmeal-raisin.png", 
+                new OrderListItemProductDto
+                {
+                    ProductImageUrl = "/fake-images/oatmeal-raisin.png",
                     ProductName = "Oatmeal Raisin Cookies",
                     Quantity = 2
                 },
-                new OrderListItemProductDto 
-                { 
-                    ProductImageUrl = "/fake-images/cocoa-chocolate-chip.png", 
+                new OrderListItemProductDto
+                {
+                    ProductImageUrl = "/fake-images/cocoa-chocolate-chip.png",
                     ProductName = "Cocoa Chocolate Chip Cookies",
                     Quantity = 2
                 }
@@ -54,21 +54,21 @@ public static class StaticOrders
             PlacedOn = DateTime.Now.AddDays(-10),
             Status = new OrderStatusDto
             {
-                StatusId = 1, 
-                Status = "In Transit" 
+                StatusId = 1,
+                Status = "In Transit"
             },
             Total = 24.5m,
             Products = new List<OrderListItemProductDto>
             {
-                new OrderListItemProductDto 
-                { 
-                    ProductImageUrl = "/fake-images/chocolate-chip.png", 
+                new OrderListItemProductDto
+                {
+                    ProductImageUrl = "/fake-images/chocolate-chip.png",
                     ProductName = "Chocolate Chip Cookies",
                     Quantity = 2
                 },
-                new OrderListItemProductDto 
-                { 
-                    ProductImageUrl = "/fake-images/peanut-butter.png", 
+                new OrderListItemProductDto
+                {
+                    ProductImageUrl = "/fake-images/peanut-butter.png",
                     ProductName = "Peanut Butter Cookies",
                     Quantity = 1
                 }
@@ -87,8 +87,8 @@ public static class StaticOrders
             Total = 42m,
             Products = new List<OrderListItemProductDto>
             {
-                new OrderListItemProductDto 
-                { 
+                new OrderListItemProductDto
+                {
                     ProductImageUrl = "/fake-images/chocolate-chip.png",
                     ProductName = "Chocolate Chip Cookies",
                     Quantity = 2
@@ -108,8 +108,8 @@ public static class StaticOrders
             Total = 18.95m,
             Products = new List<OrderListItemProductDto>
             {
-                new OrderListItemProductDto 
-                { 
+                new OrderListItemProductDto
+                {
                     ProductImageUrl = "/fake-images/chocolate-chip.png",
                     ProductName = "Chocolate Chip Cookies",
                     Quantity = 1
@@ -129,9 +129,9 @@ public static class StaticOrders
             Total = 18.95m,
             Products = new List<OrderListItemProductDto>
             {
-                new OrderListItemProductDto 
-                { 
-                    ProductImageUrl = "/fake-images/chocolate-chip.png", 
+                new OrderListItemProductDto
+                {
+                    ProductImageUrl = "/fake-images/chocolate-chip.png",
                     ProductName = "Chocolate Chip Cookies",
                     Quantity = 2
                 }
@@ -194,7 +194,7 @@ public static class StaticOrders
             Id = Guid.Parse("d8f5a8e1-1234-4567-89ab-666666666666"),
             OrderReference = "TC-8801",
             PlacedOn = DateTime.Now.AddMonths(-2).AddDays(10),
-            Status = new OrderStatusDto { StatusId = 2, Status = "Delivered" }, 
+            Status = new OrderStatusDto { StatusId = 2, Status = "Delivered" },
             TrackingInformation = new()
             {
                 Carrier = "PostNL",

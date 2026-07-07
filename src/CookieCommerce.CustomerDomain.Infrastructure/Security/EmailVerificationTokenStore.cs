@@ -64,13 +64,27 @@ public sealed class EmailVerificationTokenStore : IEmailVerificationTokenStore
         string token,
         CancellationToken cancellationToken)
     {
-        var hashedToken = ComputeHash(token);
+        EmailVerificationTokenRecord? record = null;
 
-        // Find by hashed token for the given customer
-        var record = await _session
-            .Query<EmailVerificationTokenRecord>()
-            .Where(r => r.CustomerId == customerId && r.HashedToken == hashedToken && r.ConsumedAtUtc == null)
-            .FirstOrDefaultAsync(cancellationToken);
+        // The delivery contract may round-trip the opaque reference. Treat it as a
+        // secret reference and accept it without ever logging or exposing it.
+        if (token.StartsWith("evt_", StringComparison.Ordinal))
+        {
+            var byReference = await _session.LoadAsync<EmailVerificationTokenRecord>(token, cancellationToken);
+            if (byReference?.CustomerId == customerId && byReference.ConsumedAtUtc is null)
+                record = byReference;
+        }
+
+        if (record is null)
+        {
+            var hashedToken = ComputeHash(token);
+
+            // Find by hashed raw token for the given customer when a raw token is used.
+            record = await _session
+                .Query<EmailVerificationTokenRecord>()
+                .Where(r => r.CustomerId == customerId && r.HashedToken == hashedToken && r.ConsumedAtUtc == null)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
 
         if (record is null)
             return null;

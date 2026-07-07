@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 namespace CookieCommerce.Web.Services;
 
 public class FakeAuthService(
-    ICartService cartService,    
+    ICartService cartService,
     ProtectedLocalStorage localStorage) : IAuthService
 {
     public event Action OnChange;
@@ -83,6 +83,16 @@ public class FakeAuthService(
         // In a real implementation, you would send an email with a reset link.
         // For this fake service, we'll just simulate the delay.
         return Task.Delay(3000);
+    }
+
+    public void UpdateCurrentUserProfile(string firstName, string lastName, string email)
+    {
+        if (currentUser is null) return;
+
+        currentUser.FirstName = firstName;
+        currentUser.LastName = lastName;
+        currentUser.Email = email;
+        NotifyStateChanged();
     }
 
     public void Logout()

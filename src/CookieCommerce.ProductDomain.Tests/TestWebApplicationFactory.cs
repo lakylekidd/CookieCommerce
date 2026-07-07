@@ -28,13 +28,13 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             services.AddMarten(opts =>
             {
                 opts.Connection(connectionString);
-                
+
                 // Register projections with inline lifecycle
                 opts.Projections.Add<Infrastructure.Projections.ProductDetailsProjection>(
                     JasperFx.Events.Projections.ProjectionLifecycle.Inline);
                 opts.Projections.Add<Infrastructure.Projections.ProductListItemProjection>(
                     JasperFx.Events.Projections.ProjectionLifecycle.Inline);
-                
+
                 opts.AutoCreateSchemaObjects = JasperFx.AutoCreate.All;
             }).ApplyAllDatabaseChangesOnStartup();
 

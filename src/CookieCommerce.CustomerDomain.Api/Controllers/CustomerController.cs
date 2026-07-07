@@ -70,6 +70,24 @@ public class CustomerController(ISender mediator) : ControllerBase
         return Accepted(new ResendCustomerEmailVerificationResponse(result.Status.ToString(), result.Message));
     }
 
+    /// <summary>
+    /// Confirms the authenticated customer's pending email verification token.
+    /// </summary>
+    [HttpPost("me/email-verification/confirm")]
+    public async Task<IActionResult> ConfirmEmailVerificationAsync(
+        [FromBody] ConfirmCustomerEmailVerificationRequest request,
+        CancellationToken ct = default)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+        var customerId = ResolveCustomerId();
+        if (customerId is null) return Unauthorized();
+
+        var command = request.ToCommand(customerId.Value, HttpContext.TraceIdentifier);
+        var result = await _mediator.Send(command, ct);
+        return Ok(result.ToResponse());
+    }
+
     // ─── Existing Customer Endpoints ──────────────────────────────────────────
 
     [HttpPost]

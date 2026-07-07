@@ -79,15 +79,15 @@ public class DeactivateProductHandlerTests
 
         // Act - Call deactivate first time
         await handler.Handle(command, CancellationToken.None);
-        
+
         // Clear domain events after first call (simulating what happens after persist)
         product.ClearUncommitedEvents();
-        
+
         // Reset call tracking for second call
         session.Events.ClearReceivedCalls();
         session.ClearReceivedCalls();
         publisher.ClearReceivedCalls();
-        
+
         // Act - Product is already deactivated, but should not throw
         await handler.Handle(command, CancellationToken.None);
 

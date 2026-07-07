@@ -15,7 +15,7 @@ Some interfaces (`IBackofficeService`, `IAccountService`, `ICheckoutService`) ar
 | [Inventory Management](#3-inventory) | `ICookieService`, `IInventoryService`, `IBackofficeService` *(partial)* |
 | [Cart Management](#4-cart) | `ICartService` |
 | [Logistics Management](#5-logistics) | `ICheckoutService` *(partial)*, `IAccountService` *(partial)* |
-| [Customer Management](#6-customer-management) | `IAccountService` *(partial)*, `ICustomerService` |
+| [Customer Management](#6-customer-management) | `CustomerProfileService`, `IAccountService` *(partial)*, `ICustomerService` |
 | [Store Management](#7-store-management) | `IImageUploadService`, `INewsletterService`, `IContactService`, `ILocationService`, `IOperationsService`, `IContentService` |
 
 ---
@@ -210,12 +210,17 @@ Some interfaces (`IBackofficeService`, `IAccountService`, `ICheckoutService`) ar
 
 ## 6. Customer Management
 
-**Interfaces:** `IAccountService` *(profile, address, favourites, reviews)*, `ICustomerService`
-**Files:** `Services/IAccountService.cs`, `Services/ICustomerService.cs`
+**Services/Interfaces:** `CustomerProfileService`, `IAccountService` *(address, favourites, reviews and legacy profile members)*, `ICustomerService`
+**Files:** `Services/CustomerProfileService.cs`, `Services/CustomerProfileState.cs`, `Services/IAccountService.cs`, `Services/ICustomerService.cs`
 
 **Responsibility:** The complete customer data domain — both the self-service view (a logged-in customer managing their own profile, addresses, favourites, and reviews) and the backoffice operator view (looking up customers and their order history). All operations assume an authenticated context, either the customer themselves or an admin.
 
+**Profile integration:** Customer-facing profile load/save/resend/verification flows use the concrete `CustomerProfileService` registered with the Aspire-discovered `customer-api` HttpClient. `CustomerProfileState` holds the latest live profile so profile displays refresh immediately after a successful save or email verification confirmation. This flow does not use `FakeAccountService`, `StaticProfileList`, or mock fallback data for customer-facing profile fields; failures are surfaced as user-safe service/validation results.
+
 **Requirements:**
+- `CustomerProfileService` operations require an authenticated customer and call CustomerDomain `/api/customer/me` endpoints rather than trusting caller-supplied customer ids.
+- Profile email changes create pending email verification in CustomerDomain; the verified/login email remains active until verification succeeds and AuthenticationManagement consumes the verified-email event.
+- Profile service validation maps API validation/problem details to user-safe field feedback and must not log raw verification tokens or unnecessary PII.
 - All `IAccountService` operations here require a logged-in customer (resolved via `IAuthService`).
 - Address book is index-based; primary address designation must be enforced server-side.
 - Favourites are per-user and per-product.
@@ -224,13 +229,23 @@ Some interfaces (`IBackofficeService`, `IAccountService`, `ICheckoutService`) ar
 - `GetCustomerByIdAsync` returns `null` when the customer does not exist.
 - `GetCustomerOrdersAsync` returns the full unpaginated order list for a given customer (operators need the full picture).
 
-### From `IAccountService` — Self-service profile & preferences
+### From `CustomerProfileService` — Live CustomerDomain profile
 
 | Method | Signature |
 |---|---|
 | `GetProfileAsync` | `Task<UserProfileDto?> GetProfileAsync()` |
 | `UpdateProfileAsync` | `Task<ResultDto> UpdateProfileAsync(UserProfileDto profile)` |
+| `ResendEmailVerificationAsync` | `Task<ResultDto> ResendEmailVerificationAsync(string pendingEmail)` |
+| `ConfirmEmailVerificationAsync` | `Task<UserProfileDto?> ConfirmEmailVerificationAsync(string token)` |
 | `HasBirthdateAsync` | `Task<bool> HasBirthdateAsync()` |
+
+### From `IAccountService` — Self-service preferences and legacy profile members
+
+| Method | Signature |
+|---|---|
+| `GetProfileAsync` | `Task<UserProfileDto?> GetProfileAsync()` *(legacy/mock-backed member; not used for customer-facing live profile display/save)* |
+| `UpdateProfileAsync` | `Task<ResultDto> UpdateProfileAsync(UserProfileDto profile)` *(legacy/mock-backed member; not used for customer-facing live profile display/save)* |
+| `HasBirthdateAsync` | `Task<bool> HasBirthdateAsync()` *(legacy/mock-backed member; not used for customer-facing live profile display/save)* |
 | `GetAddressesAsync` | `Task<IList<AddressBookItemDto>> GetAddressesAsync()` |
 | `AddAddressAsync` | `Task<ResultDto> AddAddressAsync(AddressBookItemDto address)` |
 | `DeleteAddressAsync` | `Task<ResultDto> DeleteAddressAsync(int index)` |
@@ -314,4 +329,4 @@ Some interfaces (`IBackofficeService`, `IAccountService`, `ICheckoutService`) ar
 
 ---
 
-*Last updated: 2026-06-07 — reflects interfaces as of commit `dbf3a82`.*
+*Last updated: 2026-07-07 — reflects live CustomerDomain profile integration and Phase 6 documentation updates.*

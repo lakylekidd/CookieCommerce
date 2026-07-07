@@ -120,29 +120,72 @@ public class CustomerProjection : SingleStreamProjection<CustomerReadModel, Guid
         return current;
     }
 
-    public CustomerReadModel Apply(CustomerAddressAdded @event, CustomerReadModel current)
+    public async Task<CustomerReadModel> Apply(CustomerAddressAdded @event, CustomerReadModel current, IQuerySession session)
     {
+        var keyRecord = await session.LoadAsync<CustomerKeyRecord>(@event.CustomerId);
+
+        if (keyRecord?.Key == null)
+        {
+            return current;
+        }
+
+        if (@event.IsDefault || current.Addresses.Count == 0)
+        {
+            foreach (var existingAddress in current.Addresses)
+            {
+                existingAddress.IsDefault = false;
+            }
+        }
+
         var address = new CustomerAddressReadModel
         {
-            Label = @event.Address.Label,
-            Street = @event.Address.Street,
-            City = @event.Address.City,
-            State = string.Empty,
-            PostalCode = @event.Address.PostalCode,
-            Country = @event.Address.CountryIso2LetterCode
+            AddressId = @event.AddressId,
+            Index = current.Addresses.Count + 1,
+            Icon = @event.Icon,
+            Label = @event.Label,
+            FirstName = _encryptionService.Decrypt(@event.EncryptedFirstName, keyRecord.Key),
+            LastName = _encryptionService.Decrypt(@event.EncryptedLastName, keyRecord.Key),
+            Street = _encryptionService.Decrypt(@event.EncryptedStreet, keyRecord.Key),
+            HouseNumber = _encryptionService.Decrypt(@event.EncryptedHouseNumber, keyRecord.Key),
+            HouseNumberAddition = @event.EncryptedHouseNumberAddition is null
+                ? null
+                : _encryptionService.Decrypt(@event.EncryptedHouseNumberAddition, keyRecord.Key),
+            City = _encryptionService.Decrypt(@event.EncryptedCity, keyRecord.Key),
+            PostalCode = _encryptionService.Decrypt(@event.EncryptedPostalCode, keyRecord.Key),
+            Province = _encryptionService.Decrypt(@event.EncryptedProvince, keyRecord.Key),
+            Country = _encryptionService.Decrypt(@event.EncryptedCountry, keyRecord.Key),
+            Phone = _encryptionService.Decrypt(@event.EncryptedPhone, keyRecord.Key),
+            IsDefault = @event.IsDefault || current.Addresses.Count == 0,
+            CreatedAtUtc = @event.CreatedAtUtc
         };
 
         current.Addresses.Add(address);
+        ReindexAddresses(current);
         return current;
     }
 
     public CustomerReadModel Apply(CustomerAddressRemoved @event, CustomerReadModel current)
     {
-        var addressToRemove = current.Addresses.FirstOrDefault(a => a.Label == @event.Label);
+        var addressToRemove = current.Addresses.FirstOrDefault(a => a.AddressId == @event.AddressId);
         if (addressToRemove != null)
             current.Addresses.Remove(addressToRemove);
 
+        if (current.Addresses.Count > 0 && current.Addresses.All(x => !x.IsDefault))
+        {
+            current.Addresses.OrderBy(x => x.CreatedAtUtc).First().IsDefault = true;
+        }
+
+        ReindexAddresses(current);
         return current;
+    }
+
+    private static void ReindexAddresses(CustomerReadModel current)
+    {
+        var index = 1;
+        foreach (var address in current.Addresses.OrderBy(x => x.CreatedAtUtc).ThenBy(x => x.AddressId))
+        {
+            address.Index = index++;
+        }
     }
 
     private static CustomerProfileGender? ParseGender(string? genderStr)

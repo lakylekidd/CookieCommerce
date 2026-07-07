@@ -18,11 +18,11 @@
 
 **Purpose**: Confirm existing seams and add shared address contract scaffolding without changing behavior.
 
-- [ ] T001 Audit current fake and CustomerDomain address flows in `src/CookieCommerce.Web/Services/FakeAccountService.cs`, `src/CookieCommerce.CustomerDomain.Api/Controllers/CustomerController.cs`, and `src/CookieCommerce.CustomerDomain.Domain/Aggregates/CustomerAggregate.cs`
-- [ ] T002 [P] Add stable address identity to the Web address DTO in `src/CookieCommerce.Web/Models/Addresses/AddressBookItemDto.cs`
-- [ ] T003 [P] Create CustomerDomain address API response DTO in `src/CookieCommerce.CustomerDomain.Api/Models/Customers/CustomerAddressResponse.cs`
-- [ ] T004 [P] Create CustomerDomain address mapping extension skeleton in `src/CookieCommerce.CustomerDomain.Api/Models/Customers/CustomerAddressMappings.cs`
-- [ ] T005 [P] Create Web CustomerDomain address client model skeletons in `src/CookieCommerce.Web/Models/Addresses/CustomerAddressApiModels.cs`
+- [X] T001 Audit current fake and CustomerDomain address flows in `src/CookieCommerce.Web/Services/FakeAccountService.cs`, `src/CookieCommerce.CustomerDomain.Api/Controllers/CustomerController.cs`, and `src/CookieCommerce.CustomerDomain.Domain/Aggregates/CustomerAggregate.cs`
+- [X] T002 [P] Add stable address identity to the Web address DTO in `src/CookieCommerce.Web/Models/Addresses/AddressBookItemDto.cs`
+- [X] T003 [P] Create CustomerDomain address API response DTO in `src/CookieCommerce.CustomerDomain.Api/Models/Customers/CustomerAddressResponse.cs`
+- [X] T004 [P] Create CustomerDomain address mapping extension skeleton in `src/CookieCommerce.CustomerDomain.Api/Models/Customers/CustomerAddressMappings.cs`
+- [X] T005 [P] Create Web CustomerDomain address client model skeletons in `src/CookieCommerce.Web/Models/Addresses/CustomerAddressApiModels.cs`
 
 ---
 
@@ -32,14 +32,14 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T006 Update CustomerDomain `Address` value object with address id, icon, label, first name, last name, street, house number, house-number addition, city, postal code, province, country, phone, default flag, and created timestamp in `src/CookieCommerce.CustomerDomain.Domain/ValueObjects/Address.cs`
-- [ ] T007 [P] Add address-specific domain exceptions for validation, duplicate label, and missing address id behavior in `src/CookieCommerce.CustomerDomain.Domain/Exceptions/CustomerAddressExceptions.cs`
-- [ ] T008 Update `CustomerAddressAdded` to store encrypted address PII fields and non-PII metadata instead of plaintext value-object payloads in `src/CookieCommerce.CustomerDomain.Domain/DomainEvents/CustomerAddressAdded.cs`
-- [ ] T009 Update `CustomerAddressRemoved` to remove by address id and include deletion timestamp metadata in `src/CookieCommerce.CustomerDomain.Domain/DomainEvents/CustomerAddressRemoved.cs`
-- [ ] T010 Add address encryption/decryption helpers using existing customer key infrastructure in `src/CookieCommerce.CustomerDomain.Application/Customers/Profile/CustomerAddressEncryption.cs`
-- [ ] T011 Add reusable address request validation for required fields, trimming, length bounds, duplicate labels, and phone/postal-code presence in `src/CookieCommerce.CustomerDomain.Application/Customers/Profile/CustomerAddressValidator.cs`
-- [ ] T012 Update `CustomerAddressReadModel` with the full customer-facing address shape and default-address fields in `src/CookieCommerce.CustomerDomain.Application/Customers/ReadModels/CustomerAddressReadModel.cs`
-- [ ] T013 Update `CustomerProjection` to decrypt address-added events, apply deterministic indexes, maintain default-address state, and delete address read models on customer erasure in `src/CookieCommerce.CustomerDomain.Infrastructure/Projections/CustomerProjection.cs`
+- [X] T006 Update CustomerDomain `Address` value object with address id, icon, label, first name, last name, street, house number, house-number addition, city, postal code, province, country, phone, default flag, and created timestamp in `src/CookieCommerce.CustomerDomain.Domain/ValueObjects/Address.cs`
+- [X] T007 [P] Add address-specific domain exceptions for validation, duplicate label, and missing address id behavior in `src/CookieCommerce.CustomerDomain.Domain/Exceptions/CustomerAddressExceptions.cs`
+- [X] T008 Update `CustomerAddressAdded` to store encrypted address PII fields and non-PII metadata instead of plaintext value-object payloads in `src/CookieCommerce.CustomerDomain.Domain/DomainEvents/CustomerAddressAdded.cs`
+- [X] T009 Update `CustomerAddressRemoved` to remove by address id and include deletion timestamp metadata in `src/CookieCommerce.CustomerDomain.Domain/DomainEvents/CustomerAddressRemoved.cs`
+- [X] T010 Add address encryption/decryption helpers using existing customer key infrastructure in `src/CookieCommerce.CustomerDomain.Application/Customers/Profile/CustomerAddressEncryption.cs`
+- [X] T011 Add reusable address request validation for required fields, trimming, length bounds, duplicate labels, and phone/postal-code presence in `src/CookieCommerce.CustomerDomain.Application/Customers/Profile/CustomerAddressValidator.cs`
+- [X] T012 Update `CustomerAddressReadModel` with the full customer-facing address shape and default-address fields in `src/CookieCommerce.CustomerDomain.Application/Customers/ReadModels/CustomerAddressReadModel.cs`
+- [X] T013 Update `CustomerProjection` to decrypt address-added events, apply deterministic indexes, maintain default-address state, and delete address read models on customer erasure in `src/CookieCommerce.CustomerDomain.Infrastructure/Projections/CustomerProjection.cs`
 
 **Checkpoint**: Foundation ready — user story implementation can now begin.
 

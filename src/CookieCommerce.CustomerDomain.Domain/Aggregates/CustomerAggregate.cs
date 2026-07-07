@@ -116,20 +116,60 @@ public class CustomerAggregate : AggregateBase
         Apply(new CustomerForgotten(Id));
     }
 
+    public void AddAddress(CustomerAddressAdded addressAdded)
+    {
+        if (_addresses.Any(a => string.Equals(a.Label, addressAdded.Label, StringComparison.OrdinalIgnoreCase)))
+            throw new DuplicateCustomerAddressLabelException(Id, addressAdded.Label);
+
+        if (_addresses.Count == 0)
+            addressAdded.IsDefault = true;
+
+        Apply(addressAdded);
+    }
+
     public void AddAddress(Address address)
     {
-        if (_addresses.Any(a => a.Label == address.Label))
-            throw new DuplicateAddressLabelException(Id, address.Label);
+        AddAddress(new CustomerAddressAdded
+        {
+            CustomerId = Id,
+            AddressId = address.AddressId,
+            Icon = address.Icon,
+            Label = address.Label,
+            EncryptedFirstName = address.FirstName,
+            EncryptedLastName = address.LastName,
+            EncryptedStreet = address.Street,
+            EncryptedHouseNumber = address.HouseNumber,
+            EncryptedHouseNumberAddition = address.HouseNumberAddition,
+            EncryptedCity = address.City,
+            EncryptedPostalCode = address.PostalCode,
+            EncryptedProvince = address.Province,
+            EncryptedCountry = address.Country,
+            EncryptedPhone = address.Phone,
+            IsDefault = address.IsDefault,
+            CreatedAtUtc = address.CreatedAtUtc
+        });
+    }
 
-        Apply(new CustomerAddressAdded(Id, address));
+    public void RemoveAddress(Guid addressId, DateTimeOffset deletedAtUtc)
+    {
+        if (_addresses.Any(x => x.AddressId == addressId) == false)
+            throw new CustomerAddressNotFoundException(Id, addressId);
+
+        Apply(new CustomerAddressRemoved
+        {
+            CustomerId = Id,
+            AddressId = addressId,
+            DeletedAtUtc = deletedAtUtc
+        });
     }
 
     public void RemoveAddress(string label)
     {
-        if (_addresses.Any(x => x.Label == label) == false)
+        var address = _addresses.FirstOrDefault(x => x.Label == label);
+        if (address is null)
             throw new AddressNotFoundException(Id, label);
 
-        Apply(new CustomerAddressRemoved(Id, label));
+        RemoveAddress(address.AddressId, DateTimeOffset.UtcNow);
     }
 
     protected override void When(object @event)
@@ -201,22 +241,44 @@ public class CustomerAggregate : AggregateBase
 
     private void Handle(CustomerAddressAdded e)
     {
-        if (e.Address.IsPrimary)
+        if (e.IsDefault)
         {
             foreach (var addr in _addresses)
             {
-                if (addr.IsPrimary)
+                if (addr.IsDefault)
                     addr.UnsetPrimary();
             }
         }
 
-        _addresses.Add(e.Address);
+        _addresses.Add(new Address(
+            e.AddressId,
+            e.Icon,
+            e.Label,
+            e.EncryptedFirstName,
+            e.EncryptedLastName,
+            e.EncryptedStreet,
+            e.EncryptedHouseNumber,
+            e.EncryptedHouseNumberAddition,
+            e.EncryptedCity,
+            e.EncryptedPostalCode,
+            e.EncryptedProvince,
+            e.EncryptedCountry,
+            e.EncryptedPhone,
+            e.IsDefault,
+            e.CreatedAtUtc));
     }
 
     private void Handle(CustomerAddressRemoved e)
     {
-        var existing = _addresses.FirstOrDefault(x => x.Label == e.Label);
+        var existing = _addresses.FirstOrDefault(x => x.AddressId == e.AddressId);
         if (existing != null)
             _addresses.Remove(existing);
+
+        if (_addresses.Count > 0 && _addresses.All(x => !x.IsDefault))
+        {
+            var oldestRemainingAddress = _addresses.OrderBy(x => x.CreatedAtUtc).First();
+            _addresses.Remove(oldestRemainingAddress);
+            _addresses.Add(oldestRemainingAddress.WithDefault(true));
+        }
     }
 }

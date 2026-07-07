@@ -18,6 +18,8 @@ public static class DependencyInjection
         services.AddScoped<ICustomerKeyStore, CustomerKeyStore>();
         services.AddScoped<IEncryptionService, EncryptionService>();
         services.AddScoped<CustomerProfileEncryption>();
+        services.AddScoped<CustomerAddressEncryption>();
+        services.AddScoped<CustomerAddressValidator>();
         services.AddScoped<CustomerProfileValidator>();
         services.AddScoped<CustomerEmailUniquenessService>();
         services.AddScoped<ICustomerEmailUniquenessChecker, MartenCustomerEmailUniquenessChecker>();

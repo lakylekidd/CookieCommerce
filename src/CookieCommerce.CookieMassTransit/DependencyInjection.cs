@@ -7,7 +7,10 @@ namespace CookieCommerce.CookieMassTransit;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddCookieMassTransit(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddCookieMassTransit(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        Action<IBusRegistrationConfigurator>? configureConsumers = null)
     {
         // Ensure MassTransit license is available to MassTransit by setting environment variables
         // MassTransit will read MT_LICENSE or MT_LICENSE_PATH. Prefer existing environment variables;
@@ -29,6 +32,8 @@ public static class DependencyInjection
 
         services.AddMassTransit(x =>
         {
+            configureConsumers?.Invoke(x);
+
             x.SetKebabCaseEndpointNameFormatter();
 
             x.UsingRabbitMq((ctx, cfg) =>
@@ -36,6 +41,9 @@ public static class DependencyInjection
                 var connectionString = configuration.GetConnectionString("Messaging");
                 ArgumentNullException.ThrowIfNull(connectionString, "Connection string 'Messaging' not found.");
                 cfg.Host(connectionString);
+
+                if (configureConsumers != null)
+                    cfg.ConfigureEndpoints(ctx);
             });
         });
 

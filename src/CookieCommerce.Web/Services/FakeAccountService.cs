@@ -40,39 +40,37 @@ public class FakeAccountService(IAuthService authService) : IAccountService
             .ToList()!;
     }
 
+    /// <summary>
+    /// Profile operations are now handled by CustomerProfileService for customer-facing surfaces.
+    /// This method remains for IAccountService compatibility (favorites, addresses).
+    /// </summary>
     public async Task<UserProfileDto?> GetProfileAsync()
     {
         await authService.InitializeAsync();
         if (authService.CurrentUser is not UserDto user) return null;
-        var profile = StaticProfileList.Profiles.FirstOrDefault(p => p.Id == user.Id);
-        return profile;
+        // Return a minimal DTO from auth state for non-profile purposes (e.g. favorites lookup).
+        // Customer-facing profile display must use CustomerProfileService.
+        return new UserProfileDto
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            Role = user.Role
+        };
     }
 
-    public async Task<ResultDto> UpdateProfileAsync(UserProfileDto profile)
+    /// <summary>
+    /// Profile save is now handled by CustomerProfileService.
+    /// This stub returns a failure to ensure no mock-data update occurs.
+    /// </summary>
+    public Task<ResultDto> UpdateProfileAsync(UserProfileDto profile)
     {
-        if (await GetProfileAsync() is not { } userProfile)
+        return Task.FromResult(new ResultDto
         {
-            return new ResultDto { Success = false, Message = "Sign in to update your profile" };
-        }
-
-        var existingProfile = StaticProfileList.Profiles.FirstOrDefault(p => p.Id == userProfile.Id);
-        if (existingProfile is null)
-        {
-            return new ResultDto { Success = false, Message = "Profile not found" };
-        }
-
-        existingProfile.DateOfBirth = profile.DateOfBirth;
-        existingProfile.FirstName = profile.FirstName;
-        existingProfile.LastName = profile.LastName;
-        existingProfile.Email = profile.Email;
-        existingProfile.Gender = profile.Gender;
-
-        var result = new ResultDto
-        {
-            Success = true,
-            Message = "Profile updated successfully"
-        };
-        return result;
+            Success = false,
+            Message = "Profile updates must go through CustomerProfileService."
+        });
     }
 
     public async Task<IList<AddressBookItemDto>> GetAddressesAsync()
@@ -210,9 +208,9 @@ public class FakeAccountService(IAuthService authService) : IAccountService
         return Task.FromResult((false, 0));
     }
 
-    public async Task<bool> HasBirthdateAsync()
-    {
-        if (await GetProfileAsync() is not { } profile) return false;
-        return profile.DateOfBirth.HasValue;
-    }
+    /// <summary>
+    /// Birthday check is now handled by CustomerProfileService.
+    /// Delegates to avoid double-loading; returns false as safe default.
+    /// </summary>
+    public Task<bool> HasBirthdateAsync() => Task.FromResult(false);
 }

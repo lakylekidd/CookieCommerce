@@ -1,7 +1,9 @@
 using CookieCommerce.AuthenticationManagement.Application.Auth.Commands;
+using CookieCommerce.AuthenticationManagement.Application.Auth.Integration;
 using CookieCommerce.AuthenticationManagement.Application.Keycloak;
 using CookieCommerce.AuthenticationManagement.Domain.Aggregates;
 using CookieCommerce.AuthenticationManagement.Domain.Exceptions;
+using CookieCommerce.DomainBuildingBlocks;
 using Marten;
 using MediatR;
 
@@ -9,7 +11,8 @@ namespace CookieCommerce.AuthenticationManagement.Application.Auth.Handlers;
 
 public class RegisterUserHandler(
     IDocumentSession session,
-    IKeycloakAdminService keycloakAdmin) : IRequestHandler<RegisterUser, Guid>
+    IKeycloakAdminService keycloakAdmin,
+    IIntegrationEventPublisher publisher) : IRequestHandler<RegisterUser, Guid>
 {
     public async Task<Guid> Handle(RegisterUser command, CancellationToken cancellationToken)
     {
@@ -26,6 +29,16 @@ public class RegisterUserHandler(
 
         session.Events.StartStream<AuthUserAggregate>(userId, user.DomainEvents);
         await session.SaveChangesAsync(cancellationToken);
+
+        await publisher.PublishAsync(new UserRegisteredIntegrationEvent
+        {
+            UserId = userId,
+            KeycloakId = keycloakId,
+            Email = command.Email,
+            FirstName = command.FirstName,
+            LastName = command.LastName,
+            RegisteredAt = DateTime.UtcNow
+        }, cancellationToken);
 
         return userId;
     }

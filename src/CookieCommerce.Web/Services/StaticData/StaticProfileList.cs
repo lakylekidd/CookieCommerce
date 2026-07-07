@@ -4,6 +4,11 @@ using CookieCommerce.Web.Services.Products;
 
 namespace CookieCommerce.Web.Services.StaticData;
 
+/// <summary>
+/// Static profile data used only for non-customer-facing surfaces (backoffice, development tools).
+/// Customer-facing profile load/save/display MUST use CustomerProfileService.
+/// Do not reference this class from components or services that serve the customer dashboard.
+/// </summary>
 public static class StaticProfileList
 {
     public static readonly UserProfileDto AdminUserProfile = GetAdminProfile();
@@ -56,7 +61,7 @@ public static class StaticProfileList
             FirstName = fromUser.FirstName,
             LastName = fromUser.LastName,
             Email = fromUser.Email,
-            DateOfBirth = DateTime.Now.AddYears(-age),
+            DateOfBirth = DateOnly.FromDateTime(DateTime.Now.AddYears(-age)),
             Gender = gender
         };
     }

@@ -1,6 +1,8 @@
-﻿@using CookieCommerce.Web.Models.Account
+@using CookieCommerce.Web.Models.Account
+@using CookieCommerce.Web.Models
 @using CookieCommerce.Web.Services
-@inject IAccountService AccountService
+@inject CustomerProfileService ProfileService
+@inject CustomerProfileState ProfileState
 @rendermode InteractiveServer
 
 <div class="fixed inset-0 z-200 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
@@ -31,106 +33,113 @@
                 </div>
             </div>
         </div>
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="mx-8 mb-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+                <p class="text-sm text-green-700 dark:text-green-300 font-medium">@successMessage</p>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="mx-8 mb-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                <p class="text-sm text-red-700 dark:text-red-300 font-medium">@errorMessage</p>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(profile.PendingEmail))
+        {
+            <div class="mx-8 mb-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+                <p class="text-sm text-amber-700 dark:text-amber-300">
+                    <span class="font-semibold">Verification pending</span> for <span class="font-semibold">@profile.PendingEmail</span>.
+                    Continue signing in with <span class="font-semibold">@profile.Email</span> until verification is complete.
+                </p>
+                <button @onclick="HandleResend" type="button"
+                        class="mt-1 text-xs text-amber-600 dark:text-amber-400 underline hover:text-primary cursor-pointer">
+                    Resend verification email
+                </button>
+            </div>
+        }
+
         <form class="p-8 pt-4 space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="space-y-2">
-                    <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider"
-                           for="first_name">First Name</label>
+                    <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider" for="first_name">First Name</label>
+                    @if (fieldErrors.TryGetValue("firstName", out var fnErr))
+                    {
+                        <p class="text-xs text-red-500">@fnErr[0]</p>
+                    }
                     <input class="w-full px-4 py-3 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-primary focus:border-primary text-primary dark:text-white font-medium"
-                           @bind="profile.FirstName"
-                            id="first_name" type="text" />
+                           @bind="profile.FirstName" id="first_name" type="text" />
                 </div>
                 <div class="space-y-2">
-                    <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider"
-                           for="last_name">Last Name</label>
+                    <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider" for="last_name">Last Name</label>
+                    @if (fieldErrors.TryGetValue("lastName", out var lnErr))
+                    {
+                        <p class="text-xs text-red-500">@lnErr[0]</p>
+                    }
                     <input class="w-full px-4 py-3 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-primary focus:border-primary text-primary dark:text-white font-medium"
-                           @bind="profile.LastName"
-                           id="last_name" type="text" />
+                           @bind="profile.LastName" id="last_name" type="text" />
                 </div>
             </div>
             <div class="space-y-2">
-                <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider"
-                       for="email">Email Address</label>
+                <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider" for="email">Email Address</label>
+                @if (fieldErrors.TryGetValue("email", out var emailErr))
+                {
+                    <p class="text-xs text-red-500">@emailErr[0]</p>
+                }
                 <div class="relative">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">mail</span>
                     <input class="w-full pl-12 pr-4 py-3 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-primary focus:border-primary text-primary dark:text-white font-medium"
-                           @bind="profile.Email"
-                           id="email" type="email" />
+                           @bind="profile.Email" id="email" type="email" />
                 </div>
+                <p class="text-xs text-gray-400 italic">Changing your email will send a verification link to the new address.</p>
             </div>
             <div class="space-y-2">
-                <label class="block text-xs font-black text-primary dark:text-gray-300 uppercase tracking-widest">
-                    Gender
-                </label>
+                <label class="block text-xs font-black text-primary dark:text-gray-300 uppercase tracking-widest">Gender</label>
                 <div class="flex flex-row gap-2">
-                    <label class="flex-1 cursor-pointer">
-                        <input type="radio" name="gender" value="male" class="peer hidden"
-                               checked="@(profile.Gender == "male")"
-                               @onchange="@(() => profile.Gender = "male")" />
-                        <div class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800
-                            peer-checked:border-primary peer-checked:bg-orange-50 dark:peer-checked:bg-orange-900/30
-                            peer-checked:ring-1 peer-checked:ring-primary transition-all">
-                            <span class="material-symbols-outlined text-sm text-gray-400 peer-checked:text-primary">male</span>
-                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400 peer-checked:text-primary">Male</span>
-                        </div>
-                    </label>
-
-                    <label class="flex-1 cursor-pointer">
-                        <input type="radio" name="gender" value="female" class="peer hidden"
-                               checked="@(profile.Gender == "female")"
-                               @onchange="@(() => profile.Gender = "female")" />
-                        <div class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800
-                            peer-checked:border-primary peer-checked:bg-orange-50 dark:peer-checked:bg-orange-900/30
-                            peer-checked:ring-1 peer-checked:ring-primary transition-all">
-                            <span class="material-symbols-outlined text-sm text-gray-400 peer-checked:text-primary">female</span>
-                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400 peer-checked:text-primary">Female</span>
-                        </div>
-                    </label>
-
-                    <label class="flex-1 cursor-pointer">
-                        <input type="radio" name="gender" value="private" class="peer hidden"
-                               checked="@(profile.Gender == "private")"
-                               @onchange="@(() => profile.Gender = "private")" />
-                        <div class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800
-                            peer-checked:border-primary peer-checked:bg-orange-50 dark:peer-checked:bg-orange-900/30
-                            peer-checked:ring-1 peer-checked:ring-primary transition-all">
-                            <span class="material-symbols-outlined text-sm text-gray-400 peer-checked:text-primary">visibility_off</span>
-                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400 peer-checked:text-primary">Secret</span>
-                        </div>
-                    </label>
+                    @foreach (var (value, label, icon) in GenderOptions)
+                    {
+                        var genderValue = value;
+                        <label class="flex-1 cursor-pointer">
+                            <input type="radio" name="gender" value="@value" class="peer hidden"
+                                   checked="@(profile.Gender == value)"
+                                   @onchange="@(() => profile.Gender = genderValue)" />
+                            <div class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800
+                                peer-checked:border-primary peer-checked:bg-orange-50 dark:peer-checked:bg-orange-900/30
+                                peer-checked:ring-1 peer-checked:ring-primary transition-all">
+                                <span class="material-symbols-outlined text-sm text-gray-400 peer-checked:text-primary">@icon</span>
+                                <span class="text-xs font-bold text-gray-500 dark:text-gray-400 peer-checked:text-primary">@label</span>
+                            </div>
+                        </label>
+                    }
                 </div>
             </div>
             <div class="space-y-2">
-                <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider"
-                       for="dob">Date of Birth</label>
+                <label class="block text-sm font-bold text-primary dark:text-gray-300 uppercase tracking-wider" for="dob">Date of Birth</label>
+                @if (fieldErrors.TryGetValue("dateOfBirth", out var dobErr))
+                {
+                    <p class="text-xs text-red-500">@dobErr[0]</p>
+                }
                 <div class="flex gap-2">
                     <div class="relative flex-grow">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">cake</span>
                         <input class="w-full pl-12 pr-4 py-3 rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-primary focus:border-primary text-primary dark:text-white font-medium"
-                               @bind="profile.DateOfBirth"
-                               id="dob" type="date" />
+                               @bind="profile.DateOfBirth" id="dob" type="date" />
                     </div>
                     <button class="px-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors flex items-center justify-center group"
-                            @onclick="ClearBirthDate"
-                            title="Clear date" type="button">
+                            @onclick="ClearBirthDate" title="Clear date" type="button">
                         <span class="cursor-pointer material-symbols-outlined">backspace</span>
                     </button>
                 </div>
                 <p class="text-xs text-gray-400 italic">We might send a surprise on your birthday!</p>
             </div>
             <div class="flex items-center justify-end gap-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                @* 1. The Cancel Button simply flips the bool *@
-                <button @onclick="OnCancel"
-                        class="cursor-pointer px-6 py-3 rounded-full font-bold text-secondary dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        type="button">
+                <button @onclick="OnCancel" class="cursor-pointer px-6 py-3 rounded-full font-bold text-secondary dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" type="button">
                     Cancel
                 </button>
-
-                @* 2. The Save button should ideally call a method that saves data THEN closes the modal *@
-                <button @onclick="HandleSave"
-                        class="cursor-pointer px-8 py-3 bg-primary hover:bg-orange-600 text-white font-bold rounded-full shadow-lg shadow-orange-200 dark:shadow-none transition-all transform hover:scale-105 active:scale-95"
-                        type="button">
-                    @* Changed type to button to prevent default form refresh *@
+                <button @onclick="HandleSave" class="cursor-pointer px-8 py-3 bg-primary hover:bg-orange-600 text-white font-bold rounded-full shadow-lg shadow-orange-200 dark:shadow-none transition-all transform hover:scale-105 active:scale-95" type="button">
                     Save Changes
                 </button>
             </div>
@@ -139,37 +148,88 @@
 </div>
 
 @code {
-
     [Parameter] public EventCallback OnSave { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
 
     private bool isSaving = false;
+    private string successMessage = string.Empty;
+    private string errorMessage = string.Empty;
+    private Dictionary<string, string[]> fieldErrors = new();
     private UserProfileDto profile = new();
+
+    // Supported gender values: Male, Female, PreferNotToDisclose
+    private static readonly (string Value, string Label, string Icon)[] GenderOptions =
+    [
+        ("Male", "Male", "male"),
+        ("Female", "Female", "female"),
+        ("PreferNotToDisclose", "Prefer not to say", "visibility_off")
+    ];
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AccountService.GetProfileAsync() is { } data)
+        // Load from ProfileState first (immediate), then fall back to API
+        if (ProfileState.Profile is { } cached)
         {
-            profile = data;
+            profile = CloneProfile(cached);
+        }
+        else
+        {
+            var loaded = await ProfileService.GetProfileAsync();
+            if (loaded is not null)
+                profile = CloneProfile(loaded);
         }
     }
 
-    private void ClearBirthDate()
-    {
-        profile.DateOfBirth = null;
-    }
+    private void ClearBirthDate() => profile.DateOfBirth = null;
 
     private async Task HandleSave()
     {
         isSaving = true;
-        var result = await AccountService.UpdateProfileAsync(profile);
+        successMessage = string.Empty;
+        errorMessage = string.Empty;
+        fieldErrors = new();
 
-        await Task.Delay(2000);
+        var result = await ProfileService.UpdateProfileAsync(profile);
 
         if (result.Success)
         {
-            await OnSave.InvokeAsync(); // Tell parent to close modal
+            successMessage = result.Message;
+            // ProfileState already refreshed by CustomerProfileService
+            await Task.Delay(800); // Brief pause so user sees success message
+            await OnSave.InvokeAsync();
         }
+        else
+        {
+            errorMessage = result.Message;
+            fieldErrors = result.FieldErrors;
+        }
+
         isSaving = false;
     }
+
+    private async Task HandleResend()
+    {
+        successMessage = string.Empty;
+        errorMessage = string.Empty;
+        var result = await ProfileService.ResendEmailVerificationAsync(profile.PendingEmail);
+        if (result.Success)
+            successMessage = result.Message;
+        else
+            errorMessage = result.Message;
+    }
+
+    private static UserProfileDto CloneProfile(UserProfileDto source) => new()
+    {
+        Id = source.Id,
+        FirstName = source.FirstName,
+        LastName = source.LastName,
+        Email = source.Email,
+        PendingEmail = source.PendingEmail,
+        EmailVerificationStatus = source.EmailVerificationStatus,
+        Gender = source.Gender,
+        DateOfBirth = source.DateOfBirth,
+        Role = source.Role,
+        Addresses = source.Addresses,
+        FavoriteProducts = source.FavoriteProducts
+    };
 }

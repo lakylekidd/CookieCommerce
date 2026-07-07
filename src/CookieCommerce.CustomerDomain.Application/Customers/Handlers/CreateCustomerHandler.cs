@@ -16,7 +16,7 @@ public class CreateCustomerHandler(
 {
     public async Task<Guid> Handle(CreateCustomer request, CancellationToken cancellationToken)
     {
-        var customerId = Guid.CreateVersion7();
+        var customerId = request.CustomerId ?? Guid.CreateVersion7();
 
         var key = await keyStore.CreateKeyForCustomerAsync(customerId, cancellationToken);
 

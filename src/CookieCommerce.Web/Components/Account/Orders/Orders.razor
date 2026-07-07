@@ -4,6 +4,7 @@
 @using CookieCommerce.Web.Services
 @layout AccountLayout
 @inject IAccountService AccountService
+@inject CustomerProfileService ProfileService
 @rendermode InteractiveServer
 
 <style>
@@ -211,7 +212,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        hasCustomerEnteredBirthday = await AccountService.HasBirthdateAsync();
+        hasCustomerEnteredBirthday = await ProfileService.HasBirthdateAsync();
         totalOrders = await AccountService.GetTotalOrdersCountAsync();
         _ = LoadOrders();
     }

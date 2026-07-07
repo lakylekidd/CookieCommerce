@@ -47,6 +47,8 @@ var authenticationManagementApi = builder.AddProject<CookieCommerce_Authenticati
     .WithScalarUi();
 
 builder.AddProject<CookieCommerce_Web>("cookiecommerce-web")
+    .WithReference(customerApi)
+    .WithReference(productApi)
     .WithReference(authenticationManagementApi);
 
 builder.Build().Run();

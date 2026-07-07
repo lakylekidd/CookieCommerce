@@ -1,0 +1,2 @@
+{"_type":"plan","name":"wire-user-registration-to-customer-domain","status":"done","title":"Wire user registration to CustomerDomain via integration event","created_at":"2026-07-07T09:36:26.648Z","completed_at":"2026-07-07T09:37:31.059Z"}
+{"_type":"plan","name":"fix-customer-id-mismatch","status":"done","title":"Fix customer ID mismatch between Keycloak JWT and CustomerDomain","created_at":"2026-07-07T09:51:41.980Z","completed_at":"2026-07-07T09:52:27.325Z"}

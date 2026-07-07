@@ -45,6 +45,46 @@ public class DomainExceptionMiddleware
                     Instance = context.Request.Path
                 }
             ),
+            MissingCustomerProfileException missingProfile => (
+                HttpStatusCode.NotFound,
+                new ProblemDetails
+                {
+                    Status = (int)HttpStatusCode.NotFound,
+                    Title = "Profile Not Found",
+                    Detail = "Customer profile does not exist or has been forgotten.",
+                    Instance = context.Request.Path
+                }
+            ),
+            DuplicateCustomerEmailException => (
+                HttpStatusCode.Conflict,
+                new ProblemDetails
+                {
+                    Status = (int)HttpStatusCode.Conflict,
+                    Title = "Email Address Conflict",
+                    Detail = "Email address is already associated with another account.",
+                    Instance = context.Request.Path
+                }
+            ),
+            CustomerProfileValidationException validation => (
+                HttpStatusCode.UnprocessableEntity,
+                new ProblemDetails
+                {
+                    Status = (int)HttpStatusCode.UnprocessableEntity,
+                    Title = "Profile Validation Failed",
+                    Detail = validation.Message,
+                    Instance = context.Request.Path
+                }
+            ),
+            UnauthorizedCustomerProfileAccessException => (
+                HttpStatusCode.Forbidden,
+                new ProblemDetails
+                {
+                    Status = (int)HttpStatusCode.Forbidden,
+                    Title = "Forbidden",
+                    Detail = "You are not authorised to access this profile.",
+                    Instance = context.Request.Path
+                }
+            ),
             AddressNotFoundException addressNotFound => (
                 HttpStatusCode.NotFound,
                 new ProblemDetails

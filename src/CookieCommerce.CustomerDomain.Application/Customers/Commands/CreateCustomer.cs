@@ -8,4 +8,5 @@ public record CreateCustomer(
     string FirstName,
     string LastName,
     Gender Gender,
-    DateTime? DateOfBirth) : IRequest<Guid>;
+    DateTime? DateOfBirth,
+    Guid? CustomerId = null) : IRequest<Guid>;

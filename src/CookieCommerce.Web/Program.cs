@@ -63,6 +63,15 @@ builder.Services.AddScoped<IBackofficeService, FakeBackofficeService>();
 builder.Services.AddScoped<IImageUploadService, FakeImageUploadService>();
 builder.Services.AddScoped<IOperationsService, FakeOperationsService>();
 builder.Services.AddScoped<IAccountService, FakeAccountService>();
+
+// CustomerDomain API: live profile service (US1)
+builder.Services.AddHttpClient("customer-domain-api", client =>
+{
+    client.BaseAddress = new Uri("http://customer-api");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddScoped<CustomerProfileService>();
+builder.Services.AddScoped<CustomerProfileState>();
 builder.Services.AddScoped<IInventoryService, FakeInventoryService>();
 builder.Services.AddScoped<ICustomerService, FakeCustomerService>();
 builder.Services.AddScoped<IContactService, SmtpContactService>();

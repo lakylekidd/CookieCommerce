@@ -52,9 +52,15 @@
                 else
                 {
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        @if (addresses.Count == 0)
+                        {
+                            <div class="sm:col-span-2 rounded-2xl border border-dashed border-amber-200 dark:border-amber-900/30 p-4 text-sm text-amber-800/70 dark:text-amber-100/60">
+                                You do not have saved addresses yet. Add a new spot to continue checkout with your account.
+                            </div>
+                        }
                         @foreach (var address in addresses)
                         {
-                            var isSelected = SelectedShippingAddress?.Index == address.Index;
+                            var isSelected = SelectedShippingAddress?.Id == address.Id;
                             <AddressSelectorCard Address="address"
                                          IsSelected="isSelected"
                                          OnClick="() => SelectShippingAddress(address)" />
@@ -110,9 +116,15 @@
                     @if (addresses != null)
                     {
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            @if (addresses.Count == 0)
+                            {
+                                <div class="sm:col-span-2 rounded-2xl border border-dashed border-amber-200 dark:border-amber-900/30 p-4 text-sm text-amber-800/70 dark:text-amber-100/60">
+                                    No saved billing addresses are available.
+                                </div>
+                            }
                             @foreach (var address in addresses)
                             {
-                                var isSelected = SelectedBillingAddress?.Index == address.Index;
+                                var isSelected = SelectedBillingAddress?.Id == address.Id;
                                 <AddressSelectorCard Address="address"
                                          IsSelected="isSelected"
                                          OnClick="() => SelectBillingAddress(address)" />
@@ -199,6 +211,7 @@
         }
 
         addresses = await AccountService.GetAddressesAsync();
+        await ClearSelectionsMissingFromAddressBookAsync();
 
         if (addresses?.Any() == true && SelectedShippingAddress == null)
         {
@@ -211,6 +224,7 @@
     {
         showAddAddressModal = false;
         addresses = await AccountService.GetAddressesAsync();
+        await ClearSelectionsMissingFromAddressBookAsync();
 
         if (addresses?.Any() == true)
         {
@@ -364,6 +378,27 @@
         }
 
         return false;
+    }
+
+    private async Task ClearSelectionsMissingFromAddressBookAsync()
+    {
+        if (addresses is null)
+        {
+            return;
+        }
+
+        var addressIds = addresses.Select(address => address.Id).ToHashSet();
+        if (SelectedShippingAddress is not null && !addressIds.Contains(SelectedShippingAddress.Id))
+        {
+            SelectedShippingAddress = null;
+            await SelectedShippingAddressChanged.InvokeAsync(null);
+        }
+
+        if (SelectedBillingAddress is not null && !addressIds.Contains(SelectedBillingAddress.Id))
+        {
+            SelectedBillingAddress = null;
+            await SelectedBillingAddressChanged.InvokeAsync(null);
+        }
     }
 
     private async Task ClearSelectedAddressesAsync()

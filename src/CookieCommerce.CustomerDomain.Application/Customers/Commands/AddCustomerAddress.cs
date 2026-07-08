@@ -1,9 +1,11 @@
+using CookieCommerce.CustomerDomain.Application.Customers.ReadModels;
 using MediatR;
 
 namespace CookieCommerce.CustomerDomain.Application.Customers.Commands;
 
 public class AddCustomerAddress(
     Guid customerId,
+    Guid addressId,
     string? icon,
     string label,
     string firstName,
@@ -16,9 +18,11 @@ public class AddCustomerAddress(
     string province,
     string country,
     string phone,
-    bool isDefault) : IRequest
+    bool isDefault,
+    DateTimeOffset createdAtUtc) : IRequest<CustomerAddressReadModel>
 {
     public Guid CustomerId { get; } = customerId;
+    public Guid AddressId { get; } = addressId;
     public string? Icon { get; } = icon;
     public string Label { get; } = label;
     public string FirstName { get; } = firstName;
@@ -32,4 +36,5 @@ public class AddCustomerAddress(
     public string Country { get; } = country;
     public string Phone { get; } = phone;
     public bool IsDefault { get; } = isDefault;
+    public DateTimeOffset CreatedAtUtc { get; } = createdAtUtc;
 }

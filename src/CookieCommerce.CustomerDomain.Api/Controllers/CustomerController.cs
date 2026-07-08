@@ -88,6 +88,60 @@ public class CustomerController(ISender mediator) : ControllerBase
         return Ok(result.ToResponse());
     }
 
+    [HttpGet("me/addresses")]
+    public async Task<IActionResult> GetMyAddressesAsync(CancellationToken ct = default)
+    {
+        var customerId = ResolveCustomerId();
+        if (customerId is null) return Unauthorized();
+
+        var addresses = await _mediator.Send(new GetCurrentCustomerAddressesQuery(customerId.Value), ct);
+        return Ok(addresses.ToResponses());
+    }
+
+    [HttpGet("me/addresses/default")]
+    public async Task<IActionResult> GetMyDefaultAddressAsync(CancellationToken ct = default)
+    {
+        var customerId = ResolveCustomerId();
+        if (customerId is null) return Unauthorized();
+
+        var address = await _mediator.Send(new GetCurrentCustomerDefaultAddressQuery(customerId.Value), ct);
+        return address is null ? NoContent() : Ok(address.ToResponse());
+    }
+
+    [HttpPost("me/addresses")]
+    public async Task<IActionResult> AddMyAddressAsync([FromBody] AddCustomerAddressRequest request, CancellationToken ct = default)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+        var customerId = ResolveCustomerId();
+        if (customerId is null) return Unauthorized();
+
+        var address = await _mediator.Send(request.ToCommand(customerId.Value), ct);
+        return Created($"/api/customer/me/addresses/{address.AddressId}", address.ToResponse());
+    }
+
+    [HttpPut("me/addresses/{addressId}/default")]
+    public async Task<IActionResult> SetMyDefaultAddressAsync(string addressId, CancellationToken ct = default)
+    {
+        var customerId = ResolveCustomerId();
+        if (customerId is null) return Unauthorized();
+        if (!Guid.TryParse(addressId, out var parsedAddressId)) return BadRequest();
+
+        await _mediator.Send(new SetCustomerDefaultAddress(customerId.Value, parsedAddressId, DateTimeOffset.UtcNow), ct);
+        return NoContent();
+    }
+
+    [HttpDelete("me/addresses/{addressId}")]
+    public async Task<IActionResult> DeleteMyAddressAsync(string addressId, CancellationToken ct = default)
+    {
+        var customerId = ResolveCustomerId();
+        if (customerId is null) return Unauthorized();
+        if (!Guid.TryParse(addressId, out var parsedAddressId)) return BadRequest();
+
+        await _mediator.Send(new RemoveCustomerAddress(customerId.Value, parsedAddressId, DateTimeOffset.UtcNow), ct);
+        return NoContent();
+    }
+
     // ─── Existing Customer Endpoints ──────────────────────────────────────────
 
     [HttpPost]
@@ -129,15 +183,30 @@ public class CustomerController(ISender mediator) : ControllerBase
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
-        var cmd = request.ToCommand(customerId);
-        await _mediator.Send(cmd, ct);
-        return CreatedAtAction("GetById", new { id = customerId }, customerId);
+        if (string.IsNullOrWhiteSpace(request.Label)) return BadRequest();
+
+        var address = await _mediator.Send(ToLegacyCommand(request, customerId), ct);
+        return CreatedAtAction("GetById", new { id = customerId }, address.ToResponse());
+    }
+
+    [HttpPut("{customerId:guid}/addresses/{addressId:guid}/default")]
+    public async Task<IActionResult> SetDefaultAddressAsync(Guid customerId, Guid addressId, CancellationToken ct)
+    {
+        await _mediator.Send(new SetCustomerDefaultAddress(customerId, addressId, DateTimeOffset.UtcNow), ct);
+        return NoContent();
+    }
+
+    [HttpDelete("{customerId:guid}/addresses/{addressId:guid}")]
+    public async Task<IActionResult> DeleteAddressAsync(Guid customerId, Guid addressId, CancellationToken ct)
+    {
+        await _mediator.Send(new RemoveCustomerAddress(customerId, addressId, DateTimeOffset.UtcNow), ct);
+        return NoContent();
     }
 
     [HttpDelete("{customerId:guid}/addresses/{label:alpha}")]
-    public async Task<IActionResult> DeleteAddressAsync(Guid customerId, string label, CancellationToken ct)
+    public async Task<IActionResult> DeleteAddressByLabelAsync(Guid customerId, string label, CancellationToken ct)
     {
-        await _mediator.Send(new RemoveCustomerAddress(customerId, label), ct);
+        await _mediator.Send(new RemoveCustomerAddressByLabel(customerId, label, DateTimeOffset.UtcNow), ct);
         return NoContent();
     }
 
@@ -148,6 +217,25 @@ public class CustomerController(ISender mediator) : ControllerBase
     /// US1: reads X-Customer-Id header (caller must be authenticated at the gateway/web layer).
     /// US3 (T071) will replace this with proper JWT claim enforcement.
     /// </summary>
+    private static AddCustomerAddress ToLegacyCommand(AddCustomerAddressRequest request, Guid customerId) =>
+        new(
+            customerId,
+            Guid.CreateVersion7(),
+            request.Icon,
+            request.Label,
+            string.IsNullOrWhiteSpace(request.FirstName) ? "Customer" : request.FirstName,
+            string.IsNullOrWhiteSpace(request.LastName) ? "Address" : request.LastName,
+            request.Street,
+            string.IsNullOrWhiteSpace(request.HouseNumber) ? "N/A" : request.HouseNumber,
+            request.HouseNumberAddition,
+            request.City,
+            request.PostalCode,
+            request.Province,
+            request.Country,
+            string.IsNullOrWhiteSpace(request.Phone) ? "N/A" : request.Phone,
+            request.IsDefault,
+            DateTimeOffset.UtcNow);
+
     private Guid? ResolveCustomerId()
     {
         var header = Request.Headers["X-Customer-Id"].FirstOrDefault();

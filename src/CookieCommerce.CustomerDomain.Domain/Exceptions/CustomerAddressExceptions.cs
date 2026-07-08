@@ -11,16 +11,11 @@ public class CustomerAddressValidationException : Exception
     }
 }
 
-public class DuplicateCustomerAddressLabelException : Exception
+public class DuplicateCustomerAddressLabelException : DuplicateAddressLabelException
 {
-    public Guid CustomerId { get; }
-    public string Label { get; }
-
     public DuplicateCustomerAddressLabelException(Guid customerId, string label)
-        : base("An active address with the same label already exists for this customer.")
+        : base(customerId, label)
     {
-        CustomerId = customerId;
-        Label = label;
     }
 }
 

@@ -38,6 +38,20 @@ public class DomainExceptionMiddleware
 
         context.Response.ContentType = "application/problem+json";
 
+        if (exception is CustomerAddressValidationException addressValidation)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
+            var vpd = new ValidationProblemDetails(addressValidation.Errors.ToDictionary(kv => kv.Key, kv => kv.Value))
+            {
+                Status = (int)HttpStatusCode.UnprocessableEntity,
+                Title = "Address Validation Failed",
+                Instance = context.Request.Path
+            };
+            await context.Response.WriteAsync(JsonSerializer.Serialize(vpd,
+                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+            return;
+        }
+
         // CustomerProfileValidationException with field-level errors → 422 ValidationProblemDetails
         if (exception is CustomerProfileValidationException profileValidation
             && profileValidation.FieldErrors.Count > 0)
@@ -129,6 +143,16 @@ public class DomainExceptionMiddleware
                     Instance = context.Request.Path
                 }
             ),
+            CustomerAddressNotFoundException => (
+                HttpStatusCode.NotFound,
+                new ProblemDetails
+                {
+                    Status = (int)HttpStatusCode.NotFound,
+                    Title = "Address Not Found",
+                    Detail = "Address was not found for this customer.",
+                    Instance = context.Request.Path
+                }
+            ),
             AddressNotFoundException addressNotFound => (
                 HttpStatusCode.NotFound,
                 new ProblemDetails
@@ -145,7 +169,7 @@ public class DomainExceptionMiddleware
                 {
                     Status = (int)HttpStatusCode.Conflict,
                     Title = "Duplicate Address Label",
-                    Detail = duplicate.Message,
+                    Detail = "An active address with this label already exists.",
                     Instance = context.Request.Path
                 }
             ),

@@ -13,5 +13,6 @@
   <ItemGroup>
     <ProjectReference Include="..\CookieCommerce.AuthenticationManagement.Application\CookieCommerce.AuthenticationManagement.Application.csproj" />
     <ProjectReference Include="..\CookieCommerce.CustomerDomain.Application\CookieCommerce.CustomerDomain.Application.csproj" />
+    <ProjectReference Include="..\CookieCommerce.DevBootstrap\CookieCommerce.DevBootstrap.csproj" />
   </ItemGroup>
 </Project>

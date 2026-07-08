@@ -39,12 +39,6 @@ public sealed class CustomerAddressValidator
         var trimmedCountry = Require(country, nameof(country), "Country is required.", MaxShortTextLength, errors);
         var trimmedPhone = Require(phone, nameof(phone), "Phone is required.", MaxShortTextLength, errors);
 
-        if (!string.IsNullOrWhiteSpace(trimmedLabel)
-            && existingAddresses.Any(a => string.Equals(a.Label, trimmedLabel, StringComparison.OrdinalIgnoreCase)))
-        {
-            AddError(errors, nameof(label), "An active address with this label already exists.");
-        }
-
         AddMaxLengthError(trimmedIcon, nameof(icon), MaxShortTextLength, errors);
         AddMaxLengthError(trimmedHouseNumberAddition, nameof(houseNumberAddition), MaxShortTextLength, errors);
 

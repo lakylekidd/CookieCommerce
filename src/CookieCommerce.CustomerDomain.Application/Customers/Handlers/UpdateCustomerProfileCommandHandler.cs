@@ -53,6 +53,8 @@ public class UpdateCustomerProfileCommandHandler(
         if (customer is null)
             throw new MissingCustomerProfileException(request.CustomerId);
 
+        customer.ClearUncommitedEvents();
+
         // Encrypt non-email profile fields
         var encrypted = profileEncryption.Encrypt(
             key,

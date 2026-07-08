@@ -211,18 +211,23 @@ Some interfaces (`IBackofficeService`, `IAccountService`, `ICheckoutService`) ar
 ## 6. Customer Management
 
 **Services/Interfaces:** `CustomerProfileService`, `IAccountService` *(address, favourites, reviews and legacy profile members)*, `ICustomerService`
-**Files:** `Services/CustomerProfileService.cs`, `Services/CustomerProfileState.cs`, `Services/IAccountService.cs`, `Services/ICustomerService.cs`
+**Files:** `Services/CustomerProfileService.cs`, `Services/CustomerProfileState.cs`, `Services/CustomerDomainAccountService.cs`, `Services/IAccountService.cs`, `Services/ICustomerService.cs`
 
 **Responsibility:** The complete customer data domain — both the self-service view (a logged-in customer managing their own profile, addresses, favourites, and reviews) and the backoffice operator view (looking up customers and their order history). All operations assume an authenticated context, either the customer themselves or an admin.
 
 **Profile integration:** Customer-facing profile load/save/resend/verification flows use the concrete `CustomerProfileService` registered with the Aspire-discovered `customer-api` HttpClient. `CustomerProfileState` holds the latest live profile so profile displays refresh immediately after a successful save or email verification confirmation. This flow does not use `FakeAccountService`, `StaticProfileList`, or mock fallback data for customer-facing profile fields; failures are surfaced as user-safe service/validation results.
+
+**Address integration:** Customer-facing saved-address reads and writes use `CustomerDomainAccountService`, which implements `IAccountService` for account and checkout components. `GetAddressesAsync` calls CustomerDomain `GET /api/customer/me/addresses`, `GetPrimaryAddressAsync` calls `GET /api/customer/me/addresses/default`, `AddAddressAsync` calls `POST /api/customer/me/addresses`, and `DeleteAddressAsync` calls `DELETE /api/customer/me/addresses/{addressId}` through the Aspire-discovered `customer-domain-api` HttpClient with the current customer context. Read methods return empty/null states on authorization, missing profile, no-default, or API failure; write methods return user-safe `ResultDto` failures and map validation problem field errors without logging address PII. Address operations must not fall back to `FakeAccountService`, `StaticProfileList`, or static address data, and must not mutate fake profile address state. Non-address account behavior remains delegated to `FakeAccountService` until separate features replace it.
 
 **Requirements:**
 - `CustomerProfileService` operations require an authenticated customer and call CustomerDomain `/api/customer/me` endpoints rather than trusting caller-supplied customer ids.
 - Profile email changes create pending email verification in CustomerDomain; the verified/login email remains active until verification succeeds and AuthenticationManagement consumes the verified-email event.
 - Profile service validation maps API validation/problem details to user-safe field feedback and must not log raw verification tokens or unnecessary PII.
 - All `IAccountService` operations here require a logged-in customer (resolved via `IAuthService`).
-- Address book is index-based; primary address designation must be enforced server-side.
+- Address book reads/adds/deletes are CustomerDomain-backed and expose stable address ids plus deterministic indexes for existing UI display.
+- `AddAddressAsync` maps CustomerDomain validation problems into `ResultDto.FieldErrors` and duplicate labels into user-safe conflict failures.
+- `DeleteAddressAsync` uses stable address ids, not display indexes; deleting a default address relies on CustomerDomain default-promotion rules.
+- Primary address designation must be enforced server-side through add/delete default rules; explicit set-primary remains unsupported in the Web account service for this phase.
 - Favourites are per-user and per-product.
 - Review submission must be idempotent — a customer may only submit one review per product, checked via `HasAlreadyReviewedProductIdAsync`.
 - `ICustomerService` endpoints must be restricted to admin users only.
@@ -248,8 +253,8 @@ Some interfaces (`IBackofficeService`, `IAccountService`, `ICheckoutService`) ar
 | `HasBirthdateAsync` | `Task<bool> HasBirthdateAsync()` *(legacy/mock-backed member; not used for customer-facing live profile display/save)* |
 | `GetAddressesAsync` | `Task<IList<AddressBookItemDto>> GetAddressesAsync()` |
 | `AddAddressAsync` | `Task<ResultDto> AddAddressAsync(AddressBookItemDto address)` |
-| `DeleteAddressAsync` | `Task<ResultDto> DeleteAddressAsync(int index)` |
-| `SetAsPrimaryAsync` | `Task<ResultDto> SetAsPrimaryAsync(int index)` |
+| `DeleteAddressAsync` | `Task<ResultDto> DeleteAddressAsync(Guid addressId)` |
+| `SetAsPrimaryAsync` | `Task<ResultDto> SetAsPrimaryAsync(Guid addressId)` *(unsupported compatibility member; returns failure)* |
 | `GetPrimaryAddressAsync` | `Task<AddressBookItemDto?> GetPrimaryAddressAsync()` |
 | `AddToFavoritesAsync` | `Task AddToFavoritesAsync(Guid productId)` |
 | `RemoveFromFavoritesAsync` | `Task RemoveFromFavoritesAsync(Guid productId)` |

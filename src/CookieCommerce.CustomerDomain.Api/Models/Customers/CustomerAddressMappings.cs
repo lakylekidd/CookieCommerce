@@ -4,10 +4,10 @@ namespace CookieCommerce.CustomerDomain.Api.Models.Customers;
 
 public static class CustomerAddressMappings
 {
-    public static CustomerAddressResponse ToResponse(this CustomerAddressReadModel address, int index) =>
+    public static CustomerAddressResponse ToResponse(this CustomerAddressReadModel address) =>
         new(
             address.AddressId,
-            index,
+            address.Index,
             address.Icon,
             address.Label,
             address.FirstName,
@@ -21,4 +21,7 @@ public static class CustomerAddressMappings
             address.Country,
             address.Phone,
             address.IsDefault);
+
+    public static IReadOnlyList<CustomerAddressResponse> ToResponses(this IEnumerable<CustomerAddressReadModel> addresses) =>
+        addresses.Select(address => address.ToResponse()).ToList();
 }

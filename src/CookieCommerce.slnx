@@ -38,6 +38,7 @@
     <File Path="../.github/copilot-instructions.md" />
   </Folder>
   <Project Path="CookieCommerce.AppHost/CookieCommerce.AppHost.csproj" />
+  <Project Path="CookieCommerce.DevBootstrap/CookieCommerce.DevBootstrap.csproj" />
   <Project Path="CookieCommerce.ServiceDefaults/CookieCommerce.ServiceDefaults.csproj" />
   <Project Path="CookieCommerce.Web/CookieCommerce.Web.csproj" />
   <Project Path="CookieCommerce.Web.Tests/CookieCommerce.Web.Tests.csproj" />

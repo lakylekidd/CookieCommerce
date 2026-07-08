@@ -53,25 +53,25 @@
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T014 [P] [US1] Add aggregate tests for replaying address-added events and enforcing one default active address in `src/CookieCommerce.CustomerDomain.Tests/DomainTests/CustomerAggregate_AddressView_Tests.cs`
-- [ ] T015 [P] [US1] Add projection tests for decrypted address read models, empty address books, ownership isolation, and erasure removal in `src/CookieCommerce.CustomerDomain.Tests/ProjectionsTests/CustomerAddressProjectionTests.cs`
-- [ ] T016 [P] [US1] Add current-customer address API contract tests for `GET /api/customer/me/addresses` and `GET /api/customer/me/addresses/default` in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/CurrentCustomerAddressApiTests.cs`
-- [ ] T017 [P] [US1] Add Web service tests proving address reads call CustomerDomain and do not fall back to fake address data in `src/CookieCommerce.Web.Tests/Services/CustomerAddressServiceTests.cs`
+- [X] T014 [P] [US1] Add aggregate tests for replaying address-added events and enforcing one default active address in `src/CookieCommerce.CustomerDomain.Tests/DomainTests/CustomerAggregate_AddressView_Tests.cs`
+- [X] T015 [P] [US1] Add projection tests for decrypted address read models, empty address books, ownership isolation, and erasure removal in `src/CookieCommerce.CustomerDomain.Tests/ProjectionsTests/CustomerAddressProjectionTests.cs`
+- [X] T016 [P] [US1] Add current-customer address API contract tests for `GET /api/customer/me/addresses` and `GET /api/customer/me/addresses/default` in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/CurrentCustomerAddressApiTests.cs`
+- [X] T017 [P] [US1] Add Web service tests proving address reads call CustomerDomain and do not fall back to fake address data in `src/CookieCommerce.Web.Tests/Services/CustomerAddressServiceTests.cs`
 
 ### Implementation for User Story 1
 
-- [ ] T018 [US1] Update `CustomerAggregate` address add/replay behavior to preserve active addresses, address ids, and default state from events in `src/CookieCommerce.CustomerDomain.Domain/Aggregates/CustomerAggregate.cs`
-- [ ] T019 [US1] Create current-customer address query messages for all addresses and default address in `src/CookieCommerce.CustomerDomain.Application/Customers/Queries/GetCurrentCustomerAddressesQuery.cs`
-- [ ] T020 [US1] Implement query handlers that read `CustomerReadModel`, return only active addresses for the resolved customer, and handle missing/forgotten customers in `src/CookieCommerce.CustomerDomain.Application/Customers/Handlers/GetCurrentCustomerAddressesQueryHandler.cs`
-- [ ] T021 [US1] Implement `GET /api/customer/me/addresses` and `GET /api/customer/me/addresses/default` thin controller actions in `src/CookieCommerce.CustomerDomain.Api/Controllers/CustomerController.cs`
-- [ ] T022 [US1] Complete address response mappings from read models to API DTOs in `src/CookieCommerce.CustomerDomain.Api/Models/Customers/CustomerAddressMappings.cs`
-- [ ] T023 [US1] Create a live `IAccountService` implementation or adapter for CustomerDomain-backed address reads while leaving non-address fake behavior unchanged in `src/CookieCommerce.Web/Services/CustomerDomainAccountService.cs`, and update `Documentation/backend-documentation.md` for the changed Web service read behavior
-- [ ] T024 [US1] Register the address-backed account service/decorator with the existing `customer-domain-api` HttpClient in `src/CookieCommerce.Web/Program.cs`
-- [ ] T025 [US1] Update account address and default-shipping components to handle empty/error states without fake fallback in `src/CookieCommerce.Web/Components/Account/Addresses.razor` and `src/CookieCommerce.Web/Components/Account/DefaultShippingCard.razor`
-- [ ] T026 [US1] Update checkout address selection to consume live address ids, preserve deterministic index display, and show empty/error states in `src/CookieCommerce.Web/Components/Storefront/Checkout/ContactAndShipping.razor`
-- [ ] T027 [US1] Create a dedicated dev-bootstrap library project for fake-user and fake-address bootstrap orchestration in `src/CookieCommerce.DevBootstrap/CookieCommerce.DevBootstrap.csproj` and wire it into the solution
-- [ ] T028 [US1] Move fake-user bootstrap orchestration out of Keycloak code into the dev-bootstrap library, coordinating identity creation/sync and CustomerDomain address seeding in `src/CookieCommerce.DevBootstrap/DevelopmentBootstrapService.cs`
-- [ ] T029 [US1] Limit Keycloak bootstrap code to identity user creation/synchronization adapters with no address ownership or CustomerDomain orchestration in `src/CookieCommerce.AuthenticationManagement.Infrastructure/Keycloak/KeycloakBootstrapService.cs`
+- [X] T018 [US1] Update `CustomerAggregate` address add/replay behavior to preserve active addresses, address ids, and default state from events in `src/CookieCommerce.CustomerDomain.Domain/Aggregates/CustomerAggregate.cs`
+- [X] T019 [US1] Create current-customer address query messages for all addresses and default address in `src/CookieCommerce.CustomerDomain.Application/Customers/Queries/GetCurrentCustomerAddressesQuery.cs`
+- [X] T020 [US1] Implement query handlers that read `CustomerReadModel`, return only active addresses for the resolved customer, and handle missing/forgotten customers in `src/CookieCommerce.CustomerDomain.Application/Customers/Handlers/GetCurrentCustomerAddressesQueryHandler.cs`
+- [X] T021 [US1] Implement `GET /api/customer/me/addresses` and `GET /api/customer/me/addresses/default` thin controller actions in `src/CookieCommerce.CustomerDomain.Api/Controllers/CustomerController.cs`
+- [X] T022 [US1] Complete address response mappings from read models to API DTOs in `src/CookieCommerce.CustomerDomain.Api/Models/Customers/CustomerAddressMappings.cs`
+- [X] T023 [US1] Create a live `IAccountService` implementation or adapter for CustomerDomain-backed address reads while leaving non-address fake behavior unchanged in `src/CookieCommerce.Web/Services/CustomerDomainAccountService.cs`, and update `Documentation/backend-documentation.md` for the changed Web service read behavior
+- [X] T024 [US1] Register the address-backed account service/decorator with the existing `customer-domain-api` HttpClient in `src/CookieCommerce.Web/Program.cs`
+- [X] T025 [US1] Update account address and default-shipping components to handle empty/error states without fake fallback in `src/CookieCommerce.Web/Components/Account/Addresses.razor` and `src/CookieCommerce.Web/Components/Account/DefaultShippingCard.razor`
+- [X] T026 [US1] Update checkout address selection to consume live address ids, preserve deterministic index display, and show empty/error states in `src/CookieCommerce.Web/Components/Storefront/Checkout/ContactAndShipping.razor`
+- [X] T027 [US1] Create a dedicated dev-bootstrap library project for fake-user and fake-address bootstrap orchestration in `src/CookieCommerce.DevBootstrap/CookieCommerce.DevBootstrap.csproj` and wire it into the solution
+- [X] T028 [US1] Move fake-user bootstrap orchestration out of Keycloak code into the dev-bootstrap library, coordinating identity creation/sync and CustomerDomain address seeding in `src/CookieCommerce.DevBootstrap/DevelopmentBootstrapService.cs`
+- [X] T029 [US1] Limit Keycloak bootstrap code to identity user creation/synchronization adapters with no address ownership or CustomerDomain orchestration in `src/CookieCommerce.AuthenticationManagement.Infrastructure/Keycloak/KeycloakBootstrapService.cs`
 
 **Checkpoint**: User Story 1 is fully functional and testable independently.
 
@@ -85,23 +85,23 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T030 [P] [US2] Add aggregate tests for first-address default, requested default replacing previous default, duplicate labels, and validation failures in `src/CookieCommerce.CustomerDomain.Tests/DomainTests/CustomerAggregate_AddAddress_Tests.cs`
-- [ ] T031 [P] [US2] Add handler tests for encrypting address PII, rejecting invalid requests without appending events, and saving valid address events in `src/CookieCommerce.CustomerDomain.Tests/ApplicationTests/AddCustomerAddressHandlerTests.cs`
-- [ ] T032 [P] [US2] Add API contract tests for `POST /api/customer/me/addresses` success, validation problem, conflict, unauthorized, and not-found outcomes in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/AddCurrentCustomerAddressApiTests.cs`
-- [ ] T033 [P] [US2] Add Web service tests for `AddAddressAsync` mapping, field errors, conflict handling, refresh after success, and no fake mutation in `src/CookieCommerce.Web.Tests/Services/CustomerAddressAddServiceTests.cs`
+- [X] T030 [P] [US2] Add aggregate tests for first-address default, requested default replacing previous default, duplicate labels, and validation failures in `src/CookieCommerce.CustomerDomain.Tests/DomainTests/CustomerAggregate_AddAddress_Tests.cs`
+- [X] T031 [P] [US2] Add handler tests for encrypting address PII, rejecting invalid requests without appending events, and saving valid address events in `src/CookieCommerce.CustomerDomain.Tests/ApplicationTests/AddCustomerAddressHandlerTests.cs`
+- [X] T032 [P] [US2] Add API contract tests for `POST /api/customer/me/addresses` success, validation problem, conflict, unauthorized, and not-found outcomes in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/AddCurrentCustomerAddressApiTests.cs`
+- [X] T033 [P] [US2] Add Web service tests for `AddAddressAsync` mapping, field errors, conflict handling, refresh after success, and no fake mutation in `src/CookieCommerce.Web.Tests/Services/CustomerAddressAddServiceTests.cs`
 
 ### Implementation for User Story 2
 
-- [ ] T034 [US2] Replace `AddCustomerAddress` command with the full address request shape, generated address id, created timestamp, default flag, and cancellation-safe naming in `src/CookieCommerce.CustomerDomain.Application/Customers/Commands/AddCustomerAddress.cs`
-- [ ] T035 [US2] Update `AddCustomerAddressHandler` to validate input, load the customer stream, encrypt address PII using the customer key, append address-added events, and save with `CancellationToken` in `src/CookieCommerce.CustomerDomain.Application/Customers/Handlers/AddCustomerAddressHandler.cs`
-- [ ] T036 [US2] Update `CustomerAggregate.AddAddress` to enforce required domain invariants, duplicate-label rejection, first-address default, and only-one-default behavior in `src/CookieCommerce.CustomerDomain.Domain/Aggregates/CustomerAggregate.cs`
-- [ ] T037 [US2] Expand `AddCustomerAddressRequest` with icon, recipient, house-number, province, phone, and `isDefault` fields using request DTO suffix conventions in `src/CookieCommerce.CustomerDomain.Api/Models/Customers/AddCustomerAddressRequest.cs`
-- [ ] T038 [US2] Add request-to-command and result-to-response mappings for address creation in `src/CookieCommerce.CustomerDomain.Api/Models/Customers/CustomerAddressMappings.cs`
-- [ ] T039 [US2] Implement `POST /api/customer/me/addresses` with `201 Created`, validation, conflict, unauthorized, and not-found outcomes in `src/CookieCommerce.CustomerDomain.Api/Controllers/CustomerController.cs`
-- [ ] T040 [US2] Update domain exception middleware to map address validation and duplicate-label exceptions to user-safe ProblemDetails without PII in `src/CookieCommerce.CustomerDomain.Api/Middleware/DomainExceptionMiddleware.cs`
-- [ ] T041 [US2] Implement Web `AddAddressAsync` to call CustomerDomain, map validation errors into `ResultDto.FieldErrors`, refresh address state, avoid fake profile mutation in `src/CookieCommerce.Web/Services/CustomerDomainAccountService.cs`, and update `Documentation/backend-documentation.md` for the changed Web service add-address behavior
-- [ ] T042 [US2] Update add-address modal validation display so field-level errors from CustomerDomain are visible and no PII is logged in `src/CookieCommerce.Web/Components/Account/AddAddressModal.razor`
-- [ ] T043 [US2] Refresh checkout/account address lists immediately after successful adds in `src/CookieCommerce.Web/Components/Storefront/Checkout/ContactAndShipping.razor` and `src/CookieCommerce.Web/Components/Account/Addresses.razor`
+- [X] T034 [US2] Replace `AddCustomerAddress` command with the full address request shape, generated address id, created timestamp, default flag, and cancellation-safe naming in `src/CookieCommerce.CustomerDomain.Application/Customers/Commands/AddCustomerAddress.cs`
+- [X] T035 [US2] Update `AddCustomerAddressHandler` to validate input, load the customer stream, encrypt address PII using the customer key, append address-added events, and save with `CancellationToken` in `src/CookieCommerce.CustomerDomain.Application/Customers/Handlers/AddCustomerAddressHandler.cs`
+- [X] T036 [US2] Update `CustomerAggregate.AddAddress` to enforce required domain invariants, duplicate-label rejection, first-address default, and only-one-default behavior in `src/CookieCommerce.CustomerDomain.Domain/Aggregates/CustomerAggregate.cs`
+- [X] T037 [US2] Expand `AddCustomerAddressRequest` with icon, recipient, house-number, province, phone, and `isDefault` fields using request DTO suffix conventions in `src/CookieCommerce.CustomerDomain.Api/Models/Customers/AddCustomerAddressRequest.cs`
+- [X] T038 [US2] Add request-to-command and result-to-response mappings for address creation in `src/CookieCommerce.CustomerDomain.Api/Models/Customers/CustomerAddressMappings.cs`
+- [X] T039 [US2] Implement `POST /api/customer/me/addresses` with `201 Created`, validation, conflict, unauthorized, and not-found outcomes in `src/CookieCommerce.CustomerDomain.Api/Controllers/CustomerController.cs`
+- [X] T040 [US2] Update domain exception middleware to map address validation and duplicate-label exceptions to user-safe ProblemDetails without PII in `src/CookieCommerce.CustomerDomain.Api/Middleware/DomainExceptionMiddleware.cs`
+- [X] T041 [US2] Implement Web `AddAddressAsync` to call CustomerDomain, map validation errors into `ResultDto.FieldErrors`, refresh address state, avoid fake profile mutation in `src/CookieCommerce.Web/Services/CustomerDomainAccountService.cs`, and update `Documentation/backend-documentation.md` for the changed Web service add-address behavior
+- [X] T042 [US2] Update add-address modal validation display so field-level errors from CustomerDomain are visible and no PII is logged in `src/CookieCommerce.Web/Components/Account/AddAddressModal.razor`
+- [X] T043 [US2] Refresh checkout/account address lists immediately after successful adds in `src/CookieCommerce.Web/Components/Storefront/Checkout/ContactAndShipping.razor` and `src/CookieCommerce.Web/Components/Account/Addresses.razor`
 
 **Checkpoint**: User Stories 1 and 2 both work independently.
 
@@ -115,21 +115,21 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T044 [P] [US3] Add aggregate tests for deleting non-default, deleting default with promotion, deleting only address, and repeated/missing deletes in `src/CookieCommerce.CustomerDomain.Tests/DomainTests/CustomerAggregate_DeleteAddress_Tests.cs`
-- [ ] T045 [P] [US3] Add handler/projection tests for remove events, default promotion in read models, and no changes for missing address ids in `src/CookieCommerce.CustomerDomain.Tests/ApplicationTests/RemoveCustomerAddressHandlerTests.cs`
-- [ ] T046 [P] [US3] Add API contract tests for `DELETE /api/customer/me/addresses/{addressId}` success, malformed id, not found, unauthorized, and ownership isolation in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/DeleteCurrentCustomerAddressApiTests.cs`
-- [ ] T047 [P] [US3] Add Web service tests for `DeleteAddressAsync` using stable address ids, refresh after success, and no fake mutation in `src/CookieCommerce.Web.Tests/Services/CustomerAddressDeleteServiceTests.cs`
+- [X] T044 [P] [US3] Add aggregate tests for deleting non-default, deleting default with promotion, deleting only address, and repeated/missing deletes in `src/CookieCommerce.CustomerDomain.Tests/DomainTests/CustomerAggregate_DeleteAddress_Tests.cs`
+- [X] T045 [P] [US3] Add handler/projection tests for remove events, default promotion in read models, and no changes for missing address ids in `src/CookieCommerce.CustomerDomain.Tests/ApplicationTests/RemoveCustomerAddressHandlerTests.cs`
+- [X] T046 [P] [US3] Add API contract tests for `DELETE /api/customer/me/addresses/{addressId}` success, malformed id, not found, unauthorized, and ownership isolation in `src/CookieCommerce.CustomerDomain.Tests/IntegrationTests/DeleteCurrentCustomerAddressApiTests.cs`
+- [X] T047 [P] [US3] Add Web service tests for `DeleteAddressAsync` using stable address ids, refresh after success, and no fake mutation in `src/CookieCommerce.Web.Tests/Services/CustomerAddressDeleteServiceTests.cs`
 
 ### Implementation for User Story 3
 
-- [ ] T048 [US3] Replace `RemoveCustomerAddress` label-based command with address-id-based deletion metadata in `src/CookieCommerce.CustomerDomain.Application/Customers/Commands/RemoveCustomerAddress.cs`
-- [ ] T049 [US3] Update `RemoveCustomerAddressHandler` to load the current customer stream, remove only owned active addresses by id, append remove events, and return not-found outcomes safely in `src/CookieCommerce.CustomerDomain.Application/Customers/Handlers/RemoveCustomerAddressHandler.cs`
-- [ ] T050 [US3] Update `CustomerAggregate.RemoveAddress` to remove by address id, promote the oldest remaining active address when deleting the default, and leave zero defaults when empty in `src/CookieCommerce.CustomerDomain.Domain/Aggregates/CustomerAggregate.cs`
-- [ ] T051 [US3] Implement `DELETE /api/customer/me/addresses/{addressId}` and retire customer-facing use of legacy label/id routes in `src/CookieCommerce.CustomerDomain.Api/Controllers/CustomerController.cs`
-- [ ] T052 [US3] Update `IAccountService` and Web `DeleteAddressAsync` compatibility behavior to use stable ids in `src/CookieCommerce.Web/Services/IAccountService.cs` and `src/CookieCommerce.Web/Services/CustomerDomainAccountService.cs`, and update `Documentation/backend-documentation.md` for the changed Web service delete-address behavior
-- [ ] T053 [US3] Update `SetAsPrimaryAsync` compatibility behavior to clearly return unsupported for explicit set-primary outside scope in `src/CookieCommerce.Web/Services/IAccountService.cs` and `src/CookieCommerce.Web/Services/CustomerDomainAccountService.cs`, and document the unsupported behavior in `Documentation/backend-documentation.md`
-- [ ] T054 [US3] Update address cards to pass stable address ids for delete actions and refresh after deletion in `src/CookieCommerce.Web/Components/Account/AddressCard.razor`
-- [ ] T055 [US3] Update checkout selected-address clearing after deleting a selected/default address in `src/CookieCommerce.Web/Components/Storefront/Checkout/ContactAndShipping.razor`
+- [X] T048 [US3] Replace `RemoveCustomerAddress` label-based command with address-id-based deletion metadata in `src/CookieCommerce.CustomerDomain.Application/Customers/Commands/RemoveCustomerAddress.cs`
+- [X] T049 [US3] Update `RemoveCustomerAddressHandler` to load the current customer stream, remove only owned active addresses by id, append remove events, and return not-found outcomes safely in `src/CookieCommerce.CustomerDomain.Application/Customers/Handlers/RemoveCustomerAddressHandler.cs`
+- [X] T050 [US3] Update `CustomerAggregate.RemoveAddress` to remove by address id, promote the oldest remaining active address when deleting the default, and leave zero defaults when empty in `src/CookieCommerce.CustomerDomain.Domain/Aggregates/CustomerAggregate.cs`
+- [X] T051 [US3] Implement `DELETE /api/customer/me/addresses/{addressId}` and retire customer-facing use of legacy label/id routes in `src/CookieCommerce.CustomerDomain.Api/Controllers/CustomerController.cs`
+- [X] T052 [US3] Update `IAccountService` and Web `DeleteAddressAsync` compatibility behavior to use stable ids in `src/CookieCommerce.Web/Services/IAccountService.cs` and `src/CookieCommerce.Web/Services/CustomerDomainAccountService.cs`, and update `Documentation/backend-documentation.md` for the changed Web service delete-address behavior
+- [X] T053 [US3] Update `SetAsPrimaryAsync` compatibility behavior to clearly return unsupported for explicit set-primary outside scope in `src/CookieCommerce.Web/Services/IAccountService.cs` and `src/CookieCommerce.Web/Services/CustomerDomainAccountService.cs`, and document the unsupported behavior in `Documentation/backend-documentation.md`
+- [X] T054 [US3] Update address cards to pass stable address ids for delete actions and refresh after deletion in `src/CookieCommerce.Web/Components/Account/AddressCard.razor`
+- [X] T055 [US3] Update checkout selected-address clearing after deleting a selected/default address in `src/CookieCommerce.Web/Components/Storefront/Checkout/ContactAndShipping.razor`
 
 **Checkpoint**: All user stories are independently functional.
 
@@ -139,13 +139,13 @@
 
 **Purpose**: Validation, documentation, privacy hardening, and repo-wide quality gates.
 
-- [ ] T056 [P] Update feature quickstart notes with any final endpoint response choices, especially no-default behavior, in `specs/002-customer-address-management/quickstart.md`
-- [ ] T057 Audit static/fake address references to ensure customer-facing account and checkout flows no longer read fake addresses in `src/CookieCommerce.Web/Services/FakeAccountService.cs` and `src/CookieCommerce.Web/Services/StaticData/StaticProfileList.cs`
-- [ ] T058 Verify PII handling by ensuring address event payloads are encrypted, logs omit address values, and erasure deletes decrypted projections in `src/CookieCommerce.CustomerDomain.Domain/DomainEvents/CustomerAddressAdded.cs` and `src/CookieCommerce.CustomerDomain.Infrastructure/Projections/CustomerProjection.cs`
-- [ ] T059 Run focused CustomerDomain and Web tests for address behavior with `dotnet test src/CookieCommerce.CustomerDomain.Tests/CookieCommerce.CustomerDomain.Tests.csproj` and `dotnet test src/CookieCommerce.Web.Tests/CookieCommerce.Web.Tests.csproj`
-- [ ] T060 Run full build and test validation with `dotnet build src` and `dotnet test src`
-- [ ] T061 Run formatting validation with `dotnet format src --verify-no-changes`
-- [ ] T062 Verify Aspire composition still starts Web and CustomerDomain using `dotnet run --project src/CookieCommerce.AppHost`
+- [X] T056 [P] Update feature quickstart notes with any final endpoint response choices, especially no-default behavior, in `specs/002-customer-address-management/quickstart.md`
+- [X] T057 Audit static/fake address references to ensure customer-facing account and checkout flows no longer read fake addresses in `src/CookieCommerce.Web/Services/FakeAccountService.cs` and `src/CookieCommerce.Web/Services/StaticData/StaticProfileList.cs`
+- [X] T058 Verify PII handling by ensuring address event payloads are encrypted, logs omit address values, and erasure deletes decrypted projections in `src/CookieCommerce.CustomerDomain.Domain/DomainEvents/CustomerAddressAdded.cs` and `src/CookieCommerce.CustomerDomain.Infrastructure/Projections/CustomerProjection.cs`
+- [X] T059 Run focused CustomerDomain and Web tests for address behavior with `dotnet test src/CookieCommerce.CustomerDomain.Tests/CookieCommerce.CustomerDomain.Tests.csproj` and `dotnet test src/CookieCommerce.Web.Tests/CookieCommerce.Web.Tests.csproj`
+- [X] T060 Run full build and test validation with `dotnet build src` and `dotnet test src`
+- [X] T061 Run formatting validation with `dotnet format src --verify-no-changes`
+- [X] T062 Verify Aspire composition still starts Web and CustomerDomain using `dotnet run --project src/CookieCommerce.AppHost`
 
 ---
 

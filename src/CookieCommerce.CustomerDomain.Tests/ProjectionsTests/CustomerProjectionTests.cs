@@ -95,13 +95,18 @@ public class CustomerProjectionTests
     }
 
     [Fact]
-    public void Apply_CustomerAddressAdded_AddsAddressToReadModel()
+    public async Task Apply_CustomerAddressAdded_AddsAddressToReadModel()
     {
         // Arrange
         var encryption = Substitute.For<IEncryptionService>();
         var projection = new CustomerProjection(encryption);
 
         var customerId = Guid.NewGuid();
+        var key = new byte[] { 1, 2, 3 };
+        var session = Substitute.For<IQuerySession>();
+        session.LoadAsync<CustomerKeyRecord>(customerId, Arg.Any<CancellationToken>())
+            .Returns(new CustomerKeyRecord { Id = customerId, Key = key, CreatedAt = DateTime.UtcNow });
+        encryption.Decrypt(Arg.Any<string>(), key).Returns(call => call.ArgAt<string>(0).Replace("enc-", string.Empty));
         var current = new CustomerReadModel
         {
             Id = customerId,
@@ -112,13 +117,26 @@ public class CustomerProjectionTests
             Addresses = new List<CustomerAddressReadModel>()
         };
 
-        var addressAdded = new CustomerAddressAdded(
-            customerId,
-            new Address("Home", "123 Main St", "Springfield", "62701", "US")
-        );
+        var addressAdded = new CustomerAddressAdded
+        {
+            CustomerId = customerId,
+            AddressId = Guid.CreateVersion7(),
+            Label = "Home",
+            EncryptedFirstName = "enc-John",
+            EncryptedLastName = "enc-Doe",
+            EncryptedStreet = "enc-123 Main St",
+            EncryptedHouseNumber = "enc-12",
+            EncryptedCity = "enc-Springfield",
+            EncryptedPostalCode = "enc-62701",
+            EncryptedProvince = "enc-IL",
+            EncryptedCountry = "enc-US",
+            EncryptedPhone = "enc-555",
+            IsDefault = true,
+            CreatedAtUtc = DateTimeOffset.UtcNow
+        };
 
         // Act
-        var result = projection.Apply(addressAdded, current);
+        var result = await projection.Apply(addressAdded, current, session);
 
         // Assert
         result.Addresses.Should().HaveCount(1);

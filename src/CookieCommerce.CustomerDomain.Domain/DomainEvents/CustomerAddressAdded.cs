@@ -1,7 +1,32 @@
+using CookieCommerce.CustomerDomain.Domain.ValueObjects;
+
 namespace CookieCommerce.CustomerDomain.Domain.DomainEvents;
 
 public class CustomerAddressAdded
 {
+    public CustomerAddressAdded()
+    {
+    }
+
+    public CustomerAddressAdded(Guid customerId, Address address)
+    {
+        CustomerId = customerId;
+        AddressId = address.AddressId;
+        Icon = address.Icon;
+        Label = address.Label;
+        EncryptedFirstName = address.FirstName;
+        EncryptedLastName = address.LastName;
+        EncryptedStreet = address.Street;
+        EncryptedHouseNumber = address.HouseNumber;
+        EncryptedHouseNumberAddition = address.HouseNumberAddition;
+        EncryptedCity = address.City;
+        EncryptedPostalCode = address.PostalCode;
+        EncryptedProvince = address.Province;
+        EncryptedCountry = address.Country;
+        EncryptedPhone = address.Phone;
+        IsDefault = address.IsDefault;
+        CreatedAtUtc = address.CreatedAtUtc;
+    }
     public Guid CustomerId { get; set; }
     public Guid AddressId { get; set; }
     public string? Icon { get; set; }

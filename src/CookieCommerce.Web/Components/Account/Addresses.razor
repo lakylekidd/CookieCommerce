@@ -18,6 +18,13 @@
         </button>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        @if (addresses.Count == 0)
+        {
+            <div class="md:col-span-2 rounded-xl border border-orange-100 dark:border-gray-800 bg-orange-50/60 dark:bg-gray-900/30 p-6 text-gray-600 dark:text-gray-300">
+                <p class="font-bold text-gray-800 dark:text-white">No saved shipping spots yet.</p>
+                <p class="text-sm mt-1">Add an address to use it from your profile and checkout.</p>
+            </div>
+        }
         @foreach(var address in addresses)
         {
             <AddressCard address="@address"
@@ -43,7 +50,7 @@
 
 @code {
     private bool IsAddAddressModalOpen { get; set; } = false;
-    private ICollection<AddressBookItemDto> addresses = null!;
+    private ICollection<AddressBookItemDto> addresses = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -64,10 +71,6 @@
     private async Task HandleSave()
     {
         IsAddAddressModalOpen = false;
-    }
-
-    private async Task HandleAddAddressAsync()
-    {
-        
+        await RefreshAddresses();
     }
 }

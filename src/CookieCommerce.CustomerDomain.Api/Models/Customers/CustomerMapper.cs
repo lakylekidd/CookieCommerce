@@ -10,6 +10,7 @@ public static class CustomerMapper
     public static AddCustomerAddress ToCommand(this AddCustomerAddressRequest request, Guid customerId) =>
         new(
             customerId,
+            Guid.CreateVersion7(),
             request.Icon,
             request.Label,
             request.FirstName,
@@ -22,5 +23,6 @@ public static class CustomerMapper
             request.Province,
             request.Country,
             request.Phone,
-            request.IsDefault);
+            request.IsDefault,
+            DateTimeOffset.UtcNow);
 }

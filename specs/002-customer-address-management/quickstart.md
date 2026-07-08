@@ -46,7 +46,8 @@ Expected outcome:
 Expected outcome:
 
 - Address views show an empty state.
-- CustomerDomain returns an empty address list.
+- CustomerDomain returns `200 OK` with an empty array from `GET /api/customer/me/addresses`.
+- CustomerDomain returns `204 No Content` from `GET /api/customer/me/addresses/default` when the customer has no active default address.
 - No static or fake address data appears.
 
 ## 4. Verify add address
@@ -54,13 +55,14 @@ Expected outcome:
 1. Sign in as a customer.
 2. Add a valid address with recipient, street, house number, city, postal code, province, country, phone, and label.
 3. Refresh or revisit account and checkout address views.
-4. Optionally call `GET /api/customer/me/addresses`.
+4. Optionally call `GET /api/customer/me/addresses` and `GET /api/customer/me/addresses/default`.
 
 Expected outcome:
 
 - Add succeeds with a clear success message.
+- `POST /api/customer/me/addresses` returns `201 Created` with the saved address response, including its stable `id`.
 - The new address appears in profile and checkout address-selection flows within 2 seconds.
-- If it is the first address, it is default.
+- If it is the first address, it is default and is returned by `GET /api/customer/me/addresses/default`.
 - The address is stored and read through CustomerDomain, not `FakeAccountService`.
 
 ## 5. Verify validation

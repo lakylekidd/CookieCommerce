@@ -166,13 +166,26 @@ public class CustomerProjection : SingleStreamProjection<CustomerReadModel, Guid
 
     public CustomerReadModel Apply(CustomerAddressRemoved @event, CustomerReadModel current)
     {
-        var addressToRemove = current.Addresses.FirstOrDefault(a => a.AddressId == @event.AddressId);
+        var addressToRemove = @event.AddressId == Guid.Empty
+            ? current.Addresses.FirstOrDefault()
+            : current.Addresses.FirstOrDefault(a => a.AddressId == @event.AddressId);
         if (addressToRemove != null)
             current.Addresses.Remove(addressToRemove);
 
         if (current.Addresses.Count > 0 && current.Addresses.All(x => !x.IsDefault))
         {
             current.Addresses.OrderBy(x => x.CreatedAtUtc).First().IsDefault = true;
+        }
+
+        ReindexAddresses(current);
+        return current;
+    }
+
+    public CustomerReadModel Apply(CustomerDefaultAddressChanged @event, CustomerReadModel current)
+    {
+        foreach (var address in current.Addresses)
+        {
+            address.IsDefault = address.AddressId == @event.AddressId;
         }
 
         ReindexAddresses(current);

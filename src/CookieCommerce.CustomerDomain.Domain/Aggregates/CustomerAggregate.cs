@@ -163,6 +163,19 @@ public class CustomerAggregate : AggregateBase
         });
     }
 
+    public void SetDefaultAddress(Guid addressId, DateTimeOffset changedAtUtc)
+    {
+        if (_addresses.Any(x => x.AddressId == addressId) == false)
+            throw new CustomerAddressNotFoundException(Id, addressId);
+
+        Apply(new CustomerDefaultAddressChanged
+        {
+            CustomerId = Id,
+            AddressId = addressId,
+            ChangedAtUtc = changedAtUtc
+        });
+    }
+
     public void RemoveAddress(string label)
     {
         var address = _addresses.FirstOrDefault(x => x.Label == label);
@@ -195,6 +208,9 @@ public class CustomerAggregate : AggregateBase
                 Handle(e);
                 break;
             case CustomerAddressRemoved e:
+                Handle(e);
+                break;
+            case CustomerDefaultAddressChanged e:
                 Handle(e);
                 break;
         }
@@ -279,6 +295,14 @@ public class CustomerAggregate : AggregateBase
             var oldestRemainingAddress = _addresses.OrderBy(x => x.CreatedAtUtc).First();
             _addresses.Remove(oldestRemainingAddress);
             _addresses.Add(oldestRemainingAddress.WithDefault(true));
+        }
+    }
+
+    private void Handle(CustomerDefaultAddressChanged e)
+    {
+        for (var i = 0; i < _addresses.Count; i++)
+        {
+            _addresses[i] = _addresses[i].WithDefault(_addresses[i].AddressId == e.AddressId);
         }
     }
 }

@@ -2,10 +2,6 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using CookieCommerce.AuthenticationManagement.Application.Auth.Commands;
-using CookieCommerce.AuthenticationManagement.Domain.Exceptions;
-using MediatR;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -15,18 +11,15 @@ namespace CookieCommerce.AuthenticationManagement.Infrastructure.Keycloak;
 internal sealed class KeycloakBootstrapService : BackgroundService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IServiceScopeFactory _scopeFactory;
     private readonly KeycloakOptions _options;
     private readonly ILogger<KeycloakBootstrapService> _logger;
 
     public KeycloakBootstrapService(
         IHttpClientFactory httpClientFactory,
-        IServiceScopeFactory scopeFactory,
         IOptions<KeycloakOptions> options,
         ILogger<KeycloakBootstrapService> logger)
     {
         _httpClientFactory = httpClientFactory;
-        _scopeFactory = scopeFactory;
         _options = options.Value;
         _logger = logger;
     }
@@ -48,10 +41,8 @@ internal sealed class KeycloakBootstrapService : BackgroundService
 
             await EnsureRealmAsync(http, stoppingToken);
             await EnsureClientAsync(http, stoppingToken);
-            await EnsureUserAsync("admin@tiger.com", "Tiger", "Baker", "Admin123!", stoppingToken);
-            await EnsureUserAsync("customer@tiger.com", "John", "Doe", "Customer123!", stoppingToken);
 
-            _logger.LogInformation("Keycloak bootstrap complete");
+            _logger.LogInformation("Keycloak realm/client bootstrap complete");
         }
         catch (Exception ex)
         {
@@ -138,20 +129,4 @@ internal sealed class KeycloakBootstrapService : BackgroundService
         _logger.LogInformation("Client '{ClientId}' created", _options.ClientId);
     }
 
-    private async Task EnsureUserAsync(
-        string email, string firstName, string lastName, string password,
-        CancellationToken ct)
-    {
-        try
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-            await mediator.Send(new RegisterUser(email, password, firstName, lastName), ct);
-            _logger.LogInformation("Seed user '{Email}' created", email);
-        }
-        catch (EmailAlreadyTakenException)
-        {
-            _logger.LogInformation("Seed user '{Email}' already exists — skipping", email);
-        }
-    }
 }

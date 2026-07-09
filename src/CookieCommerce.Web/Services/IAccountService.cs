@@ -18,8 +18,8 @@ public interface IAccountService
     Task<ResultDto> UpdateProfileAsync(UserProfileDto profile);
     Task<IList<AddressBookItemDto>> GetAddressesAsync();
     Task<ResultDto> AddAddressAsync(AddressBookItemDto address);
-    Task<ResultDto> DeleteAddressAsync(int index);
-    Task<ResultDto> SetAsPrimaryAsync(int index);
+    Task<ResultDto> DeleteAddressAsync(Guid addressId);
+    Task<ResultDto> SetAsPrimaryAsync(Guid addressId);
     Task<AddressBookItemDto?> GetPrimaryAddressAsync();
     Task<ICollection<OrderListItemDto>> GetOrdersAsync(int page, int pageSize);
     Task<int> GetTotalOrdersCountAsync();

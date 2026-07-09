@@ -1,6 +1,7 @@
 using CookieCommerce.CustomerDomain.Application.Customers.Integration;
 using CookieCommerce.CustomerDomain.Application.Customers.Profile;
 using CookieCommerce.CustomerDomain.Application.Security;
+using CookieCommerce.CustomerDomain.Infrastructure.Bootstrap;
 using CookieCommerce.CustomerDomain.Infrastructure.Consumers;
 using CookieCommerce.CustomerDomain.Infrastructure.Integration;
 using CookieCommerce.CustomerDomain.Infrastructure.Persistence;
@@ -18,6 +19,8 @@ public static class DependencyInjection
         services.AddScoped<ICustomerKeyStore, CustomerKeyStore>();
         services.AddScoped<IEncryptionService, EncryptionService>();
         services.AddScoped<CustomerProfileEncryption>();
+        services.AddScoped<CustomerAddressEncryption>();
+        services.AddScoped<CustomerAddressValidator>();
         services.AddScoped<CustomerProfileValidator>();
         services.AddScoped<CustomerEmailUniquenessService>();
         services.AddScoped<ICustomerEmailUniquenessChecker, MartenCustomerEmailUniquenessChecker>();
@@ -34,6 +37,8 @@ public static class DependencyInjection
 
         // Named HTTP client for external email delivery dependency
         services.AddHttpClient("email-delivery");
+
+        services.AddHostedService<CustomerDevelopmentAddressBootstrapService>();
 
         return services;
     }

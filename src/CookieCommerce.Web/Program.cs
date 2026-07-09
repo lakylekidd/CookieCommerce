@@ -62,9 +62,10 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IBackofficeService, FakeBackofficeService>();
 builder.Services.AddScoped<IImageUploadService, FakeImageUploadService>();
 builder.Services.AddScoped<IOperationsService, FakeOperationsService>();
-builder.Services.AddScoped<IAccountService, FakeAccountService>();
+builder.Services.AddScoped<FakeAccountService>();
+builder.Services.AddScoped<IAccountService, CustomerDomainAccountService>();
 
-// CustomerDomain API: live profile service (US1)
+// CustomerDomain API: live profile and address services (US1)
 builder.Services.AddHttpClient("customer-domain-api", client =>
 {
     client.BaseAddress = new Uri("http://customer-api");

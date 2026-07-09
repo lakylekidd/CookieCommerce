@@ -2,6 +2,7 @@
 
 public class AddressBookItemDto
 {
+    public Guid Id { get; set; }
     public int Index { get; set; }
     public string Icon { get; set; } = null!;
     public string Label { get; set; } = null!;

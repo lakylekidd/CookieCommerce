@@ -1,6 +1,7 @@
 using CookieCommerce.AuthenticationManagement.Application.Keycloak;
 using CookieCommerce.AuthenticationManagement.Infrastructure.Consumers;
 using CookieCommerce.AuthenticationManagement.Infrastructure.Keycloak;
+using CookieCommerce.DevBootstrap;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,7 +29,9 @@ public static class DependencyInjection
 
         services.AddScoped<IKeycloakAdminService, KeycloakAdminService>();
         services.AddScoped<IKeycloakTokenService, KeycloakTokenService>();
+        services.AddScoped<IDevelopmentIdentityBootstrapAdapter, KeycloakDevelopmentIdentityBootstrapAdapter>();
         services.AddHostedService<KeycloakBootstrapService>();
+        services.AddHostedService<DevelopmentBootstrapService>();
 
         return services;
     }

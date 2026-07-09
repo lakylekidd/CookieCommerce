@@ -50,6 +50,8 @@ public sealed class VerifyCustomerEmailChangeCommandHandler(
         if (customer is null)
             throw new MissingCustomerProfileException(request.CustomerId);
 
+        customer.ClearUncommitedEvents();
+
         if (customer.VerificationTokenReference is not null
             && !string.Equals(customer.VerificationTokenReference, token.TokenReference, StringComparison.Ordinal))
         {

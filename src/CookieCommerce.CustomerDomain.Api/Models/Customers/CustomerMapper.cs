@@ -8,5 +8,21 @@ public static class CustomerMapper
         new CreateCustomer(request.Email, request.FirstName, request.LastName, request.Gender, request.DateOfBirth);
 
     public static AddCustomerAddress ToCommand(this AddCustomerAddressRequest request, Guid customerId) =>
-        new AddCustomerAddress(customerId, request.Label, request.Street, request.City, request.State, request.PostalCode, request.Country, request.IsPrimary);
+        new(
+            customerId,
+            Guid.CreateVersion7(),
+            request.Icon,
+            request.Label,
+            request.FirstName,
+            request.LastName,
+            request.Street,
+            request.HouseNumber,
+            request.HouseNumberAddition,
+            request.City,
+            request.PostalCode,
+            request.Province,
+            request.Country,
+            request.Phone,
+            request.IsDefault,
+            DateTimeOffset.UtcNow);
 }

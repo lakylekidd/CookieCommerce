@@ -73,89 +73,41 @@ public class FakeAccountService(IAuthService authService) : IAccountService
         });
     }
 
-    public async Task<IList<AddressBookItemDto>> GetAddressesAsync()
+    public Task<IList<AddressBookItemDto>> GetAddressesAsync()
     {
-        if (await GetProfileAsync() is not UserProfileDto profile) return [];
-        return profile.Addresses.ToList();
+        return Task.FromResult<IList<AddressBookItemDto>>([]);
     }
 
-    public async Task<ResultDto> AddAddressAsync(AddressBookItemDto address)
+    public Task<ResultDto> AddAddressAsync(AddressBookItemDto address)
     {
-        if (await GetProfileAsync() is not { } profile)
+        return Task.FromResult(new ResultDto
         {
-            return new ResultDto { Success = false, Message = "Sign in to add an address" };
-        }
-
-        address.Index = profile.Addresses.Count > 0 ? profile.Addresses.Max(a => a.Index) + 1 : 1;
-        profile.Addresses.Add(address);
-
-        foreach (var a in profile.Addresses)
-        {
-            a.IsDefault = a.Index == address.Index;
-        }
-
-        var result = new ResultDto
-        {
-            Success = true,
-            Message = "Address added successfully"
-        };
-        return result;
+            Success = false,
+            Message = "Address operations must go through CustomerDomainAccountService."
+        });
     }
 
-    public async Task<ResultDto> DeleteAddressAsync(int index)
+    public Task<ResultDto> DeleteAddressAsync(Guid addressId)
     {
-        if (await GetProfileAsync() is not { } profile)
+        return Task.FromResult(new ResultDto
         {
-            return new ResultDto { Success = false, Message = "Sign in to delete an address" };
-        }
-
-        var addressToRemove = profile.Addresses.FirstOrDefault(a => a.Index == index);
-        if (addressToRemove != null)
-        {
-            profile.Addresses.Remove(addressToRemove);
-            var result = new ResultDto
-            {
-                Success = true,
-                Message = "Address deleted successfully"
-            };
-            return result;
-        }
-        else
-        {
-            var result = new ResultDto
-            {
-                Success = false,
-                Message = "Address not found"
-            };
-            return result;
-        }
+            Success = false,
+            Message = "Address operations must go through CustomerDomainAccountService."
+        });
     }
 
-    public async Task<ResultDto> SetAsPrimaryAsync(int index)
+    public Task<ResultDto> SetAsPrimaryAsync(Guid addressId)
     {
-        if (await GetProfileAsync() is not { } profile)
+        return Task.FromResult(new ResultDto
         {
-            return new ResultDto { Success = false, Message = "Sign in to set a primary address" };
-        }
-
-        foreach (var address in profile.Addresses)
-        {
-            address.IsDefault = address.Index == index;
-        }
-
-        var result = new ResultDto
-        {
-            Success = true,
-            Message = "Primary address set successfully"
-        };
-        return result;
+            Success = false,
+            Message = "Explicit primary address changes are not supported yet."
+        });
     }
 
-    public async Task<AddressBookItemDto?> GetPrimaryAddressAsync()
+    public Task<AddressBookItemDto?> GetPrimaryAddressAsync()
     {
-        if (await GetProfileAsync() is not { } profile) return null;
-        var primaryAddress = profile.Addresses.FirstOrDefault(a => a.IsDefault);
-        return primaryAddress;
+        return Task.FromResult<AddressBookItemDto?>(null);
     }
 
     public Task<ICollection<OrderListItemDto>> GetOrdersAsync(int page, int pageSize)

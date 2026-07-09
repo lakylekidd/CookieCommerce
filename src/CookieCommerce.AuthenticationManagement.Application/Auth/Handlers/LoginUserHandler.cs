@@ -33,6 +33,10 @@ public class LoginUserHandler(
             }
         }
 
+        var roles = userInfo is null
+            ? []
+            : await keycloakAdmin.GetRealmRolesAsync(userInfo.Id, cancellationToken);
+
         return new LoginResult
         {
             AccessToken = tokenResponse.AccessToken,
@@ -41,7 +45,10 @@ public class LoginUserHandler(
             UserId = readModel?.Id ?? Guid.Empty,
             Email = command.Email,
             FirstName = userInfo?.FirstName ?? "",
-            LastName = userInfo?.LastName ?? ""
+            LastName = userInfo?.LastName ?? "",
+            Role = roles.Any(role => string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+                ? "Admin"
+                : "User"
         };
     }
 }

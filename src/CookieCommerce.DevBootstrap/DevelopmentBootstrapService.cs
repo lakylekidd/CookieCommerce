@@ -23,6 +23,7 @@ public sealed class DevelopmentBootstrapService(
                 customer.FirstName,
                 customer.LastName,
                 customer.Password,
+                customer.Role,
                 stoppingToken);
         }
 
@@ -35,13 +36,14 @@ public sealed class DevelopmentBootstrapService(
         string firstName,
         string lastName,
         string password,
+        string role,
         CancellationToken cancellationToken)
     {
         for (var attempt = 1; attempt <= 15; attempt++)
         {
             try
             {
-                await identityBootstrapAdapter.EnsureUserAsync(email, firstName, lastName, password, cancellationToken);
+                await identityBootstrapAdapter.EnsureUserAsync(email, firstName, lastName, password, role, cancellationToken);
                 return;
             }
             catch (Exception ex) when (attempt < 15)
@@ -51,7 +53,7 @@ public sealed class DevelopmentBootstrapService(
             }
         }
 
-        await identityBootstrapAdapter.EnsureUserAsync(email, firstName, lastName, password, cancellationToken);
+        await identityBootstrapAdapter.EnsureUserAsync(email, firstName, lastName, password, role, cancellationToken);
     }
 }
 
@@ -62,5 +64,6 @@ public interface IDevelopmentIdentityBootstrapAdapter
         string firstName,
         string lastName,
         string password,
+        string role,
         CancellationToken cancellationToken);
 }

@@ -1,4 +1,5 @@
 using CookieCommerce.AuthenticationManagement.Application.Auth.Commands;
+using CookieCommerce.AuthenticationManagement.Application.Keycloak;
 using CookieCommerce.AuthenticationManagement.Domain.Exceptions;
 using CookieCommerce.DevBootstrap;
 using MediatR;
@@ -16,18 +17,31 @@ internal sealed class KeycloakDevelopmentIdentityBootstrapAdapter(
         string firstName,
         string lastName,
         string password,
+        string role,
         CancellationToken cancellationToken)
     {
+        using var scope = scopeFactory.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        var keycloakAdmin = scope.ServiceProvider.GetRequiredService<IKeycloakAdminService>();
+
         try
         {
-            using var scope = scopeFactory.CreateScope();
-            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
             await mediator.Send(new RegisterUser(email, password, firstName, lastName), cancellationToken);
             logger.LogInformation("Seed identity user '{Email}' created", email);
         }
         catch (EmailAlreadyTakenException)
         {
-            logger.LogInformation("Seed identity user '{Email}' already exists — skipping", email);
+            logger.LogInformation("Seed identity user '{Email}' already exists — ensuring role", email);
         }
+
+        var user = await keycloakAdmin.GetUserByEmailAsync(email, cancellationToken);
+        if (user is null)
+        {
+            logger.LogWarning("Seed identity user '{Email}' was not found after registration; role '{Role}' was not assigned", email, role);
+            return;
+        }
+
+        await keycloakAdmin.AssignRealmRoleAsync(user.Id, role, cancellationToken);
+        logger.LogInformation("Seed identity user '{Email}' has Keycloak realm role '{Role}'", email, role);
     }
 }

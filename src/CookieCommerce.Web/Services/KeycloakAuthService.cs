@@ -22,7 +22,7 @@ public class KeycloakAuthService(
     public event Action? OnChange;
     public UserDto? CurrentUser => _currentUser;
     public bool IsLoggedIn => _currentUser != null;
-    public bool IsAdmin => _currentUser?.Role == "Admin";
+    public bool IsAdmin => string.Equals(_currentUser?.Role, "Admin", StringComparison.OrdinalIgnoreCase);
 
     private void NotifyStateChanged() => OnChange?.Invoke();
 
@@ -73,8 +73,11 @@ public class KeycloakAuthService(
                 Email = result.Email,
                 FirstName = result.FirstName,
                 LastName = result.LastName,
-                Role = "User"
+                Role = result.Role ?? "User"
             };
+
+            if (string.Equals(result.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+                _currentUser.Role = "Admin";
             _refreshToken = result.RefreshToken;
             await localStorage.SetAsync(TokenKey, result.AccessToken);
             await localStorage.SetAsync(RefreshTokenKey, result.RefreshToken);
@@ -149,11 +152,7 @@ public class KeycloakAuthService(
             var parts = token.Split('.');
             if (parts.Length != 3) return null;
 
-            var payload = parts[1];
-            var padding = (4 - payload.Length % 4) % 4;
-            payload = payload + new string('=', padding);
-
-            var json = Encoding.UTF8.GetString(Convert.FromBase64String(payload));
+            var json = Encoding.UTF8.GetString(Base64UrlDecode(parts[1]));
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
 
@@ -162,18 +161,7 @@ public class KeycloakAuthService(
             var lastName = root.TryGetProperty("family_name", out var ln) ? ln.GetString() ?? "" : "";
             var sub = root.TryGetProperty("sub", out var subEl) ? subEl.GetString() ?? "" : "";
 
-            var role = "User";
-            if (root.TryGetProperty("realm_access", out var ra) && ra.TryGetProperty("roles", out var roles))
-            {
-                foreach (var r in roles.EnumerateArray())
-                {
-                    if (string.Equals(r.GetString(), "admin", StringComparison.OrdinalIgnoreCase))
-                    {
-                        role = "Admin";
-                        break;
-                    }
-                }
-            }
+            var role = HasRole(root, "admin") ? "Admin" : "User";
 
             return new UserDto
             {
@@ -190,7 +178,52 @@ public class KeycloakAuthService(
         }
     }
 
+    private static bool HasRole(JsonElement root, string roleName)
+    {
+        if (root.TryGetProperty("realm_access", out var realmAccess) &&
+            realmAccess.TryGetProperty("roles", out var realmRoles) &&
+            ContainsRole(realmRoles, roleName))
+        {
+            return true;
+        }
+
+        if (root.TryGetProperty("resource_access", out var resourceAccess))
+        {
+            foreach (var clientAccess in resourceAccess.EnumerateObject())
+            {
+                if (clientAccess.Value.TryGetProperty("roles", out var clientRoles) &&
+                    ContainsRole(clientRoles, roleName))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool ContainsRole(JsonElement roles, string roleName)
+    {
+        if (roles.ValueKind != JsonValueKind.Array) return false;
+
+        foreach (var role in roles.EnumerateArray())
+        {
+            if (string.Equals(role.GetString(), roleName, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static byte[] Base64UrlDecode(string value)
+    {
+        var base64 = value.Replace('-', '+').Replace('_', '/');
+        var padding = (4 - base64.Length % 4) % 4;
+        base64 += new string('=', padding);
+        return Convert.FromBase64String(base64);
+    }
+
     private sealed record LoginApiResponse(
         Guid UserId, string Email, string FirstName, string LastName,
-        string AccessToken, string RefreshToken, int ExpiresIn);
+        string AccessToken, string RefreshToken, int ExpiresIn, string? Role);
 }

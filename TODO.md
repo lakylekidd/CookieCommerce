@@ -4,7 +4,7 @@ In this document I will include all the things I should not forget about on the 
 
 [x] Manage Customer Profile
 [x] Manage Customer Addresses
-[ ] Add user roles - Admin should reveal admin area
+[x] Add user roles - Admin should reveal admin area
 [ ] Manage SKUs (Admin)
 [ ] Manage Products (Admin) - Products page in Backoffice
     - Include list of products with reference, stock (cookies available), status (live for cookies available on the shop or draft for hidden cookies)

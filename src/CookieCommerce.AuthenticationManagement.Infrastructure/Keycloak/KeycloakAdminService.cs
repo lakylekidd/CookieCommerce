@@ -84,6 +84,41 @@ public class KeycloakAdminService : IKeycloakAdminService
         return userId;
     }
 
+    public async Task AssignRealmRoleAsync(string keycloakId, string roleName, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(roleName)) return;
+
+        var adminToken = await GetAdminTokenAsync(ct);
+        var client = _httpClientFactory.CreateClient("keycloak");
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminToken);
+
+        var role = await EnsureRealmRoleAsync(client, roleName, ct);
+        var response = await client.PostAsJsonAsync(
+            $"/admin/realms/{_options.Realm}/users/{Uri.EscapeDataString(keycloakId)}/role-mappings/realm",
+            new[] { role },
+            ct);
+
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<IReadOnlyList<string>> GetRealmRolesAsync(string keycloakId, CancellationToken ct = default)
+    {
+        var adminToken = await GetAdminTokenAsync(ct);
+        var client = _httpClientFactory.CreateClient("keycloak");
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminToken);
+
+        var response = await client.GetAsync(
+            $"/admin/realms/{_options.Realm}/users/{Uri.EscapeDataString(keycloakId)}/role-mappings/realm",
+            ct);
+
+        response.EnsureSuccessStatusCode();
+
+        var roles = await response.Content.ReadFromJsonAsync<List<KeycloakRoleResponse>>(cancellationToken: ct);
+        return roles?.Select(role => role.Name).ToArray() ?? [];
+    }
+
     public async Task<KeycloakUserInfo?> GetUserByEmailAsync(string email, CancellationToken ct = default)
     {
         var adminToken = await GetAdminTokenAsync(ct);
@@ -192,6 +227,26 @@ public class KeycloakAdminService : IKeycloakAdminService
         response.EnsureSuccessStatusCode();
     }
 
+    private async Task<KeycloakRoleResponse> EnsureRealmRoleAsync(HttpClient client, string roleName, CancellationToken ct)
+    {
+        var escapedRoleName = Uri.EscapeDataString(roleName);
+        var roleResponse = await client.GetAsync($"/admin/realms/{_options.Realm}/roles/{escapedRoleName}", ct);
+
+        if (roleResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            var createResponse = await client.PostAsJsonAsync(
+                $"/admin/realms/{_options.Realm}/roles",
+                new { name = roleName },
+                ct);
+            createResponse.EnsureSuccessStatusCode();
+
+            roleResponse = await client.GetAsync($"/admin/realms/{_options.Realm}/roles/{escapedRoleName}", ct);
+        }
+
+        roleResponse.EnsureSuccessStatusCode();
+        return (await roleResponse.Content.ReadFromJsonAsync<KeycloakRoleResponse>(cancellationToken: ct))!;
+    }
+
     private async Task<KeycloakUserResponse?> GetUserByIdAsync(HttpClient client, string keycloakId, CancellationToken ct)
     {
         var response = await client.GetAsync(
@@ -217,6 +272,15 @@ public class KeycloakAdminService : IKeycloakAdminService
     {
         [JsonPropertyName("access_token")]
         public string AccessToken { get; set; } = default!;
+    }
+
+    private sealed class KeycloakRoleResponse
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = default!;
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = default!;
     }
 
     private sealed class KeycloakUserResponse

@@ -22,6 +22,7 @@ public class RegisterUserHandler(
 
         var keycloakId = await keycloakAdmin.RegisterUserAsync(
             command.Email, command.Password, command.FirstName, command.LastName, cancellationToken);
+        await keycloakAdmin.AssignRealmRoleAsync(keycloakId, "User", cancellationToken);
 
         var userId = Guid.CreateVersion7();
         var user = new AuthUserAggregate();

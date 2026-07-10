@@ -9,6 +9,7 @@ public static class DevelopmentBootstrapData
             FirstName: "Tiger",
             LastName: "Baker",
             Password: "Admin123!",
+            Role: "Admin",
             Addresses:
             [
                 new("Home", "home", "Bakerstraat", "12", null, "Utrecht", "3511 AB", "Utrecht", "Netherlands", "+31 6 1000 0001", true),
@@ -21,6 +22,7 @@ public static class DevelopmentBootstrapData
             FirstName: "John",
             LastName: "Doe",
             Password: "Customer123!",
+            Role: "User",
             Addresses:
             [
                 new("Home", "home", "Cookie Lane", "15", null, "Amsterdam", "1012 AB", "North Holland", "Netherlands", "+31 6 2000 0001", true),
@@ -36,6 +38,7 @@ public sealed record DevelopmentBootstrapCustomer(
     string FirstName,
     string LastName,
     string Password,
+    string Role,
     IReadOnlyList<DevelopmentBootstrapAddress> Addresses);
 
 public sealed record DevelopmentBootstrapAddress(

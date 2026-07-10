@@ -168,8 +168,17 @@
     @* 6. Mini Toggle *@
     <td class="py-4 px-2 text-right @(isDeleting ? "py-0 transition-all duration-500" : "")">
         <div class="flex flex-col items-end gap-1">
-            <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" checked="@Variant.Active" @onchange="ToggleActive" class="sr-only peer">
+            <label class="relative inline-flex items-center cursor-pointer" for="@StatusControlId">
+                <span class="sr-only">Variant status is visible for review only and is not saved yet.</span>
+                <input id="@StatusControlId"
+                       type="checkbox"
+                       checked="@Variant.Active"
+                       aria-label="Variant status, visible but not editable yet"
+                       aria-disabled="true"
+                       title="Status changes are not saved yet"
+                       @onclick:preventDefault="true"
+                       @onchange="IgnoreStatusToggle"
+                       class="sr-only peer">
                 @* The Switch Track *@
                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700
                                  peer-checked:after:translate-x-full peer-checked:after:border-white
@@ -270,6 +279,7 @@
 
     private bool isExpanded = false;
     private bool isLoadingSkus = false;
+    private string StatusControlId => $"variant-status-{Variant.Id:N}";
 
     protected override void OnParametersSet()
     {
@@ -302,10 +312,10 @@
         }
     }
 
-    private async Task ToggleActive(ChangeEventArgs e)
+    private void IgnoreStatusToggle(ChangeEventArgs e)
     {
-        bool isChecked = (bool)(e.Value ?? false);
-        await BackofficeService.ChangeVariantStatusAsync(Variant.Id, isChecked);
+        // Status behavior is intentionally deferred. Keep the visual control in place,
+        // but do not save, validate, publish, or otherwise mutate product behavior.
     }
 
     private async Task HandleDelete()

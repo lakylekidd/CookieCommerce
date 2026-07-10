@@ -1,7 +1,5 @@
 ﻿@using CookieCommerce.Web.Models.Products
-@using CookieCommerce.Web.Services
 @rendermode InteractiveServer
-@inject IBackofficeService BackofficeService
 
 <tr @onclick="OnSelectedAsync"
     class="group cursor-pointer transition-all border-b border-gray-100 dark:border-gray-800/50
@@ -39,8 +37,17 @@
     </td>
     <td class="px-6 py-5 text-right">
         <div class="flex flex-col items-end gap-1">
-            <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" checked="@Item.Active" @onchange="ToggleActive" class="sr-only peer">
+            <label class="relative inline-flex items-center cursor-pointer" for="@StatusControlId">
+                <span class="sr-only">Product status is visible for review only and is not saved yet.</span>
+                <input id="@StatusControlId"
+                       type="checkbox"
+                       checked="@Item.Active"
+                       aria-label="Product status, visible but not editable yet"
+                       aria-disabled="true"
+                       title="Status changes are not saved yet"
+                       @onclick:preventDefault="true"
+                       @onchange="IgnoreStatusToggle"
+                       class="sr-only peer">
                 @* The Switch Track *@
                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700
                             peer-checked:after:translate-x-full peer-checked:after:border-white
@@ -84,11 +91,12 @@
     [Parameter] public ProductDto Item { get; set; } = default!;
     [Parameter] public bool IsSelected { get; set; }
     [Parameter] public EventCallback<Guid> OnSelected { get; set; }
+    private string StatusControlId => $"product-status-{Item.ProductId:N}";
 
-    private async Task ToggleActive(ChangeEventArgs e)
+    private void IgnoreStatusToggle(ChangeEventArgs e)
     {
-        bool isChecked = (bool)(e.Value ?? false);
-        await BackofficeService.ChangeProductStatusAsync(Item.ProductId, isChecked);
+        // Status behavior is intentionally deferred. Keep the visual control in place,
+        // but do not save, validate, publish, or otherwise mutate product behavior.
     }
 
     private async Task OnSelectedAsync()

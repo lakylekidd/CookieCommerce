@@ -1,0 +1,28 @@
+# Build output
+bin/
+obj/
+dist/
+build/
+coverage/
+
+# Dependencies
+node_modules/
+
+# Logs and local config
+*.log
+*.log*
+.env*
+
+# IDE/system files
+.vs/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+
+# Source control / container metadata
+.git/
+Dockerfile*
+.dockerignore

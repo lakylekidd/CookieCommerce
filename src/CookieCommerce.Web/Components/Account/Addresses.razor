@@ -27,7 +27,7 @@
         }
         @foreach(var address in addresses)
         {
-            <AddressCard address="@address"
+            <AccountAddressCard address="@address"
                          OnAddressChanged="RefreshAddresses" />
         }
         <button @onclick="() => IsAddAddressModalOpen = true"

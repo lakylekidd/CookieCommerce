@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CookieCommerce.CookieMassTransit\CookieCommerce.CookieMassTransit.csproj" />
+    <ProjectReference Include="..\CookieCommerce.DevBootstrap\CookieCommerce.DevBootstrap.csproj" />
     <ProjectReference Include="..\CookieCommerce.ProductDomain.Application\CookieCommerce.ProductDomain.Application.csproj" />
     <ProjectReference Include="..\CookieCommerce.ProductDomain.Domain\CookieCommerce.ProductDomain.Domain.csproj" />
   </ItemGroup>

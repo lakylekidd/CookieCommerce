@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Testcontainers.PostgreSql;
 
 namespace CookieCommerce.ProductDomain.Tests;
@@ -58,5 +59,26 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         var store = scope.ServiceProvider.GetRequiredService<IDocumentStore>();
         await store.Advanced.Clean.DeleteAllDocumentsAsync();
         await store.Advanced.Clean.DeleteAllEventDataAsync();
+
+        await using var connection = new NpgsqlConnection(_dbContainer.GetConnectionString());
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            DO $$
+            BEGIN
+                IF to_regclass('public.mt_events') IS NOT NULL THEN
+                    TRUNCATE TABLE public.mt_events RESTART IDENTITY CASCADE;
+                END IF;
+
+                IF to_regclass('public.mt_streams') IS NOT NULL THEN
+                    TRUNCATE TABLE public.mt_streams RESTART IDENTITY CASCADE;
+                END IF;
+
+                IF EXISTS (SELECT 1 FROM information_schema.sequences WHERE sequence_schema = 'public' AND sequence_name = 'mt_events_sequence') THEN
+                    ALTER SEQUENCE public.mt_events_sequence RESTART WITH 1;
+                END IF;
+            END $$;
+            """;
+        await command.ExecuteNonQueryAsync();
     }
 }

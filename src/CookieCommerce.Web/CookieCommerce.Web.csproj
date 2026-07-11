@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CookieCommerce.DevBootstrap\CookieCommerce.DevBootstrap.csproj" />
     <ProjectReference Include="..\CookieCommerce.ServiceDefaults\CookieCommerce.ServiceDefaults.csproj" />
   </ItemGroup>
 

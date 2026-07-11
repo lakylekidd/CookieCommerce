@@ -10,6 +10,8 @@
 
 <div class="flex items-center justify-start mb-8">
     <button @onclick="HandleCreateProduct"
+            type="button"
+            aria-label="Create a new product"
             class="group flex items-center justify-center gap-2 w-48 py-3
                    text-sm font-black uppercase tracking-widest
                    text-primary bg-white dark:bg-stone-900
@@ -39,7 +41,7 @@
                         IsLoading="@IsLoadingInventoryTable"
                         OnProductSelected="UpdateActiveId" />
     </div>
-    <div class="col-span-12 lg:col-span-7">
+    <div class="col-span-12 lg:col-span-7" aria-live="polite" aria-busy="@IsLoadingSelectedInventoryItem">
         <SelectedInventoryItem 
             InventoryItem="@SelectedInventoryItem"
             IsLoading="@IsLoadingSelectedInventoryItem" />

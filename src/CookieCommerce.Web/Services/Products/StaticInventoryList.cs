@@ -1,4 +1,5 @@
-﻿using CookieCommerce.Web.Models.Products;
+﻿using CookieCommerce.DevBootstrap;
+using CookieCommerce.Web.Models.Products;
 
 namespace CookieCommerce.Web.Services.Products;
 
@@ -531,6 +532,37 @@ public static class StaticInventoryList
         InventoryCaramelSeaSalt,
         InventoryCocoaWhiteChocolateChip
     };
+
+    public static IReadOnlyList<DevelopmentBootstrapProduct> BootstrapProducts =>
+        InventoryItems.Select(ToBootstrapProduct).ToList();
+
+    private static DevelopmentBootstrapProduct ToBootstrapProduct(ProductDto product)
+    {
+        return new DevelopmentBootstrapProduct(
+            product.ProductId,
+            product.ProductReference,
+            product.ProductName,
+            $"{product.ProductName} cookie",
+            product.Variants.Select(variant => variant.Price).DefaultIfEmpty(1.99m).Min(),
+            product.Active,
+            product.ProductMainImage is null ? null : ToBootstrapMediaAsset(product.ProductMainImage, $"{product.ProductName} cookie"),
+            product.Variants.Select(ToBootstrapVariant).ToList());
+    }
+
+    private static DevelopmentBootstrapVariant ToBootstrapVariant(ProductVariantDto variant)
+    {
+        return new DevelopmentBootstrapVariant(
+            variant.Id,
+            variant.Name,
+            variant.Price,
+            variant.CurrencySymbol,
+            variant.Active,
+            null,
+            variant.Images.Select(image => ToBootstrapMediaAsset(image, variant.Name)).ToList());
+    }
+
+    private static DevelopmentBootstrapMediaAsset ToBootstrapMediaAsset(ProductImageDto image, string fallbackAltText) =>
+        new(image.Id, image.Url, image.AltText ?? fallbackAltText);
 
     private static ProductVariantSkuDto GetSku(SkuDto sku, int quantity)
     {

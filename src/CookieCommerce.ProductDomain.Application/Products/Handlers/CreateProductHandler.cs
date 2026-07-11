@@ -19,6 +19,17 @@ public class CreateProductHandler(IDocumentSession session, IIntegrationEventPub
         var product = new ProductAggregate();
         product.Create(productId, request.Name, request.Description, request.Price);
 
+        foreach (var variant in request.Variants ?? [])
+        {
+            product.AddVariant(
+                variant.Id ?? Guid.CreateVersion7(),
+                variant.Name,
+                variant.Price,
+                variant.CurrencySymbol,
+                variant.IsActive,
+                variant.Sku);
+        }
+
         session.Events.StartStream<ProductAggregate>(productId, product.DomainEvents);
 
         // Publish integration event via outbox (stored in same transaction)

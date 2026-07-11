@@ -49,6 +49,10 @@ In this document I will include all the things I should not forget about on the 
     - Commerce - Allow editing store commerce settings.
     - Promotions - Allow managing promo codes, edit status (active or inactive) and allow deleting promo codes.
 [ ] Perhaps include a new page in the backoffice for viewing all available carts and allow filtering (include bandoned carts with retention logs)
+[ ] Implement logistics 
+    - We want to have the capability to add handling partners. 
+    - We need to be able to retrieve live tracking information.
+    - Notify customer about tracking status
 
 ## Future Implementation
 

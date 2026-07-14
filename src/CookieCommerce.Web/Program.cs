@@ -19,7 +19,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 // Data Protection Fix (from our previous step)
 builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo(@"/root/.aspnet/DataProtection-Keys"))
+    .PersistKeysToFileSystem(new DirectoryInfo("/tmp/DataProtection-Keys"))
     .SetApplicationName("CookieCommerce.Web");
 
 builder.AddServiceDefaults();

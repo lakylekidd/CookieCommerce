@@ -45,7 +45,8 @@
         <SelectedInventoryItem 
             InventoryItem="@SelectedInventoryItem"
             IsLoading="@IsLoadingSelectedInventoryItem"
-            OnMainImageChanged="HandleMainImageChanged" />
+            OnMainImageChanged="HandleMainImageChanged"
+            OnProductNameChanged="HandleProductNameChanged" />
     </div>
 </div>
 
@@ -102,6 +103,16 @@
         if (tableItem is not null)
         {
             tableItem.ProductMainImage = args.NewImage;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleProductNameChanged(SelectedInventoryItem.ProductNameChangedArgs args)
+    {
+        var tableItem = InventoryItems.FirstOrDefault(p => p.ProductId == args.ProductId);
+        if (tableItem is not null)
+        {
+            tableItem.ProductName = args.NewName;
             StateHasChanged();
         }
     }

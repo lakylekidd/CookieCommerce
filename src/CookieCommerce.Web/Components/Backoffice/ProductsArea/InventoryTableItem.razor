@@ -1,5 +1,7 @@
 ﻿@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Services
 @rendermode InteractiveServer
+@inject IBackofficeService BackofficeService
 
 <tr @onclick="OnSelectedAsync"
     class="group cursor-pointer transition-all border-b border-gray-100 dark:border-gray-800/50
@@ -35,18 +37,16 @@
             <span class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Qty</span>
         </div>
     </td>
-    <td class="px-6 py-5 text-right">
+    <td class="px-6 py-5 text-right" @onclick="HandleStatusToggle" @onclick:stopPropagation="true">
         <div class="flex flex-col items-end gap-1">
             <label class="relative inline-flex items-center cursor-pointer" for="@StatusControlId">
-                <span class="sr-only">Product status is visible for review only and is not saved yet.</span>
+                <span class="sr-only">Toggle product status between Live and Draft</span>
                 <input id="@StatusControlId"
                        type="checkbox"
                        checked="@Item.Active"
-                       aria-label="Product status, visible but not editable yet"
-                       aria-disabled="true"
-                       title="Status changes are not saved yet"
-                       @onclick:preventDefault="true"
-                       @onchange="IgnoreStatusToggle"
+                       aria-label="@(Item.Active ? "Product is Live, click to set to Draft" : "Product is Draft, click to set to Live")"
+                       disabled="@IsTogglingStatus"
+                       @onchange="HandleStatusToggle"
                        class="sr-only peer">
                 @* The Switch Track *@
                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700
@@ -91,16 +91,33 @@
     [Parameter] public ProductDto Item { get; set; } = default!;
     [Parameter] public bool IsSelected { get; set; }
     [Parameter] public EventCallback<Guid> OnSelected { get; set; }
+    [Parameter] public EventCallback<ProductStatusChangedArgs> OnStatusChanged { get; set; }
     private string StatusControlId => $"product-status-{Item.ProductId:N}";
+    private bool IsTogglingStatus { get; set; }
 
-    private void IgnoreStatusToggle(ChangeEventArgs e)
+    private async Task HandleStatusToggle()
     {
-        // Status behavior is intentionally deferred. Keep the visual control in place,
-        // but do not save, validate, publish, or otherwise mutate product behavior.
+        if (IsTogglingStatus) return;
+
+        IsTogglingStatus = true;
+        var newStatus = !Item.Active;
+
+        try
+        {
+            await BackofficeService.ChangeProductStatusAsync(Item.ProductId, newStatus);
+            Item.Active = newStatus;
+            await OnStatusChanged.InvokeAsync(new ProductStatusChangedArgs(Item.ProductId, newStatus));
+        }
+        finally
+        {
+            IsTogglingStatus = false;
+        }
     }
 
     private async Task OnSelectedAsync()
     {
         await OnSelected.InvokeAsync(Item.ProductId);
     }
+
+    public record ProductStatusChangedArgs(Guid ProductId, bool IsActive);
 }

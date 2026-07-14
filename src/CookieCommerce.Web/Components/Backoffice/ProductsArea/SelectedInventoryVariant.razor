@@ -222,7 +222,7 @@
             {
                 <div class="relative group">
                     @* Separate isolated group *@
-                    <button @onclick="async () => await ToggleDetailsAsync()"
+                    <button @onclick="ToggleDetailsAsync"
                             type="button"
                             aria-label="@($"Collapse details for {Variant.Name}")"
                             class="cursor-pointer flex items-center justify-center w-10 h-10
@@ -241,7 +241,7 @@
             {
                 <div class="relative group">
                     @* Separate isolated group *@
-                    <button @onclick="async () => await ToggleDetailsAsync()"
+                    <button @onclick="ToggleDetailsAsync"
                             type="button"
                             aria-label="@($"Expand details for {Variant.Name}")"
                             class="cursor-pointer flex items-center justify-center w-10 h-10 bg-white

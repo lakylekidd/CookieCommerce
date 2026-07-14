@@ -175,7 +175,7 @@ else
                 <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
                     @foreach (var variant in InventoryItem.Variants)
                     {
-                        <SelectedInventoryVariant ProductId="InventoryItem.ProductId" Variant="variant" />
+                        <SelectedInventoryVariant @key="variant.Id" ProductId="InventoryItem.ProductId" Variant="variant" />
                     }
                 </tbody>
             </table>

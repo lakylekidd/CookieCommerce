@@ -34,7 +34,7 @@
                     <div class="variant-media-grid">
                         @foreach (var photo in VariantPhotos)
                         {
-                            <figure class="bg-surface-light dark:bg-surface-dark border border-primary/20 rounded-2xl overflow-hidden min-h-[9rem] flex flex-col shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
+                            <figure class="variant-media-card bg-surface-light dark:bg-surface-dark border border-primary/20 rounded-2xl overflow-hidden min-h-[9rem] shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
                                 <img src="@photo.Url" alt="@(photo.AltText ?? "Variant photo")" class="variant-media-image" />
                                 <figcaption class="variant-media-caption">@photo.OriginalFileName</figcaption>
                                 <button type="button"

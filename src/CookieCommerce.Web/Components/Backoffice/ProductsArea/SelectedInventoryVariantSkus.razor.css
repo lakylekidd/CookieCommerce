@@ -3,7 +3,6 @@
 }
 
 .variant-media-panel {
-    border: 1px solid rgba(214, 211, 209, 0.8);
     border-radius: 1.25rem;
     padding: 1rem;
     box-shadow: 0 14px 30px rgba(68, 64, 60, 0.08);
@@ -67,6 +66,7 @@
 .variant-media-card {
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .variant-media-image {
@@ -84,15 +84,36 @@
 }
 
 .variant-media-remove {
-    color: rgb(194, 65, 12);
+    align-items: center;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 0.5rem;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
     font-size: 0.72rem;
     font-weight: 900;
-    padding: 0.55rem 0.7rem 0.75rem;
-    text-align: left;
+    gap: 0.25rem;
+    justify-content: center;
+    left: 50%;
+    padding: 0.4rem 0.7rem;
+    position: absolute;
     text-transform: uppercase;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.18s ease;
 }
 
-.variant-media-remove:focus-visible,
+.variant-media-card:hover .variant-media-remove {
+    opacity: 1;
+}
+
+.variant-media-remove:focus-visible {
+    opacity: 1;
+    outline: 3px solid rgba(249, 115, 22, 0.35);
+    outline-offset: 3px;
+}
+
 .variant-media-upload:focus-within {
     outline: 3px solid rgba(249, 115, 22, 0.35);
     outline-offset: 3px;

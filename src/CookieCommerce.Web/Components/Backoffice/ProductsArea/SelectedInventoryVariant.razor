@@ -267,57 +267,6 @@
         VariantSkusChanged="@ReloadVariantDataAsync"
         isLoading="@isLoadingSkus"
         VariantId="@Variant.Id" />
-
-    <tr class="variant-media-row">
-        <td colspan="7" class="px-4 pb-6">
-            <section class="variant-media-panel" aria-labelledby="@PhotoHeadingId">
-                <div class="variant-media-header">
-                    <div>
-                        <h4 id="@PhotoHeadingId" class="variant-media-title">Variant photos</h4>
-                        <p class="variant-media-help">Accepted file types: JPEG, PNG, or WebP. Maximum size: 5 MB.</p>
-                    </div>
-                    @if (isUploadingPhoto)
-                    {
-                        <span class="variant-media-status" role="status">Uploading…</span>
-                    }
-                </div>
-
-                @if (!string.IsNullOrWhiteSpace(photoValidationMessage))
-                {
-                    <p class="variant-media-error" id="@PhotoErrorId" role="alert">@photoValidationMessage</p>
-                }
-
-                <div class="variant-media-grid">
-                    @foreach (var image in Variant.Images)
-                    {
-                        <figure class="variant-media-card">
-                            <img src="@image.Url" alt="@(image.AltText ?? $"Photo for {Variant.Name}")" class="variant-media-image" />
-                            <figcaption class="variant-media-caption">@image.OriginalFileName</figcaption>
-                            <button type="button"
-                                    class="variant-media-remove"
-                                    aria-label="@($"Remove {image.OriginalFileName} from {Variant.Name}")"
-                                    disabled="@(isUploadingPhoto || isRemovingPhoto == image.Id)"
-                                    @onclick="() => RemovePhotoAsync(image)">
-                                @(isRemovingPhoto == image.Id ? "Removing…" : "Remove")
-                            </button>
-                        </figure>
-                    }
-
-                    <label class="variant-media-upload" for="@PhotoUploadControlId">
-                        <span class="variant-media-upload-icon">＋</span>
-                        <span class="variant-media-upload-title">Add photo</span>
-                        <span class="variant-media-upload-copy">Previews stay scoped to this variant.</span>
-                    </label>
-                    <InputFile id="@PhotoUploadControlId"
-                               class="variant-media-input"
-                               OnChange="UploadPhotoAsync"
-                               accept="image/jpeg,image/png,image/webp"
-                               aria-label="@($"Upload photo for {Variant.Name}")"
-                               aria-describedby="@PhotoErrorId" />
-                </div>
-            </section>
-        </td>
-    </tr>
 }
 
 @code {
@@ -338,14 +287,7 @@
 
     private bool isExpanded = false;
     private bool isLoadingSkus = false;
-    private string? photoValidationMessage;
-    private bool isUploadingPhoto;
-    private Guid? isRemovingPhoto;
-    private const long MaxVariantPhotoBytes = 5 * 1024 * 1024;
     private string StatusControlId => $"variant-status-{Variant.Id:N}";
-    private string PhotoHeadingId => $"variant-media-heading-{Variant.Id:N}";
-    private string PhotoErrorId => $"variant-photo-error-{Variant.Id:N}";
-    private string PhotoUploadControlId => $"variant-photo-upload-{Variant.Id:N}";
 
     protected override void OnParametersSet()
     {
@@ -406,70 +348,6 @@
         if (e.Key != "Enter") return;
         await HandleUpdatePrice();
     }
-
-    private async Task UploadPhotoAsync(InputFileChangeEventArgs e)
-    {
-        photoValidationMessage = null;
-        var file = e.File;
-
-        if (file.Size > MaxVariantPhotoBytes)
-        {
-            photoValidationMessage = "The uploaded image exceeds the maximum size of 5 MB.";
-            return;
-        }
-
-        if (!IsAcceptedImageType(file.ContentType))
-        {
-            photoValidationMessage = "The uploaded image content type is not supported.";
-            return;
-        }
-
-        try
-        {
-            isUploadingPhoto = true;
-            await using var stream = file.OpenReadStream(MaxVariantPhotoBytes);
-            var image = await BackofficeService.UploadVariantPhotoAsync(
-                ProductId,
-                Variant.Id,
-                new ProductMediaUploadDto(stream, file.Name, file.ContentType, file.Size, $"{Variant.Name} photo"));
-
-            if (Variant.Images.All(existing => existing.Id != image.Id))
-                Variant.Images.Add(image);
-        }
-        catch (Exception ex)
-        {
-            photoValidationMessage = ex.Message;
-        }
-        finally
-        {
-            isUploadingPhoto = false;
-        }
-    }
-
-    private async Task RemovePhotoAsync(ProductImageDto image)
-    {
-        photoValidationMessage = null;
-        isRemovingPhoto = image.Id;
-
-        try
-        {
-            await BackofficeService.RemoveVariantPhotoAsync(ProductId, Variant.Id, image.Id);
-            Variant.Images.Remove(image);
-        }
-        catch (Exception ex)
-        {
-            photoValidationMessage = ex.Message;
-        }
-        finally
-        {
-            isRemovingPhoto = null;
-        }
-    }
-
-    private static bool IsAcceptedImageType(string contentType) =>
-        string.Equals(contentType, "image/jpeg", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(contentType, "image/png", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(contentType, "image/webp", StringComparison.OrdinalIgnoreCase);
 
     private async Task HandleUpdateName()
     {

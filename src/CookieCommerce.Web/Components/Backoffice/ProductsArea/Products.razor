@@ -44,7 +44,8 @@
     <div class="col-span-12 lg:col-span-7" aria-live="polite" aria-busy="@IsLoadingSelectedInventoryItem">
         <SelectedInventoryItem 
             InventoryItem="@SelectedInventoryItem"
-            IsLoading="@IsLoadingSelectedInventoryItem" />
+            IsLoading="@IsLoadingSelectedInventoryItem"
+            OnMainImageChanged="HandleMainImageChanged" />
     </div>
 </div>
 
@@ -93,5 +94,15 @@
     private async Task HandleCreateProduct()
     {
         CreateModal?.Open();
+    }
+
+    private void HandleMainImageChanged(SelectedInventoryItem.ProductMainImageChangedArgs args)
+    {
+        var tableItem = InventoryItems.FirstOrDefault(p => p.ProductId == args.ProductId);
+        if (tableItem is not null)
+        {
+            tableItem.ProductMainImage = args.NewImage;
+            StateHasChanged();
+        }
     }
 }

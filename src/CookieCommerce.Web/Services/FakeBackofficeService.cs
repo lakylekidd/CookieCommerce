@@ -3,10 +3,11 @@ using CookieCommerce.Web.Models.Order;
 using CookieCommerce.Web.Models.Products;
 using CookieCommerce.Web.Services.Products;
 using CookieCommerce.Web.Services.StaticData;
+using Microsoft.AspNetCore.Hosting;
 
 namespace CookieCommerce.Web.Services;
 
-public class FakeBackofficeService : IBackofficeService
+public class FakeBackofficeService(IWebHostEnvironment environment) : IBackofficeService
 {
     public async Task<ICollection<SkuDto>> GetSkusAsync()
     {
@@ -264,16 +265,18 @@ public class FakeBackofficeService : IBackofficeService
         return Task.Delay(500, cancellationToken);
     }
 
-    public Task<ProductImageDto> UploadProductMainImageAsync(Guid productId, ProductMediaUploadDto upload, CancellationToken cancellationToken = default)
+    public async Task<ProductImageDto> UploadProductMainImageAsync(Guid productId, ProductMediaUploadDto upload, CancellationToken cancellationToken = default)
     {
         ValidateMediaUpload(upload);
 
         var image = CreateUploadedImage(productId, null, "MainImage", upload);
+        await SaveFileToDiskAsync(image.Url, upload.Content, cancellationToken);
+
         var product = StaticInventoryList.InventoryItems.FirstOrDefault(item => item.ProductId == productId);
         if (product is not null)
             product.ProductMainImage = image;
 
-        return Task.FromResult(image);
+        return image;
     }
 
     public Task RemoveProductMainImageAsync(Guid productId, Guid mediaAssetId, CancellationToken cancellationToken = default)
@@ -285,15 +288,17 @@ public class FakeBackofficeService : IBackofficeService
         return Task.CompletedTask;
     }
 
-    public Task<ProductImageDto> UploadVariantPhotoAsync(Guid productId, Guid variantId, ProductMediaUploadDto upload, CancellationToken cancellationToken = default)
+    public async Task<ProductImageDto> UploadVariantPhotoAsync(Guid productId, Guid variantId, ProductMediaUploadDto upload, CancellationToken cancellationToken = default)
     {
         ValidateMediaUpload(upload);
 
         var image = CreateUploadedImage(productId, variantId, "VariantPhoto", upload);
+        await SaveFileToDiskAsync(image.Url, upload.Content, cancellationToken);
+
         var variant = StaticInventoryList.InventoryItems.FirstOrDefault(item => item.ProductId == productId)?.Variants.FirstOrDefault(candidate => candidate.Id == variantId);
         variant?.Images.Add(image);
 
-        return Task.FromResult(image);
+        return image;
     }
 
     public Task RemoveVariantPhotoAsync(Guid productId, Guid variantId, Guid mediaAssetId, CancellationToken cancellationToken = default)
@@ -318,6 +323,16 @@ public class FakeBackofficeService : IBackofficeService
 
         if (!accepted)
             throw new InvalidOperationException("The uploaded image content type is not supported.");
+    }
+
+    private async Task SaveFileToDiskAsync(string relativeUrl, Stream content, CancellationToken cancellationToken)
+    {
+        var filePath = Path.Combine(environment.WebRootPath, relativeUrl.TrimStart('/'));
+        var directory = Path.GetDirectoryName(filePath)!;
+        Directory.CreateDirectory(directory);
+
+        await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+        await content.CopyToAsync(fileStream, cancellationToken);
     }
 
     private static ProductImageDto CreateUploadedImage(Guid productId, Guid? variantId, string role, ProductMediaUploadDto upload) => new()

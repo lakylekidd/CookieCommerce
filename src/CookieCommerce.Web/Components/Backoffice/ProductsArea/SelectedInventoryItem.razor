@@ -196,6 +196,7 @@ else
 
     [Parameter] public ProductDto? InventoryItem { get; set; }
     [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public EventCallback<ProductMainImageChangedArgs> OnMainImageChanged { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -298,6 +299,8 @@ else
         InventoryItem.ProductMainImage = await BackofficeService.UploadProductMainImageAsync(InventoryItem.ProductId, upload);
 
         _isUploadingMainImage = false;
+
+        await OnMainImageChanged.InvokeAsync(new ProductMainImageChangedArgs(InventoryItem.ProductId, InventoryItem.ProductMainImage));
     }
 
     private async Task RemoveMainImageAsync()
@@ -310,6 +313,8 @@ else
         await BackofficeService.RemoveProductMainImageAsync(InventoryItem.ProductId, mediaAssetId);
         InventoryItem.ProductMainImage = null;
         _isRemovingMainImage = false;
+
+        await OnMainImageChanged.InvokeAsync(new ProductMainImageChangedArgs(InventoryItem.ProductId, null));
     }
 
     private static string? ValidateMainImage(IBrowserFile file)
@@ -377,6 +382,8 @@ else
     };
 
     private string MainImageAltText => InventoryItem?.ProductMainImage?.AltText ?? $"{InventoryItem?.ProductName} main image";
+
+    public record ProductMainImageChangedArgs(Guid ProductId, ProductImageDto? NewImage);
 
     private static string VariantNameInputId(int rowIndex) => $"variant-name-{rowIndex}";
 

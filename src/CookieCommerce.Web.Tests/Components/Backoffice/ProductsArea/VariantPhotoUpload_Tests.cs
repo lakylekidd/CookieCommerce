@@ -1,6 +1,7 @@
 using CookieCommerce.Web.Models.Products;
 using CookieCommerce.Web.Services;
 using CookieCommerce.Web.Services.Products;
+using CookieCommerce.Web.Tests.Helpers;
 using FluentAssertions;
 
 namespace CookieCommerce.Web.Tests.Components.Backoffice.ProductsArea;
@@ -44,7 +45,7 @@ public sealed class VariantPhotoUpload_Tests
     [Fact]
     public async Task FakeBackofficeService_UploadVariantPhotoScopesPreview_GivenValidImage()
     {
-        var service = new FakeBackofficeService();
+        var service = new FakeBackofficeService(TestEnvironmentFactory.CreateTempWebHostEnvironment());
         var productId = Guid.CreateVersion7();
         var variantId = Guid.CreateVersion7();
         var otherVariantId = Guid.CreateVersion7();
@@ -72,7 +73,7 @@ public sealed class VariantPhotoUpload_Tests
     [Fact]
     public async Task FakeBackofficeService_UploadVariantPhotoThrows_GivenUnsupportedFile()
     {
-        var service = new FakeBackofficeService();
+        var service = new FakeBackofficeService(TestEnvironmentFactory.CreateTempWebHostEnvironment());
 
         Func<Task> act = () => service.UploadVariantPhotoAsync(
             Guid.CreateVersion7(),

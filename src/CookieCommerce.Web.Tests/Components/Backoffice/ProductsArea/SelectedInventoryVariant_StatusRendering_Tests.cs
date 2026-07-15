@@ -15,22 +15,24 @@ public sealed class SelectedInventoryVariant_StatusRendering_Tests
     }
 
     [Fact]
-    public void KeepsVariantStatusControlAccessible_GivenStatusBehaviorIsDeferred()
+    public void RendersVariantStatusControlAsInteractive_GivenFunctionalToggle()
     {
         var source = ProductsAreaSource.ReadComponent("SelectedInventoryVariant.razor");
 
-        source.Should().Contain("aria-label=\"Variant status, visible but not editable yet\"");
-        source.Should().Contain("aria-disabled=\"true\"");
-        source.Should().Contain("Status changes are not saved yet");
+        source.Should().Contain("@onchange=\"HandleToggleStatusAsync\"");
+        source.Should().Contain("disabled=\"@isTogglingStatus\"");
+        source.Should().NotContain("aria-disabled=\"true\"");
+        source.Should().NotContain("Status changes are not saved yet");
     }
 
     [Fact]
-    public void KeepsProductStatusControlAccessible_GivenStatusBehaviorIsDeferred()
+    public void RendersProductStatusControlAsInteractive_GivenFunctionalToggle()
     {
         var source = ProductsAreaSource.ReadComponent("InventoryTableItem.razor");
 
-        source.Should().Contain("aria-label=\"Product status, visible but not editable yet\"");
-        source.Should().Contain("aria-disabled=\"true\"");
-        source.Should().Contain("Status changes are not saved yet");
+        source.Should().Contain("@onchange=\"HandleStatusToggle\"");
+        source.Should().Contain("disabled=\"@IsTogglingStatus\"");
+        source.Should().NotContain("aria-disabled=\"true\"");
+        source.Should().NotContain("Status changes are not saved yet");
     }
 }

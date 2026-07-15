@@ -20,32 +20,23 @@ public sealed class SelectedInventoryVariant_StatusInteraction_Tests
     }
 
     [Fact]
-    public void PreventsStatusToggleDefault_GivenDeferredStatusInteraction()
-    {
-        var source = ProductsAreaSource.ReadComponent("SelectedInventoryVariant.razor");
-
-        source.Should().Contain("@onclick:preventDefault=\"true\"");
-        source.Should().Contain("@onchange=\"IgnoreStatusToggle\"");
-        source.Should().NotContain("@onchange=\"ToggleActive\"");
-    }
-
-    [Fact]
-    public void DoesNotCallChangeVariantStatusAsync_GivenDeferredVariantStatusInteraction()
+    public void CallsChangeVariantStatusAsync_GivenFunctionalVariantStatusToggle()
     {
         var source = ProductsAreaSource.ReadComponent("SelectedInventoryVariant.razor");
         var codeBlock = source[(source.IndexOf("@code", StringComparison.Ordinal))..];
 
-        codeBlock.Should().NotContain("ChangeVariantStatusAsync");
-        codeBlock.Should().Contain("private void IgnoreStatusToggle(ChangeEventArgs e)");
+        source.Should().Contain("@onchange=\"HandleToggleStatusAsync\"");
+        source.Should().NotContain("@onclick:preventDefault=\"true\"");
+        codeBlock.Should().Contain("ChangeVariantStatusAsync");
+        codeBlock.Should().Contain("private async Task HandleToggleStatusAsync(ChangeEventArgs e)");
     }
 
     [Fact]
-    public void DoesNotCallChangeProductStatusAsync_GivenDeferredProductStatusInteraction()
+    public void CallsChangeProductStatusAsync_GivenFunctionalProductStatusToggle()
     {
         var source = ProductsAreaSource.ReadComponent("InventoryTableItem.razor");
         var codeBlock = source[(source.IndexOf("@code", StringComparison.Ordinal))..];
 
-        codeBlock.Should().NotContain("ChangeProductStatusAsync");
-        codeBlock.Should().Contain("private void IgnoreStatusToggle(ChangeEventArgs e)");
+        codeBlock.Should().Contain("ChangeProductStatusAsync");
     }
 }

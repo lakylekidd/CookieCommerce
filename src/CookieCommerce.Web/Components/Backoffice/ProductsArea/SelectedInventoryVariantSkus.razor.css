@@ -70,17 +70,18 @@
 }
 
 .variant-media-image {
-    aspect-ratio: 4 / 3;
+    flex: 1;
     object-fit: cover;
     width: 100%;
+    min-height: 0;
 }
 
 .variant-media-caption {
-    flex: 1;
     overflow: hidden;
-    padding: 0.55rem 0.7rem 0.25rem;
+    padding: 0.35rem 0.7rem;
     text-overflow: ellipsis;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .variant-media-remove {

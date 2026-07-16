@@ -16,6 +16,8 @@ var rabbit = builder.AddRabbitMQ("Messaging");
 
 // Add Keycloak
 var realmsPath = Path.Combine(builder.AppHostDirectory, "realms");
+var productMediaPath = Path.Combine(builder.AppHostDirectory, ".product-media");
+Directory.CreateDirectory(productMediaPath);
 
 var kcAdminUsername = builder.AddParameter("keycloak-admin-username", "admin");
 var kcAdminPassword = builder.AddParameter("keycloak-admin-password", "admin");
@@ -39,6 +41,8 @@ var productApi = builder.AddProject<CookieCommerce_ProductDomain_Api>("product-a
     .WaitFor(productDb)
     .WithReference(rabbit)
     .WaitFor(rabbit)
+    .WithEnvironment("ProductMedia__StorageRootPath", productMediaPath)
+    .WithEnvironment("ProductMedia__RequestPath", "/media/products")
     .WithScalarUi();
 var authenticationManagementApi = builder.AddProject<CookieCommerce_AuthenticationManagement_Api>("authentication-management-api")
     .WithReference(authenticationManagementDb).WaitFor(authenticationManagementDb)

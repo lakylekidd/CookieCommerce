@@ -1,5 +1,6 @@
 ﻿@using CookieCommerce.Web.Models.Products
 @using CookieCommerce.Web.Services
+@using Microsoft.AspNetCore.Components.Forms
 @rendermode InteractiveServer
 @inject IBackofficeService BackofficeService
 
@@ -67,6 +68,7 @@ else
                 @if (InventoryItem.ProductMainImage is not null)
                 {
                     <img src="@InventoryItem.ProductMainImage.Url"
+                         alt="@MainImageAltText"
                          class="size-10 rounded-2xl object-cover shadow-orange-200 dark:shadow-none shadow-lg" />
                 }
                 else
@@ -84,9 +86,82 @@ else
             </div>
         </div>
 
+        @* Product main image and name editor *@
+        <div class="main-image-panel p-6 border-b border-orange-50 dark:border-stone-700 space-y-4">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div class="space-y-3">
+                    <div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-stone-500 dark:text-stone-300">Selected Product</h3>
+                        <p class="text-xs text-stone-400">Edit the display name and manage the one product-level main image.</p>
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-[10px] font-black uppercase tracking-widest text-stone-400" for="selected-product-name">Product name</label>
+                        <div class="relative w-full">
+                            <input id="selected-product-name" type="text" @bind="_productNameDraft" @bind:event="oninput" @onblur="SaveProductNameOnBlurAsync"
+                                   disabled="@_isSavingProductName"
+                                   class="w-full rounded-xl border-2 border-transparent bg-white px-3 py-2 pr-10 text-sm font-bold outline-none focus:border-primary/40 disabled:opacity-60 dark:bg-stone-900" />
+                            @if (_isSavingProductName)
+                            {
+                                <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                                    <svg class="size-4 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="main-image-card rounded-3xl border border-stone-100 bg-stone-50/70 p-4 dark:border-stone-700 dark:bg-stone-800/50">
+                    <div class="flex items-start gap-4">
+                        @if (InventoryItem.ProductMainImage is not null)
+                        {
+                            <img src="@InventoryItem.ProductMainImage.Url"
+                                 alt="@MainImageAltText"
+                                 class="main-image-preview size-24 rounded-2xl object-cover" />
+                        }
+                        else
+                        {
+                            <div class="main-image-preview size-24 rounded-2xl bg-orange-100 dark:bg-orange-950/40 flex items-center justify-center border-2 border-dashed border-orange-200/70 dark:border-orange-500/20">
+                                <span class="text-3xl" aria-hidden="true">🐯</span>
+                                <span class="sr-only">No product main image selected</span>
+                            </div>
+                        }
+                        <div class="min-w-0 flex-1 space-y-3">
+                            <div>
+                                <p class="text-xs font-black uppercase tracking-widest text-stone-500 dark:text-stone-300">Main image</p>
+                                <p id="selected-product-main-image-help" class="text-xs text-stone-400">Accepted file types: JPEG, PNG, or WebP. Maximum size: 5 MB.</p>
+                                @if (InventoryItem.ProductMainImage is not null)
+                                {
+                                    <p class="truncate text-xs font-bold text-stone-500">@InventoryItem.ProductMainImage.OriginalFileName</p>
+                                }
+                            </div>
+                            <label class="inline-flex cursor-pointer items-center justify-center rounded-xl bg-primary px-4 py-2 text-xs font-black uppercase tracking-widest text-white" for="selected-product-main-image">
+                                @(_isUploadingMainImage ? "Uploading..." : InventoryItem.ProductMainImage is null ? "Upload Image" : "Replace Image")
+                                <InputFile id="selected-product-main-image" class="sr-only" OnChange="UploadMainImageAsync" accept="image/jpeg,image/png,image/webp" aria-describedby="selected-product-main-image-help selected-product-main-image-error" />
+                            </label>
+                            @if (InventoryItem.ProductMainImage is not null)
+                            {
+                                <button type="button" @onclick="RemoveMainImageAsync" disabled="@_isRemovingMainImage"
+                                        aria-label="Remove product main image"
+                                        class="ml-2 rounded-xl border border-red-200 px-4 py-2 text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50">
+                                    @(_isRemovingMainImage ? "Removing..." : "Remove")
+                                </button>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(_mainImageValidationMessage))
+                            {
+                                <p id="selected-product-main-image-error" class="text-xs font-bold text-red-500" role="alert">@_mainImageValidationMessage</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         @* Variants Table *@
-        <div class="p-6">
-            <table class="w-full">
+        <div class="p-6 overflow-x-auto" role="region" aria-label="Inventory variants with pricing, stock, SKU, and photo controls" tabindex="0">
+            <table class="w-full min-w-[48rem]">
                 <thead>
                     <tr class="text-[10px] uppercase tracking-[0.2em] text-stone-400 font-black">
                         <th class="text-left pb-4 px-2">Package Size</th>
@@ -100,7 +175,7 @@ else
                 <tbody class="divide-y divide-stone-100 dark:divide-stone-800">
                     @foreach (var variant in InventoryItem.Variants)
                     {
-                        <SelectedInventoryVariant Variant="variant" />
+                        <SelectedInventoryVariant @key="variant.Id" ProductId="InventoryItem.ProductId" Variant="variant" />
                     }
                 </tbody>
             </table>
@@ -109,6 +184,220 @@ else
 }
 
 @code {
+    private readonly Dictionary<int, string> _variantErrors = [];
+    private readonly List<ProductVariantDto> _variantRows = [];
+    private Guid? _loadedProductId;
+    private bool _isSavingVariants;
+    private string? _variantSaveMessage;
+    private string _productNameDraft = string.Empty;
+    private bool _isSavingProductName;
+    private bool _isUploadingMainImage;
+    private bool _isRemovingMainImage;
+    private string? _mainImageValidationMessage;
+
     [Parameter] public ProductDto? InventoryItem { get; set; }
-    [Parameter] public bool IsLoading { get; set; } = false;    
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public EventCallback<ProductMainImageChangedArgs> OnMainImageChanged { get; set; }
+    [Parameter] public EventCallback<ProductNameChangedArgs> OnProductNameChanged { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (InventoryItem?.ProductId == _loadedProductId)
+            return;
+
+        _loadedProductId = InventoryItem?.ProductId;
+        _variantRows.Clear();
+        _variantErrors.Clear();
+        _variantSaveMessage = null;
+        _mainImageValidationMessage = null;
+
+        if (InventoryItem is null)
+        {
+            _productNameDraft = string.Empty;
+            return;
+        }
+
+        _productNameDraft = InventoryItem.ProductName;
+
+        foreach (var variant in InventoryItem.Variants)
+        {
+            _variantRows.Add(CloneVariant(variant));
+        }
+    }
+
+    private void AddVariantRow()
+    {
+        _variantRows.Add(new ProductVariantDto
+        {
+            Id = Guid.Empty,
+            Name = string.Empty,
+            Price = 0m,
+            CurrencySymbol = "€",
+            Active = true
+        });
+        _variantSaveMessage = null;
+    }
+
+    private void RemoveVariantRow(ProductVariantDto variant)
+    {
+        _variantRows.Remove(variant);
+        _variantSaveMessage = null;
+        ValidateVariantRows();
+    }
+
+    private async Task SaveVariantRows()
+    {
+        if (InventoryItem is null || !ValidateVariantRows())
+            return;
+
+        _isSavingVariants = true;
+        _variantSaveMessage = null;
+
+        var variants = _variantRows.Select(variant => new UpsertProductVariantDto(
+            variant.Id == Guid.Empty ? null : variant.Id,
+            variant.Name,
+            variant.Price,
+            variant.CurrencySymbol,
+            variant.Active)).ToList();
+
+        await BackofficeService.UpsertProductVariantsAsync(InventoryItem.ProductId, variants);
+
+        InventoryItem.Variants = _variantRows.Select(CloneVariant).ToList();
+        _variantSaveMessage = "Variants saved.";
+        _isSavingVariants = false;
+    }
+
+    private async Task SaveProductNameOnBlurAsync()
+    {
+        var trimmedName = _productNameDraft.Trim();
+
+        if (InventoryItem is null || string.IsNullOrWhiteSpace(trimmedName))
+            return;
+
+        // Only save if the name actually changed
+        if (string.Equals(trimmedName, InventoryItem.ProductName, StringComparison.Ordinal))
+            return;
+
+        _isSavingProductName = true;
+        StateHasChanged();
+
+        await BackofficeService.UpdateProductNameAsync(InventoryItem.ProductId, trimmedName);
+
+        InventoryItem.ProductName = trimmedName;
+        _productNameDraft = trimmedName;
+        _isSavingProductName = false;
+
+        await OnProductNameChanged.InvokeAsync(new ProductNameChangedArgs(InventoryItem.ProductId, trimmedName));
+    }
+
+    private async Task UploadMainImageAsync(InputFileChangeEventArgs args)
+    {
+        if (InventoryItem is null)
+            return;
+
+        var file = args.File;
+        _mainImageValidationMessage = ValidateMainImage(file);
+        if (!string.IsNullOrWhiteSpace(_mainImageValidationMessage))
+            return;
+
+        _isUploadingMainImage = true;
+        _mainImageValidationMessage = null;
+
+        await using var stream = file.OpenReadStream(5 * 1024 * 1024);
+        var upload = new ProductMediaUploadDto(stream, file.Name, file.ContentType, file.Size, $"{InventoryItem.ProductName} main image");
+        InventoryItem.ProductMainImage = await BackofficeService.UploadProductMainImageAsync(InventoryItem.ProductId, upload);
+
+        _isUploadingMainImage = false;
+
+        await OnMainImageChanged.InvokeAsync(new ProductMainImageChangedArgs(InventoryItem.ProductId, InventoryItem.ProductMainImage));
+    }
+
+    private async Task RemoveMainImageAsync()
+    {
+        if (InventoryItem?.ProductMainImage is null)
+            return;
+
+        _isRemovingMainImage = true;
+        var mediaAssetId = InventoryItem.ProductMainImage.Id;
+        await BackofficeService.RemoveProductMainImageAsync(InventoryItem.ProductId, mediaAssetId);
+        InventoryItem.ProductMainImage = null;
+        _isRemovingMainImage = false;
+
+        await OnMainImageChanged.InvokeAsync(new ProductMainImageChangedArgs(InventoryItem.ProductId, null));
+    }
+
+    private static string? ValidateMainImage(IBrowserFile file)
+    {
+        if (file.Size <= 0)
+            return "An image file is required.";
+
+        if (file.Size > 5 * 1024 * 1024)
+            return "The uploaded image exceeds the maximum size of 5 MB.";
+
+        if (!IsAcceptedImageType(file.ContentType))
+            return "The uploaded image content type is not supported.";
+
+        return null;
+    }
+
+    private static bool IsAcceptedImageType(string contentType) =>
+        string.Equals(contentType, "image/jpeg", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(contentType, "image/png", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(contentType, "image/webp", StringComparison.OrdinalIgnoreCase);
+
+    private bool ValidateVariantRows()
+    {
+        _variantErrors.Clear();
+
+        for (var index = 0; index < _variantRows.Count; index++)
+        {
+            var variant = _variantRows[index];
+
+            if (string.IsNullOrWhiteSpace(variant.Name))
+            {
+                _variantErrors[index] = "Variant name is required.";
+                continue;
+            }
+
+            if (variant.Price <= 0)
+            {
+                _variantErrors[index] = "Variant price must be greater than 0.";
+                continue;
+            }
+
+            var duplicateIndex = _variantRows.FindIndex(index + 1, other =>
+                string.Equals(other.Name.Trim(), variant.Name.Trim(), StringComparison.OrdinalIgnoreCase));
+
+            if (duplicateIndex >= 0)
+            {
+                _variantErrors[index] = "Variant name must be unique.";
+                _variantErrors[duplicateIndex] = "Variant name must be unique.";
+            }
+        }
+
+        return _variantErrors.Count == 0;
+    }
+
+    private static ProductVariantDto CloneVariant(ProductVariantDto variant) => new()
+    {
+        Id = variant.Id,
+        Name = variant.Name,
+        CurrencySymbol = variant.CurrencySymbol,
+        Price = variant.Price,
+        Stock = variant.Stock,
+        Active = variant.Active,
+        Skus = variant.Skus.ToList(),
+        Images = variant.Images.ToList()
+    };
+
+    private string MainImageAltText => InventoryItem?.ProductMainImage?.AltText ?? $"{InventoryItem?.ProductName} main image";
+
+    public record ProductMainImageChangedArgs(Guid ProductId, ProductImageDto? NewImage);
+    public record ProductNameChangedArgs(Guid ProductId, string NewName);
+
+    private static string VariantNameInputId(int rowIndex) => $"variant-name-{rowIndex}";
+
+    private static string VariantPriceInputId(int rowIndex) => $"variant-price-{rowIndex}";
+
+    private static string VariantActiveInputId(int rowIndex) => $"variant-active-{rowIndex}";
 }

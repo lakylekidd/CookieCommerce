@@ -1,5 +1,6 @@
 ﻿@using CookieCommerce.Web.Models.Products
 @using CookieCommerce.Web.Services
+@using Microsoft.AspNetCore.Components.Forms
 @rendermode InteractiveServer
 @inject IBackofficeService BackofficeService
 
@@ -44,6 +45,7 @@
     <td class="py-4 px-2 @(isDeleting ? "py-0 transition-all duration-500" : "")">
         <div class="relative group/name flex items-center">
             <input type="text"
+                   aria-label="@($"Variant name for {Variant.Name}")"
                    @bind="Variant.Name"
                    @bind:event="oninput"
                    @onblur="HandleUpdateName"
@@ -96,6 +98,7 @@
             </span>
 
             <input type="number" step="0.01"
+                           aria-label="@($"Variant price for {Variant.Name}")"
                            @bind="Variant.Price"
                            @bind:event="oninput"
                            @onblur="HandleUpdatePrice"
@@ -169,15 +172,13 @@
     <td class="py-4 px-2 text-right @(isDeleting ? "py-0 transition-all duration-500" : "")">
         <div class="flex flex-col items-end gap-1">
             <label class="relative inline-flex items-center cursor-pointer" for="@StatusControlId">
-                <span class="sr-only">Variant status is visible for review only and is not saved yet.</span>
+                <span class="sr-only">Toggle variant status between Live and Draft</span>
                 <input id="@StatusControlId"
                        type="checkbox"
                        checked="@Variant.Active"
-                       aria-label="Variant status, visible but not editable yet"
-                       aria-disabled="true"
-                       title="Status changes are not saved yet"
-                       @onclick:preventDefault="true"
-                       @onchange="IgnoreStatusToggle"
+                       aria-label="@($"Variant status for {Variant.Name}, currently {(Variant.Active ? "Live" : "Draft")}")"
+                       disabled="@isTogglingStatus"
+                       @onchange="HandleToggleStatusAsync"
                        class="sr-only peer">
                 @* The Switch Track *@
                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700
@@ -187,9 +188,19 @@
                                  after:h-5 after:w-5 after:transition-all
                                  peer-checked:bg-primary"></div>
             </label>
-            <span class="text-[10px] font-bold uppercase @(Variant.Active ? "text-emerald-600" : "text-gray-400")">
-                @(Variant.Active ? "Live" : "Draft")
-            </span>
+            @if (isTogglingStatus)
+            {
+                <div class="flex items-center gap-1">
+                    <div class="animate-spin size-3 border-2 border-primary border-t-transparent rounded-full"></div>
+                    <span class="text-[10px] font-bold uppercase text-stone-400">Saving…</span>
+                </div>
+            }
+            else
+            {
+                <span class="text-[10px] font-bold uppercase @(Variant.Active ? "text-emerald-600" : "text-gray-400")">
+                    @(Variant.Active ? "Live" : "Draft")
+                </span>
+            }
         </div>
     </td>
 
@@ -197,6 +208,8 @@
         <div class="flex items-center justify-end gap-3">
             <div class="relative group">      
                 <button @onclick="HandleDelete"
+                        type="button"
+                        aria-label="@($"Delete variant {Variant.Name}")"
                         disabled="@isDeleting"
                         class="cursor-pointer flex items-center justify-center w-10 h-10 bg-white dark:bg-gray-800 border border-primary text-primary hover:bg-primary hover:text-white rounded-full transition-all shadow-sm active:scale-90">
                     @if (isDeleting)
@@ -217,8 +230,9 @@
             {
                 <div class="relative group">
                     @* Separate isolated group *@
-                    <button @onclick="async () => await ToggleDetailsAsync()"
+                    <button @onclick="ToggleDetailsAsync"
                             type="button"
+                            aria-label="@($"Collapse details for {Variant.Name}")"
                             class="cursor-pointer flex items-center justify-center w-10 h-10
                                 dark:bg-gray-800 border border-primary text-primary bg-primary
                                 text-white rounded-full transition-all shadow-sm active:scale-90">
@@ -235,8 +249,9 @@
             {
                 <div class="relative group">
                     @* Separate isolated group *@
-                    <button @onclick="async () => await ToggleDetailsAsync()"
+                    <button @onclick="ToggleDetailsAsync"
                             type="button"
+                            aria-label="@($"Expand details for {Variant.Name}")"
                             class="cursor-pointer flex items-center justify-center w-10 h-10 bg-white
                                 dark:bg-gray-800 border border-primary text-primary hover:bg-primary hover:text-white
                                 rounded-full transition-all shadow-sm active:scale-90">
@@ -263,6 +278,7 @@
 }
 
 @code {
+    [Parameter, EditorRequired] public Guid ProductId { get; set; }
     [Parameter] public ProductVariantDto Variant { get; set; } = default!;
     private bool justUpdated = false;
     private string? originalName;
@@ -312,10 +328,19 @@
         }
     }
 
-    private void IgnoreStatusToggle(ChangeEventArgs e)
+    private bool isTogglingStatus = false;
+
+    private async Task HandleToggleStatusAsync(ChangeEventArgs e)
     {
-        // Status behavior is intentionally deferred. Keep the visual control in place,
-        // but do not save, validate, publish, or otherwise mutate product behavior.
+        if (isTogglingStatus) return;
+
+        isTogglingStatus = true;
+        var newStatus = !Variant.Active;
+
+        await BackofficeService.ChangeVariantStatusAsync(Variant.Id, newStatus);
+        Variant.Active = newStatus;
+
+        isTogglingStatus = false;
     }
 
     private async Task HandleDelete()

@@ -47,6 +47,10 @@
                             <AddVariantToProductModal 
                                 Variants="newItem.Variants"
                                 OnVariantsChagned="StateHasChanged" />
+                            @if (!string.IsNullOrWhiteSpace(_variantValidationMessage))
+                            {
+                                <p class="mt-3 text-xs font-bold text-red-500" role="alert">@_variantValidationMessage</p>
+                            }
                         </div>
                     </div>
 
@@ -65,6 +69,7 @@
 
 @code {
     private bool _isVisible = false;
+    private string? _variantValidationMessage;
     private CreateProductDto newItem = new();
 
     [Parameter] public EventCallback OnProductCreated { get; set; }
@@ -78,6 +83,7 @@
                 new CreateProductVariantDto { Name = "Standard", Price = 0 }
             }
         };
+        _variantValidationMessage = null;
         _isVisible = true;
         StateHasChanged();
     }
@@ -90,8 +96,40 @@
 
     private async Task HandleSubmit()
     {
+        if (!ValidateVariants())
+            return;
+
         await BackofficeService.CreateProductAsync(newItem);
         await OnProductCreated.InvokeAsync();
         Close();
+    }
+
+    private bool ValidateVariants()
+    {
+        _variantValidationMessage = null;
+
+        if (newItem.Variants.Any(variant => string.IsNullOrWhiteSpace(variant.Name)))
+        {
+            _variantValidationMessage = "Every variant needs a name.";
+            return false;
+        }
+
+        if (newItem.Variants.Any(variant => variant.Price <= 0))
+        {
+            _variantValidationMessage = "Every variant price must be greater than 0.";
+            return false;
+        }
+
+        var hasDuplicate = newItem.Variants
+            .GroupBy(variant => variant.Name.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Any(group => group.Count() > 1);
+
+        if (hasDuplicate)
+        {
+            _variantValidationMessage = "Variant names must be unique.";
+            return false;
+        }
+
+        return true;
     }
 }

@@ -11,4 +11,6 @@ public class ProductDetailsReadModel
     public string Description { get; set; } = default!;
     public decimal Price { get; set; }
     public bool IsActive { get; set; }
+    public ProductMediaAssetReadModel? MainImage { get; set; }
+    public List<ProductVariantReadModel> Variants { get; set; } = [];
 }

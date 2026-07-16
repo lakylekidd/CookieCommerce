@@ -75,6 +75,58 @@ public class DomainExceptionMiddleware
                     Instance = context.Request.Path
                 }
             ),
+            DuplicateProductVariantException duplicateVariant => (
+                HttpStatusCode.BadRequest,
+                new ValidationProblemDetails(new Dictionary<string, string[]>
+                {
+                    ["variants"] = [duplicateVariant.Message]
+                })
+                {
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Title = "Duplicate Product Variant",
+                    Detail = duplicateVariant.Message,
+                    Instance = context.Request.Path
+                }
+            ),
+            InvalidProductVariantException invalidVariant => (
+                HttpStatusCode.BadRequest,
+                new ValidationProblemDetails(new Dictionary<string, string[]>
+                {
+                    ["variants"] = [invalidVariant.Message]
+                })
+                {
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Title = "Invalid Product Variant",
+                    Detail = invalidVariant.Message,
+                    Instance = context.Request.Path
+                }
+            ),
+            InvalidProductMediaOwnershipException invalidMedia => (
+                HttpStatusCode.BadRequest,
+                new ValidationProblemDetails(new Dictionary<string, string[]>
+                {
+                    ["media"] = [invalidMedia.Message]
+                })
+                {
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Title = "Invalid Product Media Ownership",
+                    Detail = invalidMedia.Message,
+                    Instance = context.Request.Path
+                }
+            ),
+            ProductMainImageCardinalityException cardinality => (
+                HttpStatusCode.BadRequest,
+                new ValidationProblemDetails(new Dictionary<string, string[]>
+                {
+                    ["mainImage"] = [cardinality.Message]
+                })
+                {
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Title = "Invalid Product Main Image",
+                    Detail = cardinality.Message,
+                    Instance = context.Request.Path
+                }
+            ),
             _ => (
                 HttpStatusCode.InternalServerError,
                 new ProblemDetails

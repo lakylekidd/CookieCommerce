@@ -140,6 +140,7 @@ Some interfaces (`IBackofficeService`, `IAccountService`, `ICheckoutService`) ar
 | `GetInventoryItemsAsync` | `Task<ICollection<ProductDto>> GetInventoryItemsAsync()` |
 | `GetInventoryItemAsync` | `Task<ProductDto> GetInventoryItemAsync(Guid productId)` |
 | `ChangeProductStatusAsync` | `Task ChangeProductStatusAsync(Guid productId, bool isActive)` |
+| `UpdateProductNameAsync` | `Task UpdateProductNameAsync(Guid productId, string name, CancellationToken cancellationToken = default)` |
 | `ChangeVariantStatusAsync` | `Task ChangeVariantStatusAsync(Guid variantId, bool isActive)` |
 | `ChangeVariantNameAsync` | `Task ChangeVariantNameAsync(Guid variantId, string name)` |
 | `ChangeVariantPriceAsync` | `Task ChangeVariantPriceAsync(Guid variantId, decimal price)` |
@@ -147,6 +148,17 @@ Some interfaces (`IBackofficeService`, `IAccountService`, `ICheckoutService`) ar
 | `AddVariantSkuAsync` | `Task AddVariantSkuAsync(Guid productId, Guid skuId, int quantity)` |
 | `RemoveVariantSku` | `Task RemoveVariantSku(Guid variantId, Guid skuId)` |
 | `UpdateVariantSkuQuantity` | `Task UpdateVariantSkuQuantity(Guid variantId, Guid skuId, int quantity)` |
+| `UpsertProductVariantsAsync` | `Task UpsertProductVariantsAsync(Guid productId, IReadOnlyCollection<UpsertProductVariantDto> variants, CancellationToken cancellationToken = default)` |
+| `UploadProductMainImageAsync` | `Task<ProductImageDto> UploadProductMainImageAsync(Guid productId, ProductMediaUploadDto upload, CancellationToken cancellationToken = default)` |
+| `RemoveProductMainImageAsync` | `Task RemoveProductMainImageAsync(Guid productId, Guid mediaAssetId, CancellationToken cancellationToken = default)` |
+| `UploadVariantPhotoAsync` | `Task<ProductImageDto> UploadVariantPhotoAsync(Guid productId, Guid variantId, ProductMediaUploadDto upload, CancellationToken cancellationToken = default)` |
+| `RemoveVariantPhotoAsync` | `Task RemoveVariantPhotoAsync(Guid productId, Guid variantId, Guid mediaAssetId, CancellationToken cancellationToken = default)` |
+
+**Product media behavior notes:**
+- `ProductDto.ProductMainImage` is the single current product-level image exposed to the backoffice; replacing it must not alter variant photos.
+- `ProductVariantDto.Images` contains only photos scoped to that variant. Upload and remove methods require both `productId` and `variantId` so callers cannot accidentally reassign media across variants.
+- `ProductMediaUploadDto` carries the file stream, original filename, content type, byte length, and optional alt text. The ProductDomain API performs authoritative validation; Web components should preserve unrelated product/variant form state when validation fails.
+- Backoffice components must use these typed methods for product variant and media mutations; Razor components must not call ProductDomain endpoints directly.
 
 ---
 

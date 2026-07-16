@@ -18,6 +18,7 @@ public class KeycloakAuthService(
     private UserDto? _currentUser;
     private string? _refreshToken;
     private bool _initialized;
+    private bool _prerendering;
 
     public event Action? OnChange;
     public UserDto? CurrentUser => _currentUser;
@@ -28,7 +29,8 @@ public class KeycloakAuthService(
 
     public async Task InitializeAsync()
     {
-        if (_initialized) return;
+        if (_initialized && !_prerendering) return;
+        _prerendering = false;
         try
         {
             var tokenResult = await localStorage.GetAsync<string>(TokenKey);
@@ -48,11 +50,16 @@ public class KeycloakAuthService(
         }
         catch (InvalidOperationException)
         {
-            // Prerendering blocks JS interop; try again after app becomes interactive.
+            // Prerendering blocks JS interop; return anonymous now,
+            // but allow re-init once the circuit is live.
+            _prerendering = true;
+            _initialized = true;
         }
         catch (OperationCanceledException)
         {
-            // Circuit was canceled (e.g., during navigation or disconnect); ignore gracefully.
+            // Circuit was canceled; same treatment.
+            _prerendering = true;
+            _initialized = true;
         }
     }
 

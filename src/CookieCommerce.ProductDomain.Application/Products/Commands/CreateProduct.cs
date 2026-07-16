@@ -11,4 +11,5 @@ namespace CookieCommerce.ProductDomain.Application.Products.Commands;
 public record CreateProduct(
     string Name,
     string Description,
-    decimal Price) : IRequest<Guid>;
+    decimal Price,
+    IReadOnlyCollection<UpsertProductVariant>? Variants = null) : IRequest<Guid>;

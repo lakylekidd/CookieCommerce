@@ -8,4 +8,5 @@ public class UpdateProductRequest
     [Required]
     [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
     public decimal Price { get; set; }
+    public List<ProductVariantRequest> Variants { get; set; } = [];
 }

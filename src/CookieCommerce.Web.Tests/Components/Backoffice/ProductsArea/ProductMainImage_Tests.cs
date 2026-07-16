@@ -15,7 +15,7 @@ public sealed class ProductMainImage_Tests
 
         source.Should().Contain("Selected Product");
         source.Should().Contain("Product name");
-        source.Should().Contain("SaveProductNameAsync");
+        source.Should().Contain("SaveProductNameOnBlurAsync");
         source.Should().Contain("Main image");
         source.Should().Contain("Accepted file types: JPEG, PNG, or WebP. Maximum size: 5 MB.");
     }

@@ -12,7 +12,7 @@ public sealed class ProductVariants_Tests
     {
         var source = ProductsAreaSource.ReadComponent("SelectedInventoryItem.razor");
 
-        source.Should().Contain("Product Variants");
+        source.Should().Contain("Pricing & Variants");
         source.Should().Contain("AddVariantRow");
         source.Should().Contain("SaveVariantRows");
         source.Should().Contain("BackofficeService.UpsertProductVariantsAsync");

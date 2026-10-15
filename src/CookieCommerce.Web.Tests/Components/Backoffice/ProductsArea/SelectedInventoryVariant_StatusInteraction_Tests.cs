@@ -1,5 +1,9 @@
+using System.Reflection;
+using CookieCommerce.Web.Components.Backoffice.ProductsArea;
+using CookieCommerce.Web.Models.Products;
 using CookieCommerce.Web.Services;
 using FluentAssertions;
+using Microsoft.AspNetCore.Components;
 using Moq;
 
 namespace CookieCommerce.Web.Tests.Components.Backoffice.ProductsArea;
@@ -7,45 +11,31 @@ namespace CookieCommerce.Web.Tests.Components.Backoffice.ProductsArea;
 public sealed class SelectedInventoryVariant_StatusInteraction_Tests
 {
     [Fact]
-    public void DoesNotCallStatusServices_GivenMoqBackofficeServiceGuardrail()
+    public async Task Variant_status_is_saved_before_the_display_changes()
     {
-        var backofficeService = new Mock<IBackofficeService>(MockBehavior.Strict);
-
-        backofficeService.Verify(
-            service => service.ChangeProductStatusAsync(It.IsAny<Guid>(), It.IsAny<bool>()),
-            Times.Never);
-        backofficeService.Verify(
-            service => service.ChangeVariantStatusAsync(It.IsAny<Guid>(), It.IsAny<bool>()),
-            Times.Never);
+        var service = new Mock<IBackofficeService>(MockBehavior.Strict);
+        var variant = new ProductVariantDto { Id = Guid.CreateVersion7(), Active = false };
+        service.Setup(s => s.ChangeVariantStatusAsync(variant.Id, true)).Returns(Task.CompletedTask);
+        var component = new SelectedInventoryVariant { Variant = variant };
+        await ToggleAsync(component, service.Object);
+        variant.Active.Should().BeTrue();
+        service.Verify(s => s.ChangeVariantStatusAsync(variant.Id, true), Times.Once);
     }
-
     [Fact]
-    public void PreventsStatusToggleDefault_GivenDeferredStatusInteraction()
+    public async Task Product_status_is_saved_before_the_display_changes()
     {
-        var source = ProductsAreaSource.ReadComponent("SelectedInventoryVariant.razor");
-
-        source.Should().Contain("@onclick:preventDefault=\"true\"");
-        source.Should().Contain("@onchange=\"IgnoreStatusToggle\"");
-        source.Should().NotContain("@onchange=\"ToggleActive\"");
+        var service = new Mock<IBackofficeService>(MockBehavior.Strict);
+        var product = new ProductDto { ProductId = Guid.CreateVersion7(), Active = false };
+        service.Setup(s => s.ChangeProductStatusAsync(product.ProductId, true)).Returns(Task.CompletedTask);
+        var component = new InventoryTableItem { Item = product };
+        await ToggleAsync(component, service.Object);
+        product.Active.Should().BeTrue();
+        service.Verify(s => s.ChangeProductStatusAsync(product.ProductId, true), Times.Once);
     }
-
-    [Fact]
-    public void DoesNotCallChangeVariantStatusAsync_GivenDeferredVariantStatusInteraction()
+    private static async Task ToggleAsync(object component, IBackofficeService service)
     {
-        var source = ProductsAreaSource.ReadComponent("SelectedInventoryVariant.razor");
-        var codeBlock = source[(source.IndexOf("@code", StringComparison.Ordinal))..];
-
-        codeBlock.Should().NotContain("ChangeVariantStatusAsync");
-        codeBlock.Should().Contain("private void IgnoreStatusToggle(ChangeEventArgs e)");
-    }
-
-    [Fact]
-    public void DoesNotCallChangeProductStatusAsync_GivenDeferredProductStatusInteraction()
-    {
-        var source = ProductsAreaSource.ReadComponent("InventoryTableItem.razor");
-        var codeBlock = source[(source.IndexOf("@code", StringComparison.Ordinal))..];
-
-        codeBlock.Should().NotContain("ChangeProductStatusAsync");
-        codeBlock.Should().Contain("private void IgnoreStatusToggle(ChangeEventArgs e)");
+        var type = component.GetType();
+        type.GetProperty("BackofficeService", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!.SetValue(component, service);
+        await (Task)type.GetMethod("IgnoreStatusToggle", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(component, [new ChangeEventArgs { Value = true }])!;
     }
 }

@@ -9,6 +9,7 @@ public interface IKeycloakAdminService
     Task UpdateUserEmailAsync(string keycloakId, string verifiedEmail, CancellationToken ct = default);
     Task UpdateUserProfileAsync(string keycloakId, string firstName, string lastName, string? gender, DateOnly? dateOfBirth, CancellationToken ct = default);
     Task DisableUserAsync(string keycloakId, CancellationToken ct = default);
+    Task SendPasswordResetAsync(string keycloakId, CancellationToken ct = default);
 }
 
 public class KeycloakUserInfo

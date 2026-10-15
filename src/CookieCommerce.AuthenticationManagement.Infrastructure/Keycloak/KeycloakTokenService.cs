@@ -72,6 +72,21 @@ public class KeycloakTokenService : IKeycloakTokenService
             ct);
     }
 
+    public async Task<KeycloakTokenResponse> RefreshAsync(string refreshToken, CancellationToken ct = default)
+    {
+        var client = _httpClientFactory.CreateClient("keycloak");
+        using var form = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["grant_type"] = "refresh_token", ["refresh_token"] = refreshToken,
+            ["client_id"] = _options.ClientId, ["client_secret"] = _options.ClientSecret
+        });
+        using var response = await client.PostAsync($"/realms/{_options.Realm}/protocol/openid-connect/token", form, ct);
+        if (!response.IsSuccessStatusCode) throw new InvalidCredentialsException("Your session has expired. Please sign in again.");
+        var result = await response.Content.ReadFromJsonAsync<KeycloakLoginResponse>(cancellationToken: ct)
+            ?? throw new InvalidCredentialsException("Unable to refresh this session.");
+        return new KeycloakTokenResponse { AccessToken = result.AccessToken, RefreshToken = result.RefreshToken, ExpiresIn = result.ExpiresIn };
+    }
+
     private sealed class KeycloakLoginResponse
     {
         [JsonPropertyName("access_token")]

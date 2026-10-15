@@ -1,4 +1,4 @@
-﻿@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Models.Products
 @using CookieCommerce.Web.Services
 @using Microsoft.AspNetCore.Components.Forms
 @rendermode InteractiveServer
@@ -176,10 +176,10 @@
                 <input id="@StatusControlId"
                        type="checkbox"
                        checked="@Variant.Active"
-                       aria-label="Variant status, visible but not editable yet"
-                       aria-disabled="true"
-                       title="Status changes are not saved yet"
-                       @onclick:preventDefault="true"
+                       aria-label="Variant status, "
+
+
+
                        @onchange="IgnoreStatusToggle"
                        class="sr-only peer">
                 @* The Switch Track *@
@@ -198,7 +198,7 @@
 
     <td class="py-4 px-2 text-right @(isDeleting ? "py-0 transition-all duration-500" : "")">
         <div class="flex items-center justify-end gap-3">
-            <div class="relative group">      
+            <div class="relative group">
                 <button @onclick="HandleDelete"
                         type="button"
                         aria-label="@($"Delete variant {Variant.Name}")"
@@ -217,7 +217,7 @@
                     }
                 </button>
             </div>
-        
+
             @if (isExpanded)
             {
                 <div class="relative group">
@@ -262,7 +262,7 @@
 
 @if(isExpanded)
 {
-    <SelectedInventoryVariantSkus 
+    <SelectedInventoryVariantSkus
         VariantSkus="@Variant.Skus"
         VariantSkusChanged="@ReloadVariantDataAsync"
         isLoading="@isLoadingSkus"
@@ -378,10 +378,11 @@
         }
     }
 
-    private void IgnoreStatusToggle(ChangeEventArgs e)
+    private async Task IgnoreStatusToggle(ChangeEventArgs e)
     {
-        // Status behavior is intentionally deferred. Keep the visual control in place,
-        // but do not save, validate, publish, or otherwise mutate product behavior.
+        var active = e.Value is bool value && value;
+        await BackofficeService.ChangeVariantStatusAsync(Variant.Id, active);
+        Variant.Active = active;
     }
 
     private async Task HandleDelete()
@@ -392,7 +393,7 @@
         StateHasChanged();
 
         await Task.Delay(500);
-        await BackofficeService.DeleteVariantAsync(Variant.Id);       
+        await BackofficeService.DeleteVariantAsync(Variant.Id);
     }
 
     private async Task HandleKeyDownUpdateName(KeyboardEventArgs e)

@@ -1,4 +1,5 @@
-﻿@page "/backoffice/inventory/"
+@inject CookieCommerce.Web.Services.Commerce.InventoryService Persistence
+@page "/backoffice/inventory/"
 @using CookieCommerce.Web.Models.Backoffice
 @using CookieCommerce.Web.Models.Order
 @using CookieCommerce.Web.Services
@@ -26,7 +27,7 @@
         </span>
 
         <button @onclick="GoToNextDay"
-                disabled="@(selectedDate >= DateOnly.FromDateTime(DateTime.Today))"
+
                 class="flex items-center gap-1 text-sm font-medium text-primary hover:underline disabled:opacity-40 disabled:cursor-not-allowed">
             Next Day
             <span class="material-symbols-outlined text-base">chevron_right</span>
@@ -39,7 +40,7 @@
             SelectedDate="@selectedDate" />
         <RemainingToBakeCard
             Value="@inventory.OrderQuota.RemainingToBake"
-            Target="@inventory.OrderQuota.TotalOrders"
+            Target="@inventory.OrderQuota.CurrentQuota"
             SelectedDate="@selectedDate" />
         <QuotaProgressCard
             Percentage="@inventory.OrderQuota.DailyQuotaPercentage"
@@ -66,6 +67,7 @@
     </div>
 </div>
 
+<SkuStockTable Skus="inventory.Skus" />
 
 
 @code {
@@ -89,7 +91,7 @@
 
     private async Task GoToNextDay()
     {
-        if (selectedDate >= DateOnly.FromDateTime(DateTime.Today)) return;
+
         selectedDate = selectedDate.AddDays(1);
         await LoadInventory();
     }
@@ -101,9 +103,10 @@
         isLoading = false;
     }
 
-    private Task HandleBatchAdded(BatchDto newBatch)
+    private async Task HandleBatchAdded(BatchDto newBatch)
     {
-        inventory.Batches.Add(newBatch);
-        return Task.CompletedTask;
+        newBatch.DeliveryDate = selectedDate;
+        await Persistence.SaveBatchAsync(newBatch);
+        await LoadInventory();
     }
 }

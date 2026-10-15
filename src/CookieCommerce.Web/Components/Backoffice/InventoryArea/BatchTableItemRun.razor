@@ -1,3 +1,4 @@
+@inject CookieCommerce.Web.Services.Commerce.InventoryService Persistence
 @using CookieCommerce.Web.Models.Backoffice
 @implements IDisposable
 
@@ -181,7 +182,7 @@
                 break;
         }
 
-        await Task.Delay(800);
+        await Persistence.SaveRunAsync(BatchRun);
 
         _savingFields.Remove(field);
         StateHasChanged();

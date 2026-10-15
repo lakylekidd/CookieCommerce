@@ -10,6 +10,7 @@ namespace CookieCommerce.ProductDomain.Infrastructure.Projections;
 /// </summary>
 public class ProductDetailsProjection : SingleStreamProjection<ProductDetailsReadModel, Guid>
 {
+    public void Apply(ProductActivated @event, ProductDetailsReadModel current) => current.IsActive = true;
     /// <summary>
     /// Creates the initial read model from the ProductCreated event.
     /// </summary>

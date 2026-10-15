@@ -15,22 +15,22 @@ public sealed class SelectedInventoryVariant_StatusRendering_Tests
     }
 
     [Fact]
-    public void KeepsVariantStatusControlAccessible_GivenStatusBehaviorIsDeferred()
+    public void KeepsVariantStatusControlAccessible_GivenLiveStatusControls()
     {
         var source = ProductsAreaSource.ReadComponent("SelectedInventoryVariant.razor");
 
-        source.Should().Contain("aria-label=\"Variant status, visible but not editable yet\"");
-        source.Should().Contain("aria-disabled=\"true\"");
-        source.Should().Contain("Status changes are not saved yet");
+        source.Should().Contain("aria-label=\"Variant status, \"");
+        source.Should().NotContain("aria-disabled=\"true\"");
+        source.Should().NotContain("Status changes are not saved yet");
     }
 
     [Fact]
-    public void KeepsProductStatusControlAccessible_GivenStatusBehaviorIsDeferred()
+    public void KeepsProductStatusControlAccessible_GivenLiveStatusControls()
     {
         var source = ProductsAreaSource.ReadComponent("InventoryTableItem.razor");
 
-        source.Should().Contain("aria-label=\"Product status, visible but not editable yet\"");
-        source.Should().Contain("aria-disabled=\"true\"");
-        source.Should().Contain("Status changes are not saved yet");
+        source.Should().Contain("aria-label=\"Product status, \"");
+        source.Should().NotContain("aria-disabled=\"true\"");
+        source.Should().NotContain("Status changes are not saved yet");
     }
 }

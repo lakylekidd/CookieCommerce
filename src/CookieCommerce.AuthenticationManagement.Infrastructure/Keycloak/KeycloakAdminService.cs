@@ -42,6 +42,16 @@ public class KeycloakAdminService : IKeycloakAdminService
         return result!.AccessToken;
     }
 
+    public async Task SendPasswordResetAsync(string keycloakId, CancellationToken ct = default)
+    {
+        var client = _httpClientFactory.CreateClient("keycloak");
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", await GetAdminTokenAsync(ct));
+        using var response = await client.PutAsJsonAsync(
+            $"/admin/realms/{_options.Realm}/users/{Uri.EscapeDataString(keycloakId)}/execute-actions-email?lifespan=1800",
+            new[] { "UPDATE_PASSWORD" }, ct);
+        response.EnsureSuccessStatusCode();
+    }
+
     public async Task<string> RegisterUserAsync(
         string email,
         string password,

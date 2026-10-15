@@ -7,13 +7,14 @@ using CookieCommerce.Web.Models.Addresses;
 using CookieCommerce.Web.Models.Order;
 using CookieCommerce.Web.Models.Products;
 using CookieCommerce.Web.Models.Reviews;
+using CookieCommerce.Web.Services.Commerce;
 
 namespace CookieCommerce.Web.Services;
 
 public sealed class CustomerDomainAccountService(
     IHttpClientFactory httpClientFactory,
     IAuthService authService,
-    FakeAccountService fakeAccountService,
+    AccountFeatures accountFeatures,
     ILogger<CustomerDomainAccountService> logger) : IAccountService
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -22,20 +23,20 @@ public sealed class CustomerDomainAccountService(
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    public Task AddToFavoritesAsync(Guid productId) => fakeAccountService.AddToFavoritesAsync(productId);
-    public Task RemoveFromFavoritesAsync(Guid productId) => fakeAccountService.RemoveFromFavoritesAsync(productId);
-    public Task<bool> IsFavoriteAsync(Guid productId) => fakeAccountService.IsFavoriteAsync(productId);
-    public Task<ICollection<StorefrontProductDto>> GetFavoriteProductsAsync() => fakeAccountService.GetFavoriteProductsAsync();
-    public Task<bool> HasBirthdateAsync() => fakeAccountService.HasBirthdateAsync();
-    public Task<UserProfileDto?> GetProfileAsync() => fakeAccountService.GetProfileAsync();
-    public Task<ResultDto> UpdateProfileAsync(UserProfileDto profile) => fakeAccountService.UpdateProfileAsync(profile);
-    public Task<ICollection<OrderListItemDto>> GetOrdersAsync(int page, int pageSize) => fakeAccountService.GetOrdersAsync(page, pageSize);
-    public Task<int> GetTotalOrdersCountAsync() => fakeAccountService.GetTotalOrdersCountAsync();
-    public Task<OrderDto?> GetOrderByIdAsync(Guid orderId) => fakeAccountService.GetOrderByIdAsync(orderId);
-    public Task<int> GetOrderCountInNeedOfAttentionAsync() => fakeAccountService.GetOrderCountInNeedOfAttentionAsync();
-    public Task<TrackingDto?> GetTrackingAsync(Guid orderId) => fakeAccountService.GetTrackingAsync(orderId);
-    public Task SubmitReviewAsync(Guid productId, ReviewSubmitRequest review) => fakeAccountService.SubmitReviewAsync(productId, review);
-    public Task<(bool, int)> HasAlreadyReviewedProductIdAsync(Guid productId) => fakeAccountService.HasAlreadyReviewedProductIdAsync(productId);
+    public Task AddToFavoritesAsync(Guid productId) => accountFeatures.AddToFavoritesAsync(productId);
+    public Task RemoveFromFavoritesAsync(Guid productId) => accountFeatures.RemoveFromFavoritesAsync(productId);
+    public Task<bool> IsFavoriteAsync(Guid productId) => accountFeatures.IsFavoriteAsync(productId);
+    public Task<ICollection<StorefrontProductDto>> GetFavoriteProductsAsync() => accountFeatures.GetFavoriteProductsAsync();
+    public Task<bool> HasBirthdateAsync() => accountFeatures.HasBirthdateAsync();
+    public Task<UserProfileDto?> GetProfileAsync() => accountFeatures.GetProfileAsync();
+    public Task<ResultDto> UpdateProfileAsync(UserProfileDto profile) => accountFeatures.UpdateProfileAsync(profile);
+    public Task<ICollection<OrderListItemDto>> GetOrdersAsync(int page, int pageSize) => accountFeatures.GetOrdersAsync(page, pageSize);
+    public Task<int> GetTotalOrdersCountAsync() => accountFeatures.GetTotalOrdersCountAsync();
+    public Task<OrderDto?> GetOrderByIdAsync(Guid orderId) => accountFeatures.GetOrderByIdAsync(orderId);
+    public Task<int> GetOrderCountInNeedOfAttentionAsync() => accountFeatures.GetOrderCountInNeedOfAttentionAsync();
+    public Task<TrackingDto?> GetTrackingAsync(Guid orderId) => accountFeatures.GetTrackingAsync(orderId);
+    public Task SubmitReviewAsync(Guid productId, ReviewSubmitRequest review) => accountFeatures.SubmitReviewAsync(productId, review);
+    public Task<(bool, int)> HasAlreadyReviewedProductIdAsync(Guid productId) => accountFeatures.HasAlreadyReviewedProductIdAsync(productId);
 
     public async Task<IList<AddressBookItemDto>> GetAddressesAsync()
     {
@@ -143,10 +144,20 @@ public sealed class CustomerDomainAccountService(
         }
     }
 
-    public Task<ResultDto> SetAsPrimaryAsync(Guid addressId)
+    public async Task<ResultDto> SetAsPrimaryAsync(Guid addressId)
     {
-        return Task.FromResult(ResultDto.Fail(
-            "Explicit primary address changes are not supported yet. Add a new default address or delete the current default to let CustomerDomain promote the next address."));
+        var user = await GetCurrentUserAsync();
+        if (user is null) return ResultDto.Fail("Sign in to change your default address.");
+        try
+        {
+            using var response = await CreateAuthorizedClient(user.Id).PutAsync($"api/customer/me/addresses/{addressId}/default", null);
+            return response.IsSuccessStatusCode ? ResultDto.Ok("Default address updated.") : ResultDto.Fail("Unable to change your default address.");
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to update default address");
+            return ResultDto.Fail("Unable to change your default address.");
+        }
     }
 
     public async Task<AddressBookItemDto?> GetPrimaryAddressAsync()

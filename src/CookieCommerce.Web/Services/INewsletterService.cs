@@ -5,5 +5,5 @@
 /// </summary>
 public interface INewsletterService
 {
-
+    Task<Models.ResultDto> SubscribeAsync(string email, string name);
 }

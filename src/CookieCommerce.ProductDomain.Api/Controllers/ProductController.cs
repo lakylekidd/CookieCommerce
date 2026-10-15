@@ -10,6 +10,15 @@ namespace CookieCommerce.ProductDomain.Api.Controllers;
 [Route("api/[controller]")]
 public class ProductController(ISender mediator) : ControllerBase
 {
+    public sealed record ProductStatusRequest(bool IsActive);
+
+    [HttpPut("{id:guid}/status")]
+    public async Task<IActionResult> SetStatusAsync(Guid id, [FromBody] ProductStatusRequest request, CancellationToken ct)
+    {
+        if (request.IsActive) await mediator.Send(new ActivateProduct(id), ct);
+        else await mediator.Send(new DeactivateProduct(id), ct);
+        return NoContent();
+    }
     private readonly ISender _mediator = mediator;
 
     /// <summary>

@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
+using CookieCommerce.Web.Services.Commerce;
+using CookieCommerce.Web.Services.Payments;
+using Npgsql;
+using CookieCommerce.Web.Services.Development;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,8 +22,10 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 
 // Data Protection Fix (from our previous step)
+var protectionPath = builder.Configuration["DataProtection:KeyPath"] ?? Path.Combine(builder.Environment.ContentRootPath, ".data-protection");
+Directory.CreateDirectory(protectionPath);
 builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo(@"/root/.aspnet/DataProtection-Keys"))
+    .PersistKeysToFileSystem(new DirectoryInfo(protectionPath))
     .SetApplicationName("CookieCommerce.Web");
 
 builder.AddServiceDefaults();
@@ -35,8 +41,31 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<AuthenticationStateProvider, KeycloakAuthStateProvider>();
-builder.Services.AddScoped<ICookieService, CookieService>();
-builder.Services.AddSingleton<ICartService, MockCartService>();
+builder.Services.AddScoped<ProtectedLocalStorage>();
+builder.Services.AddScoped<ProductApiClient>();
+builder.Services.AddScoped<ProductMainImages>();
+builder.Services.AddScoped<ICookieService, CatalogService>();
+builder.Services.AddScoped<CartService>();
+builder.Services.AddScoped<ICartService>(sp => sp.GetRequiredService<CartService>());
+builder.Services.AddSingleton(sp => NpgsqlDataSource.Create(builder.Configuration.GetConnectionString("Commerce")
+    ?? throw new InvalidOperationException("Connection string 'Commerce' is required. Start the site through AppHost or configure PostgreSQL.")));
+builder.Services.AddSingleton<CommerceStore>();
+builder.Services.AddSingleton<ICommerceStore>(sp => sp.GetRequiredService<CommerceStore>());
+builder.Services.AddHostedService(sp => sp.GetRequiredService<CommerceStore>());
+builder.Services.AddHostedService<CommerceAutomation>();
+builder.Services.AddScoped<DevelopmentCommerceSeeder>();
+builder.Services.AddHostedService<DevelopmentCommerceBootstrapService>();
+builder.Services.AddScoped<CommerceAccess>();
+builder.Services.AddScoped<AccountFeatures>();
+builder.Services.AddScoped<StoreSettingsService>();
+builder.Services.AddHttpClient("product-domain-api", client => client.BaseAddress = new Uri("http://product-api"));
+builder.Services.AddHttpClient("payments", client => client.Timeout = TimeSpan.FromSeconds(30));
+builder.Services.Configure<PaymentOptions>(builder.Configuration.GetSection("Payments"));
+builder.Services.AddSingleton<StripePaymentGateway>();
+builder.Services.AddSingleton<MolliePaymentGateway>();
+builder.Services.AddSingleton<IPaymentGateway>(sp => sp.GetRequiredService<StripePaymentGateway>());
+builder.Services.AddSingleton<IPaymentGateway>(sp => sp.GetRequiredService<MolliePaymentGateway>());
+builder.Services.AddSingleton<PaymentProcessor>();
 builder.Services.AddHttpClient("authentication-management-api", client =>
 {
     client.BaseAddress = new Uri("http://authentication-management-api");
@@ -56,13 +85,14 @@ builder.Services.AddScoped<IAuthService>(sp =>
     var localStorage = sp.GetRequiredService<ProtectedLocalStorage>();
     return new KeycloakAuthService(httpClient, cartService, localStorage);
 });
-builder.Services.AddSingleton<IContentService, FakeContentService>();
-builder.Services.AddSingleton<ICheckoutService, FakeCheckoutService>();
-builder.Services.AddScoped<ILocationService, LocationService>();
-builder.Services.AddScoped<IBackofficeService, FakeBackofficeService>();
-builder.Services.AddScoped<IImageUploadService, FakeImageUploadService>();
-builder.Services.AddScoped<IOperationsService, FakeOperationsService>();
-builder.Services.AddScoped<FakeAccountService>();
+builder.Services.AddSingleton<IContentService, ContentService>();
+builder.Services.AddScoped<CheckoutService>();
+builder.Services.AddScoped<ICheckoutService>(sp => sp.GetRequiredService<CheckoutService>());
+builder.Services.AddHttpClient<ILocationService, LocationService>();
+builder.Services.AddScoped<BackofficeService>();
+builder.Services.AddScoped<IBackofficeService>(sp => sp.GetRequiredService<BackofficeService>());
+builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
+builder.Services.AddScoped<IOperationsService>(sp => sp.GetRequiredService<StoreSettingsService>());
 builder.Services.AddScoped<IAccountService, CustomerDomainAccountService>();
 
 // CustomerDomain API: live profile and address services (US1)
@@ -73,8 +103,10 @@ builder.Services.AddHttpClient("customer-domain-api", client =>
 });
 builder.Services.AddScoped<CustomerProfileService>();
 builder.Services.AddScoped<CustomerProfileState>();
-builder.Services.AddScoped<IInventoryService, FakeInventoryService>();
-builder.Services.AddScoped<ICustomerService, FakeCustomerService>();
+builder.Services.AddScoped<InventoryService>();
+builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<InventoryService>());
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<INewsletterService, NewsletterService>();
 builder.Services.AddScoped<IContactService, SmtpContactService>();
 
 builder.Services.AddAuthentication(options =>
@@ -109,6 +141,7 @@ app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages:
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+app.MapCommerceEndpoints();
 app.MapStaticAssets();
 
 app.MapRazorComponents<App>()
@@ -118,3 +151,5 @@ app.AddSiteMapOptions();
 app.AddRobots();
 
 app.Run();
+
+public partial class Program { }

@@ -1,4 +1,4 @@
-﻿@page "/shop"
+@page "/shop"
 @layout ShopLayout
 
 @using CookieCommerce.Web.Components.Shared
@@ -37,7 +37,7 @@
         {
             <CookieCard 
                 Id="@cookie.Id"    
-                ImageUrl="@cookie.ImageUrls[0]"
+                ImageUrl="@cookie.ImageUrl"
                 CookieTitle="@cookie.Title"
                 Description="@cookie.Description"
                 Price="@cookie.Price"

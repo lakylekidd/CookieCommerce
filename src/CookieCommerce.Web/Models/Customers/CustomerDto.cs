@@ -37,7 +37,7 @@ public class CustomerDto
     /// Mirrors the reward-point formula used on <see cref="CookieCommerce.Web.Models.Order.OrderListItemDto"/>:
     /// 10 points per euro spent.
     /// </summary>
-    public int RewardPoints => (int)(TotalSpent * 10);
+    public int RewardPoints { get; set; }
 
     // ── Address ──────────────────────────────────────────────────────────────
 

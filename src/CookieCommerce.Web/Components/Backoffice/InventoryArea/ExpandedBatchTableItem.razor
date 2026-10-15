@@ -1,11 +1,12 @@
-﻿@using CookieCommerce.Web.Models.Backoffice
+@inject CookieCommerce.Web.Services.Commerce.InventoryService Persistence
+@using CookieCommerce.Web.Models.Backoffice
 
 <tr>
     <td class="p-0 border-primary border-l-4 border-r-4 border-b border-t bg-orange-50/20 dark:bg-gray-800/20" colspan="6">
         @if (IsLoading)
         {
             @* Skeleton Loader with Shimmer *@
-            
+
         }
         else
         {
@@ -20,7 +21,7 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
-                        
+
                         @* 📋 Status Selector *@
                         <div class="flex flex-col gap-1">
                             <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Batch Status</span>
@@ -28,9 +29,9 @@
                                 <select value="@Batch.BatchStatus"
                                         disabled="@IsSaving("BatchStatus")"
                                         @onchange="@(e => HandleAutoSave("BatchStatus", e.Value))"
-                                        class="w-full bg-white dark:bg-stone-800 border border-stone-200 
-                                               dark:border-stone-700 text-xs font-bold rounded-lg pl-2 pr-10 h-[38px] 
-                                               outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20 
+                                        class="w-full bg-white dark:bg-stone-800 border border-stone-200
+                                               dark:border-stone-700 text-xs font-bold rounded-lg pl-2 pr-10 h-[38px]
+                                               outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20
                                                appearance-none bg-none
                                     @(IsSaving("BatchStatus") ? "opacity-60 cursor-not-allowed" : "cursor-pointer")">
                                     @foreach (BatchStatus status in Enum.GetValues(typeof(BatchStatus)))
@@ -63,8 +64,8 @@
                             @* 📦 Planned Quantity *@
                             <div class="flex flex-col gap-1 flex-1">
                                 <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Planned</span>
-                                <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200 
-                                            dark:border-stone-700 rounded-lg px-3 h-[38px] focus-within:ring-2 
+                                <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200
+                                            dark:border-stone-700 rounded-lg px-3 h-[38px] focus-within:ring-2
                                             focus-within:ring-primary/20 transition-all text-stone-600 px-2 py-1
                                             @(IsSaving("Planned") ? "opacity-60 cursor-not-allowed" : "")">
 
@@ -91,8 +92,8 @@
                             @* ✅ Actual Quantity *@
                             <div class="flex flex-col gap-1 flex-1">
                                 <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Actual</span>
-                                <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200 
-                                            dark:border-stone-700 rounded-lg h-[38px] px-2 py-1 focus-within:ring-2 
+                                <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200
+                                            dark:border-stone-700 rounded-lg h-[38px] px-2 py-1 focus-within:ring-2
                                             focus-within:ring-primary/20 transition-all text-stone-600
                                             @(IsSaving("Actual") ? "opacity-60 cursor-not-allowed" : "")">
 
@@ -119,8 +120,8 @@
                             @* ⚠️ Defective Quantity *@
                             <div class="flex flex-col gap-1 flex-1">
                                 <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Defects</span>
-                                <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200 
-                                            dark:border-stone-700 rounded-lg h-[38px] px-2 py-1 focus-within:ring-2 
+                                <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200
+                                            dark:border-stone-700 rounded-lg h-[38px] px-2 py-1 focus-within:ring-2
                                             focus-within:ring-primary/20 transition-all text-stone-600
                                             @(IsSaving("Defects") ? "opacity-60 cursor-not-allowed" : "")">
 
@@ -154,9 +155,9 @@
                                        disabled="@IsSaving("Remarks")"
                                        @onchange="@(e => HandleAutoSave("Remarks", e.Value))"
                                        placeholder="Add production notes..."
-                                       class="w-full bg-white dark:bg-stone-800 border border-stone-200 
-                                              dark:border-stone-700 text-xs font-bold rounded-lg pl-3 pr-10 h-[38px] 
-                                              outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20 
+                                       class="w-full bg-white dark:bg-stone-800 border border-stone-200
+                                              dark:border-stone-700 text-xs font-bold rounded-lg pl-3 pr-10 h-[38px]
+                                              outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20
                                               placeholder:text-stone-300 italic
                                               @(IsSaving("Remarks") ? "opacity-60 cursor-not-allowed" : "")" />
 
@@ -214,22 +215,24 @@
 
     private static int _runSeq = 500;
 
-    private void AddBatchRun()
+    private async Task AddBatchRun()
     {
         var seq = ++_runSeq;
         Batch.BatchRuns.Add(new BatchRunDto
         {
             Id = Guid.NewGuid(),
-            BatchRunReference = $"RUN-{seq:D3}",
+            BatchRunReference = $"RUN-{Guid.CreateVersion7().ToString("N")[..12]}",
             BatchId = Batch.Id,
             Status = BatchRunStatus.Scheduled,
             BakingInformation = new BakingInformationDto()
         });
+        await Persistence.SaveBatchAsync(Batch);
     }
 
-    private void RemoveBatchRun(BatchRunDto run)
+    private async Task RemoveBatchRun(BatchRunDto run)
     {
         Batch.BatchRuns.Remove(run);
+        await Persistence.SaveBatchAsync(Batch);
     }
 
     // Track which field is currently saving to show the spinner in the right place
@@ -265,15 +268,12 @@
                 break;
         }
 
-        await Task.Delay(800);
+        await Persistence.SaveBatchAsync(Batch);
         _currentlySavingField = null;
         StateHasChanged();
     }
 
-    private async Task HandleStatusSave(BatchStatus newStatus)
-    {
-        
-    }
+    private Task HandleStatusSave(BatchStatus newStatus) { Batch.BatchStatus = newStatus; return Task.CompletedTask; }
 
     private async Task HandleQuantitySave(string fieldName, int newValue)
     {
@@ -282,8 +282,5 @@
         if (fieldName == "Defects") Batch.DefectiveQuantity = newValue;
     }
 
-    private async Task HandleRemarkSave(string newRemark)
-    {
-        
-    }
+    private Task HandleRemarkSave(string newRemark) { Batch.Remarks = newRemark; return Task.CompletedTask; }
 }

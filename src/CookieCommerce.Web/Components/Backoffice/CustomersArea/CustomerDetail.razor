@@ -129,7 +129,7 @@
                     }
                     <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                         <span class="material-symbols-outlined text-base text-gray-400">calendar_today</span>
-                        Member since @customer.MemberSince.ToString("MMM yyyy")
+                        @(customer.MemberSince == DateTime.MinValue ? "Member since: unavailable" : $"Member since {customer.MemberSince:MMM yyyy}")
                     </div>
                 </div>
             </div>

@@ -2,6 +2,8 @@
 
 public class AddressDto
 {
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
     public string Street { get; set; } = default!;
     public string HouseNumber { get; set; } = default!;
     public string? HouseNumberAddition { get; set; }

@@ -168,7 +168,7 @@ public class CustomerController(ISender mediator) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllAsync(CancellationToken ct = default)
     {
-        return Ok();
+        return Ok(await _mediator.Send(new GetAllCustomers(), ct));
     }
 
     [HttpDelete("{id:guid}")]

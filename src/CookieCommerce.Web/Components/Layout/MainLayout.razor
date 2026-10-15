@@ -1,6 +1,9 @@
-﻿@using CookieCommerce.Web.Services
+@using CookieCommerce.Web.Services
 @inherits LayoutComponentBase
 @inject IJSRuntime JS
+@inject IAuthService Auth
+@inject CookieCommerce.Web.Services.Commerce.CartService Carts
+@inject CookieCommerce.Web.Services.Commerce.StoreSettingsService StoreSettings
 
 <HeadContent>
     <meta charset="utf-8" />
@@ -73,6 +76,7 @@
     {
         // Every time we render (including after navigation),
         // we tell JS to double-check the theme classes.
-        await JS.InvokeVoidAsync("applyTheme");
+        if (firstRender) { await Auth.InitializeAsync(); await Carts.RestoreAsync(); }
+        await JS.InvokeVoidAsync("applyTheme", (await StoreSettings.GetAsync()).Preference("defaultDarkMode", false));
     }
 }

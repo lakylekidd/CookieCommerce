@@ -98,7 +98,7 @@ internal static class ProductsAreaSource
 
         while (current is not null)
         {
-            if (Directory.Exists(Path.Combine(current.FullName, ".git"))
+            if (File.Exists(Path.Combine(current.FullName, "src", "CookieCommerce.slnx"))
                 && Directory.Exists(Path.Combine(current.FullName, "src", "CookieCommerce.Web")))
             {
                 return current;

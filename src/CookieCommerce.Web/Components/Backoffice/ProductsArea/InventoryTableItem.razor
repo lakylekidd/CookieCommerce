@@ -1,4 +1,6 @@
-﻿@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Services
+@inject IBackofficeService BackofficeService
+@using CookieCommerce.Web.Models.Products
 @rendermode InteractiveServer
 
 <tr @onclick="OnSelectedAsync"
@@ -42,10 +44,10 @@
                 <input id="@StatusControlId"
                        type="checkbox"
                        checked="@Item.Active"
-                       aria-label="Product status, visible but not editable yet"
-                       aria-disabled="true"
-                       title="Status changes are not saved yet"
-                       @onclick:preventDefault="true"
+                       aria-label="Product status, "
+
+
+
                        @onchange="IgnoreStatusToggle"
                        class="sr-only peer">
                 @* The Switch Track *@
@@ -93,10 +95,11 @@
     [Parameter] public EventCallback<Guid> OnSelected { get; set; }
     private string StatusControlId => $"product-status-{Item.ProductId:N}";
 
-    private void IgnoreStatusToggle(ChangeEventArgs e)
+    private async Task IgnoreStatusToggle(ChangeEventArgs e)
     {
-        // Status behavior is intentionally deferred. Keep the visual control in place,
-        // but do not save, validate, publish, or otherwise mutate product behavior.
+        var active = e.Value is bool value && value;
+        await BackofficeService.ChangeProductStatusAsync(Item.ProductId, active);
+        Item.Active = active;
     }
 
     private async Task OnSelectedAsync()

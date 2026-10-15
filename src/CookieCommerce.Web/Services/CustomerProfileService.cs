@@ -9,7 +9,7 @@ namespace CookieCommerce.Web.Services;
 
 /// <summary>
 /// Concrete live CustomerDomain profile service using Aspire-named HttpClient.
-/// Replaces customer-facing profile load/save in FakeAccountService.
+/// Provides customer-facing profile load/save through the customer API.
 /// No mock fallback — API failures surface as user-safe error states.
 /// </summary>
 public sealed class CustomerProfileService
@@ -48,7 +48,7 @@ public sealed class CustomerProfileService
         if (user is null) return null;
 
         // Return cached profile if available
-        if (_profileState.Profile is { } cached) return cached;
+        if (_profileState.Profile is { } cached && cached.Id == user.Id) return cached;
 
         try
         {

@@ -1,0 +1,62 @@
+@page "/shop/checkout/complete"
+@using CookieCommerce.Web.Services.Commerce
+@rendermode InteractiveServer
+@layout CheckoutLayout
+@implements IDisposable
+@inject CartService Carts
+@inject ICommerceStore Store
+@inject CookieCommerce.Web.Services.IAuthService Auth
+
+<main class="container mx-auto max-w-2xl px-6 py-16">
+    <h1 class="font-display text-3xl font-bold mb-6">Your order</h1>
+    @if (order is null)
+    {
+        <p>No recent order was found in this browser.</p>
+    }
+    else
+    {
+        <p class="text-xl font-bold">@order.Order.OrderReference</p>
+        <p class="my-4" role="status">@(order.PaymentStatus == "Paid" ? "Payment received. Thank you for your order!" : order.PaymentStatus == "Pending" ? "We are waiting for payment confirmation. This page will update automatically." : $"Payment {order.PaymentStatus.ToLowerInvariant()}. Your cart has been kept.")</p>
+        @foreach (var item in order.Order.Products)
+        {
+            <p>@item.Quantity × @item.ProductName (@item.ProductVariantName) — €@item.TotalPrice.ToString("F2")</p>
+        }
+        <p class="font-bold mt-6">Total: €@order.Order.Total.ToString("F2")</p>
+        <p>Delivery estimate: @order.DeliveryDate.ToString("d MMMM yyyy")</p>
+        <button class="mt-4 text-primary underline" @onclick="LoadAsync">Refresh payment status</button>
+    }
+    <p class="mt-8"><a href="/shop">Continue shopping</a> · <a href="/shop/checkout">Return to checkout</a></p>
+</main>
+
+@code {
+    private CommerceOrder? order;
+    private readonly CancellationTokenSource cancellation = new();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        await LoadAsync();
+        _ = PollAsync();
+    }
+    private async Task LoadAsync()
+    {
+        await Auth.InitializeAsync();
+        var key = await Carts.GetKeyAsync();
+        order = (await Store.ListAsync<CommerceOrder>()).Where(o => o.CartKey == key || Auth.CurrentUser is { } user && o.CustomerId == user.Id).OrderByDescending(o => o.Order.PlacedOn).FirstOrDefault();
+        if (order?.PaymentStatus == "Paid") await Carts.RestoreAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+    private async Task PollAsync()
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+            for (var attempt = 0; attempt < 30 && order?.PaymentStatus == "Pending"; attempt++)
+            {
+                if (!await timer.WaitForNextTickAsync(cancellation.Token)) break;
+                await InvokeAsync(LoadAsync);
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+    public void Dispose() { cancellation.Cancel(); cancellation.Dispose(); }
+}

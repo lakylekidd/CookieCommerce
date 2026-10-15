@@ -4,6 +4,7 @@ public interface IKeycloakTokenService
 {
     Task<KeycloakTokenResponse> LoginAsync(string email, string password, CancellationToken ct = default);
     Task RevokeTokenAsync(string refreshToken, CancellationToken ct = default);
+    Task<KeycloakTokenResponse> RefreshAsync(string refreshToken, CancellationToken ct = default);
 }
 
 public class KeycloakTokenResponse

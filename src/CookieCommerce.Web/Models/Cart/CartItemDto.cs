@@ -2,6 +2,7 @@
 
 public class CartItemDto
 {
+    public Guid ProductId { get; set; }
     public Guid CartItemId { get; set; }
     public Guid ProductVariantId { get; set; }
     public string ProductName { get; set; } = string.Empty;

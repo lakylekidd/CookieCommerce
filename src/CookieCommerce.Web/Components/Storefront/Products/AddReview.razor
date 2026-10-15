@@ -1,4 +1,4 @@
-﻿@using CookieCommerce.Web.Models.Reviews
+@using CookieCommerce.Web.Models.Reviews
 @using CookieCommerce.Web.Services
 @inject IAuthService Auth
 @inject IAccountService AccountService
@@ -148,12 +148,14 @@ else
 }
 
 
+@if (error is not null) { <p role="alert" class="text-red-600">@error</p> }
 @code {
     [Parameter] public Guid ProductId { get; set; }
     private int selectedRating = 0;
     private string reviewText = "";
     private bool alreadyReviewed = false;
     private bool isSubmitting = false;
+    private string? error;
 
     protected override async Task OnInitializedAsync()
     {
@@ -190,6 +192,7 @@ else
             return;
         }
 
+        try {
         await AccountService.SubmitReviewAsync(ProductId, new ReviewSubmitRequest
         {
             Comment = reviewText,
@@ -197,6 +200,6 @@ else
         });
 
         alreadyReviewed = true;
-        isSubmitting = false;
+        } catch (Exception ex) { error = ex.Message; } finally { isSubmitting = false; }
     }
 }

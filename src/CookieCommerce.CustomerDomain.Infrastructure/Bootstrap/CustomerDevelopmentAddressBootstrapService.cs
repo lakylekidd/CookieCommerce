@@ -7,15 +7,18 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace CookieCommerce.CustomerDomain.Infrastructure.Bootstrap;
 
 internal sealed class CustomerDevelopmentAddressBootstrapService(
     IServiceScopeFactory scopeFactory,
-    ILogger<CustomerDevelopmentAddressBootstrapService> logger) : BackgroundService
+    ILogger<CustomerDevelopmentAddressBootstrapService> logger,
+    IHostEnvironment environment, IConfiguration configuration) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (!environment.IsDevelopment() || configuration.GetValue<bool?>("DevelopmentBootstrap:Enabled") == false) return;
         logger.LogInformation("Development customer address bootstrap starting");
 
         foreach (var customer in DevelopmentBootstrapData.Customers)

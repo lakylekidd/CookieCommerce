@@ -1,23 +1,29 @@
 using Aspire.Hosting;
 using CookieCommerce.AppHost;
 using Projects;
+using Microsoft.Extensions.Configuration;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
 var password = builder.AddParameter("db-password", "MyFixedPassword123!");
-var postgres = builder.AddPostgres("postgres").WithPassword(password).WithHostPort(54321);
+var postgres = builder.AddPostgres("postgres").WithPassword(password).WithHostPort(54321)
+    .WithDataVolume("cookiecommerce-postgres-data").WithLifetime(ContainerLifetime.Persistent);
 
 // Add the databases
 var customerDb = postgres.AddDatabase("CustomerDomain");
 var productDb = postgres.AddDatabase("ProductDomain");
+var commerceDb = postgres.AddDatabase("Commerce");
 var authenticationManagementDb = postgres.AddDatabase("AuthenticationManagement");
 
-var rabbit = builder.AddRabbitMQ("Messaging");
+var rabbit = builder.AddRabbitMQ("Messaging").WithDataVolume("cookiecommerce-rabbitmq-data").WithLifetime(ContainerLifetime.Persistent);
 
 // Add Keycloak
 var realmsPath = Path.Combine(builder.AppHostDirectory, "realms");
-var productMediaPath = Path.Combine(builder.AppHostDirectory, ".product-media");
+var localStoragePath = builder.Configuration["DevelopmentStorage:RootPath"] ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CookieCommerce");
+var productMediaPath = Path.Combine(localStoragePath, "ProductMedia");
+var keyPath = Path.Combine(localStoragePath, "DataProtection");
 Directory.CreateDirectory(productMediaPath);
+Directory.CreateDirectory(keyPath);
 
 var kcAdminUsername = builder.AddParameter("keycloak-admin-username", "admin");
 var kcAdminPassword = builder.AddParameter("keycloak-admin-password", "admin");
@@ -27,7 +33,8 @@ var keycloak = builder.AddKeycloak(
     port: 8080,
     adminUsername: kcAdminUsername,
     adminPassword: kcAdminPassword)
-    .WithRealmImport(realmsPath);
+    .WithRealmImport(realmsPath)
+    .WithDataVolume("cookiecommerce-keycloak-data").WithLifetime(ContainerLifetime.Persistent);
 
 // Add the APIs
 var customerApi = builder.AddProject<CookieCommerce_CustomerDomain_Api>("customer-api")
@@ -51,6 +58,9 @@ var authenticationManagementApi = builder.AddProject<CookieCommerce_Authenticati
     .WithScalarUi();
 
 builder.AddProject<CookieCommerce_Web>("cookiecommerce-web")
+    .WithEnvironment("DataProtection__KeyPath", keyPath)
+    .WithReference(commerceDb)
+    .WaitFor(commerceDb)
     .WithReference(customerApi)
     .WithReference(productApi)
     .WithReference(authenticationManagementApi);

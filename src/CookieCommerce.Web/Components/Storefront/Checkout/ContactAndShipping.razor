@@ -23,6 +23,7 @@
                     <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
                            placeholder="Roary"
                            @bind="ShippingFirstNameInput"
+                           @bind:after="UpdateContactNamesAsync"
                            @bind:event="oninput"
                            type="text" />
                 </div>
@@ -31,6 +32,7 @@
                     <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
                            placeholder="Tiger"
                            @bind="ShippingLastNameInput"
+                           @bind:after="UpdateContactNamesAsync"
                            @bind:event="oninput"
                            type="text" />
                 </div>
@@ -378,6 +380,23 @@
         }
 
         return false;
+    }
+
+    private async Task UpdateContactNamesAsync()
+    {
+        if (HasExistingAccount) return;
+        if (SelectedShippingAddress is not null)
+        {
+            SelectedShippingAddress.FirstName = ShippingFirstNameInput;
+            SelectedShippingAddress.LastName = ShippingLastNameInput;
+            await SelectedShippingAddressChanged.InvokeAsync(SelectedShippingAddress);
+        }
+        if (SelectedBillingAddress is not null)
+        {
+            SelectedBillingAddress.FirstName = ShippingFirstNameInput;
+            SelectedBillingAddress.LastName = ShippingLastNameInput;
+            await SelectedBillingAddressChanged.InvokeAsync(SelectedBillingAddress);
+        }
     }
 
     private async Task ClearSelectionsMissingFromAddressBookAsync()

@@ -14,5 +14,6 @@ public interface IAuthService
     public Task InitializeAsync();
     public void UpdateCurrentUserProfile(string firstName, string lastName, string email);
     public void Logout();
+    public Task LogoutAsync() { Logout(); return Task.CompletedTask; }
     event Action OnChange;
 }

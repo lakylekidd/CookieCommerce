@@ -3,13 +3,32 @@ using CookieCommerce.AuthenticationManagement.Application.Auth.Commands;
 using CookieCommerce.AuthenticationManagement.Application.Auth.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using CookieCommerce.AuthenticationManagement.Application.Keycloak;
 
 namespace CookieCommerce.AuthenticationManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(ISender mediator) : ControllerBase
+public class AuthController(ISender mediator, IKeycloakTokenService tokens, IKeycloakAdminService users) : ControllerBase
 {
+    public sealed record RefreshRequest(string RefreshToken);
+    public sealed record ForgotPasswordRequest(string Email);
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshAsync([FromBody] RefreshRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken)) return BadRequest();
+        return Ok(await tokens.RefreshAsync(request.RefreshToken, ct));
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPasswordAsync([FromBody] ForgotPasswordRequest request, CancellationToken ct)
+    {
+        if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(request.Email)) return BadRequest();
+        var user = await users.GetUserByEmailAsync(request.Email, ct);
+        if (user is not null) await users.SendPasswordResetAsync(user.Id, ct);
+        return Accepted();
+    }
     private readonly ISender _mediator = mediator;
 
     [HttpPost("register")]

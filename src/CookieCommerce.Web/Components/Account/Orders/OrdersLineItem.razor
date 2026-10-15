@@ -1,4 +1,4 @@
-﻿@rendermode InteractiveServer
+@rendermode InteractiveServer
 @using CookieCommerce.Web.Components.Shared.OrderComponents
 @using CookieCommerce.Web.Components.Shared.ProductComponents
 @using CookieCommerce.Web.Models.Order
@@ -31,8 +31,8 @@
 
 <tr class="cursor-pointer hover:bg-orange-50/30 dark:hover:bg-gray-800/30 transition-all  @(isExpanded ? "bg-orange-50 dark:bg-gray-800" : "")">
     <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1 border-l-4" : "")">
-        <OrderDateAndReference 
-            OrderReference="@OrderListItem.OrderReference" 
+        <OrderDateAndReference
+            OrderReference="@OrderListItem.OrderReference"
             PlacedOn="@OrderListItem.PlacedOn" />
     </td>
     <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1" : "")">
@@ -81,8 +81,8 @@
                     <div class="w-8 h-8 rounded-full border-2 border-white dark:border-card-dark bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-500 shadow-sm cursor-help">
                         +@((OrderListItem.Products.Count) - 3)
                     </div>
-                    <span class="absolute -top-10 left-1/2 -translate-x-1/2 scale-0 
-                        group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 
+                    <span class="absolute -top-10 left-1/2 -translate-x-1/2 scale-0
+                        group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2
                         text-[10px] font-bold text-white whitespace-nowrap z-50 shadow-xl pointer-events-none origin-bottom">
                         +@((OrderListItem.Products.Count) - 3) more delicious items! 🍪
                         <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
@@ -108,7 +108,7 @@
                     <span class="material-symbols-outlined text-xl">star</span>
                     @* Tooltip - Now triggers ONLY when the div above is hovered *@
                     <span class="absolute -top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 text-[11px] text-white whitespace-nowrap z-50 shadow-xl pointer-events-none">
-                        Earn <span class="text-secondary font-black">200 points</span> for rating! 🐯
+                        Share your experience with your purchased cookies.
                         @* Tiny Triangle Arrow *@
                         <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
                     </span>
@@ -133,10 +133,10 @@
             {
                 <div class="relative group">
                     @* Separate isolated group *@
-                    <button @onclick="async () => await ToggleDetailsAsync()" 
-                        type="button" 
+                    <button @onclick="async () => await ToggleDetailsAsync()"
+                        type="button"
                         class="cursor-pointer flex items-center justify-center w-10 h-10
-                        dark:bg-gray-800 border border-primary text-primary bg-primary 
+                        dark:bg-gray-800 border border-primary text-primary bg-primary
                         text-white rounded-full transition-all shadow-sm active:scale-90">
                         <span class="material-symbols-outlined text-xl">keyboard_arrow_up</span>
                         @* Tooltip *@
@@ -151,10 +151,10 @@
             {
                 <div class="relative group">
                     @* Separate isolated group *@
-                    <button @onclick="async () => await ToggleDetailsAsync()" 
-                        type="button" 
-                        class="cursor-pointer flex items-center justify-center w-10 h-10 bg-white 
-                        dark:bg-gray-800 border border-primary text-primary hover:bg-primary hover:text-white 
+                    <button @onclick="async () => await ToggleDetailsAsync()"
+                        type="button"
+                        class="cursor-pointer flex items-center justify-center w-10 h-10 bg-white
+                        dark:bg-gray-800 border border-primary text-primary hover:bg-primary hover:text-white
                         rounded-full transition-all shadow-sm active:scale-90">
                         <span class="material-symbols-outlined text-xl">keyboard_arrow_down</span>
                         @* Tooltip *@
@@ -255,9 +255,9 @@
                                             }
 
                                             <div class="relative w-12 h-12 rounded-full border-4 border-orange-200 bg-white overflow-hidden shadow-sm">
-                                                <img src="@item?.ProductImageUrl" 
-                                                     alt="@item?.ProductName" 
-                                                     class="w-full h-full object-cover rounded-full" />   
+                                                <img src="@item?.ProductImageUrl"
+                                                     alt="@item?.ProductName"
+                                                     class="w-full h-full object-cover rounded-full" />
                                             </div>
 
                                             @if (item?.IsLimitedEdition ?? false)
@@ -279,7 +279,7 @@
                                                 </span>
                                             }
                                         </div>
-                                        
+
 
                                         <div class="pointer-events-none select-none">
                                             <p class="font-bold text-primary dark:text-white text-sm">
@@ -365,6 +365,7 @@
                                         </td>
                                     </tr>
 
+                                    <tr><td>Reward discount:</td><td>−€@order?.RewardDiscount.ToString("F2")</td></tr>
                                     @* 5. Total *@
                                     <tr>
                                         <td class="text-left sm:text-right pr-8 text-primary dark:text-white font-black text-lg">Total:</td>
@@ -374,9 +375,9 @@
                                     </tr>
                                     <tr>
                                         <td colspan="2" class="text-right">
-                                            <a class="text-primary font-bold inline-flex items-center gap-2 group" href="/shop">
+                                            <a class="text-primary font-bold inline-flex items-center gap-2 group" href="@($"/account/orders/{OrderListItem.Id}/invoice")">
                                                 <span class="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform no-underline">download</span>
-                                                <span class="group-hover:underline">Download Invoice</span>
+                                                <span class="group-hover:underline">View order receipt</span>
                                             </a>
                                         </td>
                                     </tr>

@@ -1,4 +1,6 @@
-﻿@page "/storefront"
+@inject CookieCommerce.Web.Services.Commerce.StoreSettingsService StoreSettings
+@page "/"
+@page "/storefront"
 @using CookieCommerce.Web.Components.Storefront.Products
 @using CookieCommerce.Web.Components.Storefront.Shop
 @layout ShopLayout
@@ -13,7 +15,7 @@
     <div class="container mx-auto px-6 relative z-10">
         <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
             <div class="lg:w-1/2 text-center lg:text-left">
-                <span class="inline-block py-1 px-3 rounded-full bg-amber-100 dark:bg-amber-900/40 text-primary font-bold text-sm mb-6 tracking-wide uppercase">Freshly Baked Every Morning</span>
+                <span class="inline-block py-1 px-3 rounded-full bg-amber-100 dark:bg-amber-900/40 text-primary font-bold text-sm mb-6 tracking-wide uppercase">@tagline</span>
                 <h1 class="font-display font-bold text-5xl lg:text-7xl mb-6 leading-[1.1]">
                     Roar with <br />
                     <span class="text-primary">Delightful Flavor</span>
@@ -70,9 +72,9 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             @foreach (var cookie in featuredCookies)
             {
-                <CookieCard 
-                    Id="@cookie.Id"    
-                    ImageUrl="@cookie.ImageUrls[0]"
+                <CookieCard
+                    Id="@cookie.Id"
+                    ImageUrl="@cookie.ImageUrl"
                     CookieTitle="@cookie.Title"
                     Description="@cookie.Description"
                     Price="@cookie.Price"
@@ -95,9 +97,11 @@
 
 @code {
     private IReadOnlyList<StorefrontProductDto> featuredCookies = [];
+    private string tagline = "Freshly Baked Every Morning";
 
     protected override async Task OnInitializedAsync()
     {
         featuredCookies = await CookieService.GetFeaturedCookiesAsync();
+        tagline = (await StoreSettings.GetAsync()).Preference("storeTagline", tagline);
     }
 }

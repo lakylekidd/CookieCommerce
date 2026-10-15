@@ -89,6 +89,6 @@ public class CustomerAddressAddServiceTests
         authService.Setup(x => x.InitializeAsync()).Returns(Task.CompletedTask);
         authService.Setup(x => x.CurrentUser).Returns(new UserDto { Id = Guid.NewGuid(), Email = "jamie@example.com" });
 
-        return new CustomerDomainAccountService(factory.Object, authService.Object, new FakeAccountService(authService.Object), NullLogger<CustomerDomainAccountService>.Instance);
+        return new CustomerDomainAccountService(factory.Object, authService.Object, null!, NullLogger<CustomerDomainAccountService>.Instance);
     }
 }

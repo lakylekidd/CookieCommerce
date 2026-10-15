@@ -31,7 +31,7 @@ public class SmtpContactService(IConfiguration configuration, ILogger<SmtpContac
 
             using var mail = new MailMessage
             {
-                From = new MailAddress(username ?? RecipientEmail, "Tiger van Cookie – Contact Form"),
+                From = new MailAddress(configuration["Smtp:From"] ?? (string.IsNullOrWhiteSpace(username) ? RecipientEmail : username), "Tiger van Cookie – Contact Form"),
                 Subject = $"[Contact] {subject}",
                 Body = $"From: {fromEmail}\n\n{message}",
                 IsBodyHtml = false

@@ -1,0 +1,69 @@
+# Deployment contract for the existing GitLab project. Runtime dependencies
+# (PostgreSQL, RabbitMQ, Keycloak, and persistent storage) need separate setup.
+schema: 1
+project:
+  name: tiger-van-cookie
+  gitlabNamespace: engineering
+  gitlabProjectId: '9'
+  description: Tiger van Cookie storefront and internal APIs
+
+environments:
+  development:
+    enabled: true
+  staging:
+    enabled: false
+  production:
+    enabled: true
+    domains:
+      web: tigervancookie.nl
+
+services:
+  customer-api:
+    dockerfile: src/CookieCommerce.CustomerDomain.Api/Dockerfile
+    buildContext: src
+    port: 8080
+    health:
+      path: /health
+    secretFolders: [/shared, /customer]
+
+  product-api:
+    dockerfile: src/CookieCommerce.ProductDomain.Api/Dockerfile
+    buildContext: src
+    port: 8080
+    health:
+      path: /health
+    secretFolders: [/shared, /product]
+    volumes:
+      - name: product-media
+        mountPath: /app/product-media
+
+  authentication-management-api:
+    dockerfile: src/CookieCommerce.AuthenticationManagement.Api/Dockerfile
+    buildContext: .
+    port: 8080
+    health:
+      path: /health
+    secretFolders: [/shared, /authentication]
+    dependsOn: [customer-api]
+
+  web:
+    dockerfile: src/CookieCommerce.Web/Dockerfile
+    buildContext: .
+    port: 8080
+    health:
+      path: /health
+    secretFolders: [/shared, /web]
+    dependsOn: [customer-api, product-api, authentication-management-api]
+    volumes:
+      - name: web-data-protection
+        mountPath: /app/.data-protection
+
+release:
+  tagPattern: v*
+  autoDeployStaging: false
+  requireProductionPromotion: true
+
+secrets:
+  provider: infisical
+  injection: runtime
+  folders: [/shared, /customer, /product, /authentication, /web]

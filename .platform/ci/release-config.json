@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "projectPath": "engineering/tiger-van-cookie",
+  "projectId": "9",
+  "registryHost": "git.registry.vlachos.nl",
+  "registryPrefix": "git.registry.vlachos.nl/engineering/tiger-van-cookie",
+  "services": [
+    "authentication-management-api",
+    "customer-api",
+    "product-api",
+    "web"
+  ]
+}

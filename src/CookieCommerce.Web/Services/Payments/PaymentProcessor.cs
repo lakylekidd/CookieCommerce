@@ -22,9 +22,18 @@ public sealed class PaymentProcessor(ICommerceStore store)
             var cart = await tx.LoadAsync<StoredCart>(order.CartKey);
             if (notification.Status == "Paid")
             {
+                order.InvoiceRequested = true;
                 order.Order.Status = new OrderStatusDto { StatusId = 2, Status = "Confirmed" };
                 order.Order.TrackingInformation.TrackingStatusDescription = "Preparing your order";
                 var settings = await tx.LoadAsync<CommerceSettings>("store") ?? new();
+                if (!order.IsDevelopmentSeed && System.Net.Mail.MailAddress.TryCreate(order.Email, out _))
+                    await CookieCommerce.Web.Services.Communications.OutboundEmailService.QueueTemplateAsync(tx,
+                        "confirmation:" + order.Id, order.Email, "order-confirmation", new Dictionary<string, string>
+                        {
+                            ["customer_name"] = $"{order.Order.BillingAddress.FirstName} {order.Order.BillingAddress.LastName}".Trim(),
+                            ["store_name"] = (await tx.LoadAsync<CookieCommerce.Web.Services.Communications.InvoiceSettings>("company"))?.CompanyName ?? "Tiger van Cookie",
+                            ["order_reference"] = order.Order.OrderReference, ["order_total"] = "EUR " + order.Order.Total.ToString("F2"), ["invoice_number"] = ""
+                        });
                 if (settings.Preference("notifyOnNewOrder", true))
                     await CommerceAutomation.QueueAsync(tx, settings, $"order:{order.Id}", $"New paid order {order.Order.OrderReference}", $"Payment confirmed for EUR {order.Order.Total:F2}; delivery date {order.DeliveryDate:d}.");
                 if (cart?.PendingOrderId == order.Id)

@@ -12,6 +12,11 @@ public class GetUserProfileHandler(IQuerySession session) : IRequestHandler<GetU
     {
         var user = await session.LoadAsync<AuthUserReadModel>(query.UserId, cancellationToken);
         if (user is null)
+        {
+            var identityId = query.UserId.ToString();
+            user = await session.Query<AuthUserReadModel>().Where(x => x.CustomerId == query.UserId || x.KeycloakId == identityId).FirstOrDefaultAsync(cancellationToken);
+        }
+        if (user is null)
             throw new AuthUserNotFoundException(query.UserId);
         return user;
     }

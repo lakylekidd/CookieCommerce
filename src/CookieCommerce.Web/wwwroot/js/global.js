@@ -39,3 +39,14 @@ window.notifyCommerceOrder = function (showNotification, sound) {
         } catch (_) { }
     }
 };
+window.downloadCommerceFile = async function (filename, contentType, streamReference) {
+    const buffer = await streamReference.arrayBuffer();
+    const url = URL.createObjectURL(new Blob([buffer], { type: contentType }));
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+};

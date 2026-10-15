@@ -17,6 +17,17 @@ public class CreateCustomerHandler(
     public async Task<Guid> Handle(CreateCustomer request, CancellationToken cancellationToken)
     {
         var customerId = request.CustomerId ?? Guid.CreateVersion7();
+        if (request.CustomerId is not null && await session.Events.FetchStreamStateAsync(customerId, cancellationToken) is not null)
+        {
+            var existing = await session.LoadAsync<CookieCommerce.CustomerDomain.Application.Customers.ReadModels.CustomerReadModel>(customerId, cancellationToken);
+            if (existing is not null)
+                await publisher.PublishAsync(new CustomerSnapshotPublished
+                {
+                    CustomerId = customerId, Email = existing.Email, FirstName = existing.FirstName, LastName = existing.LastName,
+                    DateOfBirth = existing.DateOfBirth?.ToDateTime(TimeOnly.MinValue)
+                }, cancellationToken);
+            return customerId;
+        }
 
         var key = await keyStore.CreateKeyForCustomerAsync(customerId, cancellationToken);
 

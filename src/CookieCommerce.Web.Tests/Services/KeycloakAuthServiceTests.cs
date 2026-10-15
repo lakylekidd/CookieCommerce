@@ -16,6 +16,16 @@ namespace CookieCommerce.Web.Tests.Services;
 public class KeycloakAuthServiceTests
 {
     [Fact]
+    public async Task Explicit_customer_link_survives_token_initialization()
+    {
+        var customerId = Guid.NewGuid();
+        var browser = new ProtectedLocalStorage(new BrowserStorageRuntime(), new EphemeralDataProtectionProvider());
+        await browser.SetAsync("auth_access_token", CreateJwt(new { sub = Guid.NewGuid(), customer_id = customerId, exp = DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds() }));
+        var service = new KeycloakAuthService(new HttpClient() { BaseAddress = new Uri("http://auth/") }, Mock.Of<ICartService>(), browser);
+        await service.InitializeAsync();
+        service.CurrentUser!.Id.Should().Be(customerId);
+    }
+    [Fact]
     public async Task Concurrent_initialization_refreshes_expired_credentials_once()
     {
         var browser = new ProtectedLocalStorage(new BrowserStorageRuntime(), new EphemeralDataProtectionProvider());
@@ -97,6 +107,17 @@ public class KeycloakAuthServiceTests
 
         user.Should().NotBeNull();
         user!.Role.Should().Be("Admin");
+    }
+
+    [Fact]
+    public void An_admin_role_in_an_unrelated_client_does_not_grant_store_administration()
+    {
+        var token = CreateJwt(new
+        {
+            sub = Guid.NewGuid(), azp = "cookiecommerce-backend",
+            resource_access = new Dictionary<string, object> { ["unrelated-app"] = new { roles = new[] { "admin" } } }
+        });
+        ParseJwtToUserDto(token)!.Role.Should().Be("User");
     }
 
     private static UserDto? ParseJwtToUserDto(string token)

@@ -24,6 +24,12 @@ public sealed class MemoryCommerceStore : ICommerceStore
         finally { gate.Release(); }
     }
     public Task SaveAsync<T>(string key, T value) => ExecuteAsync(key, async tx => { await tx.SaveAsync(key, value); return true; });
+    public async Task SaveHistoricalJsonAsync<T>(string key, string json)
+    {
+        await gate.WaitAsync();
+        try { documents[(typeof(T), key)] = json; }
+        finally { gate.Release(); }
+    }
     private static T? Read<T>(Dictionary<(Type, string), string> data, string key) => data.TryGetValue((typeof(T), key), out var json) ? JsonSerializer.Deserialize<T>(json) : default;
     private sealed class Transaction(Dictionary<(Type, string), string> data) : ICommerceTransaction
     {

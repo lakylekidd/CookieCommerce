@@ -1,0 +1,3 @@
+.communication-editor label { display: block; font-size: .875rem; font-weight: 600; }
+.communication-editor input, .communication-editor select, .communication-editor textarea { display: block; width: 100%; margin-top: .35rem; padding: .6rem; border: 1px solid #9ca3af; border-radius: .65rem; background: transparent; }
+.communication-editor textarea { font-family: monospace; }

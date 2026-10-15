@@ -16,7 +16,8 @@ public static class DependencyInjection
         {
             configuration.GetSection("Keycloak").Bind(opts);
             // Aspire injects the Keycloak URL as a connection string named "keycloak"
-            var keycloakUrl = configuration.GetConnectionString("keycloak");
+            var keycloakUrl = configuration.GetConnectionString("keycloak")
+                ?? configuration["services:keycloak:http:0"] ?? configuration["services:keycloak:https:0"];
             if (!string.IsNullOrEmpty(keycloakUrl))
                 opts.BaseUrl = keycloakUrl;
         });
@@ -32,6 +33,8 @@ public static class DependencyInjection
         services.AddScoped<IDevelopmentIdentityBootstrapAdapter, KeycloakDevelopmentIdentityBootstrapAdapter>();
         services.AddHostedService<KeycloakBootstrapService>();
         services.AddHostedService<DevelopmentBootstrapService>();
+        services.AddHostedService<RegistrationDeliveryWorker>();
+        services.AddHostedService<PasswordRecoveryDeliveryWorker>();
 
         return services;
     }

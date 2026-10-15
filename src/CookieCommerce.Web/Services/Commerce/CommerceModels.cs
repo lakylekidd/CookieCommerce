@@ -12,6 +12,7 @@ public sealed class CustomerFavorites
 
 public sealed class CommerceOrder
 {
+    public bool InvoiceRequested { get; set; }
     public bool IsDevelopmentSeed { get; set; }
     public int RewardPointsEarned { get; set; }
     public int RewardPointsRedeemed { get; set; }

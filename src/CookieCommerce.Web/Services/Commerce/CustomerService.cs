@@ -7,7 +7,8 @@ using CookieCommerce.Web.Services.Products;
 
 namespace CookieCommerce.Web.Services.Commerce;
 
-public sealed class CustomerService(IHttpClientFactory factory, ICommerceStore store, CommerceAccess access, ProductMainImages? mainImages = null) : ICustomerService
+public sealed class CustomerService(IHttpClientFactory factory, ICommerceStore store, CommerceAccess access, ProductMainImages? mainImages = null,
+    CookieCommerce.Web.Services.Communications.AccountAdministrationService? accounts = null) : ICustomerService
 {
     public async Task<ICollection<CustomerDto>> GetCustomersAsync()
     {
@@ -36,6 +37,11 @@ public sealed class CustomerService(IHttpClientFactory factory, ICommerceStore s
         var customer = Map(json.RootElement);
         Enrich(customer, await store.ListAsync<CommerceOrder>());
         customer.IsNewsletterSubscribed = await store.LoadAsync<NewsletterSubscription>(NewsletterService.Key(customer.Email)) is not null;
+        if (accounts is not null)
+        {
+            try { customer.IsActive = (await accounts.GetAsync(id)).State is "Active" or "Password setup required"; }
+            catch (HttpRequestException) { /* The account-access card provides the explicit unavailable status. */ }
+        }
         return customer;
     }
 

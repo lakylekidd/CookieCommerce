@@ -12,6 +12,7 @@ public interface IAuthService
     public Task SendForgotPasswordLinkAsync(string email);
     public Task<AuthResult> UpdatePasswordAsync(string token, string newPassword);
     public Task InitializeAsync();
+    public Task<string?> GetAccessTokenAsync() => Task.FromResult<string?>(null);
     public void UpdateCurrentUserProfile(string firstName, string lastName, string email);
     public void Logout();
     public Task LogoutAsync() { Logout(); return Task.CompletedTask; }

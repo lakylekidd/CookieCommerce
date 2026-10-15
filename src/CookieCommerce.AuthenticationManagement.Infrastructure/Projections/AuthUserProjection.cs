@@ -9,6 +9,7 @@ public class AuthUserProjection : SingleStreamProjection<AuthUserReadModel, Guid
     public AuthUserReadModel Create(AuthUserRegistered e) => new AuthUserReadModel
     {
         Id = e.UserId,
+        CustomerId = e.CustomerId ?? (Guid.TryParse(e.KeycloakId, out var customerId) ? customerId : null),
         KeycloakId = e.KeycloakId,
         Email = e.Email,
         FirstName = e.FirstName,

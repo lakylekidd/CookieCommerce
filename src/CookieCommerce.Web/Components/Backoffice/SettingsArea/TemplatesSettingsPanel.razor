@@ -1,0 +1,79 @@
+@using CookieCommerce.Web.Services.Communications
+@inject TemplateService Templates
+@inject InvoiceRenderer PdfRenderer
+@inject IJSRuntime JS
+
+<div class="communication-editor bg-card-light dark:bg-card-dark rounded-2xl p-6 space-y-4">
+    @if (!string.IsNullOrEmpty(error)) { <p role="alert" class="text-red-600">@error</p> }
+    @if (!string.IsNullOrEmpty(notice)) { <p role="status" class="text-green-600">@notice</p> }
+    <label>Template<select value="@selected" @onchange="SelectAsync">
+        @foreach (var item in templates) { <option value="@item.Key">@item.Name (@item.Kind)</option> }
+    </select></label>
+    @if (template is not null)
+    {
+        <p class="text-sm">Version @template.Version · @(template.PublishedAt is null ? "Default or draft" : "Published " + TimeZoneInfo.ConvertTimeBySystemTimeZoneId(template.PublishedAt.Value, "Europe/Amsterdam").ToString("g"))</p>
+        <p class="text-sm">Available placeholders: @string.Join(", ", TemplateService.Allowed(template.Key).Select(p => "{{" + p + "}}"))</p>
+        @if (template.Kind == "Email")
+        {
+            <label>Subject<input @bind="template.Subject" /></label>
+            <label>HTML body<textarea rows="8" @bind="template.HtmlBody"></textarea></label>
+            <label>Plain-text body<textarea rows="6" @bind="template.TextBody"></textarea></label>
+        }
+        else
+        {
+            <label>Invoice heading<input @bind="template.Heading" /></label>
+            <label>Footer<textarea rows="4" @bind="template.Footer"></textarea></label>
+            <label>Accent colour<input type="color" @bind="template.AccentColor" /></label>
+            <p class="text-sm">Company details and logo are configured under Invoices. Line items and totals are filled from each order.</p>
+        }
+        <div class="flex flex-wrap gap-3">
+            <button class="border px-4 py-2 rounded-xl" disabled="@busy" @onclick="() => SaveAsync(false)">Save draft</button>
+            <button class="bg-primary text-white px-4 py-2 rounded-xl" disabled="@busy" @onclick="() => SaveAsync(true)">Publish</button>
+            <button class="border px-4 py-2 rounded-xl" disabled="@busy" @onclick="PreviewAsync">Preview with sample data</button>
+            <button class="text-primary underline" disabled="@busy" @onclick="RestoreAsync">Restore default draft</button>
+        </div>
+        @if (preview is not null)
+        {
+            <p><strong>@preview.Subject</strong></p>
+            <iframe title="Email preview" sandbox="" srcdoc="@preview.HtmlBody" class="w-full h-64 bg-white rounded-xl border"></iframe>
+            <pre class="whitespace-pre-wrap text-sm">@preview.TextBody</pre>
+        }
+    }
+</div>
+
+@code {
+    private IReadOnlyList<MessageTemplate> templates = [];
+    private MessageTemplate? template;
+    private RenderedEmail? preview;
+    private string selected = "password-reset", error = "", notice = "";
+    private bool busy;
+    protected override async Task OnInitializedAsync() { try { templates = await Templates.ListAsync(); template = await Templates.DraftAsync(selected); } catch { error = "Templates could not be loaded."; } }
+    private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); preview = null; notice = error = ""; }
+    private async Task SaveAsync(bool publish)
+    {
+        busy = true; error = notice = "";
+        try { await Templates.SaveAsync(template!, publish); template = await Templates.DraftAsync(selected); notice = publish ? "Template published. Future emails and invoices use this version." : "Draft saved."; }
+        catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Template could not be saved."; }
+        finally { busy = false; }
+    }
+    private void RestoreAsync() { template = TemplateService.Default(selected); preview = null; notice = "Default loaded as a draft. Publish to use it."; }
+    private async Task PreviewAsync()
+    {
+        try
+        {
+            error = ""; TemplateService.Validate(template!);
+            var values = new Dictionary<string, string> { ["customer_name"] = "Noor de Vries", ["store_name"] = "Tiger van Cookie", ["action_url"] = "https://example.com/preview", ["expiry_minutes"] = "30", ["order_reference"] = "TGR-EXAMPLE", ["order_total"] = "EUR 24.95", ["invoice_number"] = "INV-2026-000001" };
+            if (template!.Kind == "Email") preview = TemplateService.Render(template, values);
+            else
+            {
+                var invoice = new InvoiceRecord { Id = Guid.NewGuid(), Number = values["invoice_number"], IssuedAt = DateTimeOffset.UtcNow, Template = template,
+                    NetAmount = 22.89m, TaxAmount = 2.06m, Order = new() { OrderReference = values["order_reference"], Total = 24.95m, TaxRate = .09m, ShippingCharge = 4.95m,
+                    BillingAddress = new() { FirstName = "Noor", LastName = "de Vries", Street = "Voorbeeldstraat", HouseNumber = "12", City = "Amsterdam", PostalCode = "1012 AB", Country = "Netherlands" },
+                    Products = [new() { ProductName = "Chocolate Chunk", ProductVariantName = "5 Cookies Box", Quantity = 2, UnitPrice = 10m }] } };
+                using var stream = new DotNetStreamReference(new MemoryStream(PdfRenderer.Render(invoice)));
+                await JS.InvokeVoidAsync("downloadCommerceFile", "invoice-preview.pdf", "application/pdf", stream);
+            }
+        }
+        catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Preview could not be generated."; }
+    }
+}

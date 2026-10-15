@@ -16,6 +16,7 @@ public class RegisterUserHandler(
 {
     public async Task<Guid> Handle(RegisterUser command, CancellationToken cancellationToken)
     {
+        command = command with { Email = command.Email.Trim().ToLowerInvariant() };
         var existing = await keycloakAdmin.GetUserByEmailAsync(command.Email, cancellationToken);
         if (existing != null)
             throw new EmailAlreadyTakenException(command.Email);
@@ -29,9 +30,7 @@ public class RegisterUserHandler(
         user.Register(userId, keycloakId, command.Email, command.FirstName, command.LastName);
 
         session.Events.StartStream<AuthUserAggregate>(userId, user.DomainEvents);
-        await session.SaveChangesAsync(cancellationToken);
-
-        await publisher.PublishAsync(new UserRegisteredIntegrationEvent
+        var delivery = new RegistrationDelivery { Id = userId, Message = new UserRegisteredIntegrationEvent
         {
             UserId = userId,
             KeycloakId = keycloakId,
@@ -39,7 +38,18 @@ public class RegisterUserHandler(
             FirstName = command.FirstName,
             LastName = command.LastName,
             RegisteredAt = DateTime.UtcNow
-        }, cancellationToken);
+        } };
+        session.Store(delivery);
+        await session.SaveChangesAsync(cancellationToken);
+        // The persisted delivery survives process failure and broker downtime.
+        try
+        {
+            await publisher.PublishAsync(delivery.Message, cancellationToken);
+            delivery.PublishedAt = DateTimeOffset.UtcNow;
+            session.Store(delivery);
+            await session.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception) when (!cancellationToken.IsCancellationRequested) { /* Retried by RegistrationDeliveryWorker. */ }
 
         return userId;
     }

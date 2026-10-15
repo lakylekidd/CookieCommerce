@@ -50,6 +50,8 @@
                         <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">@Sections[activeSection].Description</p>
                     </div>
                 </div>
+                @if (activeSection is not (SettingsSection.Email or SettingsSection.Templates or SettingsSection.Invoices))
+                {
                 <button @onclick="SaveSection"
                         class="@(savedVisible
                             ? "bg-green-500 text-white"
@@ -58,7 +60,12 @@
                     <span class="material-symbols-outlined text-base">@(savedVisible ? "check_circle" : "save")</span>
                     @(savedVisible ? "Saved!" : "Save Changes")
                 </button>
+                }
             </div>
+
+            @if (activeSection == SettingsSection.Email) { <EmailSettingsPanel /> }
+            @if (activeSection == SettingsSection.Templates) { <TemplatesSettingsPanel /> }
+            @if (activeSection == SettingsSection.Invoices) { <InvoiceSettingsPanel /> }
 
             @* ═══════════════════════════════════════════════════════════════
                COMMERCE
@@ -581,7 +588,7 @@
 
 @code {
     @* ── Section definitions ──────────────────────────────────────────────── *@
-    private enum SettingsSection { Commerce, Promotions, Loyalty, Inventory, Notifications, Appearance }
+    private enum SettingsSection { Commerce, Promotions, Loyalty, Inventory, Notifications, Appearance, Email, Templates, Invoices }
 
     private record SectionMeta(string Label, string Icon, string Description);
 
@@ -593,6 +600,9 @@
         [SettingsSection.Inventory]     = new("Inventory",         "inventory_2",    "Batch production defaults and stock alert thresholds."),
         [SettingsSection.Notifications] = new("Notifications",     "notifications",  "Admin alerts for orders, low stock, and customer events."),
         [SettingsSection.Appearance]    = new("Appearance",        "palette",        "Storefront copy, product badges, and theme preferences."),
+        [SettingsSection.Email]         = new("Email", "mail", "Outbound email, password recovery and delivery status."),
+        [SettingsSection.Templates]     = new("Templates", "description", "Edit and preview customer emails and the PDF invoice layout."),
+        [SettingsSection.Invoices]      = new("Invoices", "receipt_long", "Company details, invoice numbering and automatic invoice emails."),
     };
 
     private (string Ref, string Name)[] CookieOptions = [];

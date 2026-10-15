@@ -8,20 +8,22 @@ using Microsoft.Extensions.Options;
 
 namespace CookieCommerce.AuthenticationManagement.Infrastructure.Keycloak;
 
-internal sealed class KeycloakBootstrapService : BackgroundService
+internal sealed partial class KeycloakBootstrapService : BackgroundService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly KeycloakOptions _options;
     private readonly ILogger<KeycloakBootstrapService> _logger;
+    private readonly IHostEnvironment? _environment;
 
     public KeycloakBootstrapService(
         IHttpClientFactory httpClientFactory,
         IOptions<KeycloakOptions> options,
-        ILogger<KeycloakBootstrapService> logger)
+        ILogger<KeycloakBootstrapService> logger, IHostEnvironment? environment = null)
     {
         _httpClientFactory = httpClientFactory;
         _options = options.Value;
         _logger = logger;
+        _environment = environment;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -31,6 +33,8 @@ internal sealed class KeycloakBootstrapService : BackgroundService
 
         try
         {
+            if (_environment is not null && !_environment.IsDevelopment() && _options.AdminClientSecret == "cookiecommerce-development-admin-secret")
+                throw new InvalidOperationException("Configure a private Keycloak:AdminClientSecret outside Development.");
             // Use a plain client with a concrete base address so we're not affected
             // by any service-discovery rewriting on the named "keycloak" client.
             var http = _httpClientFactory.CreateClient();
@@ -41,6 +45,8 @@ internal sealed class KeycloakBootstrapService : BackgroundService
 
             await EnsureRealmAsync(http, stoppingToken);
             await EnsureClientAsync(http, stoppingToken);
+            await EnsureAccountConfigurationAsync(http, stoppingToken);
+            await EnsureAdministrationClientAsync(http, stoppingToken);
 
             _logger.LogInformation("Keycloak realm/client bootstrap complete");
         }

@@ -10,11 +10,15 @@
 
   <ItemGroup>
     <PackageReference Include="Npgsql" Version="9.0.4" />
+    <PackageReference Include="MailKit" Version="4.18.1" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
+    <PackageReference Include="PDFsharp-MigraDoc" Version="6.2.2" />
     <ProjectReference Include="..\CookieCommerce.DevBootstrap\CookieCommerce.DevBootstrap.csproj" />
     <ProjectReference Include="..\CookieCommerce.ServiceDefaults\CookieCommerce.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Assets\Fonts\*.ttf" />
   </ItemGroup>
 
   <Target Name="Tailwind" AfterTargets="Build" Condition="'$(SkipTailwind)' != 'true'">

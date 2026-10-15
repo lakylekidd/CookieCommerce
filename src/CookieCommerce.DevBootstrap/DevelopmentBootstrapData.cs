@@ -2,13 +2,14 @@ namespace CookieCommerce.DevBootstrap;
 
 public static class DevelopmentBootstrapData
 {
+    public const string DefaultPassword = "123";
     public static IReadOnlyList<DevelopmentBootstrapCustomer> Customers { get; } =
     [
         new(
             Email: "admin@tiger.com",
             FirstName: "Tiger",
             LastName: "Baker",
-            Password: "Admin123!",
+            Password: DefaultPassword,
             Role: "Admin",
             Addresses:
             [
@@ -21,7 +22,7 @@ public static class DevelopmentBootstrapData
             Email: "customer@tiger.com",
             FirstName: "John",
             LastName: "Doe",
-            Password: "Customer123!",
+            Password: DefaultPassword,
             Role: "User",
             Addresses:
             [

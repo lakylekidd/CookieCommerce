@@ -13,9 +13,7 @@ public sealed class ConsumeVerifiedCustomerEmailChangedCommandHandler(
 {
     public async Task Handle(ConsumeVerifiedCustomerEmailChanged request, CancellationToken cancellationToken)
     {
-        var authUser = await session.Events.AggregateStreamAsync<AuthUserAggregate>(
-            request.CustomerId,
-            token: cancellationToken);
+        var authUser = await AuthCustomerIdentityResolver.ResolveAsync(session, request.CustomerId, cancellationToken);
 
         if (authUser is null || !authUser.IsActive)
             return;
@@ -23,10 +21,9 @@ public sealed class ConsumeVerifiedCustomerEmailChangedCommandHandler(
         if (string.Equals(authUser.Email, request.VerifiedEmail, StringComparison.OrdinalIgnoreCase))
             return;
 
-        authUser.ChangeVerifiedEmail(request.VerifiedEmail, request.OccurredAtUtc);
-        session.Events.Append(request.CustomerId, authUser.DomainEvents);
-        await session.SaveChangesAsync(cancellationToken);
-
         await keycloakAdmin.UpdateUserEmailAsync(authUser.KeycloakId, request.VerifiedEmail, cancellationToken);
+        authUser.ChangeVerifiedEmail(request.VerifiedEmail, request.OccurredAtUtc);
+        session.Events.Append(authUser.Id, authUser.DomainEvents);
+        await session.SaveChangesAsync(cancellationToken);
     }
 }

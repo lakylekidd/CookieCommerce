@@ -4,14 +4,38 @@
 @rendermode InteractiveServer
 @layout BackofficeLayout
 @inject ICustomerService CustomerService
+@inject CookieCommerce.Web.Services.Communications.AccountAdministrationService Accounts
 
 <div class="transition-colors duration-300">
+    <button class="px-4 py-2 mb-4 rounded-xl border text-primary" disabled="@(isLoading || auditing)" @onclick="AuditAsync">Check customer login access</button>
+    @if (audit.Count > 0)
+    {
+        <section class="rounded-xl border p-4 mb-4 space-y-2">
+            <h2 class="font-bold">Customer login access</h2>
+            @foreach (var entry in audit) { <p class="text-sm"><a href="@($"/backoffice/customers/{entry.Id}")" class="text-primary underline">@entry.Email</a> — @entry.State</p> }
+        </section>
+    }
     <CustomersTableCard Customers="customers" IsLoading="isLoading" />
 </div>
 
 @code {
     private ICollection<CustomerDto> customers = [];
     private bool isLoading = true;
+    private bool auditing;
+    private List<(Guid Id, string Email, string State)> audit = [];
+    private async Task AuditAsync()
+    {
+        auditing = true; audit = [];
+        try
+        {
+            foreach (var customer in customers)
+            {
+                try { var status = await Accounts.GetAsync(customer.Id); audit.Add((customer.Id, customer.Email, status.State)); }
+                catch { audit.Add((customer.Id, customer.Email, "Status unavailable")); }
+            }
+        }
+        finally { auditing = false; }
+    }
 
     protected override async Task OnInitializedAsync()
     {

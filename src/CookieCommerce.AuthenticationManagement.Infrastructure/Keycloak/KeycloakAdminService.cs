@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace CookieCommerce.AuthenticationManagement.Infrastructure.Keycloak;
 
-public class KeycloakAdminService : IKeycloakAdminService
+public partial class KeycloakAdminService : IKeycloakAdminService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly KeycloakOptions _options;
@@ -23,14 +23,13 @@ public class KeycloakAdminService : IKeycloakAdminService
 
         var form = new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            ["grant_type"] = "password",
-            ["client_id"] = "admin-cli",
-            ["username"] = _options.AdminUser,
-            ["password"] = _options.AdminPassword
+            ["grant_type"] = "client_credentials",
+            ["client_id"] = _options.AdminClientId,
+            ["client_secret"] = _options.AdminClientSecret
         });
 
         var response = await client.PostAsync(
-            $"/realms/master/protocol/openid-connect/token",
+            $"/realms/{_options.Realm}/protocol/openid-connect/token",
             form,
             ct);
 
@@ -46,8 +45,14 @@ public class KeycloakAdminService : IKeycloakAdminService
     {
         var client = _httpClientFactory.CreateClient("keycloak");
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", await GetAdminTokenAsync(ct));
+        var realm = await client.GetFromJsonAsync<JsonElement>($"/admin/realms/{_options.Realm}", ct);
+        var redirect = realm.TryGetProperty("attributes", out var attributes) && attributes.TryGetProperty("cookiecommerce.storeUrl", out var url)
+            ? url.GetString() : _options.PublicStoreUrl;
+        var query = "lifespan=1800";
+        if (Uri.TryCreate(redirect, UriKind.Absolute, out var storeUrl))
+            query += $"&client_id={Uri.EscapeDataString(_options.ClientId)}&redirect_uri={Uri.EscapeDataString(new Uri(storeUrl, "/auth/signin").ToString())}";
         using var response = await client.PutAsJsonAsync(
-            $"/admin/realms/{_options.Realm}/users/{Uri.EscapeDataString(keycloakId)}/execute-actions-email?lifespan=1800",
+            $"/admin/realms/{_options.Realm}/users/{Uri.EscapeDataString(keycloakId)}/execute-actions-email?{query}",
             new[] { "UPDATE_PASSWORD" }, ct);
         response.EnsureSuccessStatusCode();
     }
@@ -148,14 +153,8 @@ public class KeycloakAdminService : IKeycloakAdminService
         if (users is null || users.Count == 0)
             return null;
 
-        var user = users[0];
-        return new KeycloakUserInfo
-        {
-            Id = user.Id,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName
-        };
+        if (users.Count != 1) throw new InvalidOperationException("Multiple login identities use this email address. Review the accounts before continuing.");
+        return MapUser(users[0]);
     }
 
     public async Task UpdateUserEmailAsync(string keycloakId, string verifiedEmail, CancellationToken ct = default)
@@ -169,8 +168,7 @@ public class KeycloakAdminService : IKeycloakAdminService
         {
             username = verifiedEmail,
             email = verifiedEmail,
-            emailVerified = true,
-            enabled = true
+            emailVerified = true
         };
 
         var response = await client.PutAsJsonAsync(
@@ -318,5 +316,8 @@ public class KeycloakAdminService : IKeycloakAdminService
 
         [JsonPropertyName("attributes")]
         public Dictionary<string, string[]>? Attributes { get; set; }
+
+        [JsonPropertyName("requiredActions")]
+        public string[] RequiredActions { get; set; } = [];
     }
 }

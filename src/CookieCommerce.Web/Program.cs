@@ -10,6 +10,7 @@ using CookieCommerce.Web.Services.Commerce;
 using CookieCommerce.Web.Services.Payments;
 using Npgsql;
 using CookieCommerce.Web.Services.Development;
+using CookieCommerce.Web.Services.Communications;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +54,16 @@ builder.Services.AddSingleton<CommerceStore>();
 builder.Services.AddSingleton<ICommerceStore>(sp => sp.GetRequiredService<CommerceStore>());
 builder.Services.AddHostedService(sp => sp.GetRequiredService<CommerceStore>());
 builder.Services.AddHostedService<CommerceAutomation>();
+builder.Services.AddSingleton<EmailConfigurationReader>();
+builder.Services.AddSingleton<OutboundEmailService>();
+builder.Services.AddHostedService<OutboundEmailWorker>();
+builder.Services.AddScoped<EmailConfigurationService>();
+builder.Services.AddScoped<AccountAdministrationService>();
+builder.Services.AddScoped<TemplateService>();
+builder.Services.AddSingleton<InvoiceRenderer>();
+builder.Services.AddSingleton<InvoiceGenerator>();
+builder.Services.AddScoped<InvoiceService>();
+builder.Services.AddHostedService<InvoiceWorker>();
 builder.Services.AddScoped<DevelopmentCommerceSeeder>();
 builder.Services.AddHostedService<DevelopmentCommerceBootstrapService>();
 builder.Services.AddScoped<CommerceAccess>();
@@ -68,7 +79,7 @@ builder.Services.AddSingleton<IPaymentGateway>(sp => sp.GetRequiredService<Molli
 builder.Services.AddSingleton<PaymentProcessor>();
 builder.Services.AddHttpClient("authentication-management-api", client =>
 {
-    client.BaseAddress = new Uri("http://authentication-management-api");
+    client.BaseAddress = new Uri("https+http://authentication-management-api");
     client.Timeout = TimeSpan.FromSeconds(60);
 })
 .AddStandardResilienceHandler(options =>
@@ -83,7 +94,7 @@ builder.Services.AddScoped<IAuthService>(sp =>
     var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("authentication-management-api");
     var cartService = sp.GetRequiredService<ICartService>();
     var localStorage = sp.GetRequiredService<ProtectedLocalStorage>();
-    return new KeycloakAuthService(httpClient, cartService, localStorage);
+    return new KeycloakAuthService(httpClient, cartService, localStorage, sp.GetRequiredService<ILogger<KeycloakAuthService>>());
 });
 builder.Services.AddSingleton<IContentService, ContentService>();
 builder.Services.AddScoped<CheckoutService>();
@@ -142,6 +153,7 @@ app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages:
 app.UseStaticFiles();
 app.UseAntiforgery();
 app.MapCommerceEndpoints();
+app.MapCommunicationEndpoints();
 app.MapStaticAssets();
 
 app.MapRazorComponents<App>()

@@ -32,7 +32,7 @@ public sealed class UserRegisteredConsumer(
             @event.LastName,
             Gender.Unknown,
             DateOfBirth: null,
-            CustomerId: Guid.TryParse(@event.KeycloakId, out var keycloakGuid) ? keycloakGuid : null),
+            CustomerId: @event.CustomerId ?? (Guid.TryParse(@event.KeycloakId, out var keycloakGuid) ? keycloakGuid : null)),
             context.CancellationToken);
 
         logger.LogInformation(

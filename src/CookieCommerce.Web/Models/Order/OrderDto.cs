@@ -15,7 +15,10 @@ public class OrderDto
     public OrderStatusDto Status { get; set; } = new();
     public string CurrencySymbol { get; set; } = "€";
     public decimal? ShippingCharge { get; set; }
-    public decimal TaxRate { get; set; } = CartDto.TAX_PERCENTAGE;
+    private decimal taxRate = CartDto.TAX_PERCENTAGE;
+    public decimal TaxRate { get => taxRate; set { taxRate = value; HasSavedTaxRate = true; } }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool HasSavedTaxRate { get; private set; }
     public bool TaxIncluded { get; set; } = true;
     public CartPromotionDto? Promotion { get; set; } = null;
     public decimal RewardDiscount { get; set; }

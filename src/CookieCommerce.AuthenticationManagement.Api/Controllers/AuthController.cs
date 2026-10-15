@@ -4,6 +4,10 @@ using CookieCommerce.AuthenticationManagement.Application.Auth.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using CookieCommerce.AuthenticationManagement.Application.Keycloak;
+using Microsoft.AspNetCore.RateLimiting;
+using Marten;
+using CookieCommerce.AuthenticationManagement.Application.Auth.Integration;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CookieCommerce.AuthenticationManagement.Api.Controllers;
 
@@ -22,11 +26,38 @@ public class AuthController(ISender mediator, IKeycloakTokenService tokens, IKey
     }
 
     [HttpPost("forgot-password")]
+    [EnableRateLimiting("recovery")]
     public async Task<IActionResult> ForgotPasswordAsync([FromBody] ForgotPasswordRequest request, CancellationToken ct)
     {
-        if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(request.Email)) return BadRequest();
-        var user = await users.GetUserByEmailAsync(request.Email, ct);
-        if (user is not null) await users.SendPasswordResetAsync(user.Id, ct);
+        if (string.IsNullOrWhiteSpace(request.Email) || !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(request.Email.Trim())) return BadRequest();
+        var email = request.Email.Trim().ToLowerInvariant();
+        var session = HttpContext.RequestServices.GetRequiredService<IDocumentSession>();
+        var key = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(email)));
+        await using var guard = new Npgsql.NpgsqlConnection(HttpContext.RequestServices.GetRequiredService<IConfiguration>().GetConnectionString("AuthenticationManagement"));
+        await guard.OpenAsync(ct);
+        await using var transaction = await guard.BeginTransactionAsync(ct);
+        await using var command = new Npgsql.NpgsqlCommand("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", guard, transaction);
+        command.Parameters.AddWithValue("recovery:" + key);
+        await command.ExecuteNonQueryAsync(ct);
+        var cooldown = await session.LoadAsync<RecoveryCooldown>(key, ct);
+        if (cooldown?.RetryAfter > DateTimeOffset.UtcNow) return Accepted();
+        session.Store(new RecoveryCooldown { Id = key, RetryAfter = DateTimeOffset.UtcNow.AddMinutes(2) });
+        await session.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+        try
+        {
+            var user = await users.GetUserByEmailAsync(email, ct);
+            if (user is not null)
+            {
+                session.Store(new PasswordRecoveryDelivery { IdentityId = user.Id });
+                await session.SaveChangesAsync(ct);
+            }
+        }
+        catch (Exception ex) when (!ct.IsCancellationRequested)
+        {
+            HttpContext.RequestServices.GetRequiredService<ILogger<AuthController>>()
+                .LogWarning("Password recovery delivery failed ({FailureType})", ex.GetType().Name);
+        }
         return Accepted();
     }
     private readonly ISender _mediator = mediator;
@@ -57,9 +88,17 @@ public class AuthController(ISender mediator, IKeycloakTokenService tokens, IKey
     }
 
     [HttpGet("profile/{userId:guid}")]
+    [Authorize]
     public async Task<IActionResult> GetProfileAsync(Guid userId, CancellationToken ct)
     {
         var result = await _mediator.Send(new GetUserProfile(userId), ct);
+        if (!User.IsInRole("Admin") && result.KeycloakId != User.FindFirst("sub")?.Value) return Forbid();
         return Ok(result);
     }
+}
+
+public sealed class RecoveryCooldown
+{
+    public string Id { get; set; } = "";
+    public DateTimeOffset RetryAfter { get; set; }
 }

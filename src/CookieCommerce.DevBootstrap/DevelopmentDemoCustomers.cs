@@ -11,7 +11,7 @@ public static class DevelopmentDemoCustomers
         string[] cities = ["Amsterdam", "Utrecht", "Rotterdam", "Haarlem"];
         var names = lastNames.OrderBy(_ => random.Next()).ToArray();
         return Enumerable.Range(0, 8).Select(i => new DevelopmentBootstrapCustomer(
-            $"demo{i + 1:00}@cookiecommerce.example", firstNames[i], names[i], "Customer123!", "User",
+            $"demo{i + 1:00}@cookiecommerce.example", firstNames[i], names[i], DevelopmentBootstrapData.DefaultPassword, "User",
             [new("Home", "home", "Voorbeeldstraat", (10 + i).ToString(), null, cities[i % cities.Length],
                 "1012 AB", "Noord-Holland", "Netherlands", "+31 6 0000 0000", true)])).ToArray();
     }

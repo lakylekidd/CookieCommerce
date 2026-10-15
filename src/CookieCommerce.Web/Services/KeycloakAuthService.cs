@@ -11,7 +11,7 @@ namespace CookieCommerce.Web.Services;
 public class KeycloakAuthService(
     HttpClient httpClient,
     ICartService cartService,
-    ProtectedLocalStorage localStorage) : IAuthService
+    ProtectedLocalStorage localStorage, ILogger<KeycloakAuthService>? logger = null) : IAuthService
 {
     private const string TokenKey = "auth_access_token";
     private const string RefreshTokenKey = "auth_refresh_token";
@@ -119,7 +119,11 @@ public class KeycloakAuthService(
         try
         {
             var response = await httpClient.PostAsJsonAsync("api/auth/login", new { email, password });
-            if (!response.IsSuccessStatusCode) return false;
+            if (!response.IsSuccessStatusCode)
+            {
+                logger?.LogWarning("Authentication API rejected sign-in with HTTP {StatusCode}", (int)response.StatusCode);
+                return false;
+            }
 
             var result = await response.Content.ReadFromJsonAsync<LoginApiResponse>(
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -145,8 +149,9 @@ public class KeycloakAuthService(
             NotifyStateChanged();
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            logger?.LogWarning("Customer sign-in session initialization failed ({FailureType})", ex.GetType().Name);
             return false;
         }
         finally { initializeLock.Release(); }
@@ -223,6 +228,12 @@ public class KeycloakAuthService(
         if (!response.IsSuccessStatusCode) throw new InvalidOperationException("Unable to send a password reset email. Please try again shortly.");
     }
 
+    public async Task<string?> GetAccessTokenAsync()
+    {
+        await InitializeAsync();
+        return _accessToken;
+    }
+
     public Task<AuthResult> UpdatePasswordAsync(string token, string newPassword)
         => Task.FromResult(AuthResult.Failed("Use the secure password reset link in your email. Passwords are updated on our sign-in provider's page."));
 
@@ -242,6 +253,8 @@ public class KeycloakAuthService(
             var firstName = root.TryGetProperty("given_name", out var fn) ? fn.GetString() ?? "" : "";
             var lastName = root.TryGetProperty("family_name", out var ln) ? ln.GetString() ?? "" : "";
             var sub = root.TryGetProperty("sub", out var subEl) ? subEl.GetString() ?? "" : "";
+            if (root.TryGetProperty("customer_id", out var customerId) && customerId.ValueKind == JsonValueKind.String)
+                sub = customerId.GetString() ?? sub;
 
             var role = HasRole(root, "admin") ? "Admin" : "User";
 
@@ -271,14 +284,9 @@ public class KeycloakAuthService(
 
         if (root.TryGetProperty("resource_access", out var resourceAccess))
         {
-            foreach (var clientAccess in resourceAccess.EnumerateObject())
-            {
-                if (clientAccess.Value.TryGetProperty("roles", out var clientRoles) &&
-                    ContainsRole(clientRoles, roleName))
-                {
-                    return true;
-                }
-            }
+            var clientId = root.TryGetProperty("azp", out var party) ? party.GetString() ?? "cookiecommerce-backend" : "cookiecommerce-backend";
+            if (resourceAccess.TryGetProperty(clientId, out var clientAccess) && clientAccess.TryGetProperty("roles", out var clientRoles)
+                && ContainsRole(clientRoles, roleName)) return true;
         }
 
         return false;

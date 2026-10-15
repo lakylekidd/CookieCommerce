@@ -108,6 +108,7 @@
     </td>
     @* 🐯 KITCHEN ACTIONS *@
     <td class="px-6 py-4 text-right">
+        <a href="@($"/backoffice/orders/{Order.Id}/invoice")" @onclick:stopPropagation="true" class="text-primary underline mr-2" title="Download or email invoice">Invoice</a>
         @if (orderError is not null) { <p role="alert" class="text-red-600">@orderError</p> }
         @if (Order.Status?.StatusId == 2) @* Confirmed *@
         {

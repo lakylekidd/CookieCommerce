@@ -15,7 +15,7 @@ public class AuthUserAggregate : AggregateBase
 
     public AuthUserAggregate() { }
 
-    public void Register(Guid userId, string keycloakId, string email, string firstName, string lastName)
+    public void Register(Guid userId, string keycloakId, string email, string firstName, string lastName, Guid? customerId = null)
     {
         if (string.IsNullOrWhiteSpace(email))
             throw new InvalidCredentialsException("Email is required.");
@@ -25,6 +25,7 @@ public class AuthUserAggregate : AggregateBase
         Apply(new AuthUserRegistered
         {
             UserId = userId,
+            CustomerId = customerId,
             KeycloakId = keycloakId,
             Email = email,
             FirstName = firstName,

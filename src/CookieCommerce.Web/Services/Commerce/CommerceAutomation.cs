@@ -8,6 +8,7 @@ namespace CookieCommerce.Web.Services.Commerce;
 
 public sealed class CommerceEmail
 {
+    public bool Migrated { get; set; }
     public string Key { get; set; } = "";
     public string To { get; set; } = "";
     public string Subject { get; set; } = "";
@@ -32,7 +33,7 @@ public sealed class CommerceAutomation(ICommerceStore store, IHttpClientFactory 
             try
             {
                 await ScanAsync();
-                await DeliverEmailsAsync(stoppingToken);
+                await MigrateEmailsAsync();
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
             catch (Exception ex) { logger.LogWarning(ex, "Commerce automation will retry on the next scan"); }
@@ -117,30 +118,18 @@ public sealed class CommerceAutomation(ICommerceStore store, IHttpClientFactory 
         await tx.SaveAsync(key, new CommerceEmail { Key = key, To = to, Subject = subject, Body = body });
     }
 
-    private async Task DeliverEmailsAsync(CancellationToken cancellationToken)
+    private async Task MigrateEmailsAsync()
     {
-        var host = configuration["Smtp:Host"];
-        if (string.IsNullOrWhiteSpace(host)) return;
-        foreach (var pending in (await store.ListAsync<CommerceEmail>()).Where(m => m.SentAt is null && m.RetryAfter <= DateTimeOffset.UtcNow).Take(20))
+        foreach (var pending in (await store.ListAsync<CommerceEmail>()).Where(m => m.SentAt is null && !m.Migrated).Take(20))
         {
             await store.ExecuteAsync($"email:{pending.Key}", async tx =>
             {
                 var message = await tx.LoadAsync<CommerceEmail>(pending.Key);
-                if (message is null || message.SentAt is not null || message.RetryAfter > DateTimeOffset.UtcNow) return true;
-                try
-                {
-                    var username = configuration["Smtp:Username"];
-                    using var client = new SmtpClient(host, configuration.GetValue("Smtp:Port", 587)) { EnableSsl = configuration.GetValue("Smtp:EnableSsl", true), Timeout = 30000 };
-                    if (!string.IsNullOrWhiteSpace(username)) client.Credentials = new NetworkCredential(username, configuration["Smtp:Password"]);
-                    using var mail = new MailMessage(configuration["Smtp:From"] ?? (string.IsNullOrWhiteSpace(username) ? "info@tigervancookie.nl" : username), message.To, message.Subject, message.Body);
-                    await client.SendMailAsync(mail, cancellationToken);
-                    message.SentAt = DateTimeOffset.UtcNow;
-                }
-                catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
-                {
-                    message.RetryAfter = DateTimeOffset.UtcNow.AddMinutes(5);
-                    logger.LogWarning(ex, "Operational email {Key} will be retried", message.Key);
-                }
+                if (message is null || message.SentAt is not null || message.Migrated) return true;
+                var id = "operational:" + message.Key;
+                if (await tx.LoadAsync<CookieCommerce.Web.Services.Communications.OutboundMessage>(id) is null)
+                    await tx.SaveAsync(id, new CookieCommerce.Web.Services.Communications.OutboundMessage { Id = id, To = message.To, Subject = message.Subject, TextBody = message.Body });
+                message.Migrated = true;
                 await tx.SaveAsync(message.Key, message);
                 return true;
             });

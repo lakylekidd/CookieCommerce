@@ -8,6 +8,7 @@
 @inject ICustomerService CustomerService
 
 <div class="transition-colors duration-300 space-y-6">
+    @if (customer is not null) { <AccountAccessCard CustomerId="customer.Id" /> }
 
     @* ── Back link ──────────────────────────────────────────────────────── *@
     <div>

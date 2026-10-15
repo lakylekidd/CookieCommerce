@@ -14,6 +14,7 @@
     else
     {
         <h1 class="text-3xl font-bold">Order receipt @order.OrderReference</h1>
+        <InvoiceActions OrderId="OrderId" />
         <p>@order.PlacedOn.ToString("d MMMM yyyy") · @order.Status.Status</p>
         <address class="my-6">
             @order.BillingAddress.FirstName @order.BillingAddress.LastName<br />

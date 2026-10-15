@@ -3,7 +3,7 @@
   "files": {
     ".platform/ci/build-image.sh": "c77f1588a7b51457625d5f0bbe7e6a126a576feefdbcaddeb74506383b15e9f9",
     ".platform/ci/release.py": "a32cfcfded60132b8f6f72992c7d6cade16ea093a1ba6b94865f58444190e219",
-    ".platform/ci/release-config.json": "bcf4698ef68c73635953f60970608f545e5f7501d10f3392e02c950a011b23f5",
-    ".platform/gitlab-ci.yml": "7f15b9386a9b37f82bb7d41dd08c8ce1a35074dbd694fe9d6e4165034052b236"
+    ".platform/ci/release-config.json": "ede0e92051c82b2c7c986e619338381d98b45762d5f52534392b1827bd86ceaf",
+    ".platform/gitlab-ci.yml": "c738998a3dd4aab2ccfcb24aae1e2d2ce8be101e2f0fe44450009df0be44d275"
   }
 }

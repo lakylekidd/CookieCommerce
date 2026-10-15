@@ -14,6 +14,8 @@ The storefront at `/` now uses the ProductDomain and CustomerDomain APIs togethe
 
 See [the service audit and setup guide](Documentation/commerce-services.md) for payment environment variables, webhook setup, persistence and remaining integration boundaries. AppHost now provisions the Commerce database. Keep the web application's Data Protection keys on a persistent volume alongside the database backups.
 
+For production versioning and deployment, see [the release procedure](.platform/RELEASING.md).
+
 Development startup seeds ten customer accounts (the existing admin/customer users plus eight reproducible fictional customers), the original six cookie products and their single/5/12-cookie variants, ten unique cookie/packaging SKUs with their recipes, and 100 customer-owned demo orders: 90 shipped, 2 ready to ship and 8 processing. Existing demo orders receive this distribution once; later status edits are preserved. Orders are marked as development data and never call payment providers. Every development restart restores each cookie's available stock to 30 and each packaging SKU to 100, preserving other customer, catalog, recipe, order and production edits. See [development seeding](Documentation/commerce-services.md#development-seeding) for details and test accounts. Set `DevelopmentBootstrap__Enabled=false` to disable it; demo seeding is disabled outside Development.
 
 Product thumbnails in carts, checkout, order history/details, customer administration, dashboard rankings and inventory use the current catalog main image, including for inactive products. Display-time image refresh leaves financial order snapshots intact; variant photos remain available in variant galleries. Missing main images use the logo placeholder.

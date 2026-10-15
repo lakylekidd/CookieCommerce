@@ -22,7 +22,8 @@ builder.Services.AddCookieMassTransit(builder.Configuration, x => x.AddAuthentic
 builder.Services.AddMartenConfiguration(builder.Configuration);
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddHttpClient("customer-domain-api", client => client.BaseAddress = new Uri("http://customer-api"));
+builder.Services.AddHttpClient("customer-domain-api", client =>
+    client.BaseAddress = new Uri(builder.Configuration["ServiceEndpoints:CustomerApi"] ?? "http://customer-api"));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
     .Configure<IOptions<KeycloakOptions>, IHttpClientFactory>((options, keycloak, factory) =>

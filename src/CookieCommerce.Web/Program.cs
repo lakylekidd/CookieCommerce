@@ -69,7 +69,8 @@ builder.Services.AddHostedService<DevelopmentCommerceBootstrapService>();
 builder.Services.AddScoped<CommerceAccess>();
 builder.Services.AddScoped<AccountFeatures>();
 builder.Services.AddScoped<StoreSettingsService>();
-builder.Services.AddHttpClient("product-domain-api", client => client.BaseAddress = new Uri("http://product-api"));
+builder.Services.AddHttpClient("product-domain-api", client =>
+    client.BaseAddress = new Uri(builder.Configuration["ServiceEndpoints:ProductApi"] ?? "http://product-api"));
 builder.Services.AddHttpClient("payments", client => client.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.Configure<PaymentOptions>(builder.Configuration.GetSection("Payments"));
 builder.Services.AddSingleton<StripePaymentGateway>();
@@ -79,7 +80,7 @@ builder.Services.AddSingleton<IPaymentGateway>(sp => sp.GetRequiredService<Molli
 builder.Services.AddSingleton<PaymentProcessor>();
 builder.Services.AddHttpClient("authentication-management-api", client =>
 {
-    client.BaseAddress = new Uri("https+http://authentication-management-api");
+    client.BaseAddress = new Uri(builder.Configuration["ServiceEndpoints:AuthenticationManagementApi"] ?? "https+http://authentication-management-api");
     client.Timeout = TimeSpan.FromSeconds(60);
 })
 .AddStandardResilienceHandler(options =>
@@ -109,7 +110,7 @@ builder.Services.AddScoped<IAccountService, CustomerDomainAccountService>();
 // CustomerDomain API: live profile and address services (US1)
 builder.Services.AddHttpClient("customer-domain-api", client =>
 {
-    client.BaseAddress = new Uri("http://customer-api");
+    client.BaseAddress = new Uri(builder.Configuration["ServiceEndpoints:CustomerApi"] ?? "http://customer-api");
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 builder.Services.AddScoped<CustomerProfileService>();

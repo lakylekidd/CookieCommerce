@@ -84,6 +84,34 @@ platform_build_customer_api:
     - release/customer-api.json
     - release/customer-api.buildkit.json
     expire_in: 1 year
+platform_build_infra_keycloak:
+  stage: build
+  image:
+    name: moby/buildkit:v0.34.0-rootless
+    entrypoint:
+    - ''
+  rules:
+  - if: $CI_COMMIT_TAG
+    when: on_success
+  needs:
+  - job: platform_verify
+  - job: platform_validate_release
+  variables:
+    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
+    PLATFORM_SERVICE: infra-keycloak
+    PLATFORM_DOCKERFILE: .platform/keycloak/Dockerfile
+    PLATFORM_BUILD_CONTEXT: .
+    PLATFORM_PROJECT_PATH: engineering/tiger-van-cookie
+    PLATFORM_REGISTRY_HOST: git.registry.vlachos.nl
+    PLATFORM_REGISTRY_PREFIX: git.registry.vlachos.nl/engineering/tiger-van-cookie
+  resource_group: platform-image-$CI_COMMIT_TAG-infra-keycloak
+  script:
+  - sh .platform/ci/build-image.sh
+  artifacts:
+    paths:
+    - release/infra-keycloak.json
+    - release/infra-keycloak.buildkit.json
+    expire_in: 1 year
 platform_build_product_api:
   stage: build
   image:
@@ -150,6 +178,8 @@ platform_collect_release:
   - job: platform_build_authentication_management_api
     artifacts: true
   - job: platform_build_customer_api
+    artifacts: true
+  - job: platform_build_infra_keycloak
     artifacts: true
   - job: platform_build_product_api
     artifacts: true

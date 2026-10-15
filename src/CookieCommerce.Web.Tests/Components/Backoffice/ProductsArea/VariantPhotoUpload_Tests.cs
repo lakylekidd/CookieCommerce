@@ -1,6 +1,7 @@
 using CookieCommerce.Web.Models.Products;
 using CookieCommerce.Web.Services;
 using CookieCommerce.Web.Services.Products;
+using CookieCommerce.Web.Tests.Helpers;
 using FluentAssertions;
 
 namespace CookieCommerce.Web.Tests.Components.Backoffice.ProductsArea;
@@ -8,33 +9,32 @@ namespace CookieCommerce.Web.Tests.Components.Backoffice.ProductsArea;
 public sealed class VariantPhotoUpload_Tests
 {
     [Fact]
-    public void SelectedInventoryVariant_RendersVariantPhotoUploadControls_GivenExpandedVariant()
+    public void SelectedInventoryVariantSkus_RendersVariantPhotoUploadControls_GivenExpandedVariant()
     {
-        var source = ProductsAreaSource.ReadComponent("SelectedInventoryVariant.razor");
+        var source = ProductsAreaSource.ReadComponent("SelectedInventoryVariantSkus.razor");
 
         source.Should().Contain("Variant photos");
         source.Should().Contain("Accepted file types: JPEG, PNG, or WebP. Maximum size: 5 MB.");
         source.Should().Contain("InputFile");
-        source.Should().Contain("UploadPhotoAsync");
-        source.Should().Contain("BackofficeService.UploadVariantPhotoAsync");
-        source.Should().Contain("BackofficeService.RemoveVariantPhotoAsync");
+        source.Should().Contain("HandleFileUpload");
+        source.Should().Contain("ImageService.ProcessImageUploadAsync");
+        source.Should().Contain("ImageService.DeletePhotoAsync");
     }
 
     [Fact]
-    public void SelectedInventoryVariant_PreservesState_GivenUploadValidationFailure()
+    public void SelectedInventoryVariantSkus_RefreshesPhotosFromService_GivenSuccessfulUpload()
     {
-        var source = ProductsAreaSource.ReadComponent("SelectedInventoryVariant.razor");
+        var source = ProductsAreaSource.ReadComponent("SelectedInventoryVariantSkus.razor");
 
-        source.Should().Contain("photoValidationMessage");
-        source.Should().Contain("The uploaded image exceeds the maximum size of 5 MB.");
-        source.Should().Contain("The uploaded image content type is not supported.");
-        source.Should().Contain("IsAcceptedImageType");
+        source.Should().Contain("ImageService.GetImagesForVariantAsync");
+        source.Should().Contain("isUploading");
+        source.Should().Contain("deletingPhotoId");
     }
 
     [Fact]
-    public void SelectedInventoryVariantCss_ContainsResponsiveAccessibleMediaStyles_GivenVariantPhotoControls()
+    public void SelectedInventoryVariantSkusCss_ContainsResponsiveAccessibleMediaStyles_GivenVariantPhotoControls()
     {
-        var source = ProductsAreaSource.ReadComponent("SelectedInventoryVariant.razor.css");
+        var source = ProductsAreaSource.ReadComponent("SelectedInventoryVariantSkus.razor.css");
 
         source.Should().Contain(".variant-media-grid");
         source.Should().Contain("@media (max-width: 640px)");
@@ -44,7 +44,7 @@ public sealed class VariantPhotoUpload_Tests
     [Fact]
     public async Task FakeBackofficeService_UploadVariantPhotoScopesPreview_GivenValidImage()
     {
-        var service = new FakeBackofficeService();
+        var service = new FakeBackofficeService(TestEnvironmentFactory.CreateTempWebHostEnvironment());
         var productId = Guid.CreateVersion7();
         var variantId = Guid.CreateVersion7();
         var otherVariantId = Guid.CreateVersion7();
@@ -72,7 +72,7 @@ public sealed class VariantPhotoUpload_Tests
     [Fact]
     public async Task FakeBackofficeService_UploadVariantPhotoThrows_GivenUnsupportedFile()
     {
-        var service = new FakeBackofficeService();
+        var service = new FakeBackofficeService(TestEnvironmentFactory.CreateTempWebHostEnvironment());
 
         Func<Task> act = () => service.UploadVariantPhotoAsync(
             Guid.CreateVersion7(),

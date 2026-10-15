@@ -1,6 +1,7 @@
 using CookieCommerce.Web.Models.Products;
 using CookieCommerce.Web.Services;
 using CookieCommerce.Web.Services.Products;
+using CookieCommerce.Web.Tests.Helpers;
 using FluentAssertions;
 
 namespace CookieCommerce.Web.Tests.Components.Backoffice.ProductsArea;
@@ -14,7 +15,7 @@ public sealed class ProductMainImage_Tests
 
         source.Should().Contain("Selected Product");
         source.Should().Contain("Product name");
-        source.Should().Contain("SaveProductNameAsync");
+        source.Should().Contain("SaveProductNameOnBlurAsync");
         source.Should().Contain("Main image");
         source.Should().Contain("Accepted file types: JPEG, PNG, or WebP. Maximum size: 5 MB.");
     }
@@ -57,7 +58,7 @@ public sealed class ProductMainImage_Tests
     [Fact]
     public async Task FakeBackofficeService_UploadProductMainImageReplacesExistingImage_GivenValidImage()
     {
-        var service = new FakeBackofficeService();
+        var service = new FakeBackofficeService(TestEnvironmentFactory.CreateTempWebHostEnvironment());
         var productId = Guid.CreateVersion7();
         var product = new ProductDto
         {
@@ -78,7 +79,7 @@ public sealed class ProductMainImage_Tests
     [Fact]
     public async Task FakeBackofficeService_RemoveProductMainImageRemovesOnlyMainImage_GivenVariantPhotosExist()
     {
-        var service = new FakeBackofficeService();
+        var service = new FakeBackofficeService(TestEnvironmentFactory.CreateTempWebHostEnvironment());
         var productId = Guid.CreateVersion7();
         var mainImageId = Guid.CreateVersion7();
         var variantPhoto = new ProductImageDto { Id = Guid.CreateVersion7(), Role = "VariantPhoto", Url = "/variant.png" };

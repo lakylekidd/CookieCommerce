@@ -21,6 +21,7 @@ public class KeycloakAuthService(
     private string? _accessToken;
     private bool _initialized;
     private readonly SemaphoreSlim initializeLock = new(1);
+    private bool _prerendering;
 
     public event Action? OnChange;
     public UserDto? CurrentUser => _currentUser;
@@ -31,11 +32,11 @@ public class KeycloakAuthService(
 
     public async Task InitializeAsync()
     {
-        if (_initialized && (_accessToken is null || ParseJwtToUserDto(_accessToken) is not null)) return;
+        if (_initialized && !_prerendering && (_accessToken is null || ParseJwtToUserDto(_accessToken) is not null)) return;
         await initializeLock.WaitAsync();
         try
         {
-            if (_initialized && (_accessToken is null || ParseJwtToUserDto(_accessToken) is not null)) return;
+            if (_initialized && !_prerendering && (_accessToken is null || ParseJwtToUserDto(_accessToken) is not null)) return;
             await InitializeCoreAsync();
         }
         finally { initializeLock.Release(); }
@@ -43,6 +44,7 @@ public class KeycloakAuthService(
 
     private async Task InitializeCoreAsync()
     {
+        _prerendering = false;
         try
         {
             var tokenResult = await localStorage.GetAsync<string>(TokenKey);
@@ -89,11 +91,16 @@ public class KeycloakAuthService(
         }
         catch (InvalidOperationException)
         {
-            // Prerendering blocks JS interop; try again after app becomes interactive.
+            // Prerendering blocks JS interop; return anonymous now,
+            // but allow re-init once the circuit is live.
+            _prerendering = true;
+            _initialized = true;
         }
         catch (OperationCanceledException)
         {
-            // Circuit was canceled (e.g., during navigation or disconnect); ignore gracefully.
+            // Circuit was canceled; same treatment.
+            _prerendering = true;
+            _initialized = true;
         }
         catch (HttpRequestException)
         {

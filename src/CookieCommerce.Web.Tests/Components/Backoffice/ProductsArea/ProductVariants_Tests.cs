@@ -1,5 +1,6 @@
 using CookieCommerce.Web.Models.Products;
 using CookieCommerce.Web.Services;
+using CookieCommerce.Web.Tests.Helpers;
 using FluentAssertions;
 
 namespace CookieCommerce.Web.Tests.Components.Backoffice.ProductsArea;
@@ -11,7 +12,7 @@ public sealed class ProductVariants_Tests
     {
         var source = ProductsAreaSource.ReadComponent("SelectedInventoryItem.razor");
 
-        source.Should().Contain("Product Variants");
+        source.Should().Contain("Pricing & Variants");
         source.Should().Contain("AddVariantRow");
         source.Should().Contain("SaveVariantRows");
         source.Should().Contain("BackofficeService.UpsertProductVariantsAsync");
@@ -42,7 +43,7 @@ public sealed class ProductVariants_Tests
     [Fact]
     public async Task FakeBackofficeService_UpsertProductVariantsPersistsDistinctRows_GivenValidVariants()
     {
-        var service = new FakeBackofficeService();
+        var service = new FakeBackofficeService(TestEnvironmentFactory.CreateTempWebHostEnvironment());
         var productId = Guid.CreateVersion7();
         var product = new ProductDto
         {

@@ -1,7 +1,7 @@
-@using CookieCommerce.Web.Services
-@inject IBackofficeService BackofficeService
 @using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Services
 @rendermode InteractiveServer
+@inject IBackofficeService BackofficeService
 
 <tr @onclick="OnSelectedAsync"
     class="group cursor-pointer transition-all border-b border-gray-100 dark:border-gray-800/50
@@ -37,18 +37,16 @@
             <span class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Qty</span>
         </div>
     </td>
-    <td class="px-6 py-5 text-right">
+    <td class="px-6 py-5 text-right" @onclick:stopPropagation="true">
         <div class="flex flex-col items-end gap-1">
             <label class="relative inline-flex items-center cursor-pointer" for="@StatusControlId">
-                <span class="sr-only">Product status is visible for review only and is not saved yet.</span>
+                <span class="sr-only">Toggle product status between Live and Draft</span>
                 <input id="@StatusControlId"
                        type="checkbox"
                        checked="@Item.Active"
-                       aria-label="Product status, "
-
-
-
-                       @onchange="IgnoreStatusToggle"
+                       aria-label="@(Item.Active ? "Product is Live, click to set to Draft" : "Product is Draft, click to set to Live")"
+                       disabled="@IsTogglingStatus"
+                       @onchange="HandleStatusToggle"
                        class="sr-only peer">
                 @* The Switch Track *@
                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700
@@ -93,17 +91,32 @@
     [Parameter] public ProductDto Item { get; set; } = default!;
     [Parameter] public bool IsSelected { get; set; }
     [Parameter] public EventCallback<Guid> OnSelected { get; set; }
+    [Parameter] public EventCallback<ProductStatusChangedArgs> OnStatusChanged { get; set; }
     private string StatusControlId => $"product-status-{Item.ProductId:N}";
+    private bool IsTogglingStatus { get; set; }
 
-    private async Task IgnoreStatusToggle(ChangeEventArgs e)
+    private async Task HandleStatusToggle()
     {
-        var active = e.Value is bool value && value;
-        await BackofficeService.ChangeProductStatusAsync(Item.ProductId, active);
-        Item.Active = active;
+        if (IsTogglingStatus) return;
+
+        IsTogglingStatus = true;
+        var newStatus = !Item.Active;
+
+        try
+        {
+            await BackofficeService.ChangeProductStatusAsync(Item.ProductId, newStatus);
+            Item.Active = newStatus;
+            await OnStatusChanged.InvokeAsync(new ProductStatusChangedArgs(Item.ProductId, newStatus));
+        }
+        finally
+        {
+            IsTogglingStatus = false;
+        }
     }
 
     private async Task OnSelectedAsync()
     {
         await OnSelected.InvokeAsync(Item.ProductId);
     }
+    public record ProductStatusChangedArgs(Guid ProductId, bool IsActive);
 }

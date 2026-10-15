@@ -17,7 +17,7 @@ public sealed class SelectedInventoryVariant_StatusInteraction_Tests
         var variant = new ProductVariantDto { Id = Guid.CreateVersion7(), Active = false };
         service.Setup(s => s.ChangeVariantStatusAsync(variant.Id, true)).Returns(Task.CompletedTask);
         var component = new SelectedInventoryVariant { Variant = variant };
-        await ToggleAsync(component, service.Object);
+        await ToggleAsync(component, service.Object, "HandleToggleStatusAsync", [new ChangeEventArgs { Value = true }]);
         variant.Active.Should().BeTrue();
         service.Verify(s => s.ChangeVariantStatusAsync(variant.Id, true), Times.Once);
     }
@@ -28,14 +28,36 @@ public sealed class SelectedInventoryVariant_StatusInteraction_Tests
         var product = new ProductDto { ProductId = Guid.CreateVersion7(), Active = false };
         service.Setup(s => s.ChangeProductStatusAsync(product.ProductId, true)).Returns(Task.CompletedTask);
         var component = new InventoryTableItem { Item = product };
-        await ToggleAsync(component, service.Object);
+        await ToggleAsync(component, service.Object, "HandleStatusToggle", []);
         product.Active.Should().BeTrue();
         service.Verify(s => s.ChangeProductStatusAsync(product.ProductId, true), Times.Once);
     }
-    private static async Task ToggleAsync(object component, IBackofficeService service)
+
+    private static async Task ToggleAsync(object component, IBackofficeService service, string methodName, object[] args)
     {
         var type = component.GetType();
         type.GetProperty("BackofficeService", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!.SetValue(component, service);
-        await (Task)type.GetMethod("IgnoreStatusToggle", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(component, [new ChangeEventArgs { Value = true }])!;
+        await (Task)type.GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(component, args)!;
+    }
+
+    [Fact]
+    public void CallsChangeVariantStatusAsync_GivenFunctionalVariantStatusToggle()
+    {
+        var source = ProductsAreaSource.ReadComponent("SelectedInventoryVariant.razor");
+        var codeBlock = source[(source.IndexOf("@code", StringComparison.Ordinal))..];
+
+        source.Should().Contain("@onchange=\"HandleToggleStatusAsync\"");
+        source.Should().NotContain("@onclick:preventDefault=\"true\"");
+        codeBlock.Should().Contain("ChangeVariantStatusAsync");
+        codeBlock.Should().Contain("private async Task HandleToggleStatusAsync(ChangeEventArgs e)");
+    }
+
+    [Fact]
+    public void CallsChangeProductStatusAsync_GivenFunctionalProductStatusToggle()
+    {
+        var source = ProductsAreaSource.ReadComponent("InventoryTableItem.razor");
+        var codeBlock = source[(source.IndexOf("@code", StringComparison.Ordinal))..];
+
+        codeBlock.Should().Contain("ChangeProductStatusAsync");
     }
 }

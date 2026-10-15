@@ -1,5 +1,4 @@
 ﻿using CookieCommerce.Web.Models.Products;
-using CookieCommerce.Web.Services.Products;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace CookieCommerce.Web.Services;
@@ -46,11 +45,6 @@ public class FakeImageUploadService(IBackofficeService backofficeService) : IIma
         };
 
         variant.Images.Add(newImage);
-
-        StaticInventoryList.InventoryItems
-            .FirstOrDefault(i => i.Variants.Any(v => v.Id == variantId))?
-            .Variants.FirstOrDefault(v => v.Id == variantId)?
-            .Images.Add(newImage);
 
         return newImage;
     }

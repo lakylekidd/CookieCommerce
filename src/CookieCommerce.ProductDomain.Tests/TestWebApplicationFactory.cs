@@ -67,15 +67,11 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             DO $$
             BEGIN
                 IF to_regclass('public.mt_events') IS NOT NULL THEN
-                    TRUNCATE TABLE public.mt_events RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE public.mt_events CONTINUE IDENTITY CASCADE;
                 END IF;
 
                 IF to_regclass('public.mt_streams') IS NOT NULL THEN
-                    TRUNCATE TABLE public.mt_streams RESTART IDENTITY CASCADE;
-                END IF;
-
-                IF EXISTS (SELECT 1 FROM information_schema.sequences WHERE sequence_schema = 'public' AND sequence_name = 'mt_events_sequence') THEN
-                    ALTER SEQUENCE public.mt_events_sequence RESTART WITH 1;
+                    TRUNCATE TABLE public.mt_streams CONTINUE IDENTITY CASCADE;
                 END IF;
             END $$;
             """;

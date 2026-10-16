@@ -31,7 +31,7 @@ platform_validate_release:
 platform_build_authentication_management_api:
   stage: build
   image:
-    name: moby/buildkit:v0.34.0-rootless
+    name: moby/buildkit:v0.17.3-rootless
     entrypoint:
     - ''
   rules:
@@ -59,7 +59,7 @@ platform_build_authentication_management_api:
 platform_build_customer_api:
   stage: build
   image:
-    name: moby/buildkit:v0.34.0-rootless
+    name: moby/buildkit:v0.17.3-rootless
     entrypoint:
     - ''
   rules:
@@ -87,7 +87,7 @@ platform_build_customer_api:
 platform_build_infra_keycloak:
   stage: build
   image:
-    name: moby/buildkit:v0.34.0-rootless
+    name: moby/buildkit:v0.17.3-rootless
     entrypoint:
     - ''
   rules:
@@ -115,7 +115,7 @@ platform_build_infra_keycloak:
 platform_build_product_api:
   stage: build
   image:
-    name: moby/buildkit:v0.34.0-rootless
+    name: moby/buildkit:v0.17.3-rootless
     entrypoint:
     - ''
   rules:
@@ -143,7 +143,7 @@ platform_build_product_api:
 platform_build_web:
   stage: build
   image:
-    name: moby/buildkit:v0.34.0-rootless
+    name: moby/buildkit:v0.17.3-rootless
     entrypoint:
     - ''
   rules:

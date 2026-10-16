@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
 using Testcontainers.PostgreSql;
 
 namespace CookieCommerce.ProductDomain.Tests;
@@ -16,6 +15,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseSetting("DevelopmentBootstrap:Enabled", "false");
         builder.UseSetting("ConnectionStrings:ProductDomain", _dbContainer.GetConnectionString());
 
         builder.UseSetting("ConnectionStrings:Messaging", "unused-for-tests");
@@ -51,30 +51,9 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 
     public async Task InitializeAsync() => await _dbContainer.StartAsync();
 
-    public new async Task DisposeAsync() => await _dbContainer.StopAsync();
-
-    public async Task ResetDatabaseAsync()
+    public new async Task DisposeAsync()
     {
-        using var scope = Services.CreateScope();
-        var store = scope.ServiceProvider.GetRequiredService<IDocumentStore>();
-        await store.Advanced.Clean.DeleteAllDocumentsAsync();
-        await store.Advanced.Clean.DeleteAllEventDataAsync();
-
-        await using var connection = new NpgsqlConnection(_dbContainer.GetConnectionString());
-        await connection.OpenAsync();
-        await using var command = connection.CreateCommand();
-        command.CommandText = """
-            DO $$
-            BEGIN
-                IF to_regclass('public.mt_events') IS NOT NULL THEN
-                    TRUNCATE TABLE public.mt_events CONTINUE IDENTITY CASCADE;
-                END IF;
-
-                IF to_regclass('public.mt_streams') IS NOT NULL THEN
-                    TRUNCATE TABLE public.mt_streams CONTINUE IDENTITY CASCADE;
-                END IF;
-            END $$;
-            """;
-        await command.ExecuteNonQueryAsync();
+        base.Dispose();
+        await _dbContainer.DisposeAsync();
     }
 }

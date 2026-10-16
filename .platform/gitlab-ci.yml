@@ -46,8 +46,8 @@ platform_build_authentication_management_api:
     PLATFORM_DOCKERFILE: src/CookieCommerce.AuthenticationManagement.Api/Dockerfile
     PLATFORM_BUILD_CONTEXT: .
     PLATFORM_PROJECT_PATH: engineering/tiger-van-cookie
-    PLATFORM_REGISTRY_HOST: git.registry.vlachos.nl
-    PLATFORM_REGISTRY_PREFIX: git.registry.vlachos.nl/engineering/tiger-van-cookie
+    PLATFORM_REGISTRY_HOST: registry.vlachos.nl
+    PLATFORM_REGISTRY_PREFIX: registry.vlachos.nl/engineering/tiger-van-cookie
   resource_group: platform-image-$CI_COMMIT_TAG-authentication-management-api
   script:
   - sh .platform/ci/build-image.sh
@@ -74,8 +74,8 @@ platform_build_customer_api:
     PLATFORM_DOCKERFILE: src/CookieCommerce.CustomerDomain.Api/Dockerfile
     PLATFORM_BUILD_CONTEXT: src
     PLATFORM_PROJECT_PATH: engineering/tiger-van-cookie
-    PLATFORM_REGISTRY_HOST: git.registry.vlachos.nl
-    PLATFORM_REGISTRY_PREFIX: git.registry.vlachos.nl/engineering/tiger-van-cookie
+    PLATFORM_REGISTRY_HOST: registry.vlachos.nl
+    PLATFORM_REGISTRY_PREFIX: registry.vlachos.nl/engineering/tiger-van-cookie
   resource_group: platform-image-$CI_COMMIT_TAG-customer-api
   script:
   - sh .platform/ci/build-image.sh
@@ -102,8 +102,8 @@ platform_build_infra_keycloak:
     PLATFORM_DOCKERFILE: .platform/keycloak/Dockerfile
     PLATFORM_BUILD_CONTEXT: .
     PLATFORM_PROJECT_PATH: engineering/tiger-van-cookie
-    PLATFORM_REGISTRY_HOST: git.registry.vlachos.nl
-    PLATFORM_REGISTRY_PREFIX: git.registry.vlachos.nl/engineering/tiger-van-cookie
+    PLATFORM_REGISTRY_HOST: registry.vlachos.nl
+    PLATFORM_REGISTRY_PREFIX: registry.vlachos.nl/engineering/tiger-van-cookie
   resource_group: platform-image-$CI_COMMIT_TAG-infra-keycloak
   script:
   - sh .platform/ci/build-image.sh
@@ -130,8 +130,8 @@ platform_build_product_api:
     PLATFORM_DOCKERFILE: src/CookieCommerce.ProductDomain.Api/Dockerfile
     PLATFORM_BUILD_CONTEXT: src
     PLATFORM_PROJECT_PATH: engineering/tiger-van-cookie
-    PLATFORM_REGISTRY_HOST: git.registry.vlachos.nl
-    PLATFORM_REGISTRY_PREFIX: git.registry.vlachos.nl/engineering/tiger-van-cookie
+    PLATFORM_REGISTRY_HOST: registry.vlachos.nl
+    PLATFORM_REGISTRY_PREFIX: registry.vlachos.nl/engineering/tiger-van-cookie
   resource_group: platform-image-$CI_COMMIT_TAG-product-api
   script:
   - sh .platform/ci/build-image.sh
@@ -158,8 +158,8 @@ platform_build_web:
     PLATFORM_DOCKERFILE: src/CookieCommerce.Web/Dockerfile
     PLATFORM_BUILD_CONTEXT: .
     PLATFORM_PROJECT_PATH: engineering/tiger-van-cookie
-    PLATFORM_REGISTRY_HOST: git.registry.vlachos.nl
-    PLATFORM_REGISTRY_PREFIX: git.registry.vlachos.nl/engineering/tiger-van-cookie
+    PLATFORM_REGISTRY_HOST: registry.vlachos.nl
+    PLATFORM_REGISTRY_PREFIX: registry.vlachos.nl/engineering/tiger-van-cookie
   resource_group: platform-image-$CI_COMMIT_TAG-web
   script:
   - sh .platform/ci/build-image.sh

@@ -13,9 +13,7 @@ public sealed class ConsumeCustomerProfileUpdatedCommandHandler(
 {
     public async Task Handle(ConsumeCustomerProfileUpdated request, CancellationToken cancellationToken)
     {
-        var authUser = await session.Events.AggregateStreamAsync<AuthUserAggregate>(
-            request.CustomerId,
-            token: cancellationToken);
+        var authUser = await AuthCustomerIdentityResolver.ResolveAsync(session, request.CustomerId, cancellationToken);
 
         if (authUser is null || !authUser.IsActive)
             return;
@@ -29,7 +27,7 @@ public sealed class ConsumeCustomerProfileUpdatedCommandHandler(
 
         if (changed)
         {
-            session.Events.Append(request.CustomerId, authUser.DomainEvents);
+            session.Events.Append(authUser.Id, authUser.DomainEvents);
             await session.SaveChangesAsync(cancellationToken);
         }
 

@@ -1,4 +1,5 @@
-﻿@using CookieCommerce.Web.Services
+@inject IAccountService AccountService
+@using CookieCommerce.Web.Services
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 @inject IAuthService Auth
@@ -21,7 +22,7 @@
             My Orders
             @if (OrderCountInNeedOfAttention > 0)
             {
-                <span class="ml-auto bg-orange-100 dark:bg-orange-900 
+                <span class="ml-auto bg-orange-100 dark:bg-orange-900
                     text-orange-600 dark:text-orange-300 text-xs font-bold px-2 py-0.5 rounded-full">
                     @OrderCountInNeedOfAttention
                 </span>
@@ -44,7 +45,7 @@
 
         <hr class="border-gray-100 dark:border-gray-700 my-2" />
 
-        <button 
+        <button
             @onclick="Logout"
             class="flex items-center cursor-pointer w-full gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-medium">
             <span class="material-icons text-xl">logout</span>
@@ -54,11 +55,12 @@
 </aside>
 
 @code {
-    private int OrderCountInNeedOfAttention = 2;
+    private int OrderCountInNeedOfAttention;
+    protected override async Task OnInitializedAsync() => OrderCountInNeedOfAttention = await AccountService.GetOrderCountInNeedOfAttentionAsync();
 
-    public void Logout()
+    public async Task Logout()
     {
-        Auth.Logout();
+        await Auth.LogoutAsync();
         Navigation.NavigateTo("/storefront", forceLoad: false);
     }
 }

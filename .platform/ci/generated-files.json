@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "files": {
+    ".platform/ci/build-image.sh": "c77f1588a7b51457625d5f0bbe7e6a126a576feefdbcaddeb74506383b15e9f9",
+    ".platform/ci/release.py": "a32cfcfded60132b8f6f72992c7d6cade16ea093a1ba6b94865f58444190e219",
+    ".platform/ci/release-config.json": "ede0e92051c82b2c7c986e619338381d98b45762d5f52534392b1827bd86ceaf",
+    ".platform/gitlab-ci.yml": "c738998a3dd4aab2ccfcb24aae1e2d2ce8be101e2f0fe44450009df0be44d275"
+  }
+}

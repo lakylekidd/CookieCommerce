@@ -22,4 +22,5 @@ public sealed class EmailVerificationDeliverySettings
 
     /// <summary>Endpoint of the external email delivery dependency.</summary>
     public string ExternalDeliveryEndpoint { get; set; } = string.Empty;
+    public string ServiceKey { get; set; } = string.Empty;
 }

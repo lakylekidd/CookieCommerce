@@ -1,4 +1,7 @@
-﻿@page "/backoffice/dashboard/"
+@inject CookieCommerce.Web.Services.Commerce.StoreSettingsService Settings
+@inject IJSRuntime JS
+@implements IDisposable
+@page "/backoffice/dashboard/"
 @using CookieCommerce.Web.Models.Backoffice
 @using CookieCommerce.Web.Services
 @rendermode InteractiveServer
@@ -54,6 +57,32 @@
     private string Period { get; set; } = "This Week";
     private DashboardDto dashboard = new DashboardDto();
     private bool isLoading = false;
+    private readonly CancellationTokenSource cancellation = new();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) _ = WatchAsync();
+    }
+    private async Task WatchAsync()
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+            while (await timer.WaitForNextTickAsync(cancellation.Token))
+            {
+                await InvokeAsync(async () =>
+                {
+                    var previous = dashboard.TotalOrders;
+                    await RefreshData();
+                    var config = await Settings.GetAsync();
+                    if (dashboard.TotalOrders > previous)
+                        await JS.InvokeVoidAsync("notifyCommerceOrder", config.Preference("browserPushNotifications", false), config.Preference("soundAlertOnNewOrder", false));
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+    public void Dispose() { cancellation.Cancel(); cancellation.Dispose(); }
 
     protected override async Task OnInitializedAsync()
     {

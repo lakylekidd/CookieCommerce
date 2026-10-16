@@ -1,0 +1,74 @@
+@using CookieCommerce.Web.Services.Communications
+@using CookieCommerce.Web.Services.Commerce
+@inject EmailConfigurationService Configuration
+@inject ICommerceStore Store
+@inject CommerceAccess Access
+@inject NavigationManager Navigation
+
+<div class="communication-editor bg-card-light dark:bg-card-dark rounded-2xl p-6 space-y-4">
+    @if (!string.IsNullOrEmpty(error)) { <p role="alert" class="text-red-600">@error</p> }
+    @if (!string.IsNullOrEmpty(notice)) { <p role="status" class="text-green-600">@notice</p> }
+    @if (settings is not null)
+    {
+        <label><input type="checkbox" @bind="settings.Enabled" /> Enable outbound email</label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label>SMTP host<input @bind="settings.Host" autocomplete="off" /></label>
+            <label>Port<input type="number" min="1" max="65535" @bind="settings.Port" /></label>
+            <label>Connection security<select @bind="settings.Security"><option value="StartTls">STARTTLS</option><option value="Ssl">TLS from connection start</option><option value="None">None (local test server)</option></select></label>
+            <label>Username<input @bind="settings.Username" autocomplete="off" /></label>
+            <label>Password<input type="password" @bind="settings.Password" autocomplete="new-password" placeholder="@(settings.HasPassword ? "Saved password — leave blank to keep" : "Enter SMTP password")" /></label>
+            <label><input type="checkbox" @bind="settings.ClearPassword" /> Clear saved password</label>
+            <label>Sender name<input @bind="settings.SenderName" /></label>
+            <label>Sender email<input type="email" @bind="settings.From" /></label>
+            <label>Reply-to email<input type="email" @bind="settings.ReplyTo" /></label>
+            <label>Public store URL<input type="url" @bind="settings.PublicStoreUrl" /></label>
+        </div>
+        <p class="text-sm">Password recovery configuration: @settings.AuthenticationSync</p>
+        <button class="bg-primary text-white px-4 py-2 rounded-xl" disabled="@busy" @onclick="SaveAsync">Save email settings</button>
+        <div class="flex flex-wrap gap-3 items-end"><label>Test recipient<input type="email" @bind="recipient" /></label><button class="border px-4 py-2 rounded-xl" disabled="@busy" @onclick="TestAsync">Send test email</button></div>
+        <h3 class="font-bold pt-4">Recent customer emails</h3>
+        <button class="text-primary underline text-sm" @onclick="RefreshAsync">Refresh delivery status</button>
+        <table class="w-full text-sm"><thead><tr><th class="text-left">Recipient</th><th class="text-left">Subject</th><th>Status</th><th>Attempts</th><th></th></tr></thead><tbody>
+            @foreach (var message in messages)
+            {
+                <tr><td>@message.To</td><td>@message.Subject</td><td class="text-center">@message.State</td><td class="text-center">@message.Attempts</td><td>
+                    @if (message.State == "Failed") { <button class="text-primary underline" disabled="@busy" @onclick="() => RetryAsync(message.Id)">Retry</button> }
+                </td></tr>
+            }
+        </tbody></table>
+        <p class="text-xs">Sent means the SMTP server accepted the email. Password recovery emails are sent by the sign-in provider.</p>
+    }
+</div>
+
+@code {
+    private EmailSettings? settings;
+    private string recipient = "", error = "", notice = "";
+    private bool busy;
+    private IReadOnlyList<OutboundMessage> messages = [];
+    protected override async Task OnInitializedAsync()
+    {
+        try { settings = await Configuration.GetAsync(); if (settings.PublicStoreUrl.Length == 0) settings.PublicStoreUrl = Navigation.BaseUri; await RefreshAsync(); }
+        catch { error = "Email settings could not be loaded. Sign in as an administrator."; }
+    }
+    private async Task RunAsync(Func<Task> action, string success)
+    {
+        busy = true; error = notice = "";
+        try { await action(); notice = success; }
+        catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Email operation failed. Check the configuration and try again."; }
+        finally { busy = false; }
+    }
+    private Task SaveAsync() => RunAsync(async () => { await Configuration.SaveAsync(settings!); settings = await Configuration.GetAsync(); }, "Email settings saved.");
+    private Task TestAsync() => RunAsync(() => Configuration.TestAsync(recipient), "Test email accepted by the SMTP server.");
+    private async Task RefreshAsync() { await Access.RequireAdminAsync(); messages = (await Store.ListAsync<OutboundMessage>()).OrderByDescending(m => m.CreatedAt).Take(20).ToArray(); }
+    private Task RetryAsync(string id) => RunAsync(async () =>
+    {
+        await Access.RequireAdminAsync();
+        await Store.ExecuteAsync("outbound:" + id, async tx =>
+        {
+            var message = await tx.LoadAsync<OutboundMessage>(id) ?? throw new InvalidOperationException("Email was not found.");
+            if (message.ExpiresAt <= DateTimeOffset.UtcNow) throw new InvalidOperationException("The action link has expired. Request a new email.");
+            if (message.State == "Failed") { message.State = "Queued"; message.Attempts = 0; message.RetryAfter = DateTimeOffset.UtcNow; await tx.SaveAsync(id, message); }
+            return true;
+        }); await RefreshAsync();
+    }, "Email queued for retry.");
+}

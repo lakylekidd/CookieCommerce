@@ -4,6 +4,7 @@
 /// </summary>
 public class InventoryAreaDto
 {
+    public ICollection<CookieCommerce.Web.Models.Products.SkuDto> Skus { get; set; } = [];
     /// <summary>
     /// This contains today's order quota information
     /// </summary>

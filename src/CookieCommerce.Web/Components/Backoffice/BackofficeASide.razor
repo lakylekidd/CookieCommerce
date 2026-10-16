@@ -1,8 +1,9 @@
-﻿@using CookieCommerce.Web.Components.Shared
+@using CookieCommerce.Web.Components.Shared
 @using CookieCommerce.Web.Services
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 @inject IAuthService Auth
+@inject CookieCommerce.Web.Services.Commerce.ICommerceStore Store
 
 <aside class="hidden md:flex w-64 flex-col bg-surface-light dark:bg-surface-dark border-r border-orange-100 dark:border-stone-800 shadow-sm z-20 transition-colors duration-300">
     <div class="flex items-center justify-center h-24 border-b border-orange-50 dark:border-stone-800">
@@ -11,8 +12,8 @@
     <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
 
         <NavLink class="flex items-center px-4 py-3 text-stone-600 dark:text-stone-300 hover:bg-orange-50 dark:hover:bg-stone-800 hover:text-primary dark:hover:text-primary rounded-xl transition-all group"
-                 href="/backoffice/dashboard" 
-                 Match="NavLinkMatch.All"> 
+                 href="/backoffice/dashboard"
+                 Match="NavLinkMatch.All">
             <span class="material-icons-round text-2xl mr-3 group-hover:scale-110 transition-transform">dashboard</span>
             <span class="label">Dashboard</span>
         </NavLink>
@@ -21,9 +22,9 @@
                  href="/backoffice/orders">
             <span class="material-icons-round text-2xl mr-3 group-hover:scale-110 transition-transform">receipt_long</span>
             <span class="font-semibold">Orders</span>
-            <span class="ml-auto bg-primary text-white text-xs font-bold px-2 py-1 rounded-lg shadow-sm">12</span>
+            <span class="ml-auto bg-primary text-white text-xs font-bold px-2 py-1 rounded-lg shadow-sm">@orderCount</span>
         </NavLink>
-        
+
         <NavLink class="flex items-center px-4 py-3 text-stone-600 dark:text-stone-300 hover:bg-orange-50 dark:hover:bg-stone-800 hover:text-primary dark:hover:text-primary rounded-xl transition-all group"
                  href="/backoffice/products">
             <span class="material-icons-round text-2xl mr-3 group-hover:scale-110 transition-transform">cookie</span>
@@ -49,7 +50,7 @@
         </NavLink>
 
         <NavLink class="flex items-center px-4 py-3 text-stone-600 dark:text-stone-300 hover:bg-orange-50 dark:hover:bg-stone-800 hover:text-primary dark:hover:text-primary rounded-xl transition-all group"
-                 href="/backoffice/settings">   
+                 href="/backoffice/settings">
             <span class="material-icons-round text-2xl mr-3 group-hover:scale-110 transition-transform">settings</span>
             <span class="font-semibold">Settings</span>
         </NavLink>
@@ -66,9 +67,11 @@
 
 
 @code {
-    public void Logout()
+    private int orderCount;
+    protected override async Task OnInitializedAsync() => orderCount = (await Store.ListAsync<CookieCommerce.Web.Services.Commerce.CommerceOrder>()).Count;
+    public async Task Logout()
     {
-        Auth.Logout();
+        await Auth.LogoutAsync();
         Navigation.NavigateTo("/storefront");
     }
 }

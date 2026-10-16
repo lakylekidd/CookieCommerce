@@ -1,4 +1,4 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @layout MainLayout
 
 <style>
@@ -41,6 +41,11 @@
     }
 </style>
 
+@using CookieCommerce.Web.Services
+@inject IAuthService Auth
+@implements IDisposable
+@if (ready && Auth.IsAdmin)
+{
 <div class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-sans antialiased transition-colors duration-300">
     <div class="flex h-screen overflow-hidden">
         <BackofficeASide />
@@ -53,3 +58,22 @@
         </main>
     </div>
 </div>
+
+}
+else
+{
+    <main class="container mx-auto p-8"><p>Sign in with an authorized account to view this page.</p><a href="/auth/signin">Sign in</a></main>
+}
+@code {
+    private bool ready;
+    protected override void OnInitialized() => Auth.OnChange += Refresh;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        await Auth.InitializeAsync();
+        ready = true;
+        StateHasChanged();
+    }
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+    public void Dispose() => Auth.OnChange -= Refresh;
+}

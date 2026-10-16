@@ -3,6 +3,7 @@ using CookieCommerce.AuthenticationManagement.Application.Auth.ReadModels;
 using CookieCommerce.AuthenticationManagement.Application.Keycloak;
 using CookieCommerce.AuthenticationManagement.Domain.Aggregates;
 using Marten;
+using CookieCommerce.AuthenticationManagement.Application.Auth.Integration;
 using MediatR;
 
 namespace CookieCommerce.AuthenticationManagement.Application.Auth.Handlers;
@@ -14,21 +15,39 @@ public class LoginUserHandler(
 {
     public async Task<LoginResult> Handle(LoginUser command, CancellationToken cancellationToken)
     {
+        command = command with { Email = command.Email.Trim().ToLowerInvariant() };
         var tokenResponse = await keycloakTokenService.LoginAsync(command.Email, command.Password, cancellationToken);
 
         var userInfo = await keycloakAdmin.GetUserByEmailAsync(command.Email, cancellationToken);
+        var identityId = userInfo?.Id ?? "";
 
         var readModel = await session.Query<AuthUserReadModel>()
-            .Where(u => u.Email == command.Email)
+            .Where(u => u.KeycloakId == identityId)
             .FirstOrDefaultAsync(cancellationToken);
+
+        if (readModel is null && userInfo is not null)
+        {
+            var id = Guid.CreateVersion7();
+            var aggregate = new AuthUserAggregate();
+            aggregate.Register(id, userInfo.Id, userInfo.Email, userInfo.FirstName, userInfo.LastName, userInfo.CustomerId);
+            session.Events.StartStream<AuthUserAggregate>(id, aggregate.DomainEvents);
+            session.Store(new RegistrationDelivery { Id = id, Message = new UserRegisteredIntegrationEvent
+            {
+                UserId = id, CustomerId = userInfo.CustomerId, KeycloakId = userInfo.Id, Email = userInfo.Email,
+                FirstName = userInfo.FirstName, LastName = userInfo.LastName, RegisteredAt = DateTime.UtcNow
+            } });
+            await session.SaveChangesAsync(cancellationToken);
+        }
 
         if (readModel != null)
         {
-            var aggregate = await session.Events.AggregateStreamAsync<AuthUserAggregate>(readModel.Id, token: cancellationToken);
+            var stream = await session.Events.FetchForExclusiveWriting<AuthUserAggregate>(readModel.Id, cancellationToken);
+            var aggregate = stream.Aggregate;
             if (aggregate != null)
             {
+                aggregate.ClearUncommitedEvents();
                 aggregate.RecordLogin(Guid.CreateVersion7().ToString());
-                session.Events.Append(aggregate.Id, aggregate.DomainEvents);
+                stream.AppendMany(aggregate.DomainEvents.ToArray());
                 await session.SaveChangesAsync(cancellationToken);
             }
         }
@@ -42,7 +61,7 @@ public class LoginUserHandler(
             AccessToken = tokenResponse.AccessToken,
             RefreshToken = tokenResponse.RefreshToken,
             ExpiresIn = tokenResponse.ExpiresIn,
-            UserId = readModel?.Id ?? Guid.Empty,
+            UserId = userInfo?.CustomerId ?? (Guid.TryParse(userInfo?.Id, out var customerId) ? customerId : Guid.Empty),
             Email = command.Email,
             FirstName = userInfo?.FirstName ?? "",
             LastName = userInfo?.LastName ?? "",

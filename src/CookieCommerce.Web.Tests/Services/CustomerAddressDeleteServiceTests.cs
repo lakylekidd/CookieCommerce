@@ -37,14 +37,14 @@ public class CustomerAddressDeleteServiceTests
     }
 
     [Fact]
-    public async Task SetAsPrimaryAsync_ReturnsUnsupported_GivenExplicitPrimaryChange()
+    public async Task SetAsPrimaryAsync_UpdatesDefaultAddress_GivenSignedInCustomer()
     {
         var service = BuildService(new HttpResponseMessage(HttpStatusCode.NoContent));
 
         var result = await service.SetAsPrimaryAsync(Guid.CreateVersion7());
 
-        result.Success.Should().BeFalse();
-        result.Message.Should().Contain("not supported");
+        result.Success.Should().BeTrue();
+        result.Message.Should().Contain("updated");
     }
 
     private static CustomerDomainAccountService BuildService(HttpResponseMessage response, Action<HttpRequestMessage>? capture = null)
@@ -66,6 +66,6 @@ public class CustomerAddressDeleteServiceTests
         authService.Setup(x => x.InitializeAsync()).Returns(Task.CompletedTask);
         authService.Setup(x => x.CurrentUser).Returns(new UserDto { Id = Guid.NewGuid(), Email = "jamie@example.com" });
 
-        return new CustomerDomainAccountService(factory.Object, authService.Object, new FakeAccountService(authService.Object), NullLogger<CustomerDomainAccountService>.Instance);
+        return new CustomerDomainAccountService(factory.Object, authService.Object, null!, NullLogger<CustomerDomainAccountService>.Instance);
     }
 }

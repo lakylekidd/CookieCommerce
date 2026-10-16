@@ -1,4 +1,4 @@
-﻿@page "/backoffice/products/"
+@page "/backoffice/products/"
 @page "/backoffice/products/{ActiveProductId:guid}"
 @using CookieCommerce.Web.Components.Backoffice.ProductsArea.CreateProductModalArea
 @using CookieCommerce.Web.Models.Backoffice
@@ -32,7 +32,7 @@
         </svg>
         <span>New Product</span>
     </button>
-    <CreateNewProductModal @ref="CreateModal" OnProductCreated="StateHasChanged" />
+    <CreateNewProductModal @ref="CreateModal" OnProductCreated="RefreshInventory" />
 </div>
 
 <div class="grid grid-cols-12 gap-6 mb-8 items-start">
@@ -96,7 +96,6 @@
     {
         CreateModal?.Open();
     }
-
     private void HandleMainImageChanged(SelectedInventoryItem.ProductMainImageChangedArgs args)
     {
         var tableItem = InventoryItems.FirstOrDefault(p => p.ProductId == args.ProductId);

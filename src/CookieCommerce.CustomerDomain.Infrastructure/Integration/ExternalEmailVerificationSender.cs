@@ -53,6 +53,7 @@ public sealed class ExternalEmailVerificationSender : IEmailVerificationDelivery
         var externalPayload = new
         {
             customerId = payload.CustomerId,
+            pendingEmail = payload.PendingEmail,
             purpose = payload.Purpose,
             tokenReference = payload.TokenReference,  // reference only, not raw token
             expiresAtUtc = payload.ExpiresAtUtc,
@@ -63,6 +64,7 @@ public sealed class ExternalEmailVerificationSender : IEmailVerificationDelivery
         };
 
         var client = _httpClientFactory.CreateClient("email-delivery");
+        client.DefaultRequestHeaders.Add("X-Communications-Key", _options.ServiceKey);
         var response = await client.PostAsJsonAsync(_options.ExternalDeliveryEndpoint, externalPayload, cancellationToken);
 
         if (!response.IsSuccessStatusCode)

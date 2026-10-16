@@ -1,4 +1,4 @@
-﻿@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Models.Products
 @using CookieCommerce.Web.Services
 @using Microsoft.AspNetCore.Components.Forms
 @rendermode InteractiveServer
@@ -206,7 +206,7 @@
 
     <td class="py-4 px-2 text-right @(isDeleting ? "py-0 transition-all duration-500" : "")">
         <div class="flex items-center justify-end gap-3">
-            <div class="relative group">      
+            <div class="relative group">
                 <button @onclick="HandleDelete"
                         type="button"
                         aria-label="@($"Delete variant {Variant.Name}")"
@@ -225,7 +225,7 @@
                     }
                 </button>
             </div>
-        
+
             @if (isExpanded)
             {
                 <div class="relative group">
@@ -270,7 +270,7 @@
 
 @if(isExpanded)
 {
-    <SelectedInventoryVariantSkus 
+    <SelectedInventoryVariantSkus
         VariantSkus="@Variant.Skus"
         VariantSkusChanged="@ReloadVariantDataAsync"
         isLoading="@isLoadingSkus"
@@ -335,12 +335,16 @@
         if (isTogglingStatus) return;
 
         isTogglingStatus = true;
-        var newStatus = !Variant.Active;
-
-        await BackofficeService.ChangeVariantStatusAsync(Variant.Id, newStatus);
-        Variant.Active = newStatus;
-
-        isTogglingStatus = false;
+        var newStatus = e.Value is bool value && value;
+        try
+        {
+            await BackofficeService.ChangeVariantStatusAsync(Variant.Id, newStatus);
+            Variant.Active = newStatus;
+        }
+        finally
+        {
+            isTogglingStatus = false;
+        }
     }
 
     private async Task HandleDelete()
@@ -351,7 +355,7 @@
         StateHasChanged();
 
         await Task.Delay(500);
-        await BackofficeService.DeleteVariantAsync(Variant.Id);       
+        await BackofficeService.DeleteVariantAsync(Variant.Id);
     }
 
     private async Task HandleKeyDownUpdateName(KeyboardEventArgs e)

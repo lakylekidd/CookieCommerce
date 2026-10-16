@@ -17,6 +17,8 @@
 mono_crash.*
 
 # Build results
+.data-protection/
+.product-media/
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/

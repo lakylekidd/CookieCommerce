@@ -1,4 +1,4 @@
-﻿@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Models.Products
 @using CookieCommerce.Web.Services
 @rendermode InteractiveServer
 @inject IBackofficeService BackofficeService
@@ -37,7 +37,7 @@
             <span class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Qty</span>
         </div>
     </td>
-    <td class="px-6 py-5 text-right" @onclick="HandleStatusToggle" @onclick:stopPropagation="true">
+    <td class="px-6 py-5 text-right" @onclick:stopPropagation="true">
         <div class="flex flex-col items-end gap-1">
             <label class="relative inline-flex items-center cursor-pointer" for="@StatusControlId">
                 <span class="sr-only">Toggle product status between Live and Draft</span>
@@ -118,6 +118,5 @@
     {
         await OnSelected.InvokeAsync(Item.ProductId);
     }
-
     public record ProductStatusChangedArgs(Guid ProductId, bool IsActive);
 }

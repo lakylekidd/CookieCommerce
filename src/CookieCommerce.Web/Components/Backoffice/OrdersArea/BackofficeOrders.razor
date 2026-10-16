@@ -1,9 +1,9 @@
-﻿@page "/backoffice/orders/"
+@page "/backoffice/orders/"
 @namespace CookieCommerce.Web.Components.Backoffice.OrdersArea
 @using CookieCommerce.Web.Models.Backoffice
 @using CookieCommerce.Web.Models.Order
 @using CookieCommerce.Web.Services
-@using CookieCommerce.Web.Services.StaticData
+@inject IInventoryService InventoryService
 @rendermode InteractiveServer
 @layout BackofficeLayout
 @inject IBackofficeService BackofficeService
@@ -26,6 +26,7 @@
     }
 </style>
 
+<div class="mb-4"><label>Delivery date <input type="date" @bind="selectedDate" @bind:after="LoadTodaysQuotaOrders" /></label></div>
 <div class="grid grid-cols-12 gap-6 mb-8 items-start">
     <div class="col-span-12 lg:col-span-4 xl:col-span-3">
         <QuotaCookiesRequired IsLoading="isLoadingTodaysQuotaOrders"
@@ -41,6 +42,7 @@
 @code {
 
     private QuotaDateOrdersDto quotaDateOrders = new();
+    private DateTime selectedDate = DateTime.Today;
     private bool isLoadingTodaysQuotaOrders = false;
     private Dictionary<Guid, IReadOnlyList<MissingCookieDto>> shortfalls = new();
 
@@ -52,16 +54,16 @@
     public async Task LoadTodaysQuotaOrders()
     {
         isLoadingTodaysQuotaOrders = true;
-        quotaDateOrders = await BackofficeService.GetQuotaDateOrdersAsync(DateTime.Now.Date);
-        shortfalls = ComputeFifoShortfalls(quotaDateOrders.Orders);
+        quotaDateOrders = await BackofficeService.GetQuotaDateOrdersAsync(selectedDate);
+        var inventory = await InventoryService.GetInventoryForDateAsync(DateOnly.FromDateTime(selectedDate));
+        shortfalls = ComputeFifoShortfalls(quotaDateOrders.Orders, inventory.InventoryQuota.ToDictionary(i => i.Product.ProductId, i => i.QuantityReadyForFulfillment));
         isLoadingTodaysQuotaOrders = false;
     }
 
     private static Dictionary<Guid, IReadOnlyList<MissingCookieDto>> ComputeFifoShortfalls(
-        IEnumerable<QuotaOrderDto> orders)
+        IEnumerable<QuotaOrderDto> orders, Dictionary<Guid, int> stock)
     {
-        var date = DateOnly.FromDateTime(DateTime.Now.Date);
-        var stock = MockInventoryData.GetAvailableStockForDate(date);
+
         var result = new Dictionary<Guid, IReadOnlyList<MissingCookieDto>>();
 
         foreach (var order in orders.OrderBy(o => o.PlacedOn))
@@ -69,10 +71,10 @@
             var missing = new List<MissingCookieDto>();
             foreach (var line in order.Items)
             {
-                if (string.IsNullOrEmpty(line.ProductReference)) continue;
-                int available = stock.GetValueOrDefault(line.ProductReference, 0);
+
+                int available = stock.GetValueOrDefault(line.ProductId, 0);
                 int fulfilled = Math.Min(available, line.Quantity);
-                stock[line.ProductReference] = available - fulfilled;
+                stock[line.ProductId] = available - fulfilled;
                 int missingQty = line.Quantity - fulfilled;
                 if (missingQty > 0)
                     missing.Add(new MissingCookieDto(line.ProductName, missingQty));

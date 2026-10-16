@@ -1,0 +1,53 @@
+@using CookieCommerce.Web.Services.Communications
+@inject AccountAdministrationService Accounts
+
+<section class="bg-card-light dark:bg-card-dark rounded-2xl border border-gray-100 dark:border-gray-800 p-6 space-y-4">
+    <h2 class="font-bold text-lg">Account access</h2>
+    @if (error is not null) { <p role="alert" class="text-red-600">@error</p> }
+    @if (notice is not null) { <p role="status" class="text-green-600">@notice</p> }
+    @if (status is not null)
+    {
+        <p>Status: <strong>@status.State</strong></p>
+        @if (status.LastRecoveryState is not null) { <p class="text-sm">Latest password email: @status.LastRecoveryState</p> }
+        @if (status.FailedAttempts > 0) { <p class="text-sm">Failed login attempts: @status.FailedAttempts</p> }
+        <div class="flex flex-wrap gap-3">
+            @if (status.IdentityId is not null)
+            {
+                <button class="px-4 py-2 rounded-xl border border-gray-300" disabled="@(busy || status.State == "Disabled" || status.FailedAttempts == 0 && status.State != "Locked")" @onclick='() => RunAsync("unblock")'>Unblock account</button>
+                <button class="px-4 py-2 rounded-xl bg-primary text-white" disabled="@busy" @onclick='() => RunAsync("password-reset")'>Send password reset email</button>
+            }
+            else
+            {
+                <p class="text-sm">This customer needs a login identity and a password setup invitation.</p>
+                <button class="px-4 py-2 rounded-xl bg-primary text-white" disabled="@busy" @onclick='() => RunAsync("invite")'>Send password setup invitation</button>
+            }
+        </div>
+        @if (status.State == "Disabled") { <p class="text-sm">This account was disabled. Clearing failed login attempts will not enable it.</p> }
+    }
+    <button class="text-primary text-sm underline" disabled="@busy" @onclick="ReloadAsync">Refresh account status</button>
+</section>
+
+@code {
+    [Parameter] public Guid CustomerId { get; set; }
+    private AccountAccessStatus? status;
+    private string? error, notice;
+    private bool busy;
+    protected override Task OnParametersSetAsync() => ReloadAsync();
+    private async Task ReloadAsync()
+    {
+        try { error = null; status = await Accounts.GetAsync(CustomerId); }
+        catch { error = "Account status is unavailable. Sign in again or refresh to retry."; }
+    }
+    private async Task RunAsync(string action)
+    {
+        busy = true; error = notice = null;
+        try
+        {
+            await Accounts.RunAsync(CustomerId, action);
+            notice = action == "unblock" ? "Failed-login restrictions cleared." : "Email requested. Check delivery and email settings if it does not arrive.";
+            await ReloadAsync();
+        }
+        catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "The account action could not be completed."; }
+        finally { busy = false; }
+    }
+}

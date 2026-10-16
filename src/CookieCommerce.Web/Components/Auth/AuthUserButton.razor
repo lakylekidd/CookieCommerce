@@ -1,4 +1,4 @@
-﻿@using CookieCommerce.Web.Services
+@using CookieCommerce.Web.Services
 @rendermode InteractiveServer
 @inject IAuthService Auth
 @inject NavigationManager Nav
@@ -86,10 +86,10 @@ else
         Nav.NavigateTo(url);
     }
 
-    private void HandleLogout()
+    private async Task HandleLogout()
     {
         isDropdownOpen = false;
-        Auth.Logout();
+        await Auth.LogoutAsync();
         Nav.NavigateTo("/storefront");
     }
 }

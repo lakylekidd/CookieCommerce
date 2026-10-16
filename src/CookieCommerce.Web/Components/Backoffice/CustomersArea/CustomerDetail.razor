@@ -8,6 +8,7 @@
 @inject ICustomerService CustomerService
 
 <div class="transition-colors duration-300 space-y-6">
+    @if (customer is not null) { <AccountAccessCard CustomerId="customer.Id" /> }
 
     @* ── Back link ──────────────────────────────────────────────────────── *@
     <div>
@@ -129,7 +130,7 @@
                     }
                     <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                         <span class="material-symbols-outlined text-base text-gray-400">calendar_today</span>
-                        Member since @customer.MemberSince.ToString("MMM yyyy")
+                        @(customer.MemberSince == DateTime.MinValue ? "Member since: unavailable" : $"Member since {customer.MemberSince:MMM yyyy}")
                     </div>
                 </div>
             </div>

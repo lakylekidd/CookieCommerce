@@ -139,12 +139,12 @@ public class CustomerAddressServiceTests
             LastName = "Baker"
         });
 
-        var fake = new FakeAccountService(authService.Object);
+
 
         return new CustomerDomainAccountService(
             factory.Object,
             authService.Object,
-            fake,
+            null!,
             NullLogger<CustomerDomainAccountService>.Instance);
     }
 }

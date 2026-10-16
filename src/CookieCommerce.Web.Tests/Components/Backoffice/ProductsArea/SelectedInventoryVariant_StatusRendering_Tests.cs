@@ -21,6 +21,7 @@ public sealed class SelectedInventoryVariant_StatusRendering_Tests
 
         source.Should().Contain("@onchange=\"HandleToggleStatusAsync\"");
         source.Should().Contain("disabled=\"@isTogglingStatus\"");
+        source.Should().Contain("Variant status for {Variant.Name}");
         source.Should().NotContain("aria-disabled=\"true\"");
         source.Should().NotContain("Status changes are not saved yet");
     }
@@ -32,6 +33,7 @@ public sealed class SelectedInventoryVariant_StatusRendering_Tests
 
         source.Should().Contain("@onchange=\"HandleStatusToggle\"");
         source.Should().Contain("disabled=\"@IsTogglingStatus\"");
+        source.Should().Contain("Product is Live, click to set to Draft");
         source.Should().NotContain("aria-disabled=\"true\"");
         source.Should().NotContain("Status changes are not saved yet");
     }

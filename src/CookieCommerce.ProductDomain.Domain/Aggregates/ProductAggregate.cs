@@ -68,6 +68,11 @@ public class ProductAggregate : AggregateBase
         Apply(new ProductDeactivated(Id));
     }
 
+    public void Activate()
+    {
+        if (!IsActive) Apply(new ProductActivated(Id));
+    }
+
     public void AddVariant(Guid variantId, string name, decimal price, string currencySymbol = "€", bool isActive = true, string? sku = null)
     {
         ValidateVariantData(variantId, name, price, currencySymbol);
@@ -161,6 +166,9 @@ public class ProductAggregate : AggregateBase
     {
         switch (@event)
         {
+            case ProductActivated:
+                IsActive = true;
+                break;
             case ProductCreated e:
                 Handle(e);
                 break;

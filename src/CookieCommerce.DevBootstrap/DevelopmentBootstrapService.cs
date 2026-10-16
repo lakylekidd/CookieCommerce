@@ -13,6 +13,8 @@ public sealed class DevelopmentBootstrapService(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (hostEnvironment?.IsDevelopment() != true || string.Equals(configuration?["DevelopmentBootstrap:Enabled"], "false", StringComparison.OrdinalIgnoreCase))
+            return;
         logger.LogInformation("Development bootstrap starting");
 
         using var scope = scopeFactory.CreateScope();

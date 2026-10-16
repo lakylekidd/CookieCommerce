@@ -22,6 +22,7 @@ public class KeycloakAuthStateProvider : AuthenticationStateProvider, IDisposabl
         {
             var claims = new List<Claim>
             {
+                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new(ClaimTypes.Name, user.FirstName),
                 new(ClaimTypes.Surname, user.LastName),
                 new(ClaimTypes.Email, user.Email),

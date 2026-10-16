@@ -2,13 +2,14 @@ namespace CookieCommerce.DevBootstrap;
 
 public static class DevelopmentBootstrapData
 {
+    public const string DefaultPassword = "123";
     public static IReadOnlyList<DevelopmentBootstrapCustomer> Customers { get; } =
     [
         new(
             Email: "admin@tiger.com",
             FirstName: "Tiger",
             LastName: "Baker",
-            Password: "Admin123!",
+            Password: DefaultPassword,
             Role: "Admin",
             Addresses:
             [
@@ -21,7 +22,7 @@ public static class DevelopmentBootstrapData
             Email: "customer@tiger.com",
             FirstName: "John",
             LastName: "Doe",
-            Password: "Customer123!",
+            Password: DefaultPassword,
             Role: "User",
             Addresses:
             [
@@ -29,7 +30,8 @@ public static class DevelopmentBootstrapData
                 new("Work", "business", "Keizersgracht", "241", null, "Amsterdam", "1016 EA", "North Holland", "Netherlands", "+31 20 200 0002", false),
                 new("Pickup", "location_on", "Damrak", "50", "B", "Amsterdam", "1012 LL", "North Holland", "Netherlands", "+31 20 200 0003", false),
                 new("Family", "family_restroom", "Nieuwe Binnenweg", "118", null, "Rotterdam", "3015 BE", "South Holland", "Netherlands", "+31 10 200 0004", false)
-            ])
+            ]),
+        .. DevelopmentDemoCustomers.Create()
     ];
 
     public static IReadOnlyList<DevelopmentBootstrapProduct> Products { get; } =

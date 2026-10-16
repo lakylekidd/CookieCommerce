@@ -1,4 +1,4 @@
-﻿@using CookieCommerce.Web.Components.Account.Orders
+@using CookieCommerce.Web.Components.Account.Orders
 @using CookieCommerce.Web.Components.Shared.OrderComponents
 @using CookieCommerce.Web.Components.Shared.ProductComponents
 @using CookieCommerce.Web.Models.Order
@@ -59,13 +59,13 @@
     }
 </style>
 
-<tr class="cursor-pointer transition-all duration-700 relative 
-           @(Order.Status?.StatusId == 4 ? "is-baking-row" : "") 
+<tr class="cursor-pointer transition-all duration-700 relative
+           @(Order.Status?.StatusId == 4 ? "is-baking-row" : "")
            @(Order.Status?.StatusId == 5 ? "is-ready-row" : "")
            @(!(Order.Status?.StatusId == 4 || Order.Status?.StatusId == 5) ? "hover:bg-orange-50/30 dark:hover:bg-gray-800/30" : "")">
     <td class="px-6 py-6 hidden sm:table-cell">
-        <OrderDateAndReference 
-            OrderReference="@Order.OrderReference" 
+        <OrderDateAndReference
+            OrderReference="@Order.OrderReference"
             PlacedOn="@Order.PlacedOn" />
     </td>
     <td>
@@ -84,7 +84,7 @@
                     </span>
                 </div>
             }
-        </div>        
+        </div>
     </td>
     <td>
         <div class="flex flex-col gap-1 items-start">
@@ -102,15 +102,17 @@
         <p class="font-bold">@Order.CurrencySymbol@Order.Total.ToString("N2")</p>
     </td>
     <td>
-        <Handler 
-            Icon="@Order.ShippingInformation.Icon" 
+        <Handler
+            Icon="@Order.ShippingInformation.Icon"
             Name="@Order.ShippingInformation.Carrier" />
     </td>
     @* 🐯 KITCHEN ACTIONS *@
     <td class="px-6 py-4 text-right">
+        <a href="@($"/backoffice/orders/{Order.Id}/invoice")" @onclick:stopPropagation="true" class="text-primary underline mr-2" title="Download or email invoice">Invoice</a>
+        @if (orderError is not null) { <p role="alert" class="text-red-600">@orderError</p> }
         @if (Order.Status?.StatusId == 2) @* Confirmed *@
         {
-            <button @onclick="StartProcessing" @onclick:stop="true"
+            <button @onclick="StartProcessing" @onclick:stopPropagation="true"
                     class="cursor-pointer size-10 inline-flex items-center justify-center bg-white dark:bg-stone-900 border-2 border-orange-200 dark:border-stone-700 text-orange-500 hover:border-orange-500 hover:bg-orange-500 hover:text-white rounded-full transition-all shadow-sm active:scale-90">
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -123,7 +125,7 @@
             <div class="flex flex-row items-center justify-end gap-1">
                 @if (Shortfalls.Count > 0)
                 {
-                    <button disabled @onclick:stop="true"
+                    <button disabled @onclick:stopPropagation="true"
                             class="opacity-40 cursor-not-allowed size-10 inline-flex items-center justify-center bg-white dark:bg-stone-900 border-2 border-emerald-200 dark:border-emerald-900/50 text-emerald-500 rounded-full shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
@@ -132,7 +134,7 @@
                 }
                 else
                 {
-                    <button @onclick="ReadyForPickup" @onclick:stop="true"
+                    <button @onclick="ReadyForPickup" @onclick:stopPropagation="true"
                             class="cursor-pointer size-10 inline-flex items-center justify-center bg-white dark:bg-stone-900 border-2 border-emerald-200 dark:border-emerald-900/50 text-emerald-500 hover:border-emerald-500 hover:bg-emerald-500 hover:text-white rounded-full transition-all shadow-sm active:scale-90 shadow-emerald-100">
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
@@ -149,38 +151,36 @@
         @* PHASE 3: Ready for Pickup (Static Icon) *@
         else if (Order.Status?.StatusId == 5)
         {
-            <div class="inline-flex items-center justify-center size-10 text-emerald-600 dark:text-emerald-400 animate-pulse">
+            <button type="button" @onclick="MarkDelivered" @onclick:stopPropagation="true" title="Mark collected or delivered" class="inline-flex items-center justify-center size-10 text-emerald-600 dark:text-emerald-400">
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
-            </div>
+            </button>
         }
     </td>
 </tr>
 
 @code {
+    private string? orderError;
+    [Inject] public CookieCommerce.Web.Services.Commerce.BackofficeService Fulfilment { get; set; } = default!;
+    private Task MarkDelivered() => ApplyStatusAsync(() => Fulfilment.MarkDeliveredAsync(Order.Id), 9, "Delivered");
     [Parameter] public QuotaOrderDto Order { get; set; } = new();
     [Parameter] public bool IsLoading { get; set; } = false;
     [Parameter] public EventCallback<QuotaOrderDto> OnStatusUpdated { get; set; }
     [Parameter] public IReadOnlyList<MissingCookieDto> Shortfalls { get; set; } = [];
 
-    private async Task StartProcessing()
+    private Task StartProcessing() => ApplyStatusAsync(() => BackofficeService.SetOrderAsProcessing(Order.Id), 4, "Processing");
+
+    private Task ReadyForPickup() => ApplyStatusAsync(() => BackofficeService.SetOrderAsReadyForPickup(Order.Id), 5, "Ready for Pickup");
+    private async Task ApplyStatusAsync(Func<Task> save, int status, string label)
     {
-        await BackofficeService.SetOrderAsProcessing(Order.Id);
-
-        Order.Status = new OrderStatusDto { StatusId = 4, Status = "Processing" };
-
-        await OnStatusUpdated.InvokeAsync(Order);
-        StateHasChanged();
-    }
-
-    private async Task ReadyForPickup()
-    {
-        await BackofficeService.SetOrderAsReadyForPickup(Order.Id);
-
-        Order.Status = new OrderStatusDto { StatusId = 5, Status = "Ready for Pickup" };
-
-        await OnStatusUpdated.InvokeAsync(Order);
-        StateHasChanged();
+        orderError = null;
+        try
+        {
+            await save();
+            Order.Status = new OrderStatusDto { StatusId = status, Status = label };
+            await OnStatusUpdated.InvokeAsync(Order);
+        }
+        catch (InvalidOperationException ex) { orderError = ex.Message; }
     }
 }

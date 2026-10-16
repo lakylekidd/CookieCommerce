@@ -47,6 +47,7 @@ public class CustomerProjection : SingleStreamProjection<CustomerReadModel, Guid
         return new CustomerReadModel
         {
             Id = @event.CustomerId,
+            CreatedAtUtc = @event.CreatedAtUtc,
             Email = email,
             FirstName = firstName,
             LastName = lastName,

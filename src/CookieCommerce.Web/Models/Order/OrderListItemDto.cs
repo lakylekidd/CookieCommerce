@@ -16,7 +16,7 @@ public class OrderListItemDto
     public OrderStatusDto Status { get; set; } = new();
     public string CurrencySymbol { get; set; } = "$";
     public decimal Total { get; set; }
-    public int RewardPointsEarned => (int)(Total * 10);
+    public int RewardPointsEarned { get; set; }
 }
 
 public class OrderListItemProductDto

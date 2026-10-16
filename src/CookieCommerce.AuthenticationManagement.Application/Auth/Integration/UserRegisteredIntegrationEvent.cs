@@ -9,6 +9,7 @@ namespace CookieCommerce.AuthenticationManagement.Application.Auth.Integration;
 public sealed class UserRegisteredIntegrationEvent
 {
     public Guid UserId { get; init; }
+    public Guid? CustomerId { get; init; }
 
     /// <summary>
     /// The Keycloak-native user UUID. This is the JWT <c>sub</c> claim that downstream

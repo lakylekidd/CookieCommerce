@@ -1,8 +1,13 @@
+@inject IJSRuntime JS
+@inject CookieCommerce.Web.Services.IBackofficeService Catalog
+@using CookieCommerce.Web.Services.Commerce
+@inject StoreSettingsService SettingsService
 @page "/backoffice/settings/"
 @rendermode InteractiveServer
 @layout BackofficeLayout
 
 <div class="transition-colors duration-300 space-y-6">
+    @if (saveError is not null) { <p role="alert" class="text-red-600">@saveError</p> }
 
     @* ── Page header ─────────────────────────────────────────────────────── *@
     <div>
@@ -45,6 +50,8 @@
                         <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">@Sections[activeSection].Description</p>
                     </div>
                 </div>
+                @if (activeSection is not (SettingsSection.Email or SettingsSection.Templates or SettingsSection.Invoices))
+                {
                 <button @onclick="SaveSection"
                         class="@(savedVisible
                             ? "bg-green-500 text-white"
@@ -53,7 +60,12 @@
                     <span class="material-symbols-outlined text-base">@(savedVisible ? "check_circle" : "save")</span>
                     @(savedVisible ? "Saved!" : "Save Changes")
                 </button>
+                }
             </div>
+
+            @if (activeSection == SettingsSection.Email) { <EmailSettingsPanel /> }
+            @if (activeSection == SettingsSection.Templates) { <TemplatesSettingsPanel /> }
+            @if (activeSection == SettingsSection.Invoices) { <InvoiceSettingsPanel /> }
 
             @* ═══════════════════════════════════════════════════════════════
                COMMERCE
@@ -482,7 +494,7 @@
                     </div>
                     <div class="flex items-center justify-between gap-6 px-6 py-4">
                         <div>
-                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Browser Push Notifications</p>
+                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Browser Notifications</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Show OS-level push notifications for new orders, even when the tab is in the background.</p>
                         </div>
                         <Toggle @bind-Value="browserPushNotifications" />
@@ -576,7 +588,7 @@
 
 @code {
     @* ── Section definitions ──────────────────────────────────────────────── *@
-    private enum SettingsSection { Commerce, Promotions, Loyalty, Inventory, Notifications, Appearance }
+    private enum SettingsSection { Commerce, Promotions, Loyalty, Inventory, Notifications, Appearance, Email, Templates, Invoices }
 
     private record SectionMeta(string Label, string Icon, string Description);
 
@@ -588,17 +600,12 @@
         [SettingsSection.Inventory]     = new("Inventory",         "inventory_2",    "Batch production defaults and stock alert thresholds."),
         [SettingsSection.Notifications] = new("Notifications",     "notifications",  "Admin alerts for orders, low stock, and customer events."),
         [SettingsSection.Appearance]    = new("Appearance",        "palette",        "Storefront copy, product badges, and theme preferences."),
+        [SettingsSection.Email]         = new("Email", "mail", "Outbound email, password recovery and delivery status."),
+        [SettingsSection.Templates]     = new("Templates", "description", "Edit and preview customer emails and the PDF invoice layout."),
+        [SettingsSection.Invoices]      = new("Invoices", "receipt_long", "Company details, invoice numbering and automatic invoice emails."),
     };
 
-    private static readonly (string Ref, string Name)[] CookieOptions =
-    [
-        ("COOKIE-001", "Chocolate Chunk"),
-        ("COOKIE-002", "Matcha White Chocolate"),
-        ("COOKIE-003", "Hazelnut Praline"),
-        ("COOKIE-004", "Red Velvet"),
-        ("COOKIE-005", "Caramel Sea Salt"),
-        ("COOKIE-006", "Cocoa White Chocolate Chip"),
-    ];
+    private (string Ref, string Name)[] CookieOptions = [];
 
     @* ── Active section ──────────────────────────────────────────────────── *@
     private SettingsSection activeSection = SettingsSection.Commerce;
@@ -607,12 +614,43 @@
     @* ── Save state ───────────────────────────────────────────────────────── *@
     private bool savedVisible = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        var config = await SettingsService.GetAsync();
+        CookieOptions = (await Catalog.GetInventoryItemsAsync()).Select(p => (Ref: p.ProductId.ToString(), Name: p.ProductName)).ToArray();
+        orderReferencePrefix = config.OrderReferencePrefix;
+        freeShippingThreshold = config.FreeShippingThreshold;
+        standardShippingCost = config.StandardShippingCost;
+        vatRate = config.VatRate;
+        nextDayDeliveryCutoff = config.NextDayDeliveryCutoff;
+        allowGuestCheckout = config.AllowGuestCheckout;
+        allowOrderNotes = config.AllowOrderNotes;
+        maxItemsPerOrder = config.MaxItemsPerOrder;
+        promoCodes = config.Promotions.Select(p => new PromoCodeEntry { Code = p.Code, Description = p.Description, Discount = p.Discount, IsPercentage = p.IsPercentage, IsActive = p.IsActive }).ToList();
+        foreach (var field in GetType().GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic))
+            if (config.AdditionalSettings.TryGetValue(field.Name, out var value)) field.SetValue(this, System.Text.Json.JsonSerializer.Deserialize(value, field.FieldType));
+    }
+    private string? saveError;
     private async Task SaveSection()
     {
-        savedVisible = true;
-        StateHasChanged();
-        await Task.Delay(2400);
-        savedVisible = false;
+        saveError = null;
+        try
+        {
+            var config = new CommerceSettings
+            {
+                OrderReferencePrefix = orderReferencePrefix, FreeShippingThreshold = freeShippingThreshold,
+                StandardShippingCost = standardShippingCost, VatRate = vatRate, NextDayDeliveryCutoff = nextDayDeliveryCutoff,
+                AllowGuestCheckout = allowGuestCheckout, AllowOrderNotes = allowOrderNotes, MaxItemsPerOrder = maxItemsPerOrder,
+                Promotions = promoCodes.Select(p => new PromotionDefinition { Code = p.Code.Trim().ToUpperInvariant(), Description = p.Description, Discount = p.Discount, IsPercentage = p.IsPercentage, IsActive = p.IsActive }).ToList()
+            };
+            foreach (var field in GetType().GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic))
+                if (field.FieldType == typeof(int) || field.FieldType == typeof(decimal) || field.FieldType == typeof(string) || field.FieldType == typeof(bool))
+                    if (field.Name is not "savedVisible" and not "showAddPromoForm" and not "saveError") config.AdditionalSettings[field.Name] = System.Text.Json.JsonSerializer.Serialize(field.GetValue(this));
+            await SettingsService.SaveAsync(config);
+            if (browserPushNotifications) await JS.InvokeVoidAsync("requestCommerceNotifications");
+            savedVisible = true;
+        }
+        catch (Exception ex) { saveError = ex.Message; savedVisible = false; }
     }
 
     @* ── Commerce ─────────────────────────────────────────────────────────── *@

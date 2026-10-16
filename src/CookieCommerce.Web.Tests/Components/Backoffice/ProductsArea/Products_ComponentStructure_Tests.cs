@@ -30,7 +30,7 @@ public sealed class Products_ComponentStructure_Tests
         var source = ProductsAreaSource.ReadComponent("Products.razor");
 
         source.Should().Contain("<CreateNewProductModal");
-        source.Should().Contain("OnProductCreated=\"StateHasChanged\"");
+        source.Should().Contain("OnProductCreated=\"RefreshInventory\"");
         source.Should().Contain("CreateModal?.Open()");
     }
 }

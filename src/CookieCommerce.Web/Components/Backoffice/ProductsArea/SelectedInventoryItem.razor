@@ -1,4 +1,4 @@
-﻿@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Models.Products
 @using CookieCommerce.Web.Services
 @using Microsoft.AspNetCore.Components.Forms
 @rendermode InteractiveServer
@@ -262,7 +262,9 @@ else
 
         await BackofficeService.UpsertProductVariantsAsync(InventoryItem.ProductId, variants);
 
-        InventoryItem.Variants = _variantRows.Select(CloneVariant).ToList();
+        InventoryItem.Variants = (await BackofficeService.GetInventoryItemAsync(InventoryItem.ProductId)).Variants;
+        _variantRows.Clear();
+        _variantRows.AddRange(InventoryItem.Variants.Select(CloneVariant));
         _variantSaveMessage = "Variants saved.";
         _isSavingVariants = false;
     }

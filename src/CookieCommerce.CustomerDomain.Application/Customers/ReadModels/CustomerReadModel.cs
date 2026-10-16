@@ -4,6 +4,7 @@ namespace CookieCommerce.CustomerDomain.Application.Customers.ReadModels;
 
 public class CustomerReadModel
 {
+    public DateTimeOffset? CreatedAtUtc { get; set; }
     public Guid Id { get; set; }
     public string Email { get; set; } = null!;
     public string? PendingEmail { get; set; }

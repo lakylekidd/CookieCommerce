@@ -1,0 +1,3 @@
+.communication-editor label { display: block; font-size: .875rem; font-weight: 600; }
+.communication-editor input:not([type=checkbox]), .communication-editor select { display: block; width: 100%; margin-top: .35rem; padding: .6rem; border: 1px solid #9ca3af; border-radius: .65rem; background: transparent; }
+.communication-editor th, .communication-editor td { padding: .5rem; border-bottom: 1px solid #9ca3af55; }

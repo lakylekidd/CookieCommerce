@@ -1,19 +1,19 @@
-﻿<div class="bg-gradient-to-r from-orange-400 to-amber-500
-            dark:from-orange-100/80 dark:to-amber-900/60
-            rounded-xl p-8 text-white shadow-lg relative overflow-hidden
-            border-b-4 border-orange-600/20 dark:border-amber-500/20">
-
-    <div class="relative z-10">
-        <h1 class="text-3xl font-display font-bold mb-2">Welcome back, Cookie Lover! 🍪</h1>
-        <p class="opacity-90 max-w-lg dark:text-orange-100">
-            Your next box of artisanal treats is just a few clicks away. You have
-            <span class="font-bold underline decoration-white/30">150 points</span> to redeem!
-        </p>
-        <button class="cursor-pointer mt-6 bg-white dark:bg-primary text-primary dark:text-white font-bold py-2 px-6 rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-orange-600 transition-colors">
-            Redeem Points
-        </button>
+@inject CookieCommerce.Web.Services.Commerce.CartService Cart
+@inject CookieCommerce.Web.Services.Commerce.StoreSettingsService Settings
+@if (visible)
+{
+    <div class="bg-primary text-white rounded-2xl p-6 mb-6">
+        <h2 class="font-display font-bold text-2xl">Welcome back!</h2>
+        <p>You have @balance reward points available. 100 points = €1.</p>
+        <a href="/shop/cart" class="underline">Redeem points in your cart</a>
     </div>
-
-    <div class="absolute -right-10 -bottom-20 w-64 h-64 bg-white dark:bg-orange-500 opacity-20 rounded-full blur-3xl"></div>
-    <div class="absolute right-20 -top-10 w-32 h-32 bg-yellow-300 dark:bg-amber-400 opacity-30 dark:opacity-10 rounded-full blur-2xl"></div>
-</div>
+}
+@code {
+    private int balance;
+    private bool visible;
+    protected override async Task OnInitializedAsync()
+    {
+        visible = (await Settings.GetAsync()).Preference("showPointsOnStorefront", true);
+        balance = await Cart.GetRewardBalanceAsync();
+    }
+}

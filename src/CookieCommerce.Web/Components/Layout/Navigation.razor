@@ -1,4 +1,4 @@
-﻿@using CookieCommerce.Web.Components.Auth
+@using CookieCommerce.Web.Components.Auth
 @using CookieCommerce.Web.Components.Layout
 @using CookieCommerce.Web.Components.Storefront.Cart
 @using CookieCommerce.Web.Components.Shared
@@ -81,7 +81,7 @@
                     <span class="w-full text-center py-2 font-display font-bold uppercase opacity-50 text-sm tracking-wider">
                         Welcome, @Auth.CurrentUser!.FirstName 🐯
                     </span>
-                    <button @onclick="() => { Auth.Logout(); ToggleMenu(); }" class="w-full py-4 rounded-2xl bg-red-50 dark:bg-red-500/10 text-red-500 font-bold">
+                    <button @onclick="async () => { await Auth.LogoutAsync(); ToggleMenu(); }" class="w-full py-4 rounded-2xl bg-red-50 dark:bg-red-500/10 text-red-500 font-bold">
                         Sign Out
                     </button>
                 }

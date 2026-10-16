@@ -43,6 +43,7 @@ public class CustomerAggregate : AggregateBase
 
         Apply(new CustomerCreated
         {
+            CreatedAtUtc = DateTimeOffset.UtcNow,
             CustomerId = id,
             EncryptedEmail = encryptedEmail,
             EncryptedFirstName = encryptedFirstName,

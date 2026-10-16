@@ -1,0 +1,48 @@
+@page "/account/orders/{OrderId:guid}/invoice"
+@using CookieCommerce.Web.Models.Order
+@using CookieCommerce.Web.Services
+@layout AccountLayout
+@rendermode InteractiveServer
+@inject IAccountService Account
+@inject IJSRuntime JS
+
+<section class="w-full bg-white dark:bg-surface-dark rounded-2xl p-8">
+    @if (order is null)
+    {
+        <p>Invoice not found for this account.</p>
+    }
+    else
+    {
+        <h1 class="text-3xl font-bold">Order receipt @order.OrderReference</h1>
+        <InvoiceActions OrderId="OrderId" />
+        <p>@order.PlacedOn.ToString("d MMMM yyyy") · @order.Status.Status</p>
+        <address class="my-6">
+            @order.BillingAddress.FirstName @order.BillingAddress.LastName<br />
+            @order.BillingAddress.Street @order.BillingAddress.HouseNumber @order.BillingAddress.HouseNumberAddition<br />
+            @order.BillingAddress.PostalCode @order.BillingAddress.City<br />@order.BillingAddress.Country
+        </address>
+        <table class="w-full my-6">
+            <thead><tr><th class="text-left">Item</th><th>Quantity</th><th>Unit price</th><th>Total</th></tr></thead>
+            <tbody>
+                @foreach (var line in order.Products)
+                {
+                    <tr><td>@line.ProductName (@line.ProductVariantName)</td><td class="text-center">@line.Quantity</td><td class="text-center">€@line.UnitPrice.ToString("F2")</td><td class="text-center">€@line.TotalPrice.ToString("F2")</td></tr>
+                }
+            </tbody>
+        </table>
+        <p>Subtotal: €@order.SubTotalPrice.ToString("F2")</p>
+        <p>Shipping: €@order.Shipping.ToString("F2")</p>
+        <p>Promotion discount: €@order.GetPromotionDiscount().ToString("F2")</p>
+        <p>Reward discount: €@order.RewardDiscount.ToString("F2")</p>
+        <p class="font-bold mt-4">Total: €@order.Total.ToString("F2")</p>
+        <button @onclick="PrintAsync" class="mt-6 text-primary underline print:hidden">Print or save receipt as PDF</button>
+    }
+</section>
+
+@code {
+    [Parameter] public Guid OrderId { get; set; }
+    private OrderDto? order;
+    protected override async Task OnParametersSetAsync() => order = await Account.GetOrderByIdAsync(OrderId);
+    private async Task PrintAsync() => await JS.InvokeVoidAsync("window.print");
+}
+

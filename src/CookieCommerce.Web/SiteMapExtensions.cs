@@ -1,46 +1,33 @@
-﻿namespace CookieCommerce.Web;
+using System.Xml.Linq;
+using CookieCommerce.Web.Services.Payments;
+using CookieCommerce.Web.Services.Products;
+using Microsoft.Extensions.Options;
+
+namespace CookieCommerce.Web;
 
 public static class SiteMapExtensions
 {
-    public static void AddSiteMapOptions(this WebApplication? app)
+    public static void AddSiteMapOptions(this WebApplication app)
     {
-        // Dynamic Sitemap Endpoint
-        app.MapGet("/sitemap.xml", async (HttpContext context) =>
+        app.MapGet("/sitemap.xml", async (HttpContext context, ICookieService catalog, IOptions<PaymentOptions> payments) =>
         {
-            var host = "https://tigervancookie.nl";
-
-            // TODO: Replace with your dynamic data
-            // In the future, you'd fetch your products from a DB here
-            // var cookies = await dbContext.Cookies.Select(c => c.Slug).ToListAsync();
-            var staticPages = new[] { "" }; // Add other static routes here, like "about", "contact"
-
-            var sb = new System.Text.StringBuilder();
-            sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            sb.AppendLine("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">");
-
-            foreach (var page in staticPages)
-            {
-                sb.AppendLine("  <url>");
-                sb.AppendLine($"    <loc>{host}/{page}</loc>");
-                sb.AppendLine($"    <lastmod>{DateTime.UtcNow:yyyy-MM-dd}</lastmod>");
-                sb.AppendLine("    <priority>1.0</priority>");
-                sb.AppendLine("  </url>");
-            }
-
-            sb.AppendLine("</urlset>");
-
-            return Results.Content(sb.ToString(), "application/xml");
+            var origin = PublicOrigin(context, payments.Value);
+            var pages = new[] { "/", "/shop", "/our-story", "/legal/faq", "/legal/terms", "/legal/privacy", "/legal/cookies", "/legal/refund" };
+            var products = await catalog.GetFavoriteCookiesAsync(context.RequestAborted);
+            XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
+            var urls = pages.Concat(products.Select(p => $"/shop/cookie/{p.Id}")).Distinct();
+            var document = new XDocument(new XDeclaration("1.0", "utf-8", null),
+                new XElement(ns + "urlset", urls.Select(path => new XElement(ns + "url", new XElement(ns + "loc", new Uri(origin, path).AbsoluteUri)))));
+            return Results.Content(document.ToString(), "application/xml");
         });
     }
 
-    public static void AddRobots(this WebApplication? app)
+    public static void AddRobots(this WebApplication app)
     {
-        app.MapGet("/robots.txt", () =>
-        {
-            var robots = "User-agent: *\n" +
-                         "Allow: /\n" +
-                         $"Sitemap: https://tigervancookie.nl/sitemap.xml";
-            return Results.Text(robots);
-        });
+        app.MapGet("/robots.txt", (HttpContext context, IOptions<PaymentOptions> payments) =>
+            Results.Text($"User-agent: *\nAllow: /\nDisallow: /account\nDisallow: /backoffice\nDisallow: /auth\nDisallow: /shop/checkout\nSitemap: {new Uri(PublicOrigin(context, payments.Value), "/sitemap.xml").AbsoluteUri}\n"));
     }
+
+    private static Uri PublicOrigin(HttpContext context, PaymentOptions payments) =>
+        Uri.TryCreate(payments.PublicBaseUrl, UriKind.Absolute, out var configured) ? configured : new Uri($"{context.Request.Scheme}://{context.Request.Host}");
 }

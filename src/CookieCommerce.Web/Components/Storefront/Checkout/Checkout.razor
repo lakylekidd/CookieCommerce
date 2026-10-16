@@ -1,144 +1,123 @@
-﻿@page "/shop/checkout"
-@using System.ComponentModel.DataAnnotations
+@page "/shop/checkout"
 @using CookieCommerce.Web.Models.Auth
 @using CookieCommerce.Web.Models.Cart
 @using CookieCommerce.Web.Models.Addresses
 @using CookieCommerce.Web.Models.Checkout
 @using CookieCommerce.Web.Services
-
+@using CookieCommerce.Web.Services.Commerce
 @rendermode InteractiveServer
 @layout CheckoutLayout
+@inject IAuthService Auth
+@inject NavigationManager Navigation
+@inject ICartService CartService
+@inject ICheckoutService CheckoutService
 
 <main class="container mx-auto px-6 py-12">
     <div class="flex flex-col lg:flex-row gap-6">
-
         <div class="lg:w-2/3 space-y-6">
-
-            <CheckoutCustomerInformation CurrentStep="@currentStep" 
-                                         User="@User" 
-                                         @bind-CheckoutEmail="@CheckoutEmail" 
-                                         @bind-ShouldCreateAccount="@shouldCreateAccount" 
-                                         @bind-Password="@Password" 
-                                         @bind-ConfirmPassword="@ConfirmPassword"
-                                         CurrentStepChanged="(step) => GoToStep(step)"/>
-
-            <ContactAndShipping @bind-CurrentStep="@currentStep"
-                                @bind-SelectedShippingAddress="@shippingAddressDto"
-                                @bind-SelectedBillingAddress="@billingAddressDto"
-                                @bind-SameAsShipping="@SameAsShipping"
-                                HasExistingAccount="@(User is not null)" />
-
-
-            <DeliveryMethodSelector @bind-CurrentStep="@currentStep"
-                                    SelectedShippingAddress="@shippingAddressDto"
-                                    @bind-SelectedDelivery="@selectedDelivery" />
-
-            <!-- Payment Method -->
-            <div class=" @(currentStep < 4 ? "opacity-60" : "cookie-shadow") bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
-                <div class="p-6 flex items-center justify-between border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
-                    <div class="flex items-center gap-4">
-                        <span class="@(currentStep >= 4 ? "bg-primary text-white" : "bg-gray-200 text-gray-500") w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">4</span>
-                        <h2 class="font-display font-bold text-xl dark:text-amber-50">Payment Method</h2>
-                    </div>
-                </div>
-                @if(currentStep == 4)
-                {
-                    <div class="p-8 space-y-6">
-                        <div class="flex gap-4 mb-6">
-                            <button @onclick='() => paymentMethod = "card"' type="button"
-                                    class="cursor-pointer flex-1 py-3 px-6 rounded-full border-2 transition-all flex items-center justify-center gap-2 font-bold
-                                        @(paymentMethod == "card"
-                                                        ? "border-primary text-primary bg-amber-50 dark:bg-primary/10"
-                                                        : "border-amber-100 dark:border-amber-900/30 text-gray-400 dark:text-gray-500 hover:border-amber-200")">
-                                <span class="material-symbols-outlined">credit_card</span> Credit Card
-                            </button>
-
-                            <button @onclick='() => paymentMethod = "paypal"' type="button"
-                                    class="cursor-pointer flex-1 py-3 px-6 rounded-full border-2 transition-all flex items-center justify-center gap-2 font-bold
-                                        @(paymentMethod == "paypal"
-                                                        ? "border-primary text-primary bg-amber-50 dark:bg-primary/10"
-                                                        : "border-amber-100 dark:border-amber-900/30 text-gray-400 dark:text-gray-500 hover:border-amber-200")">
-                                <span class="material-symbols-outlined">payments</span> PayPal
-                            </button>
-                        </div>
-
-                        @if (paymentMethod == "card")
-                        {
-                            <div class="space-y-4 animate-in fade-in duration-300">
-                                @* NOTE: If using Stripe, you'd replace these manual inputs 
-                                   with a single <div id="payment-element"></div> 
-                                *@
-                            <div>
-                                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Card Number</label>
-                                    <div class="relative">
-                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
-                                               placeholder="0000 0000 0000 0000" type="text" />
-                                        <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 dark:text-amber-100/30">lock</span>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Expiry Date</label>
-                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
-                                               placeholder="MM/YY" type="text" />
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">CVC</label>
-                                        <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white"
-                                               placeholder="123" type="text" />
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="p-8 border-2 border-dashed border-amber-100 dark:border-amber-900/30 rounded-2xl text-center animate-in fade-in duration-300">
-                                <p class="text-gray-500 dark:text-amber-100/50">You will be redirected to PayPal to complete your purchase safely.</p>
-                            </div>
-                        }
-                    </div>
-                }
-            </div>
-            <!-- Payment Method -->
+            <CheckoutCustomerInformation CurrentStep="currentStep" User="User"
+                @bind-CheckoutEmail="CheckoutEmail" @bind-ShouldCreateAccount="shouldCreateAccount"
+                @bind-Password="Password" @bind-ConfirmPassword="ConfirmPassword"
+                CurrentStepChanged="step => currentStep = step" />
+            <ContactAndShipping @bind-CurrentStep="currentStep" @bind-SelectedShippingAddress="shippingAddressDto"
+                @bind-SelectedBillingAddress="billingAddressDto" @bind-SameAsShipping="SameAsShipping"
+                HasExistingAccount="@(User is not null)" />
+            <DeliveryMethodSelector @bind-CurrentStep="currentStep" SelectedShippingAddress="shippingAddressDto"
+                SelectedDelivery="selectedDelivery" SelectedDeliveryChanged="DeliveryChangedAsync" />
+            @if (currentStep == 4)
+            {
+                <section class="bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 p-8">
+                    <h2 class="font-display font-bold text-xl">Secure payment</h2>
+                    <p class="mt-4">Continue to our payment partner to choose your payment method and complete your purchase.</p>
+                    <p class="mt-4 text-sm">Your order will be confirmed once payment is received.</p>
+                </section>
+            }
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <p role="alert" class="text-red-600 bg-red-50 p-4 rounded-xl">@error</p>
+                <button type="button" @onclick="CancelCheckoutAsync" class="text-primary underline">Cancel checkout and edit cart</button>
+            }
         </div>
-
-        <CheckoutCookieJar AllCheckoutStepsComplete="@(currentStep == 4)" />
-
+        <CheckoutCookieJar AllCheckoutStepsComplete="@(currentStep == 4 && !submitting)" OnCheckout="PlaceOrderAsync" />
     </div>
 </main>
 
 @code {
-private int currentStep = 1;
-private UserDto? User { get; set; }
-private CartDto? Cart { get; set; }
-private bool shouldCreateAccount = false;
-private DeliveryInfoDto? selectedDelivery;
-private string paymentMethod = "card";
-private bool IsLoadingAddress { get; set; }
-private bool IsLoadingBillingAddress { get; set; }
+    [SupplyParameterFromQuery(Name = "cancelled")] public bool Cancelled { get; set; }
+    private int currentStep = 1;
+    private UserDto? User;
+    private bool shouldCreateAccount;
+    private DeliveryInfoDto? selectedDelivery;
+    private string Password = "";
+    private string ConfirmPassword = "";
+    private string CheckoutEmail = "";
+    private AddressBookItemDto? shippingAddressDto;
+    private AddressBookItemDto? billingAddressDto;
+    private bool SameAsShipping = true;
+    private bool submitting;
+    private string? error;
 
-private string Password { get; set; } = string.Empty;
-private string ConfirmPassword { get; set; } = string.Empty;
-
-private string CheckoutEmail { get; set; } = string.Empty;
-
-private AddressBookItemDto? shippingAddressDto;
-private bool SameAsShipping { get; set; } = true;
-private AddressBookItemDto? billingAddressDto;
-
-[Inject] public IAuthService Auth { get; private set; }
-    [Inject] public NavigationManager Navigation { get; private set; }
-    [Inject] public ICartService CartService { get; private set; }
-    [Inject] public ICheckoutService CheckoutService { get; private set; }
-    
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!firstRender) return;
+        await Auth.InitializeAsync();
         User = Auth.CurrentUser;
-        Cart = await CartService.GetCartAsync();
-    }   
-
-    private void GoToStep(int step)
-    {
-        currentStep = step;
+        CheckoutEmail = User?.Email ?? "";
+        if (Cancelled) await CancelCheckoutAsync();
+        StateHasChanged();
     }
+
+    private async Task DeliveryChangedAsync(DeliveryInfoDto? delivery)
+    {
+        selectedDelivery = delivery;
+        if (CartService is CartService persistent) await persistent.SetShippingAsync(delivery?.Price);
+    }
+
+    private async Task CancelCheckoutAsync()
+    {
+        if (CheckoutService is CookieCommerce.Web.Services.Commerce.CheckoutService service && await service.CancelPendingAsync()) Navigation.NavigateTo("/shop/cart");
+        else error = "Payment may already be in progress. Check your order status before trying again.";
+    }
+    private async Task PlaceOrderAsync()
+    {
+        if (submitting) return;
+        error = null;
+        if (shippingAddressDto is null || (!SameAsShipping && billingAddressDto is null) || selectedDelivery is null)
+        { error = "Complete the shipping, billing and delivery steps."; return; }
+        submitting = true;
+        try
+        {
+            AnonymousCheckoutRequest request = User is not null
+                ? new ExistingCustomerCheckoutRequest { UserId = User.Id.ToString() }
+                : shouldCreateAccount
+                    ? new NewCustomerCheckoutRequest { Password = Password, ConfirmPassword = ConfirmPassword }
+                    : new GuestCheckoutRequest();
+            request.CartId = (await CartService.GetCartAsync()).CartId.ToString();
+            request.FristName = shippingAddressDto.FirstName;
+            request.LastName = shippingAddressDto.LastName;
+            request.Email = User?.Email ?? CheckoutEmail;
+            request.ShippingAddress = MapAddress(shippingAddressDto);
+            request.BillingAddress = MapAddress(SameAsShipping ? shippingAddressDto : billingAddressDto!);
+            request.DeliveryMethod = selectedDelivery.Title;
+            request.PaymentMethod = "online";
+            var result = request switch
+            {
+                ExistingCustomerCheckoutRequest customer => await CheckoutService.CheckoutExistingCustomerAsync(customer),
+                NewCustomerCheckoutRequest customer => await CheckoutService.CheckoutNewCustomerAsync(customer),
+                GuestCheckoutRequest guest => await CheckoutService.CheckoutGuestAsync(guest),
+                _ => throw new InvalidOperationException()
+            };
+            if (result.Success && result.PaymentUrl is not null) Navigation.NavigateTo(result.PaymentUrl, forceLoad: true);
+            else error = result.Message;
+        }
+        catch (Exception) { error = "Unable to start payment. Please try again."; }
+        finally { submitting = false; }
+    }
+
+    private static AddressDto MapAddress(AddressBookItemDto address) => new()
+    {
+        FirstName = address.FirstName, LastName = address.LastName,
+        Street = address.Street, HouseNumber = address.HouseNumber, HouseNumberAddition = address.HouseNumberAddition,
+        City = address.City, PostalCode = address.PostalCode, Province = address.Province, Country = address.Country
+    };
 }

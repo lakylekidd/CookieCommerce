@@ -1,0 +1,240 @@
+﻿@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Models.Cart
+@using CookieCommerce.Web.Services
+@using CookieCommerce.Web.Services.Products
+@rendermode InteractiveServer
+@implements IDisposable
+
+@inject ICookieService CookieService
+@inject ICartService CartService
+
+@{
+    var standardClassList = "cookie-shadow group rounded-3xl p-6 transition-all duration-300 hover:-translate-y-2 border relative overflow-hidden flex flex-col";
+    var h3ClassList = "font-display font-bold text-2xl";
+    var spanPriceClassList = "font-display font-bold text-xl";
+    var pClassList = "";
+    var btnClassList = "w-full py-4 font-bold rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg";
+
+    if (IsLimitedEdition)
+    {
+        standardClassList += " rare-card  bg-brand-orange  border-orange-400";
+        h3ClassList += " font-display font-bold text-2xl text-white";
+        spanPriceClassList += " text-white";
+        pClassList += "text-orange-50 leading-relaxed mb-6 opacity-90";
+        btnClassList += "  hover:bg-orange-50 text-brand-orange shadow-black/10";
+    }
+    else
+    {
+        standardClassList += " bg-surface-light dark:bg-surface-dark border-amber-50 dark:border-amber-900/20";
+        h3ClassList += " group-hover:text-primary transition-colors";
+        pClassList += "text-gray-500 dark:text-gray-400 leading-relaxed mb-6";
+        btnClassList += " flex items-center justify-center ";
+    }
+}
+
+<div class="@standardClassList">
+    <a href="/shop/cookie/@Id">
+        @if (IsLimitedEdition)
+        {
+            <div class="rare-find-sash">Rare Find</div>
+        }
+        <div class="relative aspect-square rounded-2xl overflow-hidden mb-6 bg-white/20">
+            <div class="flex transition-transform duration-500 ease-in-out h-full"
+                 style="transform: translateX(-@(_currentVariantIndex * 100)%);">
+                @foreach (var imageUrl in AllImages)
+                {
+                    <div class="w-full h-full flex-shrink-0 overflow-hidden">
+                        <img alt="@CookieTitle"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                             src="@imageUrl" />
+                    </div>
+                }
+            </div>
+
+            @* Best Seller Badge - Keeps z-index higher than images *@
+            <div class="absolute top-3 left-3 flex gap-2 z-10">
+                @if (IsBestSeller)
+                {
+                    <div class="bg-white dark:bg-black/60 backdrop-blur text-xs font-bold px-2 py-1 rounded-md shadow-sm">
+                        Best Seller
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="flex-grow">
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="@h3ClassList">@CookieTitle</h3>
+                <span class="@spanPriceClassList">@CurrencySymbol@DisplayPrice.ToString("F2")</span>
+            </div>
+            <p class="@pClassList">
+                @Description
+            </p>
+        </div>
+    </a>
+
+    @* 🐯 Flex container with a gap *@
+    <div class="flex flex-col sm:flex-row items-stretch gap-3 mt-4">
+
+        @* Variant Selector: Added min-h to force the issue on mobile *@
+        <div class="w-full sm:flex-1 flex items-center justify-between bg-gray-100 dark:bg-white/10 rounded-full p-1 border border-gray-200 dark:border-white/5 h-[50px] min-h-[50px]">
+            <button @onclick="PrevVariant"
+                    class="flex-1 h-full flex items-center justify-start pl-3 hover:text-primary transition-colors cursor-pointer active:scale-90">
+                <span class="material-symbols-outlined text-xl">chevron_left</span>
+            </button>
+
+            <span class="flex-none text-[10px] font-black uppercase tracking-widest px-2 text-center opacity-70 truncate max-w-[120px]">
+                @CurrentVariant?.Title
+            </span>
+
+            <button @onclick="NextVariant"
+                    class="flex-1 h-full flex items-center justify-end pr-3 hover:text-primary transition-colors cursor-pointer active:scale-90">
+                <span class="material-symbols-outlined text-xl">chevron_right</span>
+            </button>
+        </div>
+
+        @* 🐯 The Add Button: Force h-[50px] and reset vertical padding with !py-0 *@
+        <div class="relative w-full sm:flex-1">
+            <button @onclick="async () => await AddToCartAsync()"
+                    disabled="@(isAddingToCart || showCheckMark)"
+                    class="@btnClassList w-full cursor-pointer flex items-center justify-center gap-3 transition-all duration-500 h-[50px] min-h-[50px] !py-0
+                @(showCheckMark ? "bg-emerald-600 text-white"
+                                                : IsLimitedEdition ? "bg-white text-brand-orange"
+                                                                   : "bg-primary text-white")
+                disabled:opacity-90 disabled:cursor-not-allowed">
+
+                @if (isAddingToCart)
+                {
+                    <svg class="animate-spin size-5 text-white" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="font-bold text-sm">Adding...</span>
+                }
+                else if (showCheckMark)
+                {
+                    <span class="material-symbols-outlined text-white animate-in zoom-in duration-300">check_circle</span>
+                    <span class="font-bold text-sm">Added!</span>
+                }
+                else
+                {
+                    <span class="material-symbols-outlined">add_shopping_cart</span>
+                    <span class="font-bold text-sm">Add</span>
+                }
+            </button>
+            @if (CartQuantity > 0)
+            {
+                <span class="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full min-w-[22px] h-[22px] flex items-center justify-center px-1 shadow-md ring-2 ring-white dark:ring-surface-dark animate-in zoom-in duration-200 pointer-events-none">
+                    @CartQuantity
+                </span>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public bool IsBestSeller { get; set; }
+    [Parameter] public bool IsLimitedEdition { get; set; }
+    [Parameter] public string ImageUrl { get; set; } = string.Empty;
+    [Parameter] public string CookieTitle { get; set; } = string.Empty;
+    [Parameter] public string Description { get; set; } = string.Empty;
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [Parameter] public decimal Price { get; set; }
+
+    // Variant Tracking
+    private int _currentVariantIndex = 0;
+
+    private StorefrontProductDto? product = null;
+    private bool isAddingToCart { get; set; } = false;
+    private bool showCheckMark = false;
+    private List<CartItemDto> _cartItems = [];
+    private int CartQuantity => _cartItems
+        .Where(i => Variants.Any(v => v.Id == i.ProductVariantId))
+        .Sum(i => i.Quantity);
+    private decimal DisplayPrice => CurrentVariant?.Price ?? Price;
+    private string DisplayTitle => CurrentVariant != null ? $"{CookieTitle} ({CurrentVariant.Title})" : CookieTitle;
+    private string DisplayImage => CurrentVariant?.ImageUrls.FirstOrDefault() ?? ImageUrl;
+
+    private List<string> AllImages => Variants != null && Variants.Any()
+        ? Variants.Select(v => v.ImageUrls.FirstOrDefault() ?? ImageUrl).ToList()
+        : new List<string> { ImageUrl };
+    
+    private StorefrontProductVariantDto? CurrentVariant =>
+        Variants != null && Variants.Any() ? Variants.ElementAt(_currentVariantIndex) : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        product = await CookieService.GetProductByIdAsync(Id);
+        CartService.OnCartUpdated += HandleCartUpdated;
+        await RefreshCartAsync();
+    }
+
+    private async void HandleCartUpdated()
+    {
+        await RefreshCartAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RefreshCartAsync()
+    {
+        var cart = await CartService.GetCartAsync();
+        _cartItems = cart.Items;
+    }
+
+    public void Dispose()
+    {
+        CartService.OnCartUpdated -= HandleCartUpdated;
+    }
+
+    private void NextVariant()
+    {
+        if (Variants == null || Variants.Count <= 1) return;
+        _currentVariantIndex = (_currentVariantIndex + 1) % Variants.Count;
+    }
+
+    private void PrevVariant()
+    {
+        if (Variants == null || Variants.Count <= 1) return;
+        _currentVariantIndex = (_currentVariantIndex - 1 + Variants.Count) % Variants.Count;
+    }
+
+    private async Task AddToCartAsync()
+    {
+        if (isAddingToCart || showCheckMark) return;
+
+        isAddingToCart = true;
+        StateHasChanged();
+
+        try
+        {
+            // Simulate the API call to your CartService
+            if (CurrentVariant is not null)
+                await CartService.AddToCartAsync(Id, CurrentVariant.Id, 1);
+            else
+                await CartService.AddToCartAsync(Id, 1);
+
+            // 🐯 Transition to Success
+            isAddingToCart = false;
+            showCheckMark = true;
+            StateHasChanged();
+
+            // Keep the check mark for 2 seconds
+            await Task.Delay(2000);
+        }
+        catch (Exception ex)
+        {
+            // Handle error logic here
+        }
+        finally
+        {
+            showCheckMark = false;
+            isAddingToCart = false;
+            StateHasChanged();
+        }
+    }
+
+    private IReadOnlyList<StorefrontProductVariantDto> Variants =>
+        product?.Variants is ICollection<StorefrontProductVariantDto> collection
+            ? collection.ToList().AsReadOnly()
+            : Array.Empty<StorefrontProductVariantDto>().AsReadOnly();
+}

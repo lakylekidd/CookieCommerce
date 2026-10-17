@@ -34,8 +34,8 @@ public class CustomerProjectionTests
         encryption.Decrypt("encrypted-first", key).Returns("John");
         encryption.Decrypt("encrypted-last", key).Returns("Doe");
         encryption.Decrypt("encrypted-gender", key).Returns("Male");
-        var dob = DateTime.Parse("1986-11-18");
-        encryption.Decrypt("encrypted-dob", key).Returns(dob.ToString("O"));
+        var dob = new DateOnly(1986, 11, 18);
+        encryption.Decrypt("encrypted-dob", key).Returns(dob.ToString("yyyy-MM-dd"));
 
         var projection = new CustomerProjection(encryption);
 
@@ -58,9 +58,9 @@ public class CustomerProjectionTests
         result.Email.Should().Be("test@example.com");
         result.FirstName.Should().Be("John");
         result.LastName.Should().Be("Doe");
-        result.Gender.Should().Be(Gender.Male);
+        result.Gender.Should().Be(CustomerProfileGender.Male);
         result.DateOfBirth.Should().NotBeNull();
-        result.DateOfBirth!.Value.Date.Should().Be(dob.Date);
+        result.DateOfBirth!.Value.Should().Be(dob);
     }
 
     [Fact]
@@ -95,30 +95,48 @@ public class CustomerProjectionTests
     }
 
     [Fact]
-    public void Apply_CustomerAddressAdded_AddsAddressToReadModel()
+    public async Task Apply_CustomerAddressAdded_AddsAddressToReadModel()
     {
         // Arrange
         var encryption = Substitute.For<IEncryptionService>();
         var projection = new CustomerProjection(encryption);
 
         var customerId = Guid.NewGuid();
+        var key = new byte[] { 1, 2, 3 };
+        var session = Substitute.For<IQuerySession>();
+        session.LoadAsync<CustomerKeyRecord>(customerId, Arg.Any<CancellationToken>())
+            .Returns(new CustomerKeyRecord { Id = customerId, Key = key, CreatedAt = DateTime.UtcNow });
+        encryption.Decrypt(Arg.Any<string>(), key).Returns(call => call.ArgAt<string>(0).Replace("enc-", string.Empty));
         var current = new CustomerReadModel
         {
             Id = customerId,
             Email = "test@example.com",
             FirstName = "John",
             LastName = "Doe",
-            Gender = Gender.Male,
+            Gender = CustomerProfileGender.Male,
             Addresses = new List<CustomerAddressReadModel>()
         };
 
-        var addressAdded = new CustomerAddressAdded(
-            customerId,
-            new Address("Home", "123 Main St", "Springfield", "62701", "US")
-        );
+        var addressAdded = new CustomerAddressAdded
+        {
+            CustomerId = customerId,
+            AddressId = Guid.CreateVersion7(),
+            Label = "Home",
+            EncryptedFirstName = "enc-John",
+            EncryptedLastName = "enc-Doe",
+            EncryptedStreet = "enc-123 Main St",
+            EncryptedHouseNumber = "enc-12",
+            EncryptedCity = "enc-Springfield",
+            EncryptedPostalCode = "enc-62701",
+            EncryptedProvince = "enc-IL",
+            EncryptedCountry = "enc-US",
+            EncryptedPhone = "enc-555",
+            IsDefault = true,
+            CreatedAtUtc = DateTimeOffset.UtcNow
+        };
 
         // Act
-        var result = projection.Apply(addressAdded, current);
+        var result = await projection.Apply(addressAdded, current, session);
 
         // Assert
         result.Addresses.Should().HaveCount(1);
@@ -143,7 +161,7 @@ public class CustomerProjectionTests
             Email = "test@example.com",
             FirstName = "John",
             LastName = "Doe",
-            Gender = Gender.Male,
+            Gender = CustomerProfileGender.Male,
             Addresses = new List<CustomerAddressReadModel>
             {
                 new CustomerAddressReadModel

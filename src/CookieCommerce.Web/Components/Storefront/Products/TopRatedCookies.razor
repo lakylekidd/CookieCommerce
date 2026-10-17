@@ -1,0 +1,69 @@
+﻿@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Services
+@using CookieCommerce.Web.Services.Products
+@rendermode InteractiveServer
+@inject ICartService CartService
+@inject ICookieService CookieService
+
+@code {
+    private IReadOnlyList<StorefrontProductDto> _topRatedCookies = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _topRatedCookies = await CookieService.GetTopRatedAsync();
+    }
+
+    private async Task AddToCartAsync(Guid productVariantId)
+    {
+        await CartService.AddToCartAsync(productVariantId, 1);
+        StateHasChanged();
+    }
+}
+
+<div class="container mx-auto mt-24">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="font-display font-bold text-3xl">Top Rated Treats</h2>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        @foreach(var cookie in _topRatedCookies)
+        {
+            <div class="group bg-white dark:bg-surface-dark rounded-3xl p-4 border border-amber-100 dark:border-amber-900/30 transition-all hover:shadow-xl hover:shadow-amber-500/10">
+
+                <a href="/shop/cookie/@cookie.Id">
+                    <div class="relative overflow-hidden rounded-2xl mb-4 h-48">
+                        <img alt="@cookie.Title"
+                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                             src="@cookie.ImageUrls.FirstOrDefault()" />
+                        @if (cookie.IsLimitedEdition)
+                        {
+                            <span class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Limited</span>
+                        }
+                        @if (cookie.IsBestSeller)
+                        {
+                            <span class="absolute top-3 left-3 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                                Top Seller
+                            </span>
+                        }
+                    </div>
+                    <h3 class="font-display font-bold text-lg mb-1">@cookie.Title</h3>
+                    <div class="flex items-center gap-1 text-amber-500 mb-3">
+                        @foreach (var i in Enumerable.Range(0, (int)cookie.Rating))
+                        {
+                            <span class="material-icons-round text-sm">star</span>
+                        }
+                        <span class="text-xs text-gray-400 ml-1 font-body">(@cookie.ReviewCount)</span>
+                    </div>
+                </a>
+
+                <div class="flex items-center justify-between">
+                    <span class="font-display font-bold text-xl">@cookie.CurrencySymbol@cookie.Price.ToString("F2")</span>
+                    <button @onclick="async () => await AddToCartAsync(cookie.Id)" class="flex items-center justify-center p-2 cursor-pointer bg-amber-100 dark:bg-white/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-colors">
+                        <span class="material-icons-round">add_shopping_cart</span>
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>

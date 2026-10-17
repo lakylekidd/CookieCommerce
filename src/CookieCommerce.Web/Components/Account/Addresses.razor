@@ -11,15 +11,23 @@
             <h1 class="text-3xl font-display font-bold text-gray-800 dark:text-white">My Shipping Spots</h1>
             <p class="text-gray-500 dark:text-gray-400 mt-1">Manage where your cookies get delivered.</p>
         </div>
-        <button class="flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all transform hover:scale-105">
+        <button @onclick="() => IsAddAddressModalOpen = true" 
+            class="cursor-pointer flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all transform hover:scale-105">
             <span class="material-symbols-outlined">add</span>
             Add New Address
         </button>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        @if (addresses.Count == 0)
+        {
+            <div class="md:col-span-2 rounded-xl border border-orange-100 dark:border-gray-800 bg-orange-50/60 dark:bg-gray-900/30 p-6 text-gray-600 dark:text-gray-300">
+                <p class="font-bold text-gray-800 dark:text-white">No saved shipping spots yet.</p>
+                <p class="text-sm mt-1">Add an address to use it from your profile and checkout.</p>
+            </div>
+        }
         @foreach(var address in addresses)
         {
-            <AddressCard address="@address"
+            <AccountAddressCard address="@address"
                          OnAddressChanged="RefreshAddresses" />
         }
         <button @onclick="() => IsAddAddressModalOpen = true"
@@ -42,7 +50,7 @@
 
 @code {
     private bool IsAddAddressModalOpen { get; set; } = false;
-    private ICollection<AddressBookItemDto> addresses = null!;
+    private ICollection<AddressBookItemDto> addresses = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -63,10 +71,6 @@
     private async Task HandleSave()
     {
         IsAddAddressModalOpen = false;
-    }
-
-    private async Task HandleAddAddressAsync()
-    {
-        
+        await RefreshAddresses();
     }
 }

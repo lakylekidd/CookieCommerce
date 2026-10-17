@@ -1,13 +1,19 @@
-﻿namespace CookieCommerce.CustomerDomain.Domain.DomainEvents;
+namespace CookieCommerce.CustomerDomain.Domain.DomainEvents;
 
 public class CustomerAddressRemoved
 {
-    public Guid CustomerId { get; }
-    public string Label { get; }
+    public CustomerAddressRemoved()
+    {
+    }
 
     public CustomerAddressRemoved(Guid customerId, string label)
     {
         CustomerId = customerId;
-        Label = label;
+        AddressId = Guid.Empty;
+        DeletedAtUtc = DateTimeOffset.UtcNow;
     }
+
+    public Guid CustomerId { get; set; }
+    public Guid AddressId { get; set; }
+    public DateTimeOffset DeletedAtUtc { get; set; }
 }

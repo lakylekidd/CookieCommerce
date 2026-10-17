@@ -1,0 +1,108 @@
+﻿@using CookieCommerce.Web.Models.Order
+@rendermode InteractiveServer
+
+<div class="relative bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden min-h-[400px]">
+    <div class="@(IsLoading ? "opacity-20 pointer-events-none" : "opacity-100") transition-opacity duration-500">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-400 text-xs uppercase tracking-widest font-bold">
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Ordered On</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Customer</th>
+                        <th class="p-6 py-4 font-bold">Items</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Status</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Total</th>
+                        <th class="p-6 py-4 font-bold hidden sm:table-cell">Handler</th>
+                        <th class="p-6 py-4 font-bold"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    @if(IsLoading)
+                    {
+                        @for (int i = 0; i < 5; i++)
+                        {
+                            <tr class="animate-skeleton">
+                                @* Date & Ref *@
+                                <td class="px-6 py-6 hidden sm:table-cell">
+                                    <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-2"></div>
+                                    <div class="h-3 bg-gray-100 dark:bg-gray-800 rounded w-16"></div>
+                                </td>
+                                @* Customer *@
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="size-10 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                                        <div class="space-y-2">
+                                            <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                                            <div class="h-2 bg-gray-100 dark:bg-gray-800 rounded w-12"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                @* Items (Cookie stack) *@
+                                <td class="px-6 py-4">
+                                    <div class="flex -space-x-2">
+                                        <div class="size-8 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-white dark:border-gray-900"></div>
+                                        <div class="size-8 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-white dark:border-gray-900"></div>
+                                    </div>
+                                </td>
+                                @* Status *@
+                                <td class="px-6 py-4 hidden sm:table-cell">
+                                    <div class="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                </td>
+                                @* Total *@
+                                <td class="px-6 py-4 hidden sm:table-cell">
+                                    <div class="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                </td>
+                                @* Handler *@
+                                <td class="px-6 py-4 hidden sm:table-cell">
+                                    <div class="flex items-center gap-2">
+                                        <div class="size-5 rounded bg-gray-200 dark:bg-gray-700"></div>
+                                        <div class="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                    </div>
+                                </td>
+                                <td></td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        foreach(var item in Orders.OrderBy(o => o.PlacedOn))
+                        {
+                            <QuotaOrderTableItem Order="item"
+                                                 IsLoading="@IsLoading"
+                                                 Shortfalls="@(Shortfalls.GetValueOrDefault(item.Id) ?? [])" />
+                        }
+                    }
+                </tbody>
+                </table>
+            </div>
+        </div>
+</div>
+
+@code  {
+    [Parameter] public ICollection<QuotaOrderDto> Orders { get; set; } = [];
+    [Parameter] public bool IsLoading { get; set; } = true;
+    [Parameter] public Dictionary<Guid, IReadOnlyList<MissingCookieDto>> Shortfalls { get; set; } = new();
+
+    private int ordersCount => Orders.Count;
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalOrders = 0;
+
+    private async Task NextPage() => await GoToPage(currentPage + 1);
+    private async Task PreviousPage() => await GoToPage(currentPage - 1);
+
+    private async Task LoadOrders()
+    {
+        IsLoading = true;
+
+        StateHasChanged();
+        // Simulate loading time
+        await Task.Delay(1000);
+    }
+
+    private async Task GoToPage(int page)
+    {
+        currentPage = page;
+        await LoadOrders();
+    }
+}

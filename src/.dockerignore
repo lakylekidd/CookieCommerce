@@ -28,3 +28,11 @@ README.md
 !.git/config
 !.git/packed-refs
 !.git/refs/heads/**
+# SpecKit verified essentials
+node_modules/
+.git/
+Dockerfile*
+.dockerignore
+*.log*
+.env*
+coverage/

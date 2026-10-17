@@ -1,5 +1,9 @@
-﻿@inherits LayoutComponentBase
+@using CookieCommerce.Web.Services
+@inherits LayoutComponentBase
 @inject IJSRuntime JS
+@inject IAuthService Auth
+@inject CookieCommerce.Web.Services.Commerce.CartService Carts
+@inject CookieCommerce.Web.Services.Commerce.StoreSettingsService StoreSettings
 
 <HeadContent>
     <meta charset="utf-8" />
@@ -8,8 +12,10 @@
     @if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
     {
         <environment include="Production">
+
             <meta name="google-site-verification" content="qg_XKjLH1Q-HM5s9K4uKesiQHWIOwF9XdE7iOYomv64" />
             <meta name="google-adsense-account" content="ca-pub-2415952858841772">
+
             <!-- Google tag (gtag.js) for analytics -->
             <script async src="https://www.googletagmanager.com/gtag/js?id=G-HNS116Q0G5"></script>
             <script>
@@ -20,6 +26,7 @@
                 gtag('config', 'G-HNS116Q0G5');
             </script>
             <!-- Google Tag -->
+
             <!-- Matomo -->
             <script>
                 var _paq = window._paq = window._paq || [];
@@ -35,10 +42,22 @@
                 })();
             </script>
             <!-- End Matomo Code -->
+
+            <!-- Microsoft Clarity -->
+            <script type="text/javascript">
+                (function(c,l,a,r,i,t,y){
+                    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+                })(window, document, "clarity", "script", "vxvchlgg85");
+            </script>
+            <!-- End Microsoft Clarity -->
+
         </environment>
     }
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&amp;family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -57,6 +76,7 @@
     {
         // Every time we render (including after navigation),
         // we tell JS to double-check the theme classes.
-        await JS.InvokeVoidAsync("applyTheme");
+        if (firstRender) { await Auth.InitializeAsync(); await Carts.RestoreAsync(); }
+        await JS.InvokeVoidAsync("applyTheme", (await StoreSettings.GetAsync()).Preference("defaultDarkMode", false));
     }
 }

@@ -1,4 +1,4 @@
-using CookieCommerce.CustomerDomain.Application.Customers.Commands;
+﻿using CookieCommerce.CustomerDomain.Application.Customers.Commands;
 using CookieCommerce.CustomerDomain.Application.Customers.Handlers;
 using CookieCommerce.CustomerDomain.Application.Customers.Integration;
 using CookieCommerce.CustomerDomain.Application.Security;
@@ -8,6 +8,7 @@ using CookieCommerce.DomainBuildingBlocks;
 using Marten;
 using Marten.Events;
 using NSubstitute;
+using System.Globalization;
 
 namespace CookieCommerce.CustomerDomain.Tests.HandlerTests;
 
@@ -22,7 +23,6 @@ public class CreateCustomerHandlerTests
         var keyStore = Substitute.For<ICustomerKeyStore>();
         var encryption = Substitute.For<IEncryptionService>();
         var publisher = Substitute.For<IIntegrationEventPublisher>();
-        var dateOfBirth = new DateTime(1986, 11, 18);
 
         session.Events.Returns(eventStore);
 
@@ -34,7 +34,7 @@ public class CreateCustomerHandlerTests
         encryption.Encrypt("Doe", Arg.Any<byte[]>()).Returns("encrypted-last-name");
         encryption.Encrypt("Male", Arg.Any<byte[]>()).Returns("encrypted-gender");
         // Handler formats dates using the round-trip format specifier ("O")
-        encryption.Encrypt(dateOfBirth.ToString("O"), Arg.Any<byte[]>()).Returns("encrypted-date-of-birth");
+        encryption.Encrypt(new DateTime(1986, 11, 18).ToString("O"), Arg.Any<byte[]>()).Returns("encrypted-date-of-birth");
 
         var handler = new CreateCustomerHandler(session, keyStore, encryption, publisher);
 
@@ -45,7 +45,7 @@ public class CreateCustomerHandlerTests
                 "John",
                 "Doe",
                 Domain.ValueObjects.Gender.Male,
-                dateOfBirth),
+                new DateTime(1986, 11, 18)),
             default);
 
         // Assert

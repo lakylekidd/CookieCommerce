@@ -1,0 +1,104 @@
+﻿@using CookieCommerce.Web.Components.Shared.OrderComponents
+@using CookieCommerce.Web.Models.Backoffice
+
+<tr class="cursor-pointer hover:bg-orange-50/30 dark:hover:bg-gray-800/30 transition-all  @(isExpanded ? "bg-orange-50 dark:bg-gray-800" : "")">
+    
+    @* Product *@
+    <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1 border-l-4" : "")">
+        <ProductImageWithName Name="@Batch.Product.Name"
+                              ImageUrl="@Batch.Product.ImageUrl" />
+    </td>
+
+    @* Created On and Reference*@
+    <td class="px-6 py-6 hidden sm:table-cell @(isExpanded ? "border-primary border-t-1" : "")">
+        <OrderDateAndReference OrderReference="@Batch.BatchReference"
+                               PlacedOn="@Batch.CreatedOn" />
+    </td>
+
+    @* Status *@
+    <td class="px-6 py-6 @(isExpanded ? "border-primary border-t-1" : "")">
+        <BatchStatusComponent Status="@Batch.BatchStatus" />
+    </td>
+    
+    @* Quantity *@
+    <td class="px-6 py-6 @(isExpanded ? "border-primary border-t-1" : "")">
+        <div class="font-bold">
+            <span class="text-primary">@Batch.PlannedQuantity</span> /
+            <span class="text-green-600 dark:text-green-400">@Batch.ActualQuantity</span> /
+            <span class="text-red-600 dark:text-red-400">@Batch.DefectiveQuantity</span>
+        </div>
+    </td>
+
+    @* Expand *@
+    <td class="px-6 py-6 @(isExpanded ? "border-r-4 border-primary border-t-1" : "")">
+        <div class="flex items-center justify-end gap-3">
+            @* Expand Order Button - Isolated Group *@
+            @if (isExpanded)
+            {
+                <div class="relative group">
+                    @* Separate isolated group *@
+                    <button @onclick="async () => await ToggleDetailsAsync()"
+                            type="button"
+                            class="cursor-pointer flex items-center justify-center w-10 h-10
+                            dark:bg-gray-800 border border-primary text-primary bg-primary
+                            text-white rounded-full transition-all shadow-sm active:scale-90">
+                        <span class="material-symbols-outlined text-xl">keyboard_arrow_up</span>
+                        @* Tooltip *@
+                        <span class="absolute -top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 text-[11px] text-white whitespace-nowrap z-50 shadow-xl pointer-events-none">
+                            Minimize!
+                            <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
+                        </span>
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="relative group">
+                    @* Separate isolated group *@
+                    <button @onclick="async () => await ToggleDetailsAsync()"
+                            type="button"
+                            class="cursor-pointer flex items-center justify-center w-10 h-10 bg-white
+                            dark:bg-gray-800 border border-primary text-primary hover:bg-primary hover:text-white
+                            rounded-full transition-all shadow-sm active:scale-90">
+                        <span class="material-symbols-outlined text-xl">keyboard_arrow_down</span>
+                        @* Tooltip *@
+                        <span class="absolute -top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 text-[11px] text-white whitespace-nowrap z-50 shadow-xl pointer-events-none">
+                            Expand!
+                            <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
+                        </span>
+                    </button>
+                </div>
+            }
+
+        </div>
+    </td>
+</tr>
+
+@if (isExpanded)
+{
+    <ExpandedBatchTableItem Batch="Batch" />
+}
+
+@code {
+    [Parameter] public BatchDto Batch { get; set; } = new();
+    
+    private bool isExpanded = false;
+    private bool isLoading = false;
+
+    private async Task ToggleDetailsAsync()
+    {
+        isExpanded = !isExpanded;
+
+        if (isExpanded)
+        {
+            isLoading = true;
+            await Task.Delay(600);
+            //order = await AccountService.GetOrderByIdAsync(OrderListItem.Id);
+            isLoading = false;
+        }
+        else
+        {
+            //order = null;
+        }
+    }
+}

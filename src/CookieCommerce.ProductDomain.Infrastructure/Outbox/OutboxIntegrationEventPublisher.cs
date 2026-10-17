@@ -26,7 +26,7 @@ public class OutboxIntegrationEventPublisher(IDocumentSession session) : IIntegr
         };
 
         _session.Store(outboxMessage);
-        
+
         // Note: SaveChanges will be called by the handler that invokes this publisher
         // to ensure atomicity with the domain event persistence
         return Task.CompletedTask;

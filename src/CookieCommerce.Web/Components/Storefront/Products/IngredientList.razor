@@ -1,0 +1,20 @@
+<div class="mb-8">
+    <h3 class="font-display font-bold text-lg text-text-light dark:text-text-dark mb-3 uppercase tracking-wide">
+        Key Ingredients
+    </h3>
+    <div class="flex flex-wrap gap-2">
+        @if (Ingredients != null)
+        {
+            @foreach (var ingredient in Ingredients)
+            {
+                <span class="bg-amber-100 dark:bg-amber-900/30 text-text-light dark:text-text-dark px-4 py-1.5 rounded-full text-sm font-semibold">
+                    @ingredient
+                </span>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public IEnumerable<string>? Ingredients { get; set; }
+}

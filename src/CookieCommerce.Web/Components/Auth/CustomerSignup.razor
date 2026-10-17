@@ -1,4 +1,5 @@
-﻿@page "/auth/signup"
+@inject CookieCommerce.Web.Services.INewsletterService Newsletter
+@page "/auth/signup"
 
 @layout AuthLayout
 @rendermode InteractiveServer
@@ -174,7 +175,8 @@
 
             if (result.Success)
             {
-                Nav.NavigateTo("/storefront");
+                if (RegistrationForm.SubscribeNewsletter) await Newsletter.SubscribeAsync(RegistrationForm.Email, $"{RegistrationForm.FirstName} {RegistrationForm.LastName}");
+                Nav.NavigateTo("/auth/signin");
             }
             else
             {

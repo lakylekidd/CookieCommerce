@@ -1,0 +1,43 @@
+@using CookieCommerce.Web.Models.Addresses
+
+<div @onclick="HandleClick"
+     class="cursor-pointer p-4 rounded-2xl border-2 transition-all 
+    @(IsSelected ? "border-primary bg-amber-50/50 border-5 shadow-sm dark:bg-amber-900/5"
+            : "border-amber-100/50 hover:border-primary/50 bg-white/50 dark:bg-amber-900/5") 
+    group relative overflow-hidden">
+    @if (IsSelected)
+    {
+        <div class="absolute top-2 right-2 w-9 h-9 bg-primary text-white rounded-full shadow-lg z-10 flex items-center justify-center">
+            <span class="material-symbols-outlined !text-[24px]">check_circle</span>
+        </div>
+    }
+
+    <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-primary text-[20px]">@Address.Icon</span>
+        </div>
+
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="font-bold text-gray-800 dark:text-amber-50 truncate">@Address.Label</span>
+                @if (Address.IsDefault)
+                {
+                    <span class="text-[9px] bg-primary text-white px-2 py-0.5 rounded-full font-bold uppercase shrink-0">Default</span>
+                }
+            </div>
+            <div class="text-sm text-gray-600 dark:text-amber-100/70 space-y-0.5">
+                <p class="truncate font-medium">@Address.FirstName @Address.LastName</p>
+                <p class="truncate opacity-80">@Address.Street @Address.HouseNumber @Address.HouseNumberAddition</p>
+                <p class="truncate opacity-80">@Address.PostalCode @Address.City</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public AddressBookItemDto Address { get; set; } = default!;
+    [Parameter] public bool IsSelected { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private Task HandleClick() => OnClick.InvokeAsync();
+}

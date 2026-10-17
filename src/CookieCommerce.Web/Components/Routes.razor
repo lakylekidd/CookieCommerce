@@ -1,8 +1,18 @@
-﻿@using CookieCommerce.Web.Components.ComingSoon
+﻿@using CookieCommerce.Web.Components.Storefront.ComingSoon
+@using Microsoft.AspNetCore.Components.Authorization
 
-<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
-    <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(ComingSoonLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-</Router>
+<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(ComingSoonLayout)">
+                <NotAuthorized>
+                    <p>Sorry, you don't have permission to be here. Maybe try logging in?</p>
+                </NotAuthorized>
+                <Authorizing>
+                    <p>Checking your credentials...</p>
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+    </Router>
+</CascadingAuthenticationState>

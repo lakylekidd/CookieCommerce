@@ -1,0 +1,151 @@
+@using CookieCommerce.Web.Models.Addresses
+@using CookieCommerce.Web.Models.Checkout
+@using CookieCommerce.Web.Services
+@inject ICheckoutService CheckoutService
+
+<div class="@(CurrentStep < 3 ? "opacity-60" : "cookie-shadow") bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
+    <div class="p-6 flex items-center justify-between border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
+        <div class="flex items-center gap-4">
+            <span class="@(CurrentStep >= 3 ? "bg-primary text-white" : "bg-gray-200 text-gray-500") w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">3</span>
+            <h2 class="font-display font-bold text-xl dark:text-amber-50">Delivery Method</h2>
+        </div>
+        @if (CurrentStep > 3)
+        {
+            <button @onclick="() => GoToStep(3)" class="cursor-pointer ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
+        }
+    </div>
+    @if (CurrentStep == 3)
+    {
+        <div class="p-8 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+            @if (isLoadingDeliveryMethods)
+            {
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-pulse">
+                    @for (var i = 0; i < 2; i++)
+                    {
+                        <div class="p-4 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/40 dark:bg-amber-900/10 min-h-[108px] flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 shrink-0"></div>
+                            <div class="flex-1 space-y-3 pt-1">
+                                <div class="h-4 w-28 rounded-full bg-amber-100 dark:bg-amber-900/40"></div>
+                                <div class="h-3 w-36 rounded-full bg-amber-100/80 dark:bg-amber-900/30"></div>
+                            </div>
+                            <div class="h-4 w-16 rounded-full bg-amber-100 dark:bg-amber-900/40 mt-1"></div>
+                        </div>
+                    }
+                </div>
+            }
+            else if (deliveryMethods is null || deliveryMethods.Count == 0)
+            {
+                <div class="p-8 border-2 border-dashed border-amber-100 dark:border-amber-900/30 rounded-2xl text-center">
+                    <p class="text-gray-500 dark:text-amber-100/50">Select a shipping address to see available delivery methods.</p>
+                </div>
+            }
+            else
+            {
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @foreach (var method in deliveryMethods)
+                    {
+                        var isSelected = IsSelected(method);
+
+                        <label class="relative flex p-4 cursor-pointer rounded-2xl border-2 transition-all duration-200
+                                @(isSelected
+                                    ? "border-primary bg-amber-50/50 dark:bg-primary/10 shadow-md"
+                                    : "border-amber-100 dark:border-amber-900/30 hover:border-amber-200 dark:hover:border-primary/40")">
+
+                            <input type="radio"
+                                   name="delivery"
+                                   checked="@isSelected"
+                                   @onchange="() => SelectDelivery(method)"
+                                   class="mt-1 w-4 h-4 text-primary focus:ring-primary dark:bg-surface-dark border-amber-300 dark:border-amber-700" />
+
+                            <div class="ml-4">
+                                <span class="block font-bold dark:text-amber-50">@method.Title</span>
+                                <span class="block text-sm text-gray-500 dark:text-amber-100/50">@GetDeliveryDateLabel(method.DeliveryDate)</span>
+                            </div>
+                            <span class="ml-auto font-bold dark:text-amber-50">@method.Price.ToString("C")</span>
+                        </label>
+                    }
+                </div>
+            }
+
+            <div class="flex justify-end pt-4">
+                <button @onclick="() => GoToStep(4)"
+                        disabled="@DisableContinue"
+                        class="px-8 py-3 rounded-full font-bold transition-all @(DisableContinue ? "bg-gray-300 cursor-not-allowed text-gray-500" : "bg-primary hover:bg-amber-700 shadow-xl cursor-pointer text-white")">
+                    Continue to Payment
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int CurrentStep { get; set; }
+    [Parameter] public EventCallback<int> CurrentStepChanged { get; set; }
+
+    [Parameter] public AddressBookItemDto? SelectedShippingAddress { get; set; }
+    [Parameter] public DeliveryInfoDto? SelectedDelivery { get; set; }
+    [Parameter] public EventCallback<DeliveryInfoDto?> SelectedDeliveryChanged { get; set; }
+
+    private IReadOnlyList<DeliveryInfoDto>? deliveryMethods;
+    private bool isLoadingDeliveryMethods;
+    private string? loadedForAddressKey;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (CurrentStep != 3 || SelectedShippingAddress is null)
+        {
+            return;
+        }
+
+        var addressKey = GetAddressKey(SelectedShippingAddress);
+        if (addressKey == loadedForAddressKey && deliveryMethods is not null)
+        {
+            return;
+        }
+
+        isLoadingDeliveryMethods = true;
+        deliveryMethods = await CheckoutService.GetDeliveryMethodsAsync(SelectedShippingAddress);
+        loadedForAddressKey = addressKey;
+        isLoadingDeliveryMethods = false;
+
+        if (deliveryMethods.Count > 0 && !deliveryMethods.Any(IsSelected))
+        {
+            await SelectDelivery(deliveryMethods[0]);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task GoToStep(int step) => await CurrentStepChanged.InvokeAsync(step);
+
+    private bool DisableContinue => isLoadingDeliveryMethods || deliveryMethods is null || deliveryMethods.Count == 0 || SelectedDelivery is null;
+
+    private async Task SelectDelivery(DeliveryInfoDto value)
+    {
+        SelectedDelivery = value;
+        await SelectedDeliveryChanged.InvokeAsync(value);
+    }
+
+    private static string GetAddressKey(AddressBookItemDto address)
+        => $"{address.Index}:{address.Country}:{address.PostalCode}:{address.HouseNumber}:{address.HouseNumberAddition}";
+
+    private bool IsSelected(DeliveryInfoDto method)
+    {
+        if (SelectedDelivery is null)
+        {
+            return false;
+        }
+
+        return string.Equals(SelectedDelivery.Title, method.Title, StringComparison.OrdinalIgnoreCase)
+               && SelectedDelivery.DeliveryDate == method.DeliveryDate
+               && SelectedDelivery.Price == method.Price;
+    }
+
+    private static string GetDeliveryDateLabel(DateOnly deliveryDate)
+    {
+        var tomorrow = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+        return deliveryDate == tomorrow
+            ? "Arrives Tomorrow!"
+            : $"Arrives on {deliveryDate:dddd d MMMM}";
+    }
+}

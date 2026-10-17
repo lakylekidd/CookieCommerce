@@ -4,7 +4,9 @@
 @rendermode InteractiveServer
 @using CookieCommerce.Web.Components.Layout
 @using CookieCommerce.Web.Services
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IAuthService Auth
+@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
 
 <PageTitle>Sign In - Tiger van Cookie</PageTitle>
@@ -102,11 +104,9 @@
 
         bool success = await Auth.SignInAsync(Email, Password);
 
-        if (success)
+        if (success && Auth.CurrentUser != null)
         {
-            // Redirect back to where they came from, or home if empty
             Nav.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/storefront" : ReturnUrl);
-            StateHasChanged();
         }
         else
         {

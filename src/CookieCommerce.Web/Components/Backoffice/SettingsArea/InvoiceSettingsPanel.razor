@@ -1,0 +1,32 @@
+@using CookieCommerce.Web.Services.Communications
+@inject InvoiceService Invoices
+
+<div class="communication-editor bg-card-light dark:bg-card-dark rounded-2xl p-6 space-y-4">
+    @if (!string.IsNullOrEmpty(error)) { <p role="alert" class="text-red-600">@error</p> }
+    @if (!string.IsNullOrEmpty(notice)) { <p role="status" class="text-green-600">@notice</p> }
+    @if (settings is not null)
+    {
+        <label>Company name<input @bind="settings.CompanyName" /></label>
+        <label>Company address<textarea rows="3" @bind="settings.CompanyAddress"></textarea></label>
+        <label>Company registration number<input @bind="settings.CompanyRegistration" /></label>
+        <label>VAT number<input @bind="settings.VatNumber" /></label>
+        <label>Invoice number prefix<input @bind="settings.Prefix" maxlength="12" /></label>
+        <label>Logo path<input @bind="settings.LogoPath" /></label>
+        <label><input type="checkbox" @bind="settings.EmailInvoices" /> Automatically email invoices after payment</label>
+        <p class="text-sm">Invoices are issued once payment is confirmed. Issued documents retain their original details and template.</p>
+        <button class="bg-primary text-white px-4 py-2 rounded-xl" disabled="@busy" @onclick="SaveAsync">Save invoice settings</button>
+        <hr />
+        <p class="text-sm">Generate missing invoices for existing paid orders. Repeating this keeps existing invoice numbers and PDFs.</p>
+        <button class="border px-4 py-2 rounded-xl" disabled="@busy" @onclick="BackfillAsync">Generate invoices for existing paid orders</button>
+    }
+</div>
+
+@code {
+    private InvoiceSettings? settings;
+    private bool busy;
+    private string error = "", notice = "";
+    protected override async Task OnInitializedAsync() { try { settings = await Invoices.SettingsAsync(); } catch { error = "Invoice settings could not be loaded."; } }
+    private async Task RunAsync(Func<Task> action) { busy = true; error = notice = ""; try { await action(); } catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Invoice operation failed."; } finally { busy = false; } }
+    private Task SaveAsync() => RunAsync(async () => { await Invoices.SaveSettingsAsync(settings!); notice = "Invoice settings saved."; });
+    private Task BackfillAsync() => RunAsync(async () => { var count = await Invoices.BackfillAsync(); notice = $"Invoices ready for {count} paid orders."; });
+}

@@ -8,21 +8,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CookieCommerce.ProductDomain.Tests.IntegrationTests;
 
-public class OutboxIntegrationTests : IClassFixture<TestWebApplicationFactory>, IAsyncLifetime
+public class OutboxIntegrationTests : IAsyncLifetime
 {
-    private readonly TestWebApplicationFactory _factory;
+    private readonly TestWebApplicationFactory _factory = new();
     private IServiceScope? _scope;
     private IDocumentStore? _store;
 
-    public OutboxIntegrationTests(TestWebApplicationFactory factory)
-    {
-        _factory = factory;
-    }
-
     public async Task InitializeAsync()
     {
-        // Factory is already initialized by IClassFixture, just reset the database
-        await _factory.ResetDatabaseAsync();
+        await _factory.InitializeAsync();
         _scope = _factory.Services.CreateScope();
         _store = _scope.ServiceProvider.GetRequiredService<IDocumentStore>();
     }
@@ -30,7 +24,7 @@ public class OutboxIntegrationTests : IClassFixture<TestWebApplicationFactory>, 
     public async Task DisposeAsync()
     {
         _scope?.Dispose();
-        // Don't dispose factory here - IClassFixture handles that
+        await _factory.DisposeAsync();
     }
 
     [Fact]
@@ -59,7 +53,7 @@ public class OutboxIntegrationTests : IClassFixture<TestWebApplicationFactory>, 
     {
         // Arrange
         var mediator = _scope!.ServiceProvider.GetRequiredService<ISender>();
-        
+
         // First create a product
         var createCommand = new CreateProduct("Test Product", "Test Description", 99.99m);
         var productId = await mediator.Send(createCommand, CancellationToken.None);
@@ -84,7 +78,7 @@ public class OutboxIntegrationTests : IClassFixture<TestWebApplicationFactory>, 
     {
         // Arrange
         await using var session = _store!.LightweightSession();
-        
+
         var message1 = new OutboxMessage
         {
             Id = Guid.CreateVersion7(),

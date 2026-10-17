@@ -32,7 +32,8 @@ RUN dotnet publish "CookieCommerce.Web.csproj" \
     -c Release \
     -o /app/publish \
     /p:StaticWebAssetsEnabled=true \
-    /p:UseAppHost=false
+    /p:UseAppHost=false \
+    /p:EnableSourceControlManagerQueries=false
 
 # 3. Double-check the files exist before finishing the build stage
 RUN ls -la /app/publish/wwwroot/_framework/blazor.web.js

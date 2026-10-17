@@ -1,0 +1,525 @@
+@page "/backoffice/customers/{Id:guid}"
+@using CookieCommerce.Web.Models.Customers
+@using CookieCommerce.Web.Models.Order
+@using CookieCommerce.Web.Services
+@using CookieCommerce.Web.Components.Shared.ProductComponents
+@rendermode InteractiveServer
+@layout BackofficeLayout
+@inject ICustomerService CustomerService
+
+<div class="transition-colors duration-300 space-y-6">
+    @if (customer is not null) { <AccountAccessCard CustomerId="customer.Id" /> }
+
+    @* ── Back link ──────────────────────────────────────────────────────── *@
+    <div>
+        <a href="/backoffice/customers/"
+           class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-base">arrow_back</span>
+            Back to customers
+        </a>
+    </div>
+
+    @if (isLoading)
+    {
+        @* ── Info card skeletons ─────────────────────────────────────────── *@
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-skeleton">
+            @for (int i = 0; i < 3; i++)
+            {
+                <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 space-y-4">
+                    <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                    <div class="space-y-3">
+                        <div class="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                        <div class="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+                        <div class="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-3/5"></div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* ── Orders table skeleton ───────────────────────────────────────── *@
+        <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden animate-skeleton">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                @for (int r = 0; r < 5; r++)
+                {
+                    <div class="px-6 py-5 flex items-center gap-6">
+                        <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                        <div class="space-y-1.5 w-28">
+                            <div class="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                            <div class="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-16"></div>
+                        </div>
+                        <div class="flex gap-2 flex-1">
+                            <div class="size-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                            <div class="size-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                        </div>
+                        <div class="h-5 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 ml-auto"></div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else if (customer is null)
+    {
+        <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 px-6 py-20 text-center">
+            <div class="flex flex-col items-center gap-3 text-gray-400 dark:text-gray-500">
+                <span class="material-symbols-outlined text-5xl">person_off</span>
+                <p class="text-sm font-medium">Customer not found</p>
+                <a href="/backoffice/customers/" class="text-xs text-primary hover:underline">Go back to customers</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        @* ── Info cards ──────────────────────────────────────────────────── *@
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            @* Profile card *@
+            <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
+                <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4">Profile</p>
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="flex-shrink-0 size-14 rounded-full flex items-center justify-center font-bold text-lg @AvatarClass">
+                        @Initials
+                    </div>
+                    <div>
+                        <p class="font-bold text-gray-900 dark:text-white text-base leading-tight">@customer.FullName</p>
+                        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                            @if (customer.IsActive)
+                            {
+                                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                    <span class="size-1.5 rounded-full bg-green-500 dark:bg-green-400"></span>
+                                    Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                                    <span class="size-1.5 rounded-full bg-gray-400"></span>
+                                    Inactive
+                                </span>
+                            }
+                            @if (customer.IsNewsletterSubscribed)
+                            {
+                                <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                                    Newsletter
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-2.5 text-sm">
+                    @if (customer.Gender is not null)
+                    {
+                        <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                            <span class="material-symbols-outlined text-base text-gray-400">person</span>
+                            @customer.Gender
+                        </div>
+                    }
+                    @if (customer.DateOfBirth.HasValue)
+                    {
+                        <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                            <span class="material-symbols-outlined text-base text-gray-400">cake</span>
+                            @customer.DateOfBirth.Value.ToString("dd MMM yyyy")
+                            @if (customer.Age.HasValue)
+                            {
+                                <span class="text-xs text-gray-400">(@customer.Age years)</span>
+                            }
+                        </div>
+                    }
+                    <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                        <span class="material-symbols-outlined text-base text-gray-400">calendar_today</span>
+                        @(customer.MemberSince == DateTime.MinValue ? "Member since: unavailable" : $"Member since {customer.MemberSince:MMM yyyy}")
+                    </div>
+                </div>
+            </div>
+
+            @* Contact & Address card *@
+            <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
+                <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4">Contact & Address</p>
+                <div class="space-y-3 text-sm">
+                    <div class="flex items-start gap-2 text-gray-600 dark:text-gray-300">
+                        <span class="material-symbols-outlined text-base text-gray-400 mt-0.5">mail</span>
+                        <a href="mailto:@customer.Email" class="hover:text-primary transition-colors break-all">@customer.Email</a>
+                    </div>
+                    @if (customer.Phone is not null)
+                    {
+                        <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                            <span class="material-symbols-outlined text-base text-gray-400">phone</span>
+                            @customer.Phone
+                        </div>
+                    }
+                    @if (customer.PrimaryAddress is not null)
+                    {
+                        <div class="flex items-start gap-2 text-gray-600 dark:text-gray-300 pt-1">
+                            <span class="material-symbols-outlined text-base text-gray-400 mt-0.5">home</span>
+                            <div>
+                                <p class="font-medium text-gray-700 dark:text-gray-200 leading-tight">
+                                    @customer.PrimaryAddress.Street @customer.PrimaryAddress.HouseNumber@customer.PrimaryAddress.HouseNumberAddition
+                                </p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                                    @customer.PrimaryAddress.PostalCode @customer.PrimaryAddress.City
+                                </p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500">
+                                    @customer.PrimaryAddress.Province, @customer.PrimaryAddress.Country
+                                </p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500">
+                            <span class="material-symbols-outlined text-base">home</span>
+                            <span class="italic text-xs">No address on file</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* Stats card *@
+            <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
+                <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4">Statistics</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3">
+                        <p class="text-xs text-gray-400 dark:text-gray-500 font-medium">Total Orders</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">@customer.TotalOrders</p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3">
+                        <p class="text-xs text-gray-400 dark:text-gray-500 font-medium">Total Spent</p>
+                        <p class="text-2xl font-bold text-primary mt-1">€@customer.TotalSpent.ToString("N2")</p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3">
+                        <p class="text-xs text-gray-400 dark:text-gray-500 font-medium">Reward Points</p>
+                        <p class="text-xl font-bold text-amber-500 dark:text-amber-400 mt-1">@customer.RewardPoints.ToString("N0")</p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3">
+                        <p class="text-xs text-gray-400 dark:text-gray-500 font-medium">Last Order</p>
+                        @if (customer.LastOrderDate.HasValue)
+                        {
+                            <p class="text-sm font-bold text-gray-700 dark:text-gray-200 mt-1">@customer.LastOrderDate.Value.ToString("dd MMM yyyy")</p>
+                        }
+                        else
+                        {
+                            <p class="text-sm text-gray-400 italic mt-1">—</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ── Orders table ────────────────────────────────────────────────── *@
+        <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+
+            @* Header: title + search *@
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex flex-wrap gap-3 items-center justify-between">
+                <h3 class="font-bold text-gray-800 dark:text-white">Order History</h3>
+                <div class="relative min-w-[200px] max-w-xs w-full sm:w-auto">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px] select-none">
+                        search
+                    </span>
+                    <input type="text"
+                           @bind="OrdersSearchQuery"
+                           @bind:event="oninput"
+                           placeholder="Search by reference or status…"
+                           class="w-full pl-9 pr-4 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                </div>
+            </div>
+
+            @if (isOrdersLoading)
+            {
+                <div class="divide-y divide-gray-100 dark:divide-gray-800 animate-skeleton">
+                    @for (int r = 0; r < 5; r++)
+                    {
+                        <div class="px-6 py-5 flex items-center gap-6">
+                            <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                            <div class="space-y-1.5 w-28">
+                                <div class="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                                <div class="h-2.5 bg-gray-100 dark:bg-gray-800 rounded w-16"></div>
+                            </div>
+                            <div class="flex gap-2 flex-1">
+                                <div class="size-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                <div class="size-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                            </div>
+                            <div class="h-5 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 ml-auto"></div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                @* Table *@
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-widest font-bold">
+                                <th class="px-6 py-4 font-bold hidden sm:table-cell">Reference</th>
+                                <th class="px-6 py-4 font-bold">
+                                    <button @onclick="ToggleDateSort"
+                                            class="flex items-center gap-1 cursor-pointer transition-colors hover:text-primary text-primary">
+                                        <span>Date</span>
+                                        <span class="material-symbols-outlined text-sm leading-none">
+                                            @(sortAscending ? "arrow_upward" : "arrow_downward")
+                                        </span>
+                                    </button>
+                                </th>
+                                <th class="px-6 py-4 font-bold hidden md:table-cell">Products</th>
+                                <th class="px-6 py-4 font-bold hidden sm:table-cell">Status</th>
+                                <th class="px-6 py-4 font-bold text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                            @if (!PagedOrders.Any())
+                            {
+                                <tr>
+                                    <td colspan="5" class="px-6 py-16 text-center">
+                                        <div class="flex flex-col items-center gap-2 text-gray-400 dark:text-gray-500">
+                                            <span class="material-symbols-outlined text-4xl">receipt_long</span>
+                                            <p class="text-sm font-medium">No orders found</p>
+                                            @if (!string.IsNullOrWhiteSpace(ordersSearchQuery))
+                                            {
+                                                <p class="text-xs">Try adjusting your search</p>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var order in PagedOrders)
+                                {
+                                    <tr class="hover:bg-orange-50/30 dark:hover:bg-gray-800/30 transition-all">
+
+                                        @* Reference *@
+                                        <td class="px-6 py-5 hidden sm:table-cell">
+                                            <span class="text-xs font-mono font-bold text-gray-500 dark:text-gray-400">#@order.OrderReference</span>
+                                        </td>
+
+                                        @* Date *@
+                                        <td class="px-6 py-5">
+                                            <div class="flex flex-col">
+                                                <div class="flex items-baseline gap-2">
+                                                    <p class="font-bold text-gray-900 dark:text-white leading-none text-sm">
+                                                        @order.PlacedOn.ToString("MMM dd, yyyy")
+                                                    </p>
+                                                    <span class="text-[10px] font-medium text-stone-300 dark:text-stone-600 uppercase tracking-tighter">
+                                                        @order.PlacedOn.ToString("HH:mm")
+                                                    </span>
+                                                </div>
+                                                @* Reference visible on mobile *@
+                                                <span class="text-[11px] font-mono text-gray-400 mt-0.5 sm:hidden">#@order.OrderReference</span>
+                                            </div>
+                                        </td>
+
+                                        @* Products *@
+                                        <td class="px-6 py-5 hidden md:table-cell">
+                                            <div class="flex items-center gap-1">
+                                                @foreach (var product in order.Products)
+                                                {
+                                                    <SmallCookieImageWithQuantity item="product" />
+                                                }
+                                            </div>
+                                        </td>
+
+                                        @* Status *@
+                                        <td class="px-6 py-5 hidden sm:table-cell">
+                                            <span class="@StatusClass(order.Status.StatusId) px-2.5 py-1 rounded-lg text-xs font-bold">
+                                                @order.Status.Status
+                                            </span>
+                                        </td>
+
+                                        @* Total *@
+                                        <td class="px-6 py-5 text-right">
+                                            <span class="font-bold text-gray-900 dark:text-white text-sm">@order.CurrencySymbol@order.Total.ToString("N2")</span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @* Pagination bar *@
+                <div class="px-6 py-4 bg-gray-50/50 dark:bg-gray-800/50 border-t border-orange-100 dark:border-gray-800 flex flex-wrap gap-4 justify-between items-center">
+
+                    @* Entry summary *@
+                    <span class="text-sm text-gray-500 font-medium">
+                        Showing
+                        <span class="text-primary font-bold">@StartItem–@EndItem</span>
+                        of
+                        <span class="font-bold text-gray-700 dark:text-gray-300">@TotalFiltered</span>
+                        orders 🐯
+                    </span>
+
+                    @* Page size + navigation *@
+                    <div class="flex items-center gap-4">
+
+                        @* Page size buttons *@
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs text-gray-400 dark:text-gray-500 font-medium">Show:</span>
+                            @foreach (var size in PageSizeOptions)
+                            {
+                                <button @onclick="() => SetPageSize(size)"
+                                        class="@(pageSize == size
+                                            ? "bg-primary border-primary text-white"
+                                            : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-primary hover:text-primary cursor-pointer")
+                                            text-xs font-bold px-3 py-1.5 rounded-lg border transition-all">
+                                    @size
+                                </button>
+                            }
+                        </div>
+
+                        @* Page navigation *@
+                        <div class="flex items-center gap-1">
+
+                            @* Previous *@
+                            <button @onclick="PreviousPage"
+                                    disabled="@(currentPage == 1)"
+                                    class="@(currentPage == 1
+                                        ? "opacity-40 cursor-not-allowed"
+                                        : "hover:bg-primary hover:text-white hover:border-primary cursor-pointer")
+                                        flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 rounded-full transition-all">
+                                <span class="material-symbols-outlined text-base">chevron_left</span>
+                            </button>
+
+                            @* Page numbers *@
+                            @foreach (var pg in VisiblePages)
+                            {
+                                @if (pg == Ellipsis)
+                                {
+                                    <span class="w-8 text-center text-xs text-gray-400 dark:text-gray-500 select-none">…</span>
+                                }
+                                else
+                                {
+                                    <button @onclick="() => GoToPage(pg)"
+                                            class="@(pg == currentPage
+                                                ? "bg-primary border-primary text-white"
+                                                : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-primary hover:text-primary cursor-pointer")
+                                                flex items-center justify-center w-8 h-8 border rounded-full text-xs font-bold transition-all">
+                                        @(pg)
+                                    </button>
+                                }
+                            }
+
+                            @* Next *@
+                            <button @onclick="NextPage"
+                                    disabled="@(currentPage == TotalPages)"
+                                    class="@(currentPage == TotalPages
+                                        ? "opacity-40 cursor-not-allowed"
+                                        : "hover:bg-primary hover:text-white hover:border-primary cursor-pointer")
+                                        flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 rounded-full transition-all">
+                                <span class="material-symbols-outlined text-base">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private static readonly int[] PageSizeOptions = [5, 10, 20];
+    private const int Ellipsis = -1;
+
+    private CustomerDto? customer;
+    private ICollection<OrderListItemDto> orders = [];
+    private bool isLoading = true;
+    private bool isOrdersLoading = true;
+
+    private int currentPage = 1;
+    private int pageSize = 5;
+    private bool sortAscending = false;
+
+    private string ordersSearchQuery = "";
+    private string OrdersSearchQuery
+    {
+        get => ordersSearchQuery;
+        set { ordersSearchQuery = value; currentPage = 1; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        customer = await CustomerService.GetCustomerByIdAsync(Id);
+        isLoading = false;
+
+        if (customer is not null)
+        {
+            isOrdersLoading = true;
+            orders = await CustomerService.GetCustomerOrdersAsync(Id);
+            isOrdersLoading = false;
+        }
+    }
+
+    private IEnumerable<OrderListItemDto> FilteredOrders
+    {
+        get
+        {
+            var result = orders.AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(ordersSearchQuery))
+                result = result.Where(o =>
+                    o.OrderReference.Contains(ordersSearchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    o.Status.Status.Contains(ordersSearchQuery, StringComparison.OrdinalIgnoreCase));
+            return sortAscending
+                ? result.OrderBy(o => o.PlacedOn)
+                : result.OrderByDescending(o => o.PlacedOn);
+        }
+    }
+
+    private int TotalFiltered => FilteredOrders.Count();
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalFiltered / (double)pageSize));
+    private int StartItem => TotalFiltered == 0 ? 0 : (currentPage - 1) * pageSize + 1;
+    private int EndItem => Math.Min(currentPage * pageSize, TotalFiltered);
+
+    private IEnumerable<OrderListItemDto> PagedOrders =>
+        FilteredOrders.Skip((currentPage - 1) * pageSize).Take(pageSize);
+
+    private IEnumerable<int> VisiblePages
+    {
+        get
+        {
+            if (TotalPages <= 5)
+                return Enumerable.Range(1, TotalPages);
+            var pages = new List<int> { 1 };
+            if (currentPage > 3) pages.Add(Ellipsis);
+            for (var p = Math.Max(2, currentPage - 1); p <= Math.Min(TotalPages - 1, currentPage + 1); p++)
+                pages.Add(p);
+            if (currentPage < TotalPages - 2) pages.Add(Ellipsis);
+            pages.Add(TotalPages);
+            return pages;
+        }
+    }
+
+    private void GoToPage(int p) { if (p >= 1 && p <= TotalPages) currentPage = p; }
+    private void PreviousPage() => GoToPage(currentPage - 1);
+    private void NextPage() => GoToPage(currentPage + 1);
+    private void SetPageSize(int size) { pageSize = size; currentPage = 1; }
+    private void ToggleDateSort() { sortAscending = !sortAscending; currentPage = 1; }
+
+    private string Initials => customer is null ? "" :
+        $"{customer.FirstName.FirstOrDefault()}{customer.LastName.FirstOrDefault()}".ToUpper();
+
+    private string AvatarClass => customer is null ? "" :
+        char.ToUpper(customer.FirstName.FirstOrDefault()) switch
+        {
+            >= 'A' and <= 'D' => "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300",
+            >= 'E' and <= 'H' => "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300",
+            >= 'I' and <= 'L' => "bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300",
+            >= 'M' and <= 'P' => "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-300",
+            >= 'Q' and <= 'T' => "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300",
+            _ => "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-300"
+        };
+
+    private static string StatusClass(int statusId) => statusId switch
+    {
+        0 => "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+        1 => "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+        2 => "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+        3 => "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+        _ => "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+    };
+}

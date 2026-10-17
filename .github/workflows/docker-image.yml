@@ -4,7 +4,6 @@ on:
   pull_request:
     branches: [master]
   push:
-    branches: [master]
     tags: ['v*']
 
 permissions:
@@ -13,16 +12,19 @@ permissions:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   verify:
-    name: Build and test
+    name: verify
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+      - name: Check protected release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: python3 .platform/ci/github_release.py check
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -50,20 +52,30 @@ jobs:
         with:
           name: test-results
           path: TestResults/
+          if-no-files-found: ignore
 
-  publish-images:
-    name: Publish ${{ matrix.service }}
+  build-images:
+    name: Build ${{ matrix.service }}
     needs: verify
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
         include:
+          - service: authentication-management-api
+            context: .
+            dockerfile: src/CookieCommerce.AuthenticationManagement.Api/Dockerfile
           - service: customer-api
             context: src
             dockerfile: src/CookieCommerce.CustomerDomain.Api/Dockerfile
+          - service: infra-keycloak
+            context: .
+            dockerfile: .platform/keycloak/Dockerfile
+          - service: product-api
+            context: src
+            dockerfile: src/CookieCommerce.ProductDomain.Api/Dockerfile
           - service: web
             context: .
             dockerfile: src/CookieCommerce.Web/Dockerfile
@@ -79,24 +91,57 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
           push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/cookiecommerce-${{ matrix.service }}:${{ github.ref_name }}
-            ghcr.io/${{ github.repository_owner }}/cookiecommerce-${{ matrix.service }}:sha-${{ github.sha }}
+          tags: ghcr.io/${{ github.repository_owner }}/cookiecommerce-${{ matrix.service }}:${{ github.ref_name }}
+      - name: Write image receipt
+        env:
+          SERVICE: ${{ matrix.service }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: python3 .platform/ci/github_release.py emit "$SERVICE" "$DIGEST"
+      - name: Upload image receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-receipt-${{ matrix.service }}
+          path: release/${{ matrix.service }}.json
+          if-no-files-found: error
+
+  publish-images:
+    name: publish-images
+    needs: build-images
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Download image receipts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: service-receipt-*
+          path: release/
+          merge-multiple: true
+      - name: Collect release receipt
+        run: python3 .platform/ci/github_release.py collect
+      - name: Upload release receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-receipt
+          path: receipt-bundle/
+          if-no-files-found: error
 
   create-release:
-    name: Create GitHub Release
+    name: create-release
     needs: publish-images
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Create release notes
+      - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "${{ github.ref_name }}" --repo "${{ github.repository }}" --title "${{ github.ref_name }}" --generate-notes

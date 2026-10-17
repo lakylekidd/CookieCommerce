@@ -1,0 +1,286 @@
+@inject CookieCommerce.Web.Services.Commerce.InventoryService Persistence
+@using CookieCommerce.Web.Models.Backoffice
+
+<tr>
+    <td class="p-0 border-primary border-l-4 border-r-4 border-b border-t bg-orange-50/20 dark:bg-gray-800/20" colspan="6">
+        @if (IsLoading)
+        {
+            @* Skeleton Loader with Shimmer *@
+
+        }
+        else
+        {
+            @* The actual displayed order *@
+            <div class="bg-white dark:bg-card-dark/50 p-8 border-b border-orange-100 dark:border-gray-800">
+
+                @* --- 🟢 BATCH DETAILS EDITOR SECTION --- *@
+                <div class="mb-10 p-6 rounded-[2rem] bg-orange-50/30 dark:bg-stone-900/40 border border-orange-100/50 dark:border-stone-700/50">
+                    <div class="flex items-center gap-2 mb-6">
+                        <span class="material-symbols-outlined text-primary">Settings</span>
+                        <h3 class="text-xs font-black uppercase tracking-[0.2em] text-stone-500">Batch Configuration</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+
+                        @* 📋 Status Selector *@
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Batch Status</span>
+                            <div class="mt-1 relative group">
+                                <select value="@Batch.BatchStatus"
+                                        disabled="@IsSaving("BatchStatus")"
+                                        @onchange="@(e => HandleAutoSave("BatchStatus", e.Value))"
+                                        class="w-full bg-white dark:bg-stone-800 border border-stone-200
+                                               dark:border-stone-700 text-xs font-bold rounded-lg pl-2 pr-10 h-[38px]
+                                               outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20
+                                               appearance-none bg-none
+                                    @(IsSaving("BatchStatus") ? "opacity-60 cursor-not-allowed" : "cursor-pointer")">
+                                    @foreach (BatchStatus status in Enum.GetValues(typeof(BatchStatus)))
+                                    {
+                                        <option value="@status">@status.ToString()</option>
+                                    }
+                                </select>
+
+                                @* 🐾 Dynamic Icon Slot: Chevron or Spinner *@
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none transition-colors">
+                                    @if (IsSaving("BatchStatus"))
+                                    {
+                                        <span class="material-symbols-outlined text-[18px] text-primary animate-spin">
+                                            progress_activity
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="material-symbols-outlined text-[18px] text-stone-400 group-hover:text-primary">
+                                            unfold_more
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        @* 🔢 Quantities (Planned / Actual / Defective) *@
+                        <div class="lg:col-span-2 flex items-center gap-3">
+
+                            @* 📦 Planned Quantity *@
+                            <div class="flex flex-col gap-1 flex-1">
+                                <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Planned</span>
+                                <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200
+                                            dark:border-stone-700 rounded-lg px-3 h-[38px] focus-within:ring-2
+                                            focus-within:ring-primary/20 transition-all text-stone-600 px-2 py-1
+                                            @(IsSaving("Planned") ? "opacity-60 cursor-not-allowed" : "")">
+
+                                    @if (IsSaving("Planned"))
+                                    {
+                                        @* 🐯 The Spinning Loader *@
+                                        <span class="material-symbols-outlined text-[16px] text-primary mr-2 animate-spin">
+                                            progress_activity
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="material-symbols-outlined text-[16px] text-primary mr-2">inventory_2</span>
+                                    }
+
+                                    <input type="number"
+                                           value="@Batch.PlannedQuantity"
+                                           disabled="@IsSaving("Planned")"
+                                           @onchange="@(e => HandleAutoSave("Planned", e.Value))"
+                                           class="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none tabular-nums focus:outline-none disabled:cursor-not-allowed" />
+                                </div>
+                            </div>
+
+                            @* ✅ Actual Quantity *@
+                            <div class="flex flex-col gap-1 flex-1">
+                                <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Actual</span>
+                                <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200
+                                            dark:border-stone-700 rounded-lg h-[38px] px-2 py-1 focus-within:ring-2
+                                            focus-within:ring-primary/20 transition-all text-stone-600
+                                            @(IsSaving("Actual") ? "opacity-60 cursor-not-allowed" : "")">
+
+                                    @if (IsSaving("Actual"))
+                                    {
+                                        @* 🐯 Spinner replaces the icon during save *@
+                                        <span class="material-symbols-outlined text-[16px] text-primary mr-2 animate-spin">
+                                            progress_activity
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="material-symbols-outlined text-[16px] text-green-500 mr-2">check_circle</span>
+                                    }
+
+                                    <input type="number"
+                                           value="@Batch.ActualQuantity"
+                                           disabled="@IsSaving("Actual")"
+                                           @onchange="@(e => HandleAutoSave("Actual", e.Value))"
+                                           class="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none tabular-nums focus:outline-none disabled:cursor-not-allowed" />
+                                </div>
+                            </div>
+
+                            @* ⚠️ Defective Quantity *@
+                            <div class="flex flex-col gap-1 flex-1">
+                                <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Defects</span>
+                                <div class="flex items-center bg-white dark:bg-stone-800 border border-stone-200
+                                            dark:border-stone-700 rounded-lg h-[38px] px-2 py-1 focus-within:ring-2
+                                            focus-within:ring-primary/20 transition-all text-stone-600
+                                            @(IsSaving("Defects") ? "opacity-60 cursor-not-allowed" : "")">
+
+                                    @if (IsSaving("Defects"))
+                                    {
+                                        @* 🐯 Spinner for the save state *@
+                                        <span class="material-symbols-outlined text-[16px] text-primary mr-2 animate-spin">
+                                            progress_activity
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="material-symbols-outlined text-[16px] text-red-500 mr-2">heart_broken</span>
+                                    }
+
+                                    <input type="number"
+                                           value="@Batch.DefectiveQuantity"
+                                           disabled="@IsSaving("Defects")"
+                                           @onchange="@(e => HandleAutoSave("Defects", e.Value))"
+                                           class="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none tabular-nums focus:outline-none disabled:cursor-not-allowed" />
+                                </div>
+                            </div>
+                        </div>
+
+                        @* ✍️ Remarks *@
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter">Notes / Remarks</span>
+                            <div class="mt-1 relative">
+                                <input type="text"
+                                       value="@Batch.Remarks"
+                                       disabled="@IsSaving("Remarks")"
+                                       @onchange="@(e => HandleAutoSave("Remarks", e.Value))"
+                                       placeholder="Add production notes..."
+                                       class="w-full bg-white dark:bg-stone-800 border border-stone-200
+                                              dark:border-stone-700 text-xs font-bold rounded-lg pl-3 pr-10 h-[38px]
+                                              outline-none transition-all shadow-sm focus:ring-2 focus:ring-primary/20
+                                              placeholder:text-stone-300 italic
+                                              @(IsSaving("Remarks") ? "opacity-60 cursor-not-allowed" : "")" />
+
+                                @* 🐾 Spinner Slot (Right Aligned) *@
+                                @if (IsSaving("Remarks"))
+                                {
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <span class="material-symbols-outlined text-[18px] text-primary animate-spin">
+                                            progress_activity
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* --- 🟠 BATCH RUNS TABLE SECTION --- *@
+                <div class="flex items-center gap-2 mb-4 px-2">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-primary">Production Line History</span>
+                    <div class="h-[1px] flex-grow bg-orange-100 dark:bg-stone-800"></div>
+                    <button @onclick="AddBatchRun" type="button"
+                            class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 active:scale-95 transition-all cursor-pointer">
+                        <span class="material-symbols-outlined text-sm">add</span>
+                        Add Run
+                    </button>
+                </div>
+
+                @if (!Batch.BatchRuns.Any())
+                {
+                    <div class="flex flex-col items-center justify-center py-8 text-center">
+                        <span class="material-symbols-outlined text-3xl text-gray-200 dark:text-gray-700 mb-2">local_fire_department</span>
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400">No production runs yet — click Add Run to create one</p>
+                    </div>
+                }
+                else
+                {
+                    <table class="w-full border-separate border-spacing-y-2">
+                        <tbody>
+                            @foreach (var item in Batch.BatchRuns.ToList())
+                            {
+                                <BatchTableItemRun BatchRun="item" OnRemove="() => RemoveBatchRun(item)" />
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        }
+    </td>
+</tr>
+
+@code {
+    [Parameter] public BatchDto Batch { get; set; } = new ();
+    [Parameter] public bool IsLoading { get; set; } = false;
+
+    private static int _runSeq = 500;
+
+    private async Task AddBatchRun()
+    {
+        var seq = ++_runSeq;
+        Batch.BatchRuns.Add(new BatchRunDto
+        {
+            Id = Guid.NewGuid(),
+            BatchRunReference = $"RUN-{Guid.CreateVersion7().ToString("N")[..12]}",
+            BatchId = Batch.Id,
+            Status = BatchRunStatus.Scheduled,
+            BakingInformation = new BakingInformationDto()
+        });
+        await Persistence.SaveBatchAsync(Batch);
+    }
+
+    private async Task RemoveBatchRun(BatchRunDto run)
+    {
+        Batch.BatchRuns.Remove(run);
+        await Persistence.SaveBatchAsync(Batch);
+    }
+
+    // Track which field is currently saving to show the spinner in the right place
+    private string? _currentlySavingField;
+
+    private bool IsSaving(string fieldName) => _currentlySavingField == fieldName;
+
+    private async Task HandleAutoSave(string fieldName, object? value)
+    {
+        if (value == null) return;
+
+        _currentlySavingField = fieldName;
+        StateHasChanged();
+
+        switch (fieldName)
+        {
+            case "BatchStatus":
+                if (Enum.TryParse<BatchStatus>(value.ToString(), out var newStatus))
+                {
+                    await HandleStatusSave(newStatus);
+                }
+                break;
+            case "Planned":
+            case "Actual":
+            case "Defects":
+                if (int.TryParse(value.ToString(), out var newQuantity))
+                {
+                    await HandleQuantitySave(fieldName, newQuantity);
+                }
+                break;
+            case "Remarks":
+                await HandleRemarkSave(value.ToString()!);
+                break;
+        }
+
+        await Persistence.SaveBatchAsync(Batch);
+        _currentlySavingField = null;
+        StateHasChanged();
+    }
+
+    private Task HandleStatusSave(BatchStatus newStatus) { Batch.BatchStatus = newStatus; return Task.CompletedTask; }
+
+    private async Task HandleQuantitySave(string fieldName, int newValue)
+    {
+        if (fieldName == "Planned") Batch.PlannedQuantity = newValue;
+        if (fieldName == "Actual") Batch.ActualQuantity = newValue;
+        if (fieldName == "Defects") Batch.DefectiveQuantity = newValue;
+    }
+
+    private Task HandleRemarkSave(string newRemark) { Batch.Remarks = newRemark; return Task.CompletedTask; }
+}

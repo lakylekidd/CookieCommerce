@@ -74,7 +74,7 @@ CREATE TRIGGER outbox_notify
         }
 
         public ISchemaObject SchemaObject => _parent;
-        
+
         public SchemaPatchDifference Difference => SchemaPatchDifference.Update;
 
         public void WriteUpdate(Migrator rules, TextWriter writer)

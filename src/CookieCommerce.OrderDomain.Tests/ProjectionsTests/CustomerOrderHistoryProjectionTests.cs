@@ -22,7 +22,7 @@ public class CustomerOrderHistoryProjectionTests
         var orderId = Guid.NewGuid();
         var customerId = Guid.NewGuid();
         var placedAt = DateTime.UtcNow;
-        
+
         var orderPlaced = new OrderPlaced
         {
             OrderId = orderId,
@@ -49,7 +49,7 @@ public class CustomerOrderHistoryProjectionTests
         var orderId = Guid.NewGuid();
         var productId = Guid.NewGuid();
         var orderLine = new OrderLine(productId, quantity: 2, unitPrice: 10.00m);
-        
+
         var current = new CustomerOrderHistoryReadModel
         {
             Id = orderId,

@@ -14,7 +14,7 @@ public class RenameProductHandler(IDocumentSession session) : IRequestHandler<Re
     public async Task Handle(RenameProduct request, CancellationToken cancellationToken)
     {
         var product = await session.Events.AggregateStreamAsync<ProductAggregate>(
-            request.ProductId, 
+            request.ProductId,
             token: cancellationToken)
             ?? throw new ProductNotFoundException(request.ProductId);
 

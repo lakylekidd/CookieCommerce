@@ -2,6 +2,7 @@
 
 public class CustomerCreated
 {
+    public DateTimeOffset? CreatedAtUtc { get; set; }
     public Guid CustomerId { get; set; }
     public string EncryptedFirstName { get; set; }
     public string EncryptedLastName { get; set; }

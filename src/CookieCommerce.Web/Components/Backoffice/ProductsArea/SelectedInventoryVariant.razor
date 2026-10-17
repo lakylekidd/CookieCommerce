@@ -1,0 +1,400 @@
+@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Services
+@using Microsoft.AspNetCore.Components.Forms
+@rendermode InteractiveServer
+@inject IBackofficeService BackofficeService
+
+<style>
+    .row-swipe-out {
+        animation: swipeAndCollapse 0.5s forwards ease-out;
+        pointer-events: none;
+    }
+
+    @@keyframes swipeAndCollapse {
+        0% {
+            transform: translateX(0);
+            opacity: 1;
+            max-height: 100px;
+        }
+
+        30% {
+            transform: translateX(20px);
+            opacity: 0.7;
+        }
+
+        60% {
+            transform: translateX(-100%);
+            opacity: 0;
+            max-height: 100px; /* Keep height until swipe is done */
+        }
+
+        100% {
+            transform: translateX(-100%);
+            opacity: 0;
+            max-height: 0;
+            padding: 0;
+            margin: 0;
+            display: flex; /* Critical: Allows max-height to collapse the row space */
+            overflow: hidden;
+        }
+    }
+</style>
+
+<tr class="@(isDeleting ? "row-swipe-out" : "") group hover:bg-stone-50/50 dark:hover:bg-white/5 transition-all">
+    @* 1. Variant Name *@
+    <td class="py-4 px-2 @(isDeleting ? "py-0 transition-all duration-500" : "")">
+        <div class="relative group/name flex items-center">
+            <input type="text"
+                   aria-label="@($"Variant name for {Variant.Name}")"
+                   @bind="Variant.Name"
+                   @bind:event="oninput"
+                   @onblur="HandleUpdateName"
+                   @onkeydown="HandleKeyDownUpdateName"
+                   disabled="@isSaving"
+                   class="w-full bg-transparent px-2 py-1 rounded-lg text-sm font-bold
+                      @(isSaving ? "text-stone-400" : "text-stone-700 dark:text-stone-200")
+                      border border-transparent
+                      hover:bg-stone-50 dark:hover:bg-stone-800/50 hover:border-stone-200
+                      focus:bg-white dark:focus:bg-stone-800 focus:border-primary focus:ring-4 focus:ring-primary/10
+                      transition-all outline-none" />
+
+            @* Tiger-Cute Loading Spinner *@
+            <div class="absolute right-2 flex items-center">
+                @if (isSaving)
+                {
+                    <div class="animate-spin size-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                }
+                else
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-stone-300 opacity-0 group-hover/name:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                }
+            </div>
+        </div>
+    </td>
+
+    @* 2. Cost Price *@
+    <td class="py-4 px-2 @(isDeleting ? "py-0 transition-all duration-500" : "")">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg">
+            <span class="text-xs font-bold text-primary">@Variant.CurrencySymbol</span>
+            <span class="text-sm font-black text-stone-600 dark:text-stone-300 transition-all duration-500 @(justUpdated ? "text-emerald-500 scale-110" : "")">
+                @Variant.CostPrice.ToString("N2")
+            </span>
+
+            @* Optional: Tiny info icon indicating it's a summary *@
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-stone-300 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+    </td>
+
+    @* 3. Editable Price *@
+    <td class="py-4 px-2 @(isDeleting ? "py-0 transition-all duration-500" : "")">
+        <div class="relative group/price flex items-center w-24">
+            @* Currency Symbol - Stays visible but dims when saving *@
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-primary font-bold text-xs pointer-events-none transition-opacity @(isSavingPrice ? "opacity-30" : "opacity-100")">
+                @Variant.CurrencySymbol
+            </span>
+
+            <input type="number" step="0.01"
+                           aria-label="@($"Variant price for {Variant.Name}")"
+                           @bind="Variant.Price"
+                           @bind:event="oninput"
+                           @onblur="HandleUpdatePrice"
+                           @onkeydown="HandleKeyDownUpdatePrice"
+                           disabled="@isSavingPrice"
+                           class="w-full pl-6 pr-8 py-1 bg-transparent border border-transparent rounded-lg text-sm font-bold
+                  @(isSavingPrice ? "text-stone-400" : "text-stone-700 dark:text-stone-200")
+                  hover:bg-stone-50 dark:hover:bg-stone-800/50 hover:border-stone-200
+                  focus:bg-white dark:focus:bg-stone-800 focus:border-primary focus:ring-4 focus:ring-primary/10
+                  transition-all outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+
+            @* Status Indicator (Spinner or Success) *@
+            <div class="absolute right-2 flex items-center">
+                @if (isSavingPrice)
+                {
+                    <div class="animate-spin size-3.5 border-2 border-primary border-t-transparent rounded-full"></div>
+                }
+                else if (showPriceSuccess)
+                {
+                    <div class="text-emerald-500 animate-bounce-short">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                }
+            </div>
+        </div>
+    </td>
+
+    @* 4. Profit *@
+    <td class="py-4 px-2 @(isDeleting ? "py-0 transition-all duration-500" : "")">
+        <div class="flex items-center gap-3 group/stats">
+            @* The Graph Icon & Percentage *@
+            <div class="flex flex-col">
+                <div class="flex items-center gap-1">
+                    @if (IsProfitable)
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        <span class="text-sm font-black text-emerald-600 dark:text-emerald-400 @(justUpdated ? "text-emerald-500 scale-110" : "")">
+                            +@MarkupPercentage.ToString("N0")%
+                        </span>
+                    }
+                    else
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
+                        </svg>
+                        <span class="text-sm font-black text-red-600 dark:text-red-400 @(justUpdated ? "text-emerald-500 scale-110" : "")">
+                            @MarkupPercentage.ToString("N0")%
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    </td>
+
+    @* 5. Stock *@
+    <td class="py-4 px-2 @(isDeleting ? "py-0 transition-all duration-500" : "")">
+        <div class="inline-flex items-center gap-2 bg-stone-100 dark:bg-stone-800 px-3 py-1.5 rounded-full border border-stone-200 dark:border-stone-700 shadow-sm">
+            <span class="size-2 rounded-full @(Variant.Stock > 10 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-orange-500")"></span>
+            <span class="text-sm font-black text-stone-700 dark:text-stone-200">
+                @Variant.Stock
+            </span>
+            <span class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Qty</span>
+        </div>
+    </td>
+
+    @* 6. Mini Toggle *@
+    <td class="py-4 px-2 text-right @(isDeleting ? "py-0 transition-all duration-500" : "")">
+        <div class="flex flex-col items-end gap-1">
+            <label class="relative inline-flex items-center cursor-pointer" for="@StatusControlId">
+                <span class="sr-only">Toggle variant status between Live and Draft</span>
+                <input id="@StatusControlId"
+                       type="checkbox"
+                       checked="@Variant.Active"
+                       aria-label="@($"Variant status for {Variant.Name}, currently {(Variant.Active ? "Live" : "Draft")}")"
+                       disabled="@isTogglingStatus"
+                       @onchange="HandleToggleStatusAsync"
+                       class="sr-only peer">
+                @* The Switch Track *@
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700
+                                 peer-checked:after:translate-x-full peer-checked:after:border-white
+                                 after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                 after:bg-white after:border-gray-300 after:border after:rounded-full
+                                 after:h-5 after:w-5 after:transition-all
+                                 peer-checked:bg-primary"></div>
+            </label>
+            @if (isTogglingStatus)
+            {
+                <div class="flex items-center gap-1">
+                    <div class="animate-spin size-3 border-2 border-primary border-t-transparent rounded-full"></div>
+                    <span class="text-[10px] font-bold uppercase text-stone-400">Saving…</span>
+                </div>
+            }
+            else
+            {
+                <span class="text-[10px] font-bold uppercase @(Variant.Active ? "text-emerald-600" : "text-gray-400")">
+                    @(Variant.Active ? "Live" : "Draft")
+                </span>
+            }
+        </div>
+    </td>
+
+    <td class="py-4 px-2 text-right @(isDeleting ? "py-0 transition-all duration-500" : "")">
+        <div class="flex items-center justify-end gap-3">
+            <div class="relative group">
+                <button @onclick="HandleDelete"
+                        type="button"
+                        aria-label="@($"Delete variant {Variant.Name}")"
+                        disabled="@isDeleting"
+                        class="cursor-pointer flex items-center justify-center w-10 h-10 bg-white dark:bg-gray-800 border border-primary text-primary hover:bg-primary hover:text-white rounded-full transition-all shadow-sm active:scale-90">
+                    @if (isDeleting)
+                    {
+                        @* Optional: Small spinner while it's swiping *@
+                        <div class="animate-spin size-4 border-2 border-red-500 border-t-transparent rounded-full"></div>
+                    }
+                    else
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    }
+                </button>
+            </div>
+
+            @if (isExpanded)
+            {
+                <div class="relative group">
+                    @* Separate isolated group *@
+                    <button @onclick="ToggleDetailsAsync"
+                            type="button"
+                            aria-label="@($"Collapse details for {Variant.Name}")"
+                            class="cursor-pointer flex items-center justify-center w-10 h-10
+                                dark:bg-gray-800 border border-primary text-primary bg-primary
+                                text-white rounded-full transition-all shadow-sm active:scale-90">
+                        <span class="material-symbols-outlined text-xl">keyboard_arrow_up</span>
+                        @* Tooltip *@
+                        <span class="absolute -top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 text-[11px] text-white whitespace-nowrap z-50 shadow-xl pointer-events-none">
+                            Minimize!
+                            <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
+                        </span>
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="relative group">
+                    @* Separate isolated group *@
+                    <button @onclick="ToggleDetailsAsync"
+                            type="button"
+                            aria-label="@($"Expand details for {Variant.Name}")"
+                            class="cursor-pointer flex items-center justify-center w-10 h-10 bg-white
+                                dark:bg-gray-800 border border-primary text-primary hover:bg-primary hover:text-white
+                                rounded-full transition-all shadow-sm active:scale-90">
+                        <span class="material-symbols-outlined text-xl">keyboard_arrow_down</span>
+                        @* Tooltip *@
+                        <span class="absolute -top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-200 rounded bg-primary p-2 text-[11px] text-white whitespace-nowrap z-50 shadow-xl pointer-events-none">
+                            Expand!
+                            <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
+                        </span>
+                    </button>
+                </div>
+            }
+        </div>
+    </td>
+</tr>
+
+@if(isExpanded)
+{
+    <SelectedInventoryVariantSkus
+        VariantSkus="@Variant.Skus"
+        VariantSkusChanged="@ReloadVariantDataAsync"
+        isLoading="@isLoadingSkus"
+        VariantId="@Variant.Id" />
+}
+
+@code {
+    [Parameter, EditorRequired] public Guid ProductId { get; set; }
+    [Parameter] public ProductVariantDto Variant { get; set; } = default!;
+    private bool justUpdated = false;
+    private string? originalName;
+    private decimal? originalPrice;
+    private bool isDeleting = false;
+    private bool isSaving = false;
+    private bool isSavingPrice = false;
+    private bool showPriceSuccess = false;
+    private double MarkupPercentage => Variant.CostPrice > 0
+        ? (double)((Variant.Price - Variant.CostPrice) / Variant.CostPrice) * 100
+        : 0;
+
+    private bool IsProfitable => Variant.Price > Variant.CostPrice;
+
+    private bool isExpanded = false;
+    private bool isLoadingSkus = false;
+    private string StatusControlId => $"variant-status-{Variant.Id:N}";
+
+    protected override void OnParametersSet()
+    {
+        originalName = Variant.Name;
+        originalPrice = Variant.Price;
+    }
+
+    private async Task ReloadVariantDataAsync()
+    {
+        justUpdated = true;
+        Variant = await BackofficeService.GetVariantAsync(Variant.Id);
+        StateHasChanged();
+        justUpdated = false;
+    }
+
+    private async Task ToggleDetailsAsync()
+    {
+        isExpanded = !isExpanded;
+
+        if (isExpanded)
+        {
+            isLoadingSkus = true;
+            await Task.Delay(600);
+            Variant.Skus = await BackofficeService.GetVariantSkus(Variant.Id);
+            isLoadingSkus = false;
+        }
+        else
+        {
+            //order = null;
+        }
+    }
+
+    private bool isTogglingStatus = false;
+
+    private async Task HandleToggleStatusAsync(ChangeEventArgs e)
+    {
+        if (isTogglingStatus) return;
+
+        isTogglingStatus = true;
+        var newStatus = e.Value is bool value && value;
+        try
+        {
+            await BackofficeService.ChangeVariantStatusAsync(Variant.Id, newStatus);
+            Variant.Active = newStatus;
+        }
+        finally
+        {
+            isTogglingStatus = false;
+        }
+    }
+
+    private async Task HandleDelete()
+    {
+        if (isDeleting) return;
+
+        isDeleting = true;
+        StateHasChanged();
+
+        await Task.Delay(500);
+        await BackofficeService.DeleteVariantAsync(Variant.Id);
+    }
+
+    private async Task HandleKeyDownUpdateName(KeyboardEventArgs e)
+    {
+        if (e.Key != "Enter") return;
+        await HandleUpdateName();
+    }
+
+    private async Task HandleKeyDownUpdatePrice(KeyboardEventArgs e)
+    {
+        if (e.Key != "Enter") return;
+        await HandleUpdatePrice();
+    }
+
+    private async Task HandleUpdateName()
+    {
+        if (isSaving || Variant.Name == originalName) return;
+
+        isSaving = true;
+        await BackofficeService.ChangeVariantNameAsync(Variant.Id, Variant.Name);
+
+        originalName = Variant.Name;
+        isSaving = false;
+    }
+
+    private async Task HandleUpdatePrice()
+    {
+        if (isSavingPrice || Variant.Price == originalPrice) return;
+
+        isSavingPrice = true;
+        await BackofficeService.ChangeVariantPriceAsync(Variant.Id, Variant.Price);
+
+        originalPrice = Variant.Price;
+        isSavingPrice = false;
+
+        // Trigger the success "flash"
+        showPriceSuccess = true;
+        StateHasChanged();
+        await Task.Delay(2000);
+        showPriceSuccess = false;
+    }
+}

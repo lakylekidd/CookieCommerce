@@ -8,7 +8,7 @@ public class AddressNotFoundException : Exception
     public Guid CustomerId { get; }
     public string Label { get; }
 
-    public AddressNotFoundException(Guid customerId, string label) 
+    public AddressNotFoundException(Guid customerId, string label)
         : base($"Address with label '{label}' does not exist for customer '{customerId}'.")
     {
         CustomerId = customerId;

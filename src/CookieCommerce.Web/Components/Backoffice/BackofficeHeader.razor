@@ -1,0 +1,106 @@
+@using CookieCommerce.Web.Components.Shared
+@using CookieCommerce.Web.Services
+@inject IAuthService Auth
+
+<header class="h-20 flex items-center justify-between px-8 bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-md sticky top-0 z-10 border-b border-orange-50 dark:border-stone-800">
+    <div class="flex items-center gap-4">
+        <button class="md:hidden text-stone-500 hover:text-primary transition-colors" @onclick="ToggleMenu">
+            <span class="material-icons-round text-3xl">menu</span>
+        </button>
+    </div>
+    <div class="flex items-center gap-4">
+        <div class="hidden md:flex items-center bg-white dark:bg-stone-800 rounded-full px-4 py-2 shadow-sm border border-stone-100 dark:border-stone-700 focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+            <span class="material-icons-round text-stone-400">search</span>
+            <input class="bg-transparent border-none focus:ring-0 text-sm w-64 text-stone-700 dark:text-stone-200 placeholder-stone-400"
+                   placeholder="Search orders, cookies..." type="text" />
+        </div>
+        <ToggleNightMode />
+        <NotificationsBell />
+    </div>
+</header>
+
+<!-- Mobile Menu -->
+<div class="fixed inset-0 z-[100] lg:hidden transition-all duration-500 @(isMenuOpen ? "visible" : "invisible pointer-events-none")">
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-md" @onclick="ToggleMenu"></div>
+    <div class="fixed top-1/2 left-1/2 -translate-x-1/2 transition-all duration-500 w-[90%] max-w-sm bg-white dark:bg-surface-dark rounded-[2.5rem] p-8 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)] border border-white/20 dark:border-amber-900/30 @(isMenuOpen ? "opacity-100 -translate-y-1/2 scale-100" : "opacity-0 -translate-y-[40%] scale-95")">
+
+        <div class="relative flex flex-col gap-6">
+            <div class="flex justify-end">
+                <button @onclick="ToggleMenu" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/10">
+                    <span class="material-icons-round text-sm">close</span>
+                </button>
+            </div>
+
+            <div class="flex flex-col gap-6 text-center">
+                <div class="flex flex-col gap-2">
+
+                    <NavLink class="text-3xl font-display font-bold py-2 hover:text-primary transition-colors"
+                             href="/backoffice/dashboard"
+                             @onclick="ToggleMenu"
+                             Match="NavLinkMatch.All">
+                        Dashboard
+                    </NavLink>
+
+                    <NavLink class="text-3xl font-display font-bold py-2 hover:text-primary transition-colors flex items-center justify-center"
+                             href="/backoffice/orders"
+                             @onclick="ToggleMenu">
+                        Orders
+                        <span class="inline-flex items-center justify-center w-8 h-8 ml-3 bg-primary text-white text-xs font-bold rounded-full shadow-sm">
+                            12
+                        </span>
+                    </NavLink>
+
+                    <NavLink class="text-3xl font-display font-bold py-2 hover:text-primary transition-colors"
+                             href="/backoffice/products"
+                             @onclick="ToggleMenu">
+                        Products
+                    </NavLink>
+
+                    <NavLink class="text-3xl font-display font-bold py-2 hover:text-primary transition-colors"
+                             href="/backoffice/customers"
+                             @onclick="ToggleMenu">
+                        Customers
+                    </NavLink>
+
+                    <NavLink class="text-3xl font-display font-bold py-2 hover:text-primary transition-colors"
+                             href="/backoffice/settings"
+                             @onclick="ToggleMenu">
+                        Settings
+                    </NavLink>
+                </div>
+
+                <div class="flex items-center justify-center gap-4 bg-gray-50 dark:bg-white/5 p-3 rounded-3xl">
+                    <ToggleNightMode IsMobileMenu="true" />
+                </div>
+            </div>
+
+            <div class="mt-4 pt-6 border-t border-amber-100 dark:border-amber-900/20 flex flex-col items-center gap-4">
+                @if (Auth.IsLoggedIn)
+                {
+                    <span class="w-full text-center py-2 font-display font-bold uppercase opacity-50 text-sm tracking-wider">
+                        Welcome, @Auth.CurrentUser!.FirstName 🐯
+                    </span>
+                    <button @onclick="async () => { await Auth.LogoutAsync(); ToggleMenu(); }" class="w-full py-4 rounded-2xl bg-red-50 dark:bg-red-500/10 text-red-500 font-bold">
+                        Sign Out
+                    </button>
+                }
+                else
+                {
+                    <a href="/auth/signin" @onclick="ToggleMenu" class="w-full bg-primary text-white text-center py-4 rounded-2xl font-bold block">
+                        Sign In
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Mobile Menu -->
+
+@code {
+    private bool isMenuOpen = false;
+
+    private void ToggleMenu()
+    {
+        isMenuOpen = !isMenuOpen;
+    }
+}

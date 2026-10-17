@@ -12,7 +12,7 @@ public class ProductAggregateTests
         var agg = new ProductAggregate();
 
         Action act = () => agg.Create(Guid.NewGuid(), "", "description", 10.99m);
-        
+
         act.Should().Throw<ArgumentException>()
             .WithMessage("*name*");
     }
@@ -23,7 +23,7 @@ public class ProductAggregateTests
         var agg = new ProductAggregate();
 
         Action act = () => agg.Create(Guid.NewGuid(), "Product", "", 10.99m);
-        
+
         act.Should().Throw<ArgumentException>()
             .WithMessage("*description*");
     }
@@ -35,7 +35,7 @@ public class ProductAggregateTests
         var id = Guid.NewGuid();
 
         Action act = () => agg.Create(id, "Product", "Description", 0m);
-        
+
         act.Should().Throw<InvalidPriceException>()
             .Which.ProductId.Should().Be(id);
     }
@@ -47,7 +47,7 @@ public class ProductAggregateTests
         var id = Guid.NewGuid();
 
         Action act = () => agg.Create(id, "Product", "Description", -5.99m);
-        
+
         act.Should().Throw<InvalidPriceException>()
             .Which.Price.Should().Be(-5.99m);
     }

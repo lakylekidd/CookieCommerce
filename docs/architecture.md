@@ -160,3 +160,18 @@ public class CustomerProjection : SingleStreamProjection<CustomerReadModel, Guid
 - Test method names: `{Method}_{Scenario}_{ExpectedResult}`
 - Use `IClassFixture<TestWebApplicationFactory>` for integration tests
 - FluentAssertions for readable assertions: `result.Should().Be(expected)`
+
+## Customer Account Lifecycle
+
+Backoffice customer creation spans the Customer and Authentication Management bounded contexts:
+
+1. The Web backoffice validates and creates the encrypted customer profile through Customer Domain.
+2. Web calls the administrator-only Authentication Management provisioning endpoint with the returned customer id.
+3. Authentication Management idempotently creates a linked Keycloak identity with the `User` realm role, the `UPDATE_PASSWORD` required action, and no credential.
+4. If requested, Authentication Management creates a cryptographically random, 30-minute, single-use password-setup token. Only its SHA-256 hash is stored in Marten.
+5. Web renders the published `account-invitation` template and queues it through the existing outbound-email pipeline. The link targets `/auth/password/setup/{token}`.
+6. The public password-setup endpoint validates and consumes the token under a PostgreSQL advisory lock, writes the permanent Keycloak password, clears the required action, and uses the regular login handler to return an authenticated session.
+
+Resending an invitation revokes all earlier unused invitations for that identity. Customer detail remains the recovery point when provisioning or initial delivery was skipped or failed.
+
+Keycloak remains the source of truth for realm roles. Authentication Management owns role mutation and enforces both invariants before removing `Admin`: the acting identity cannot be the target, and more than one administrator must currently exist. These rules are enforced server-side; disabled UI controls are only a convenience.

@@ -135,25 +135,7 @@ public class KeycloakAuthService(
             var result = await response.Content.ReadFromJsonAsync<LoginApiResponse>(
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (result == null) return false;
-
-            _currentUser = ParseJwtToUserDto(result.AccessToken) ?? new UserDto
-            {
-                Id = result.UserId,
-                Email = result.Email,
-                FirstName = result.FirstName,
-                LastName = result.LastName,
-                Role = result.Role ?? "User"
-            };
-
-            if (string.Equals(result.Role, "Admin", StringComparison.OrdinalIgnoreCase))
-                _currentUser.Role = "Admin";
-            _refreshToken = result.RefreshToken;
-            _accessToken = result.AccessToken;
-            await localStorage.SetAsync(TokenKey, result.AccessToken);
-            await localStorage.SetAsync(RefreshTokenKey, result.RefreshToken);
-            await cartService.ConvertToUserCartAsync(_currentUser.Id);
-            _initialized = true;
-            NotifyStateChanged();
+            await ApplyLoginAsync(result);
             return true;
         }
         catch (Exception ex)
@@ -241,8 +223,45 @@ public class KeycloakAuthService(
         return _accessToken;
     }
 
-    public Task<AuthResult> UpdatePasswordAsync(string token, string newPassword)
-        => Task.FromResult(AuthResult.Failed("Use the secure password reset link in your email. Passwords are updated on our sign-in provider's page."));
+    public async Task<AuthResult> UpdatePasswordAsync(string token, string newPassword)
+    {
+        try
+        {
+            using var response = await httpClient.PostAsJsonAsync("api/auth/password-setup", new { token, password = newPassword });
+            if (!response.IsSuccessStatusCode)
+                return AuthResult.Failed("This password setup link is invalid or has expired.");
+            var result = await response.Content.ReadFromJsonAsync<LoginApiResponse>(
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (result is null) return AuthResult.Failed("The account was updated, but sign-in could not be completed.");
+            await ApplyLoginAsync(result);
+            return AuthResult.Succeeded();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException or InvalidOperationException)
+        {
+            logger?.LogWarning("Password setup failed ({FailureType})", ex.GetType().Name);
+            return AuthResult.Failed("Password setup could not be completed. Please try again.");
+        }
+    }
+
+    private async Task ApplyLoginAsync(LoginApiResponse result)
+    {
+        _currentUser = ParseJwtToUserDto(result.AccessToken) ?? new UserDto
+        {
+            Id = result.UserId,
+            Email = result.Email,
+            FirstName = result.FirstName,
+            LastName = result.LastName,
+            Role = result.Role ?? "User"
+        };
+        if (string.Equals(result.Role, "Admin", StringComparison.OrdinalIgnoreCase)) _currentUser.Role = "Admin";
+        _refreshToken = result.RefreshToken;
+        _accessToken = result.AccessToken;
+        await localStorage.SetAsync(TokenKey, result.AccessToken);
+        await localStorage.SetAsync(RefreshTokenKey, result.RefreshToken);
+        await cartService.ConvertToUserCartAsync(_currentUser.Id);
+        _initialized = true;
+        NotifyStateChanged();
+    }
 
     private static UserDto? ParseJwtToUserDto(string token)
     {

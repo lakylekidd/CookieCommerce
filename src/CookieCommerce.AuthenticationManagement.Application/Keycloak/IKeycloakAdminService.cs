@@ -4,6 +4,8 @@ public interface IKeycloakAdminService
 {
     Task<string> RegisterUserAsync(string email, string password, string firstName, string lastName, CancellationToken ct = default);
     Task AssignRealmRoleAsync(string keycloakId, string roleName, CancellationToken ct = default);
+    Task RemoveRealmRoleAsync(string keycloakId, string roleName, CancellationToken ct = default);
+    Task<int> CountUsersInRealmRoleAsync(string roleName, CancellationToken ct = default);
     Task<IReadOnlyList<string>> GetRealmRolesAsync(string keycloakId, CancellationToken ct = default);
     Task<KeycloakUserInfo?> GetUserByEmailAsync(string email, CancellationToken ct = default);
     Task UpdateUserEmailAsync(string keycloakId, string verifiedEmail, CancellationToken ct = default);
@@ -20,7 +22,13 @@ public interface IKeycloakAdminService
     Task<KeycloakUserInfo?> GetUserByCustomerIdAsync(Guid customerId, CancellationToken ct = default);
 }
 
-public sealed record KeycloakAccountStatus(string? IdentityId, string State, int FailedAttempts = 0, string? LastRecoveryState = null);
+public sealed record KeycloakAccountStatus(
+    string? IdentityId,
+    string State,
+    int FailedAttempts = 0,
+    string? LastRecoveryState = null,
+    bool IsAdmin = false,
+    bool IsCurrentUser = false);
 public sealed record KeycloakEmailSettings(string Host, int Port, string Security, string Username,
     string Password, string From, string SenderName, string ReplyTo, string PublicStoreUrl);
 

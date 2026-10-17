@@ -17,6 +17,7 @@ public class AuthController(ISender mediator, IKeycloakTokenService tokens, IKey
 {
     public sealed record RefreshRequest(string RefreshToken);
     public sealed record ForgotPasswordRequest(string Email);
+    public sealed record CompletePasswordSetupRequest(string Token, string Password);
 
     [HttpPost("refresh")]
     public async Task<IActionResult> RefreshAsync([FromBody] RefreshRequest request, CancellationToken ct)
@@ -59,6 +60,38 @@ public class AuthController(ISender mediator, IKeycloakTokenService tokens, IKey
                 .LogWarning("Password recovery delivery failed ({FailureType})", ex.GetType().Name);
         }
         return Accepted();
+    }
+
+    [HttpPost("password-setup")]
+    [EnableRateLimiting("recovery")]
+    public async Task<IActionResult> CompletePasswordSetupAsync(
+        [FromBody] CompletePasswordSetupRequest request,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Token) || string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 8)
+            return BadRequest(new ProblemDetails { Title = "Enter a valid invitation and a password of at least 8 characters." });
+
+        var session = HttpContext.RequestServices.GetRequiredService<IDocumentSession>();
+        var hash = PasswordSetupInvitation.HashToken(request.Token);
+        await using var guard = new Npgsql.NpgsqlConnection(
+            HttpContext.RequestServices.GetRequiredService<IConfiguration>().GetConnectionString("AuthenticationManagement"));
+        await guard.OpenAsync(ct);
+        await using var transaction = await guard.BeginTransactionAsync(ct);
+        await using var command = new Npgsql.NpgsqlCommand("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", guard, transaction);
+        command.Parameters.AddWithValue("password-setup:" + hash);
+        await command.ExecuteNonQueryAsync(ct);
+
+        var invitation = await session.LoadAsync<PasswordSetupInvitation>(hash, ct);
+        if (invitation is null || invitation.UsedAt is not null || invitation.RevokedAt is not null || invitation.ExpiresAt <= DateTimeOffset.UtcNow)
+            return BadRequest(new ProblemDetails { Title = "This password setup link is invalid or has expired." });
+
+        await users.SetPasswordAsync(invitation.IdentityId, request.Password, ct);
+        await users.EnableUserAsync(invitation.IdentityId, ct);
+        invitation.UsedAt = DateTimeOffset.UtcNow;
+        session.Store(invitation);
+        await session.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+        return Ok(await mediator.Send(new LoginUser(invitation.Email, request.Password), ct));
     }
     private readonly ISender _mediator = mediator;
 

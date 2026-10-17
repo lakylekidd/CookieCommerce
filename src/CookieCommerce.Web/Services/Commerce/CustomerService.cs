@@ -10,6 +10,28 @@ namespace CookieCommerce.Web.Services.Commerce;
 public sealed class CustomerService(IHttpClientFactory factory, ICommerceStore store, CommerceAccess access, ProductMainImages? mainImages = null,
     CookieCommerce.Web.Services.Communications.AccountAdministrationService? accounts = null) : ICustomerService
 {
+    public async Task<CustomerDto> CreateCustomerAsync(string firstName, string lastName, string email, bool sendWelcomeEmail)
+    {
+        await access.RequireAdminAsync();
+        firstName = firstName.Trim();
+        lastName = lastName.Trim();
+        email = email.Trim().ToLowerInvariant();
+        if (firstName.Length == 0 || lastName.Length == 0 || !System.Net.Mail.MailAddress.TryCreate(email, out _))
+            throw new InvalidOperationException("Enter a first name, last name and valid email address.");
+
+        using var response = await factory.CreateClient("customer-domain-api").PostAsJsonAsync("api/customer", new
+        {
+            FirstName = firstName, LastName = lastName, Email = email, Gender = 0, DateOfBirth = (DateTime?)null
+        });
+        response.EnsureSuccessStatusCode();
+        var customerId = await response.Content.ReadFromJsonAsync<Guid>();
+        if (customerId == Guid.Empty) throw new InvalidOperationException("The customer service did not return a customer id.");
+        if (accounts is null) throw new InvalidOperationException("Account administration is unavailable.");
+        await accounts.ProvisionAsync(customerId);
+        if (sendWelcomeEmail) await accounts.SendInvitationAsync(customerId);
+        return new CustomerDto { Id = customerId, FirstName = firstName, LastName = lastName, Email = email, MemberSince = DateTime.UtcNow };
+    }
+
     public async Task<ICollection<CustomerDto>> GetCustomersAsync()
     {
         await access.RequireAdminAsync();

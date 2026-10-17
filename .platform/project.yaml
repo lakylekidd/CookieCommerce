@@ -32,7 +32,7 @@ services:
       ConnectionStrings__CustomerDomain: customer-db
       ConnectionStrings__Messaging: messaging
     variables:
-      EmailVerificationDelivery__ExternalDeliveryEndpoint: http://tiger-van-cookie-production-web:8080/api/internal/email/verification
+      EmailVerificationDelivery__ExternalDeliveryEndpoint: http://web:8080/api/internal/email/verification
       EmailVerificationDelivery__VerificationBaseUrl: https://tigervancookie.nl
     secretVariables:
       EmailVerificationDelivery__ServiceKey: {folder: /shared, key: COMMUNICATIONS_SERVICE_KEY}
@@ -142,8 +142,7 @@ infrastructure:
       password: {folder: /keycloak, key: KEYCLOAK_DB_PASSWORD}
     keycloak:
       kind: keycloak
-      build:
-        dockerfile: .platform/keycloak/Dockerfile
+      image: ghcr.io/lakylekidd/cookiecommerce-infra-keycloak@sha256:2e2d4b7f400a259b4fcf1ab8ed2e01e76a441e03ddf6a5331720a7944cba587e
       databaseResource: keycloak-db
       domains:
         production: login.tigervancookie.nl

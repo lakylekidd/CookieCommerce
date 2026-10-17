@@ -21,6 +21,7 @@ public static class DependencyInjection
             if (!string.IsNullOrEmpty(keycloakUrl))
                 opts.BaseUrl = keycloakUrl;
         });
+        services.Configure<ProductionAdminOptions>(configuration.GetSection("ProductionAdmin"));
 
         services.AddHttpClient("keycloak", (sp, client) =>
         {
@@ -32,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<IKeycloakTokenService, KeycloakTokenService>();
         services.AddScoped<IDevelopmentIdentityBootstrapAdapter, KeycloakDevelopmentIdentityBootstrapAdapter>();
         services.AddHostedService<KeycloakBootstrapService>();
+        services.AddHostedService<ProductionAdminBootstrapService>();
         services.AddHostedService<DevelopmentBootstrapService>();
         services.AddHostedService<RegistrationDeliveryWorker>();
         services.AddHostedService<PasswordRecoveryDeliveryWorker>();

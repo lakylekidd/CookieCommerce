@@ -26,15 +26,41 @@ public sealed class CommerceHttpTests
     [InlineData("/shop/cookie/11111111-1111-1111-1111-111111111111")]
     [InlineData("/shop/checkout")]
     [InlineData("/backoffice/products")]
+    [InlineData("/auth/signup")]
     [InlineData("/auth/password/reset/expired-token")]
-    public async Task Pages_render_with_the_real_service_registrations(string route)
+    public async Task Anonymous_pages_are_hidden_while_coming_soon_mode_is_enabled(string route)
     {
         await using var factory = new SiteFactory();
         using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
         using var response = await client.GetAsync(route);
         var html = await response.Content.ReadAsStringAsync();
         response.StatusCode.Should().Be(HttpStatusCode.OK, html);
-        if (route.Contains("backoffice")) html.Should().Contain("Sign in with an authorized account");
+        html.Should().Contain("COMING SOON");
+    }
+
+    [Fact]
+    public async Task Signin_remains_available_while_coming_soon_mode_is_enabled()
+    {
+        await using var factory = new SiteFactory();
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+
+        var html = await client.GetStringAsync("/auth/signin");
+
+        html.Should().Contain("Welcome Back");
+        html.Should().NotContain("Create an Account");
+    }
+
+    [Fact]
+    public async Task Storefront_is_public_when_coming_soon_mode_is_disabled()
+    {
+        await using var factory = new SiteFactory();
+        await factory.Store.SaveAsync("store", new CommerceSettings { ComingSoonEnabled = false });
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+
+        var html = await client.GetStringAsync("/shop");
+
+        html.Should().NotContain("COMING SOON");
+        html.Should().Contain("Cookie");
     }
 
     [Fact]

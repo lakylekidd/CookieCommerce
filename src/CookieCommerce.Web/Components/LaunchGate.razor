@@ -1,0 +1,78 @@
+@using CookieCommerce.Web.Components.Storefront.ComingSoon
+@using CookieCommerce.Web.Services.Commerce
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+@inject StoreSettingsService Settings
+@implements IDisposable
+
+@if (!settingsLoaded)
+{
+    <p class="sr-only" aria-live="polite">Loading the store...</p>
+}
+else if (!comingSoonEnabled || IsPublicLaunchRoute)
+{
+    <AuthorizeRouteView RouteData="RouteData" DefaultLayout="typeof(ComingSoonLayout)">
+        <NotAuthorized>
+            <p>Sorry, you don't have permission to be here. Maybe try logging in?</p>
+        </NotAuthorized>
+        <Authorizing>
+            <p class="sr-only" aria-live="polite">Checking your credentials...</p>
+        </Authorizing>
+    </AuthorizeRouteView>
+}
+else
+{
+    <AuthorizeView>
+        <Authorized>
+            <AuthorizeRouteView RouteData="RouteData" DefaultLayout="typeof(ComingSoonLayout)" />
+        </Authorized>
+        <NotAuthorized>
+            <LayoutView Layout="typeof(ComingSoonLayout)">
+                <ComingSoonPage />
+            </LayoutView>
+        </NotAuthorized>
+        <Authorizing>
+            <p class="sr-only" aria-live="polite">Checking your credentials...</p>
+        </Authorizing>
+    </AuthorizeView>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public RouteData RouteData { get; set; } = default!;
+
+    private bool settingsLoaded;
+    private bool comingSoonEnabled = true;
+
+    private bool IsPublicLaunchRoute =>
+        RouteData.PageType == typeof(Auth.CustomerSignin) ||
+        RouteData.PageType == typeof(ComingSoonPage);
+
+    protected override void OnInitialized() => Settings.ComingSoonChanged += HandleComingSoonChanged;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            comingSoonEnabled = await Settings.IsComingSoonEnabledAsync();
+        }
+        catch
+        {
+            // Fail closed when the setting store cannot be reached during launch mode.
+            comingSoonEnabled = true;
+        }
+        finally
+        {
+            settingsLoaded = true;
+        }
+    }
+
+    private void HandleComingSoonChanged(bool enabled)
+    {
+        comingSoonEnabled = enabled;
+        settingsLoaded = true;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => Settings.ComingSoonChanged -= HandleComingSoonChanged;
+}

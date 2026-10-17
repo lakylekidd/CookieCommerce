@@ -2,6 +2,7 @@ using CookieCommerce.AuthenticationManagement.Infrastructure;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace CookieCommerce.AuthenticationManagement.Tests.InfrastructureTests;
 
@@ -52,5 +53,26 @@ public sealed class DependencyInjectionTests
         });
 
         act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void Production_admin_configuration_is_bound()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["ProductionAdmin:Enabled"] = "true",
+            ["ProductionAdmin:Email"] = "owner@example.com",
+            ["ProductionAdmin:InitialPassword"] = "initial-password"
+        }).Build();
+
+        services.AddLogging();
+        services.AddInfrastructure(configuration);
+        using var provider = services.BuildServiceProvider();
+
+        var options = provider.GetRequiredService<IOptions<CookieCommerce.AuthenticationManagement.Infrastructure.Keycloak.ProductionAdminOptions>>().Value;
+        options.Enabled.Should().BeTrue();
+        options.Email.Should().Be("owner@example.com");
+        options.InitialPassword.Should().Be("initial-password");
     }
 }

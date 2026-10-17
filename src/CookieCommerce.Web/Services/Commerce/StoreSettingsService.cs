@@ -4,8 +4,11 @@ namespace CookieCommerce.Web.Services.Commerce;
 
 public sealed class StoreSettingsService(ICommerceStore store, CommerceAccess access) : IOperationsService
 {
+    public event Action<bool>? ComingSoonChanged;
+
     public Task<CommerceSettings?> LoadAsync() => store.LoadAsync<CommerceSettings>("store");
     public async Task<CommerceSettings> GetAsync() => await LoadAsync() ?? new();
+    public async Task<bool> IsComingSoonEnabledAsync() => (await GetAsync()).ComingSoonEnabled;
     public async Task<StoreDto> GetStoreAsync() => new() { NextDayDeliveryBeforeTime = (await GetAsync()).NextDayDeliveryCutoff.ToTimeSpan() };
 
     public async Task SaveAsync(CommerceSettings settings)
@@ -26,5 +29,6 @@ public sealed class StoreSettingsService(ICommerceStore store, CommerceAccess ac
             settings.Promotions.GroupBy(p => p.Code.Trim(), StringComparer.OrdinalIgnoreCase).Any(g => g.Count() > 1))
             throw new InvalidOperationException("Promotion codes must be unique and discounts must be valid.");
         await store.ExecuteAsync("settings", async tx => { await tx.SaveAsync("store", settings); return true; });
+        ComingSoonChanged?.Invoke(settings.ComingSoonEnabled);
     }
 }

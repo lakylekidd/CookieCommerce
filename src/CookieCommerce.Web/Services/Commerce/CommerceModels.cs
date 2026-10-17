@@ -81,6 +81,7 @@ public sealed class CommerceSettings
         catch (System.Text.Json.JsonException) { return fallback; }
     }
     public string OrderReferencePrefix { get; set; } = "TGR";
+    public bool ComingSoonEnabled { get; set; } = true;
     public decimal FreeShippingThreshold { get; set; } = 40;
     public decimal StandardShippingCost { get; set; } = 4.95m;
     public decimal VatRate { get; set; } = 7;

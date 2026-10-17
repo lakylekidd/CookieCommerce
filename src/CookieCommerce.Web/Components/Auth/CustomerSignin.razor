@@ -8,6 +8,7 @@
 @inject IAuthService Auth
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
+@inject CookieCommerce.Web.Services.Commerce.StoreSettingsService StoreSettings
 
 <PageTitle>Sign In - Tiger van Cookie</PageTitle>
 
@@ -41,7 +42,10 @@
                         <div class="flex justify-between items-center mb-2 px-1">
                             <label class="block text-sm font-bold text-gray-700 dark:text-gray-300"
                                    for="password">Password</label>
-                            <a class="text-xs text-primary font-bold hover:underline" href="/auth/forgot-password">Forgot password?</a>
+                            @if (!comingSoonEnabled)
+                            {
+                                <a class="text-xs text-primary font-bold hover:underline" href="/auth/forgot-password">Forgot password?</a>
+                            }
                         </div>
                         @* Bound to Password variable *@
                         <input @bind="Password"
@@ -63,12 +67,15 @@
                         Let's Go!
                     </button>
                 </form>
-                <div class="mt-12 pt-8 border-t border-amber-100 dark:border-amber-900/30 text-center">
-                    <p class="text-gray-500 dark:text-gray-400">
-                        New to the Jungle?
-                        <a class="text-primary font-extrabold ml-2 hover:underline" href="/auth/signup">Create an Account</a>
-                    </p>
-                </div>
+                @if (!comingSoonEnabled)
+                {
+                    <div class="mt-12 pt-8 border-t border-amber-100 dark:border-amber-900/30 text-center">
+                        <p class="text-gray-500 dark:text-gray-400">
+                            New to the Jungle?
+                            <a class="text-primary font-extrabold ml-2 hover:underline" href="/auth/signup">Create an Account</a>
+                        </p>
+                    </div>
+                }
             </div>
             <div class="order-1 lg:order-2 flex justify-center relative">
                 <div class="relative w-full max-w-sm">
@@ -94,9 +101,16 @@
     private string Email { get; set; } = "";
     private string Password { get; set; } = "";
     private string ErrorMessage { get; set; } = "";
+    private bool comingSoonEnabled = true;
     [Parameter]
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try { comingSoonEnabled = await StoreSettings.IsComingSoonEnabledAsync(); }
+        catch { comingSoonEnabled = true; }
+    }
 
     private async Task HandleLogin()
     {

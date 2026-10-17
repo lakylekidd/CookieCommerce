@@ -25,7 +25,7 @@ public static class SiteMapExtensions
     public static void AddRobots(this WebApplication app)
     {
         app.MapGet("/robots.txt", (HttpContext context, IOptions<PaymentOptions> payments) =>
-            Results.Text($"User-agent: *\nAllow: /\nDisallow: /account\nDisallow: /backoffice\nDisallow: /auth\nDisallow: /shop/checkout\nSitemap: {new Uri(PublicOrigin(context, payments.Value), "/sitemap.xml").AbsoluteUri}\n"));
+            Results.Text($"User-agent: *\nAllow: /\nDisallow: /account\nDisallow: /backoffice\nDisallow: /auth\nDisallow: /design-system\nDisallow: /shop/checkout\nSitemap: {new Uri(PublicOrigin(context, payments.Value), "/sitemap.xml").AbsoluteUri}\n"));
     }
 
     private static Uri PublicOrigin(HttpContext context, PaymentOptions payments) =>

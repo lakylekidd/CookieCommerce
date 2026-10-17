@@ -7,7 +7,7 @@
 @inject CookieCommerce.Web.Services.Communications.AccountAdministrationService Accounts
 
 <div class="transition-colors duration-300">
-    <button class="px-4 py-2 mb-4 rounded-xl border text-primary" disabled="@(isLoading || auditing)" @onclick="AuditAsync">Check customer login access</button>
+    <button type="button" class="backoffice-action ui-focus-visible mb-4" disabled="@(isLoading || auditing)" @onclick="AuditAsync">Check customer login access</button>
     @if (audit.Count > 0)
     {
         <section class="rounded-xl border p-4 mb-4 space-y-2">

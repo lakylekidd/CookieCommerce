@@ -1,0 +1,8 @@
+<div class="dashboard-card">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+}

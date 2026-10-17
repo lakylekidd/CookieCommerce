@@ -23,6 +23,8 @@ Do not implement future functionality unless required by the current task.
 
 ## Documentation
 
+For Blazor work, follow [docs/ui-consistency.md](docs/ui-consistency.md) and [docs/ui-design-system.md](docs/ui-design-system.md). The Web Shop, Backoffice, and Customer Dashboard have distinct UI conventions; consistency is primarily within each domain.
+
 Detailed project design lives in `docs/`.
 
 Read the relevant documents before modifying their areas.

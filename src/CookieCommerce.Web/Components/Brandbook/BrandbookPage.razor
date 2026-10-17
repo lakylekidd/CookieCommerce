@@ -1,0 +1,185 @@
+@page "/design-system"
+@layout BrandbookLayout
+@rendermode InteractiveServer
+@using CookieCommerce.Web.Components.Account.Orders
+@using CookieCommerce.Web.Components.Backoffice.DashboardArea
+@using CookieCommerce.Web.Components.Shared
+@using CookieCommerce.Web.Components.UI.CustomerDashboard
+@using CookieCommerce.Web.Models.Order
+
+<PageTitle>UI Brandbook - CookieCommerce</PageTitle>
+
+<div class="min-h-screen bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+    <header class="border-b border-amber-100 dark:border-amber-900/30 bg-surface-light dark:bg-surface-dark">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <img src="/images/logo.png" alt="" class="w-11 h-11 object-contain" />
+                <div>
+                    <p class="font-display font-bold text-lg leading-tight">Tiger van Cookie</p>
+                    <p class="text-xs uppercase tracking-widest text-primary font-black">UI Brandbook</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-bold rounded-full bg-amber-100 dark:bg-amber-900/40 px-3 py-1">Development reference</span>
+                <button type="button" @onclick="ShowShared" class="ui-focus-visible cursor-pointer text-sm font-bold text-primary hover:underline">Theme controls</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-10">
+        <div class="max-w-3xl mb-10">
+            <p class="text-sm uppercase tracking-widest text-primary font-black mb-2">Living UI reference</p>
+            <h1 class="font-display text-4xl sm:text-5xl font-bold leading-tight">Find the right pattern for each part of the app.</h1>
+            <p class="mt-4 text-gray-600 dark:text-gray-300 leading-relaxed">These samples use the application's stylesheet and selected real components. Product, customer, metric, and order values are mock data. Choose a UI domain, inspect the states, then follow the source path and usage note when building a page.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+            <aside class="lg:col-span-1 lg:sticky lg:top-6 bg-card-light dark:bg-card-dark border border-amber-100 dark:border-amber-900/30 rounded-2xl p-5 shadow-sm">
+                <label for="brandbook-search" class="block text-sm font-bold mb-2">Find an element</label>
+                <input id="brandbook-search" type="search" @bind="search" @bind:event="oninput" placeholder="Card, table, focus…"
+                       class="w-full rounded-xl border-amber-200 dark:border-amber-800 bg-white dark:bg-stone-900 text-sm focus:border-primary focus:ring-primary" />
+                <nav class="mt-6 space-y-1" aria-label="UI domains">
+                    @foreach (var domain in Domains)
+                    {
+                        <button type="button" @onclick="() => selectedDomain = domain" aria-pressed="@(selectedDomain == domain)"
+                                class="ui-focus-visible w-full text-left px-4 py-2.5 rounded-xl font-bold text-sm cursor-pointer transition-colors @(selectedDomain == domain ? "bg-primary text-white" : "hover:bg-amber-50 dark:hover:bg-white/10")">
+                            @domain
+                        </button>
+                    }
+                </nav>
+                <p class="mt-6 pt-5 border-t border-amber-100 dark:border-amber-900/30 text-xs text-gray-500 dark:text-gray-400">Design decisions and reuse rules live in <code>docs/ui-design-system.md</code>.</p>
+            </aside>
+
+            <div class="lg:col-span-3 space-y-6" aria-live="polite">
+                @{
+                    var matchingEntries = BrandbookCatalog.Filter(selectedDomain, search).ToList();
+                }
+                <div class="flex items-center justify-between gap-3">
+                    <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">@matchingEntries.Count @(matchingEntries.Count == 1 ? "element" : "elements") · @selectedDomain</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Hover, tab, and toggle the examples</p>
+                </div>
+
+                @if (matchingEntries.Count == 0)
+                {
+                    <div class="rounded-2xl border border-dashed border-amber-200 dark:border-amber-800 p-10 text-center">
+                        <span class="material-symbols-outlined text-4xl text-primary">search_off</span>
+                        <p class="font-display font-bold text-xl mt-2">No elements found</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Try another name or switch UI domains.</p>
+                    </div>
+                }
+
+                @foreach (var entry in matchingEntries)
+                {
+                    <BrandbookSpecimen Entry="entry">
+                        @switch (entry.Id)
+                        {
+                            case "foundation":
+                                <div class="space-y-7">
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                        <div class="rounded-xl overflow-hidden border border-amber-100"><div class="h-20 bg-primary"></div><p class="p-3 text-xs font-bold">Primary<br /><code>#D97706</code></p></div>
+                                        <div class="rounded-xl overflow-hidden border border-amber-100"><div class="h-20 bg-secondary"></div><p class="p-3 text-xs font-bold">Secondary<br /><code>#FCD34D</code></p></div>
+                                        <div class="rounded-xl overflow-hidden border border-amber-100"><div class="h-20 bg-background-light"></div><p class="p-3 text-xs font-bold">Background<br /><code>#FFFBEB</code></p></div>
+                                        <div class="rounded-xl overflow-hidden border border-amber-100"><div class="h-20 bg-text-light"></div><p class="p-3 text-xs font-bold">Text<br /><code>#451A03</code></p></div>
+                                    </div>
+                                    <div class="flex flex-wrap items-end gap-8">
+                                        <div><p class="font-display text-3xl font-bold">Fredoka display</p><p class="text-xs text-gray-500">Headings</p></div>
+                                        <div><p class="font-body text-lg">Nunito body text</p><p class="text-xs text-gray-500">Reading and controls</p></div>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-4 text-xs font-bold">
+                                        <span class="p-2 rounded-xl bg-amber-100">0.5rem gap</span>
+                                        <span class="p-6 rounded-xl bg-amber-100">1.5rem padding</span>
+                                        <span class="p-4 rounded-2xl bg-amber-100">2rem radius</span>
+                                    </div>
+                                </div>
+                                break;
+                            case "theme":
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <ToggleNightMode />
+                                    <button type="button" class="ui-focus-visible cursor-pointer bg-primary hover:bg-amber-700 text-white font-bold px-5 py-3 rounded-xl transition-colors">Tab to focus me</button>
+                                    <button type="button" disabled class="bg-primary text-white font-bold px-5 py-3 rounded-xl opacity-50 cursor-not-allowed">Disabled</button>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Use the theme control here to compare both modes.</span>
+                                </div>
+                                break;
+                            case "shop-card":
+                                <div class="shop-ui max-w-sm">
+                                    <div class="group bg-surface-light dark:bg-surface-dark rounded-2xl p-4 cookie-shadow hover:-translate-y-2 transition-transform duration-300 flex flex-col border border-transparent dark:border-amber-900/50">
+                                        <div class="relative aspect-square rounded-xl overflow-hidden mb-4 bg-amber-50 dark:bg-black/20">
+                                            <img src="/fake-images/cookies/cookie001/single.png" alt="Mock chocolate chip cookie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                            <span class="absolute top-3 right-3 bg-white/90 dark:bg-black/60 text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">Best Seller</span>
+                                        </div>
+                                        <h3 class="font-display font-bold text-xl mb-1 group-hover:text-primary transition-colors">Chocolate Chip</h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">A mock product for comparing the card's visual states.</p>
+                                        <div class="flex items-center justify-between mt-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                            <span class="font-display font-bold text-lg">€3.95</span>
+                                            <button type="button" @onclick="() => shopAdded = !shopAdded" aria-label="Preview add to cart" class="ui-focus-visible cursor-pointer size-9 rounded-full bg-primary hover:bg-amber-700 text-white flex items-center justify-center shadow-md active:scale-90 transition-all">
+                                                <span class="material-icons-round text-lg">@(shopAdded ? "check" : "add")</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-3">The add control changes this preview only.</p>
+                                </div>
+                                break;
+                            case "shop-actions":
+                                <div class="shop-ui flex flex-wrap items-end gap-6">
+                                    <button type="button" class="ui-focus-visible cursor-pointer px-8 py-4 bg-primary text-white rounded-full font-bold text-lg hover:shadow-lg hover:-translate-y-1 transition-all">Order Now</button>
+                                    <div class="w-full sm:w-72"><label for="shop-email" class="block text-sm font-bold mb-2">Email</label><input id="shop-email" type="email" placeholder="tiger@example.com" class="w-full rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 bg-amber-50/50 dark:bg-amber-900/10 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" /></div>
+                                </div>
+                                break;
+                            case "backoffice-action":
+                                <div class="backoffice-ui flex flex-wrap items-center gap-4">
+                                    <button type="button" @onclick="() => actionClicked = !actionClicked" class="backoffice-action ui-focus-visible group"><span class="material-symbols-outlined text-base">add</span>@(actionClicked ? "Preview selected" : "New Product")</button>
+                                    <button type="button" disabled class="backoffice-action ui-focus-visible">Disabled action</button>
+                                    <p class="w-full text-xs text-gray-500 dark:text-gray-400">The first control updates local preview state only.</p>
+                                </div>
+                                break;
+                            case "backoffice-metric":
+                                <div class="backoffice-ui space-y-4">
+                                    <label class="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" @bind="showMetricLoading" /> Show loading state</label>
+                                    <div class="max-w-sm"><TotalOrders IsLoading="showMetricLoading" Total="128" PercentageChange="12" /></div>
+                                </div>
+                                break;
+                            case "backoffice-table":
+                                <div class="backoffice-ui bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+                                    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex flex-wrap gap-3 items-center justify-between"><h3 class="font-bold">Customers</h3><label class="text-sm flex items-center gap-2"><input type="checkbox" @bind="showTableEmpty" /> Show empty state</label></div>
+                                    @if (showTableEmpty)
+                                    {
+                                        <div class="py-14 text-center text-gray-500"><span class="material-symbols-outlined text-4xl">person_search</span><p class="text-sm font-medium mt-2">No customers found</p></div>
+                                    }
+                                    else
+                                    {
+                                        <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-widest"><tr><th class="px-6 py-4">Customer</th><th class="px-6 py-4">Orders</th><th class="px-6 py-4">Status</th></tr></thead><tbody class="divide-y divide-gray-100 dark:divide-gray-800"><tr class="hover:bg-amber-50/50 dark:hover:bg-white/5"><td class="px-6 py-4 font-semibold">Alex Baker</td><td class="px-6 py-4">12</td><td class="px-6 py-4"><span class="rounded-full bg-green-100 text-green-700 px-2 py-1 text-xs font-bold">Active</span></td></tr><tr class="hover:bg-amber-50/50 dark:hover:bg-white/5"><td class="px-6 py-4 font-semibold">Sam Cookie</td><td class="px-6 py-4">3</td><td class="px-6 py-4"><span class="rounded-full bg-amber-100 text-amber-800 px-2 py-1 text-xs font-bold">Review</span></td></tr></tbody></table></div>
+                                    }
+                                </div>
+                                break;
+                            case "dashboard-card":
+                                <div class="dashboard-ui max-w-md"><AccountCard><div class="flex items-start justify-between gap-4 mb-6"><h3 class="font-display font-bold text-xl text-gray-800 dark:text-white">Personal Details</h3><span class="text-primary text-sm font-semibold">Edit</span></div><p class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Full Name</p><p class="font-medium">Alex Baker</p><p class="text-xs uppercase tracking-wider text-gray-500 font-semibold mt-4">Email</p><p class="font-medium">alex@example.com</p></AccountCard></div>
+                                break;
+                            case "dashboard-status":
+                                <div class="dashboard-ui flex flex-wrap gap-3 items-center"><OrderStatus Status="new OrderStatusDto { StatusId = 1 }" /><OrderStatus Status="new OrderStatusDto { StatusId = 4 }" /><OrderStatus Status="new OrderStatusDto { StatusId = 9 }" /><OrderStatus Status="new OrderStatusDto { StatusId = 10 }" /></div>
+                                break;
+                            case "dashboard-empty":
+                                <div class="dashboard-ui rounded-xl border border-orange-100 dark:border-gray-800 bg-orange-50/60 dark:bg-gray-900/30 p-6 text-gray-600 dark:text-gray-300"><p class="font-bold text-gray-800 dark:text-white">No saved shipping spots yet.</p><p class="text-sm mt-1">Add an address to use it from your profile and checkout.</p><button type="button" class="ui-focus-visible cursor-pointer mt-5 bg-primary hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all hover:scale-105">Add New Address</button></div>
+                                break;
+                        }
+                    </BrandbookSpecimen>
+                }
+            </div>
+        </div>
+    </main>
+</div>
+
+@code {
+    private static readonly string[] Domains = ["All", "Shared", "Web Shop", "Backoffice", "Customer Dashboard"];
+    private string selectedDomain = "All";
+    private string search = string.Empty;
+    private bool shopAdded;
+    private bool actionClicked;
+    private bool showMetricLoading;
+    private bool showTableEmpty;
+
+    private void ShowShared()
+    {
+        search = string.Empty;
+        selectedDomain = "Shared";
+    }
+}

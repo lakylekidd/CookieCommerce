@@ -2,7 +2,7 @@
 @using CookieCommerce.Web.Services
 @inject IAccountService AccountService
 
-<div class="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+<AccountCard>
     <div class="flex justify-between items-start mb-6">
         <h2 class="text-xl font-display font-bold text-gray-800 dark:text-white">Default Shipping</h2>
         <a href="/account/addresses" class="cursor-pointer text-primary hover:text-orange-600 dark:hover:text-orange-400 text-sm font-semibold">
@@ -34,7 +34,7 @@
             No default shipping address yet. Add a saved address to make checkout faster.
         </div>
     }
-</div>
+</AccountCard>
 
 @code {
     private AddressBookItemDto? defaultAddress;

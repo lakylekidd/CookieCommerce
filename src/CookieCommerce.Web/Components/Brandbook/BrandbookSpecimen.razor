@@ -1,0 +1,26 @@
+<article id="@Entry.Id" class="scroll-mt-8 bg-card-light dark:bg-card-dark border border-amber-100 dark:border-amber-900/30 rounded-2xl shadow-sm overflow-hidden">
+    <div class="flex flex-wrap items-start justify-between gap-3 px-6 py-5 border-b border-amber-100 dark:border-amber-900/30">
+        <div>
+            <p class="text-xs font-black uppercase tracking-widest text-primary">@Entry.Domain</p>
+            <h2 class="text-2xl font-display font-bold mt-1">@Entry.Name</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">@Entry.Purpose</p>
+        </div>
+        <span class="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 text-xs font-bold">@Entry.Reuse</span>
+    </div>
+    <div class="p-6 sm:p-8 bg-background-light/50 dark:bg-background-dark/40">
+        @ChildContent
+    </div>
+    <div class="px-6 py-4 border-t border-amber-100 dark:border-amber-900/30 text-sm">
+        @if (Entry.Illustrative)
+        {
+            <p class="text-amber-800 dark:text-amber-200 mb-2">Illustrative preview with mock content. Open the source component for its live behavior.</p>
+        }
+        <p><span class="font-bold">Source:</span> <code class="break-all">@Entry.Source</code></p>
+        <p class="mt-2"><span class="font-bold">Use:</span> <code class="break-all">@Entry.Usage</code></p>
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public BrandbookEntry Entry { get; set; } = default!;
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
+}

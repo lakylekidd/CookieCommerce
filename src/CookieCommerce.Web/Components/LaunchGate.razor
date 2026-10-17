@@ -1,11 +1,18 @@
 @using CookieCommerce.Web.Components.Storefront.ComingSoon
 @using CookieCommerce.Web.Services.Commerce
+@using CookieCommerce.Web.Components.Brandbook
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Routing
 @inject StoreSettingsService Settings
+@inject IWebHostEnvironment HostEnvironment
+@inject IConfiguration Configuration
 @implements IDisposable
 
-@if (!settingsLoaded)
+@if (IsBrandbookRoute && BrandbookAvailability.IsEnabled(HostEnvironment, Configuration))
+{
+    <RouteView RouteData="RouteData" DefaultLayout="typeof(BrandbookLayout)" />
+}
+else if (!settingsLoaded)
 {
     <p class="sr-only" aria-live="polite">Loading the store...</p>
 }
@@ -43,6 +50,7 @@ else
 
     private bool settingsLoaded;
     private bool comingSoonEnabled = true;
+    private bool IsBrandbookRoute => RouteData.PageType == typeof(BrandbookPage);
 
     private bool IsPublicLaunchRoute =>
         RouteData.PageType == typeof(Auth.CustomerSignin) ||
@@ -52,6 +60,12 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
+        if (IsBrandbookRoute && BrandbookAvailability.IsEnabled(HostEnvironment, Configuration))
+        {
+            settingsLoaded = true;
+            return;
+        }
+
         try
         {
             comingSoonEnabled = await Settings.IsComingSoonEnabledAsync();

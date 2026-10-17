@@ -5,7 +5,7 @@
 @rendermode InteractiveServer
 @implements IDisposable
 
-<div class="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+<AccountCard>
     <div class="flex justify-between items-start mb-6">
         <h2 class="text-xl font-display font-bold text-gray-800 dark:text-white">Personal Details</h2>
         <button @onclick="() => IsEditModalOpen = true" class="cursor-pointer text-primary hover:text-orange-600 dark:hover:text-orange-400 text-sm font-semibold">
@@ -79,7 +79,7 @@
             </div>
         </div>
     }
-</div>
+</AccountCard>
 
 @if (IsEditModalOpen)
 {

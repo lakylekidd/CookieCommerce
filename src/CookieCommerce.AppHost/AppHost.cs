@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
+var brandbookEnabled = builder.Environment.IsDevelopment() && builder.Configuration.GetValue("Brandbook:Enabled", false);
 
 var password = builder.AddParameter("db-password", "MyFixedPassword123!");
 var volumePrefix = builder.Configuration["DevelopmentStorage:VolumePrefix"] ?? "cookiecommerce";
@@ -70,6 +71,7 @@ var authenticationManagementApi = builder.AddProject<CookieCommerce_Authenticati
     .WithScalarUi();
 
 var web = builder.AddProject<CookieCommerce_Web>("cookiecommerce-web")
+    .WithEnvironment("Brandbook__Enabled", brandbookEnabled.ToString())
     .WithEnvironment("DataProtection__KeyPath", keyPath)
     .WithEnvironment("Communications__ServiceKey", communicationsKey)
     .WithReference(commerceDb)
@@ -77,6 +79,8 @@ var web = builder.AddProject<CookieCommerce_Web>("cookiecommerce-web")
     .WithReference(customerApi)
     .WithReference(productApi)
     .WithReference(authenticationManagementApi);
+
+if (brandbookEnabled) web.WithBrandbookUi();
 
 keycloak.WithEnvironment("COOKIECOMMERCE_TEMPLATE_URL", ReferenceExpression.Create($"{web.GetEndpoint("http")}/api/internal/email/render"));
 customerApi.WithEnvironment("EmailVerificationDelivery__ExternalDeliveryEndpoint", ReferenceExpression.Create($"{web.GetEndpoint("http")}/api/internal/email/verification"))

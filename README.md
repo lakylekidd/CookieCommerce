@@ -15,6 +15,7 @@ This README provides an overview of the architecture, conventions, and developme
 - CQRS with MediatR
 - MassTransit for integration events (with Outbox pattern)
 - Blazor UI for customer‑facing and admin experiences
+- Blazor UI design system with a shared foundation and distinct Web Shop, Backoffice, and Customer Dashboard conventions ([design system](docs/ui-design-system.md), [agent guidance](docs/ui-consistency.md))
 - Field‑level encryption for sensitive PII
 - Vertical Slice Architecture for clean separation by feature
 - Aspire for orchestration, service discovery, and local infrastructure
@@ -37,6 +38,10 @@ CookieCommerce/
 
 ```
 Each domain is isolated and follows the same structure for consistency and maintainability.
+
+The Blazor UI uses Tailwind v4 from `src/CookieCommerce.Web/Styles/app.css`. The Web project build compiles `wwwroot/css/app.min.css`; run `npm ci` in `src/CookieCommerce.Web` before the first local build. Reuse existing shared or domain-specific components and compare similar pages within the same UI domain before adding new styles.
+
+The development UI Brandbook provides a searchable, interactive reference for shared styles and the Web Shop, Backoffice, and Customer Dashboard. To enable it through Aspire, set the AppHost environment variable `Brandbook__Enabled=true` (or set `Brandbook:Enabled` to `true` in `src/CookieCommerce.AppHost/appsettings.Development.json`) and start or restart AppHost. Open `/design-system` on the `cookiecommerce-web` endpoint or use its **Open UI Brandbook** dashboard command. It uses local mock values for examples, bypasses the store launch gate, and is available only in Development when explicitly enabled.
 
 ---
 

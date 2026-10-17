@@ -2,21 +2,6 @@
 @layout MainLayout
 
 <style>
-    @@keyframes shimmer {
-        0% {
-            background-position: -200% 0;
-        }
-
-        100% {
-            background-position: 200% 0;
-        }
-    }
-
-    .animate-skeleton {
-        background: linear-gradient(90deg, rgba(251, 191, 36, 0.05) 25%, rgba(251, 191, 36, 0.15) 50%, rgba(251, 191, 36, 0.05) 75%);
-        background-size: 200% 100%;
-        animation: shimmer 2s infinite linear;
-    }
     ::-webkit-scrollbar {
         width: 8px;
     }
@@ -46,7 +31,7 @@
 @implements IDisposable
 @if (ready && Auth.IsAdmin)
 {
-<div class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-sans antialiased transition-colors duration-300">
+<div class="backoffice-ui bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-sans antialiased transition-colors duration-300">
     <div class="flex h-screen overflow-hidden">
         <BackofficeASide />
         <main class="flex-1 flex flex-col h-screen overflow-hidden bg-background-light dark:bg-background-dark relative">

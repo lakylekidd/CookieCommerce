@@ -144,6 +144,20 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+if (!BrandbookAvailability.IsEnabled(app.Environment, app.Configuration))
+{
+    app.Use(async (context, next) =>
+    {
+        if (context.Request.Path.StartsWithSegments("/design-system", StringComparison.OrdinalIgnoreCase))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        await next();
+    });
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);

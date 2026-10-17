@@ -375,3 +375,7 @@ Thumbs.db
 .vscode/
 .idea/
 .product-media/
+
+# Codex local configuration and generated browser snapshots
+.codex/
+tmp-web.html

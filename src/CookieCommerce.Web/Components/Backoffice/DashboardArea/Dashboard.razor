@@ -1,0 +1,104 @@
+@inject CookieCommerce.Web.Services.Commerce.StoreSettingsService Settings
+@inject IJSRuntime JS
+@implements IDisposable
+@page "/backoffice/dashboard/"
+@using CookieCommerce.Web.Models.Backoffice
+@using CookieCommerce.Web.Services
+@rendermode InteractiveServer
+@layout BackofficeLayout
+@inject IBackofficeService BackofficeService
+
+<style>
+    @@keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+    .animate-skeleton {
+        background: linear-gradient(90deg, rgba(251, 191, 36, 0.05) 25%, rgba(251, 191, 36, 0.15) 50%, rgba(251, 191, 36, 0.05) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 2s infinite linear;
+    }
+</style>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <TotalOrders 
+        IsLoading="isLoading"
+        Total="dashboard.TotalOrders" 
+        PercentageChange="dashboard.TotalOrdersPercentageChange" />
+    <TotalRevenue 
+        IsLoading="isLoading"
+        Total="dashboard.TotalRevenue" 
+        PercentageChange="dashboard.TotalRevenuePercentageChange" />
+    <NewCustomers 
+        IsLoading="isLoading"
+        Total="dashboard.TotalCustomers" 
+        PercentageChange="dashboard.TotalCustomersPercentageChange" />
+    <AverageRating IsLoading="isLoading"
+        Total="dashboard.AverageRating" />
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+    <RevenueChart 
+        IsLoading="isLoading"
+        Revenue="dashboard.Revenue" 
+        PeriodChanged="OnPeriodChanged" />
+    <TopSellingCookies
+        IsLoading="isLoading"
+        Cookies="dashboard.TopSellingCookies"/>
+</div>
+
+
+@code {
+
+    private string Period { get; set; } = "This Week";
+    private DashboardDto dashboard = new DashboardDto();
+    private bool isLoading = false;
+    private readonly CancellationTokenSource cancellation = new();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) _ = WatchAsync();
+    }
+    private async Task WatchAsync()
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+            while (await timer.WaitForNextTickAsync(cancellation.Token))
+            {
+                await InvokeAsync(async () =>
+                {
+                    var previous = dashboard.TotalOrders;
+                    await RefreshData();
+                    var config = await Settings.GetAsync();
+                    if (dashboard.TotalOrders > previous)
+                        await JS.InvokeVoidAsync("notifyCommerceOrder", config.Preference("browserPushNotifications", false), config.Preference("soundAlertOnNewOrder", false));
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+    public void Dispose() { cancellation.Cancel(); cancellation.Dispose(); }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+    }
+
+    private async Task OnPeriodChanged(string newPeriod)
+    {
+        Period = newPeriod;
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+        isLoading = true;
+        dashboard = await BackofficeService.GetTotalsAsync(Period);
+        isLoading = false;
+    }
+}

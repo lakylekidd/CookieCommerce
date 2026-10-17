@@ -10,6 +10,15 @@ namespace CookieCommerce.ProductDomain.Api.Controllers;
 [Route("api/[controller]")]
 public class ProductController(ISender mediator) : ControllerBase
 {
+    public sealed record ProductStatusRequest(bool IsActive);
+
+    [HttpPut("{id:guid}/status")]
+    public async Task<IActionResult> SetStatusAsync(Guid id, [FromBody] ProductStatusRequest request, CancellationToken ct)
+    {
+        if (request.IsActive) await mediator.Send(new ActivateProduct(id), ct);
+        else await mediator.Send(new DeactivateProduct(id), ct);
+        return NoContent();
+    }
     private readonly ISender _mediator = mediator;
 
     /// <summary>
@@ -20,7 +29,7 @@ public class ProductController(ISender mediator) : ControllerBase
     {
         var query = new GetAllProducts();
         var result = await _mediator.Send(query, ct);
-        return Ok(result);
+        return Ok(result.Select(product => product.ToResponse()));
     }
 
     /// <summary>
@@ -34,7 +43,7 @@ public class ProductController(ISender mediator) : ControllerBase
 
         if (result == null) return NotFound();
 
-        return Ok(result);
+        return Ok(result.ToResponse());
     }
 
     /// <summary>
@@ -68,6 +77,88 @@ public class ProductController(ISender mediator) : ControllerBase
         var changePriceCmd = request.ToChangePriceCommand(id);
         await _mediator.Send(changePriceCmd, ct);
 
+        if (request.Variants.Count > 0)
+            await _mediator.Send(request.ToVariantCommand(id), ct);
+
+        return NoContent();
+    }
+
+    [HttpPut("{id:guid}/variants")]
+    public async Task<IActionResult> UpsertVariantsAsync(Guid id, [FromBody] List<ProductVariantRequest> request, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+        await _mediator.Send(request.ToVariantCommand(id), ct);
+        return NoContent();
+    }
+
+    [HttpPost("{productId:guid}/variants/{variantId:guid}/photos")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadVariantPhotoAsync(
+        Guid productId,
+        Guid variantId,
+        IFormFile? file,
+        [FromForm] string? altText,
+        [FromForm] int? sortOrder,
+        CancellationToken ct)
+    {
+        if (file is null || file.Length == 0)
+        {
+            ModelState.AddModelError("file", "An image file is required.");
+            return ValidationProblem(ModelState);
+        }
+
+        await using var stream = file.OpenReadStream();
+        var mediaAsset = await _mediator.Send(new UploadVariantPhotoCommand(
+            productId,
+            variantId,
+            stream,
+            file.FileName,
+            file.ContentType,
+            file.Length,
+            altText,
+            sortOrder), ct);
+
+        return Created($"/api/product/{productId}/variants/{variantId}/photos/{mediaAsset.Id}", mediaAsset.ToResponse());
+    }
+
+    [HttpDelete("{productId:guid}/variants/{variantId:guid}/photos/{mediaAssetId:guid}")]
+    public async Task<IActionResult> RemoveVariantPhotoAsync(Guid productId, Guid variantId, Guid mediaAssetId, CancellationToken ct)
+    {
+        await _mediator.Send(new RemoveVariantPhotoCommand(productId, variantId, mediaAssetId), ct);
+        return NoContent();
+    }
+
+    [HttpPost("{productId:guid}/media/main-image")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadMainImageAsync(
+        Guid productId,
+        IFormFile? file,
+        [FromForm] string? altText,
+        CancellationToken ct)
+    {
+        if (file is null || file.Length == 0)
+        {
+            ModelState.AddModelError("file", "An image file is required.");
+            return ValidationProblem(ModelState);
+        }
+
+        await using var stream = file.OpenReadStream();
+        var mediaAsset = await _mediator.Send(new UploadProductMainImageCommand(
+            productId,
+            stream,
+            file.FileName,
+            file.ContentType,
+            file.Length,
+            altText), ct);
+
+        return Created($"/api/product/{productId}/media/main-image/{mediaAsset.Id}", mediaAsset.ToResponse());
+    }
+
+    [HttpDelete("{productId:guid}/media/main-image/{mediaAssetId:guid}")]
+    public async Task<IActionResult> RemoveMainImageAsync(Guid productId, Guid mediaAssetId, CancellationToken ct)
+    {
+        await _mediator.Send(new RemoveProductMainImageCommand(productId, mediaAssetId), ct);
         return NoContent();
     }
 

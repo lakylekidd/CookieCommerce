@@ -1,0 +1,220 @@
+@inject CookieCommerce.Web.Services.Commerce.InventoryService Persistence
+@using CookieCommerce.Web.Models.Backoffice
+@implements IDisposable
+
+<tr class="group bg-accent-light dark:bg-stone-800/40 border-b border-stone-100 dark:border-stone-700/50 transition-all duration-200">
+
+    @* 🆔 Reference *@
+    <td class="px-4 py-4 rounded-l-2xl">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-white dark:bg-stone-800 flex items-center justify-center border border-stone-200 dark:border-stone-700 shadow-sm">
+                <span class="material-symbols-outlined text-sm text-stone-400 group-hover:text-primary transition-colors">qr_code_2</span>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter leading-none">
+                    @(BatchRun.StartedOn?.ToString("MMM dd, yyyy") ?? "Not started")
+                </span>
+                <span class="font-bold text-sm text-stone-700 dark:text-stone-200">@BatchRun.BatchRunReference</span>
+            </div>
+        </div>
+    </td>
+
+    @* 🚦 Status Dropdown *@
+    <td class="px-4 py-4">
+        <div class="flex flex-col gap-1">
+            <span class="text-[10px] font-black text-stone-400 uppercase tracking-tighter leading-none">Current Status</span>
+
+            <div class="mt-1 relative group/status">
+                <select value="@BatchRun.Status"
+                        disabled="@IsSaving("Status")"
+                        @onchange="@(e => HandleAutoSave("Status", e.Value))"
+                        class="w-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700
+                               text-xs font-bold rounded-lg pl-2 pr-10 py-2 outline-none focus:border-primary
+                               focus:ring-0 focus:outline-none appearance-none bg-none shadow-sm
+                               transition-all @(IsSaving("Status") ? "opacity-60 cursor-not-allowed" : "cursor-pointer")">
+                    @foreach (BatchRunStatus status in Enum.GetValues(typeof(BatchRunStatus)))
+                    {
+                        <option value="@status">@status.ToString()</option>
+                    }
+                </select>
+
+                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none transition-colors">
+                    @if (IsSaving("Status"))
+                    {
+                        <span class="material-symbols-outlined text-[18px] text-primary animate-spin">progress_activity</span>
+                    }
+                    else
+                    {
+                        <span class="material-symbols-outlined text-[18px] text-stone-400 group-hover/status:text-primary">unfold_more</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </td>
+
+    @* 🌡️ Baking Information (Duration, Temperature, Oven Settings) *@
+    <td class="px-4 py-4">
+        <div class="flex items-center gap-2 mt-1">
+
+            @* ⏲️ Duration Input *@
+            <div class="flex flex-col gap-1">
+                <span class="text-[9px] font-bold text-stone-300 uppercase pl-1">Mins</span>
+                <div class="flex items-center bg-white dark:bg-stone-700/50 rounded-lg px-2 py-1
+                            focus-within:ring-2 focus-within:ring-primary transition-all
+                            @(IsSaving("BakingDuration") ? "opacity-60" : "")">
+                    @if (IsSaving("BakingDuration"))
+                    {
+                        <span class="material-symbols-outlined text-[14px] text-primary mr-1 animate-spin">progress_activity</span>
+                    }
+                    else
+                    {
+                        <span class="material-symbols-outlined text-[14px] text-stone-400 mr-1">timer</span>
+                    }
+                    <input type="number"
+                           value="@BatchRun.BakingInformation!.BakingDurationInMinutes"
+                           disabled="@IsSaving("BakingDuration")"
+                           @onchange="@(e => HandleAutoSave("BakingDuration", e.Value))"
+                           class="w-10 bg-transparent border-none p-0 text-xs font-bold tabular-nums
+                                  focus:ring-0 focus:border-none focus:outline-none disabled:cursor-not-allowed" />
+                </div>
+            </div>
+
+            @* 🌡️ Temperature Input *@
+            <div class="flex flex-col gap-1">
+                <span class="text-[9px] font-bold text-stone-300 uppercase pl-1">Temp °C</span>
+                <div class="flex items-center bg-white dark:bg-stone-700/50 rounded-lg px-2 py-1
+                            focus-within:ring-2 focus-within:ring-primary transition-all
+                            @(IsSaving("Temperature") ? "opacity-60" : "")">
+                    @if (IsSaving("Temperature"))
+                    {
+                        <span class="material-symbols-outlined text-[14px] text-primary mr-1 animate-spin">progress_activity</span>
+                    }
+                    else
+                    {
+                        <span class="material-symbols-outlined text-[14px] text-stone-400 mr-1">thermostat</span>
+                    }
+                    <input type="number"
+                           value="@BatchRun.BakingInformation!.TemperatureInCelsius"
+                           disabled="@IsSaving("Temperature")"
+                           @onchange="@(e => HandleAutoSave("Temperature", e.Value))"
+                           class="w-12 bg-transparent border-none p-0 text-xs font-bold tabular-nums
+                                  focus:ring-0 focus:border-none focus:outline-none disabled:cursor-not-allowed" />
+                </div>
+            </div>
+
+            @* ✍️ Oven Settings *@
+            <div class="flex flex-col gap-1">
+                <span class="text-[9px] font-black text-stone-400 uppercase tracking-tighter pl-1">Oven Settings</span>
+                <div class="relative flex items-center rounded-lg transition-all">
+                    <input type="text"
+                           value="@BatchRun.BakingInformation!.OvenSettings"
+                           disabled="@IsSaving("OvenSettings")"
+                           @onchange="@(e => HandleAutoSave("OvenSettings", e.Value))"
+                           placeholder="Add oven settings..."
+                           class="w-full bg-white dark:bg-stone-800 border-none text-xs font-bold rounded-lg
+                                  px-3 pr-8 h-[38px] outline-none focus:ring-2 focus:ring-primary/20
+                                  placeholder:text-stone-300 italic
+                                  @(IsSaving("OvenSettings") ? "opacity-60 cursor-not-allowed" : "")" />
+                    @if (IsSaving("OvenSettings"))
+                    {
+                        <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-[14px] text-primary animate-spin">progress_activity</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </td>
+
+    @* ⚙️ Actions *@
+    <td class="px-4 py-4 text-right rounded-r-2xl">
+        <button @onclick="() => OnRemove.InvokeAsync()"
+                type="button"
+                class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-white dark:bg-stone-800
+                       border border-stone-200 dark:border-stone-700 text-stone-400
+                       hover:text-red-500 hover:border-red-300 hover:shadow-md transition-all shadow-sm cursor-pointer">
+            <span class="material-symbols-outlined text-sm">delete</span>
+        </button>
+    </td>
+</tr>
+
+@code {
+    [Parameter] public BatchRunDto BatchRun { get; set; } = new();
+    [Parameter] public EventCallback OnRemove { get; set; }
+
+    private CancellationTokenSource _cts = new();
+    private readonly HashSet<string> _savingFields = [];
+
+    private bool IsSaving(string field) => _savingFields.Contains(field);
+
+    protected override void OnInitialized()
+    {
+        if (BatchRun.BakingInformation == null) BatchRun.BakingInformation = new();
+        if (BatchRun.Status == BatchRunStatus.Baking) StartTicker();
+    }
+
+    private async Task HandleAutoSave(string field, object? value)
+    {
+        if (value == null) return;
+
+        _savingFields.Add(field);
+        StateHasChanged();
+
+        switch (field)
+        {
+            case "Status":
+                if (Enum.TryParse<BatchRunStatus>(value.ToString(), out var newStatus))
+                {
+                    BatchRun.Status = newStatus;
+                    ApplyStatusSideEffects(newStatus);
+                }
+                break;
+            case "BakingDuration":
+                if (int.TryParse(value.ToString(), out var mins))
+                    BatchRun.BakingInformation!.BakingDurationInMinutes = mins;
+                break;
+            case "Temperature":
+                if (int.TryParse(value.ToString(), out var temp))
+                    BatchRun.BakingInformation!.TemperatureInCelsius = temp;
+                break;
+            case "OvenSettings":
+                BatchRun.BakingInformation!.OvenSettings = value.ToString()!;
+                break;
+        }
+
+        await Persistence.SaveRunAsync(BatchRun);
+
+        _savingFields.Remove(field);
+        StateHasChanged();
+    }
+
+    private void ApplyStatusSideEffects(BatchRunStatus newStatus)
+    {
+        if (newStatus == BatchRunStatus.Baking && !BatchRun.StartedOn.HasValue)
+        {
+            BatchRun.StartedOn = DateTime.Now;
+            StartTicker();
+        }
+        else if ((newStatus == BatchRunStatus.Cooling || newStatus == BatchRunStatus.Completed) && !BatchRun.CompletedOn.HasValue)
+        {
+            BatchRun.CompletedOn = DateTime.Now;
+        }
+    }
+
+    private async void StartTicker()
+    {
+        _cts.Cancel();
+        _cts = new CancellationTokenSource();
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(_cts.Token) && BatchRun.Status == BatchRunStatus.Baking)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch { }
+    }
+
+    public void Dispose() => _cts.Cancel();
+}

@@ -16,8 +16,8 @@ public class DeactivateProductHandler(IDocumentSession session, IIntegrationEven
     public async Task Handle(DeactivateProduct request, CancellationToken cancellationToken)
     {
         var product = await session.Events.AggregateStreamAsync<ProductAggregate>(
-            request.ProductId, 
-            token: cancellationToken) 
+            request.ProductId,
+            token: cancellationToken)
             ?? throw new ProductNotFoundException(request.ProductId);
 
         product.Deactivate();
@@ -26,12 +26,12 @@ public class DeactivateProductHandler(IDocumentSession session, IIntegrationEven
 
         // Append domain events and save changes atomically
         session.Events.Append(request.ProductId, product.DomainEvents);
-        
+
         // Publish integration event via outbox (stored in same transaction)
         await publisher.PublishAsync(
-            new ProductDeactivatedIntegrationEvent(request.ProductId), 
+            new ProductDeactivatedIntegrationEvent(request.ProductId),
             cancellationToken);
-        
+
         await session.SaveChangesAsync(cancellationToken);
     }
 }

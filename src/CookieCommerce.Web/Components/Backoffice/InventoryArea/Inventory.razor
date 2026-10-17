@@ -1,0 +1,112 @@
+@inject CookieCommerce.Web.Services.Commerce.InventoryService Persistence
+@page "/backoffice/inventory/"
+@using CookieCommerce.Web.Models.Backoffice
+@using CookieCommerce.Web.Models.Order
+@using CookieCommerce.Web.Services
+@using System.Globalization
+@rendermode InteractiveServer
+@layout BackofficeLayout
+@inject IInventoryService InventoryService
+
+
+<div class="transition-colors duration-300">
+
+    <div class="flex items-center justify-between bg-white dark:bg-gray-800 rounded-2xl px-6 py-3 shadow-sm mb-4">
+        <button @onclick="GoToPreviousDay"
+                class="flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+            <span class="material-symbols-outlined text-base">chevron_left</span>
+            Prev Day
+        </button>
+
+        <span class="text-sm font-semibold text-gray-800 dark:text-gray-100">
+            @selectedDate.ToString("dddd d MMM yyyy")
+            @if (selectedDate == DateOnly.FromDateTime(DateTime.Today))
+            {
+                <span class="ml-1 text-xs text-gray-400">· Today</span>
+            }
+        </span>
+
+        <button @onclick="GoToNextDay"
+
+                class="flex items-center gap-1 text-sm font-medium text-primary hover:underline disabled:opacity-40 disabled:cursor-not-allowed">
+            Next Day
+            <span class="material-symbols-outlined text-base">chevron_right</span>
+        </button>
+    </div>
+
+    <div class="grid grid-cols-12 gap-4 mb-5">
+        <BakedTodayCard
+            Value="@inventory.OrderQuota.BakedToday"
+            SelectedDate="@selectedDate" />
+        <RemainingToBakeCard
+            Value="@inventory.OrderQuota.RemainingToBake"
+            Target="@inventory.OrderQuota.CurrentQuota"
+            SelectedDate="@selectedDate" />
+        <QuotaProgressCard
+            Percentage="@inventory.OrderQuota.DailyQuotaPercentage"
+            UnitsLeft="@(inventory.OrderQuota.CurrentQuota - inventory.OrderQuota.BakedToday)"
+            CurrentQuota="@inventory.OrderQuota.CurrentQuota"
+            SelectedDate="@selectedDate" />
+        <OrderFulfillmentCard
+            Fulfillable="@inventory.OrderQuota.OrdersReadyToFulfill"
+            Total="@inventory.OrderQuota.TotalOrders"
+            SelectedDate="@selectedDate" />
+    </div>
+
+    <div class="grid grid-cols-12 gap-6 mb-8 items-start">
+        <div class="col-span-12 lg:col-span-4 xl:col-span-4">
+            <CookieInventoryVsRequired IsLoading="isLoading"
+                                       QuotaItems="inventory.InventoryQuota"
+                                       SelectedDate="@selectedDate" />
+        </div>
+        <div class="col-span-12 lg:col-span-8 xl:col-span-8">
+            <BatchesTableCard Batches="@inventory.Batches"
+                              Products="@availableProducts"
+                              OnBatchAdded="HandleBatchAdded" />
+        </div>
+    </div>
+</div>
+
+<SkuStockTable Skus="inventory.Skus" />
+
+
+@code {
+    private InventoryAreaDto inventory = new InventoryAreaDto();
+    private IReadOnlyList<BatchProductDto> availableProducts = [];
+    private bool isLoading = false;
+    private DateOnly selectedDate = DateOnly.FromDateTime(DateTime.Today);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var productsTask = InventoryService.GetAvailableProductsAsync();
+        await LoadInventory();
+        availableProducts = await productsTask;
+    }
+
+    private async Task GoToPreviousDay()
+    {
+        selectedDate = selectedDate.AddDays(-1);
+        await LoadInventory();
+    }
+
+    private async Task GoToNextDay()
+    {
+
+        selectedDate = selectedDate.AddDays(1);
+        await LoadInventory();
+    }
+
+    private async Task LoadInventory()
+    {
+        isLoading = true;
+        inventory = await InventoryService.GetInventoryForDateAsync(selectedDate);
+        isLoading = false;
+    }
+
+    private async Task HandleBatchAdded(BatchDto newBatch)
+    {
+        newBatch.DeliveryDate = selectedDate;
+        await Persistence.SaveBatchAsync(newBatch);
+        await LoadInventory();
+    }
+}

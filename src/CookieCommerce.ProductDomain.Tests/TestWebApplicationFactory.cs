@@ -15,6 +15,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseSetting("DevelopmentBootstrap:Enabled", "false");
         builder.UseSetting("ConnectionStrings:ProductDomain", _dbContainer.GetConnectionString());
 
         builder.UseSetting("ConnectionStrings:Messaging", "unused-for-tests");
@@ -28,13 +29,13 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             services.AddMarten(opts =>
             {
                 opts.Connection(connectionString);
-                
+
                 // Register projections with inline lifecycle
                 opts.Projections.Add<Infrastructure.Projections.ProductDetailsProjection>(
                     JasperFx.Events.Projections.ProjectionLifecycle.Inline);
                 opts.Projections.Add<Infrastructure.Projections.ProductListItemProjection>(
                     JasperFx.Events.Projections.ProjectionLifecycle.Inline);
-                
+
                 opts.AutoCreateSchemaObjects = JasperFx.AutoCreate.All;
             }).ApplyAllDatabaseChangesOnStartup();
 
@@ -50,13 +51,9 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 
     public async Task InitializeAsync() => await _dbContainer.StartAsync();
 
-    public new async Task DisposeAsync() => await _dbContainer.StopAsync();
-
-    public async Task ResetDatabaseAsync()
+    public new async Task DisposeAsync()
     {
-        using var scope = Services.CreateScope();
-        var store = scope.ServiceProvider.GetRequiredService<IDocumentStore>();
-        await store.Advanced.Clean.DeleteAllDocumentsAsync();
-        await store.Advanced.Clean.DeleteAllEventDataAsync();
+        base.Dispose();
+        await _dbContainer.DisposeAsync();
     }
 }

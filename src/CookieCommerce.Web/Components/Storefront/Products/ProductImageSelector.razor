@@ -1,0 +1,90 @@
+﻿@rendermode InteractiveServer
+@using CookieCommerce.Web.Models.Products
+
+<div class="w-full lg:w-1/2">
+    <div class="relative group">
+        <div class="absolute -inset-4 bg-primary/10 rounded-3xl blur-2xl group-hover:bg-primary/20 transition-colors">
+        </div>
+        <div class="relative bg-surface-light dark:bg-surface-dark rounded-3xl overflow-hidden shadow-2xl border border-amber-100 dark:border-amber-900/30">
+            <div class="flex transition-transform duration-500 ease-in-out" 
+                 style="transform: translateX(-@(CurrentIndex * 100)%);">
+                @foreach (var photo in AllImages)
+                {
+                    <img alt="@Cookie.Title"
+                         class="w-full h-auto aspect-square object-cover flex-shrink-0"
+                         src="@photo.ImageUrl" />
+                }
+            </div>
+
+            @if (AllImages.Count > 1)
+            {
+                <div class="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                    <button @onclick="async () => await Navigate(-1)"
+                            class="size-10 rounded-full bg-white/80 dark:bg-surface-dark/80 text-primary
+                                   hover:bg-white dark:hover:bg-surface-light shadow-lg transition-all
+                                   hover:scale-110 cursor-pointer flex items-center justify-center">
+                        <span class="material-icons-round">chevron_left</span>
+                    </button>
+
+                    <button @onclick="async () => await Navigate(1)"
+                            class="size-10 rounded-full bg-white/80 dark:bg-surface-dark/80 text-primary
+                                   hover:bg-white dark:hover:bg-surface-light shadow-lg transition-all
+                                   hover:scale-110 cursor-pointer flex items-center justify-center">
+                        <span class="material-icons-round">chevron_right</span>
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="grid grid-cols-4 gap-4 mt-6">
+        @foreach (var photo in AllImages)
+        {
+            <div @onclick="async () => await SelectImage(photo.VariantId, photo.ImageUrl)"
+                 class="aspect-square rounded-xl overflow-hidden border-2 cursor-pointer transition-transform hover:scale-105 @(photo.ImageUrl == CurrentVariantImage.VariantImage ? "border-primary" : "border-transparent")">
+                <img alt="@Cookie.Title" class="w-full h-full object-cover"
+                     src="@photo.ImageUrl" />
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public StorefrontProductDto Cookie { get; set; } = default!;
+    [Parameter] public (Guid VariantId, string VariantImage) CurrentVariantImage { get; set; } = (Guid.Empty, string.Empty);
+    [Parameter] public EventCallback<(Guid VariantId, string VariantImage)> CurrentVariantImageChanged { get; set; }
+    [Parameter] public EventCallback<StorefrontProductVariantDto> OnVariantSelected { get; set; }
+
+    private List<(Guid VariantId, string ImageUrl)> AllImages =>
+        Cookie.Variants?
+            .SelectMany(x => x.ImageUrls.Select(url => (x.Id, url)))
+            .ToList() ?? [];
+
+    private int CurrentIndex => AllImages.FindIndex(x => x.VariantId == CurrentVariantImage.VariantId && x.ImageUrl == CurrentVariantImage.VariantImage) is int idx && idx != -1 ? idx : 0;
+
+    private async Task SelectImage(Guid variantId, string imageUrl)
+    {
+        var imageSelection = (variantId, imageUrl);
+        await CurrentVariantImageChanged.InvokeAsync(imageSelection);
+
+        var variant = Cookie!.Variants?.FirstOrDefault(v => v.Id == variantId);
+        if (variant is not null)
+        {
+            await OnVariantSelected.InvokeAsync(variant);
+        }
+    }
+
+    private async Task Navigate(int direction)
+    {
+        var images = AllImages;
+        if (!images.Any()) return;
+
+        var currentIdx = images.FindIndex(x => x.VariantId == CurrentVariantImage.VariantId && x.ImageUrl == CurrentVariantImage.VariantImage);
+        if (currentIdx == -1) currentIdx = 0;
+
+        var nextIdx = (currentIdx + direction + images.Count) % images.Count;
+        var nextImage = images[nextIdx];
+
+        await SelectImage(nextImage.VariantId, nextImage.ImageUrl);
+    }
+}

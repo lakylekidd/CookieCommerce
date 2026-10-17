@@ -1,0 +1,180 @@
+# Deployment contract for the existing GitLab project. Infrastructure is
+# configured and started separately from application releases.
+schema: 1
+project:
+  name: tiger-van-cookie
+  gitlabNamespace: engineering
+  gitlabProjectId: '9'
+  description: Tiger van Cookie storefront and internal APIs
+
+environments:
+  development:
+    enabled: true
+  staging:
+    enabled: false
+  production:
+    enabled: true
+    domains:
+      web: tigervancookie.nl
+    variables:
+      ASPNETCORE_ENVIRONMENT: Production
+
+services:
+  customer-api:
+    exposure: internal
+    dockerfile: src/CookieCommerce.CustomerDomain.Api/Dockerfile
+    buildContext: src
+    port: 8080
+    health:
+      path: /health
+    secretFolders: [/shared, /customer, /messaging]
+    connections:
+      ConnectionStrings__CustomerDomain: customer-db
+      ConnectionStrings__Messaging: messaging
+    variables:
+      EmailVerificationDelivery__ExternalDeliveryEndpoint: http://tiger-van-cookie-production-web:8080/api/internal/email/verification
+      EmailVerificationDelivery__VerificationBaseUrl: https://tigervancookie.nl
+    secretVariables:
+      EmailVerificationDelivery__ServiceKey: {folder: /shared, key: COMMUNICATIONS_SERVICE_KEY}
+
+  product-api:
+    exposure: internal
+    dockerfile: src/CookieCommerce.ProductDomain.Api/Dockerfile
+    buildContext: src
+    port: 8080
+    health:
+      path: /health
+    secretFolders: [/shared, /product, /messaging]
+    connections:
+      ConnectionStrings__ProductDomain: product-db
+      ConnectionStrings__Messaging: messaging
+    variables:
+      ProductMedia__StorageRootPath: /app/product-media
+      ProductMedia__RequestPath: /media/products
+    volumes:
+      - name: product-media
+        mountPath: /app/product-media
+
+  authentication-management-api:
+    exposure: internal
+    dockerfile: src/CookieCommerce.AuthenticationManagement.Api/Dockerfile
+    buildContext: .
+    port: 8080
+    health:
+      path: /health
+    secretFolders: [/shared, /authentication, /messaging, /keycloak]
+    dependsOn: [customer-api]
+    serviceUrls:
+      ServiceEndpoints__CustomerApi: customer-api
+    connections:
+      ConnectionStrings__AuthenticationManagement: authentication-db
+      ConnectionStrings__Messaging: messaging
+    variables:
+      Keycloak__BaseUrl: https://login.tigervancookie.nl
+      Keycloak__Realm: cookiecommerce
+      Keycloak__ClientId: cookiecommerce-backend
+      Keycloak__AdminUser: platform_operator
+      Keycloak__AdminClientId: cookiecommerce-account-admin
+      Keycloak__PublicStoreUrl: https://tigervancookie.nl
+    secretVariables:
+      Keycloak__ClientSecret: {folder: /authentication, key: KEYCLOAK_BACKEND_SECRET}
+      Keycloak__AdminClientSecret: {folder: /authentication, key: KEYCLOAK_ADMIN_SERVICE_SECRET}
+      Keycloak__AdminPassword: {folder: /keycloak, key: KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD}
+
+  web:
+    dockerfile: src/CookieCommerce.Web/Dockerfile
+    buildContext: .
+    port: 8080
+    health:
+      path: /health
+    secretFolders: [/shared, /web]
+    dependsOn: [customer-api, product-api, authentication-management-api]
+    serviceUrls:
+      ServiceEndpoints__CustomerApi: customer-api
+      ServiceEndpoints__ProductApi: product-api
+      ServiceEndpoints__AuthenticationManagementApi: authentication-management-api
+    connections:
+      ConnectionStrings__Commerce: commerce-db
+    variables:
+      DataProtection__KeyPath: /app/.data-protection
+    secretVariables:
+      Communications__ServiceKey: {folder: /shared, key: COMMUNICATIONS_SERVICE_KEY}
+    volumes:
+      - name: web-data-protection
+        mountPath: /app/.data-protection
+
+infrastructure:
+  resources:
+    customer-db:
+      kind: postgresql
+      image: docker.io/library/postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
+      database: CustomerDomain
+      username: cookie_customer
+      password: {folder: /customer, key: CUSTOMER_DB_PASSWORD}
+    product-db:
+      kind: postgresql
+      image: docker.io/library/postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
+      database: ProductDomain
+      username: cookie_product
+      password: {folder: /product, key: PRODUCT_DB_PASSWORD}
+    authentication-db:
+      kind: postgresql
+      image: docker.io/library/postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
+      database: AuthenticationManagement
+      username: cookie_authentication
+      password: {folder: /authentication, key: AUTHENTICATION_DB_PASSWORD}
+    commerce-db:
+      kind: postgresql
+      image: docker.io/library/postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
+      database: Commerce
+      username: cookie_commerce
+      password: {folder: /web, key: COMMERCE_DB_PASSWORD}
+    messaging:
+      kind: rabbitmq
+      image: docker.io/library/rabbitmq:4-management@sha256:8d0592c8f13b9ca76d844aa269f54461503223f36d0bf955859608d78baaf8fb
+      username: cookiecommerce
+      password: {folder: /messaging, key: RABBIT_PASSWORD}
+    keycloak-db:
+      kind: postgresql
+      image: docker.io/library/postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
+      database: keycloak
+      username: cookie_keycloak
+      password: {folder: /keycloak, key: KEYCLOAK_DB_PASSWORD}
+    keycloak:
+      kind: keycloak
+      build:
+        dockerfile: .platform/keycloak/Dockerfile
+      databaseResource: keycloak-db
+      domains:
+        production: login.tigervancookie.nl
+      realm: cookiecommerce
+      importRealm: true
+      variables:
+        KC_BOOTSTRAP_ADMIN_USERNAME: platform_operator
+        COOKIECOMMERCE_TEMPLATE_URL: http://tiger-van-cookie-production-web:8080/api/internal/email/render
+      secretVariables:
+        KC_BOOTSTRAP_ADMIN_PASSWORD: {folder: /keycloak, key: KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD}
+        COOKIECOMMERCE_SERVICE_KEY: {folder: /shared, key: COMMUNICATIONS_SERVICE_KEY}
+        COOKIECOMMERCE_BACKEND_SECRET: {folder: /authentication, key: KEYCLOAK_BACKEND_SECRET}
+
+release:
+  tagPattern: v*
+  autoDeployStaging: false
+  requireProductionPromotion: true
+
+secrets:
+  provider: infisical
+  injection: coolify
+  projectId: 4419e7da-4490-4e17-98c8-aae0efbf2af6
+  folders: [/shared, /customer, /product, /authentication, /web, /messaging, /keycloak]
+  generated:
+    COMMUNICATIONS_SERVICE_KEY: {folder: /shared, randomBytes: 48}
+    CUSTOMER_DB_PASSWORD: {folder: /customer, randomBytes: 48}
+    PRODUCT_DB_PASSWORD: {folder: /product, randomBytes: 48}
+    AUTHENTICATION_DB_PASSWORD: {folder: /authentication, randomBytes: 48}
+    COMMERCE_DB_PASSWORD: {folder: /web, randomBytes: 48}
+    RABBIT_PASSWORD: {folder: /messaging, randomBytes: 48}
+    KEYCLOAK_DB_PASSWORD: {folder: /keycloak, randomBytes: 48}
+    KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD: {folder: /keycloak, randomBytes: 48}
+    KEYCLOAK_BACKEND_SECRET: {folder: /authentication, randomBytes: 48}
+    KEYCLOAK_ADMIN_SERVICE_SECRET: {folder: /authentication, randomBytes: 48}

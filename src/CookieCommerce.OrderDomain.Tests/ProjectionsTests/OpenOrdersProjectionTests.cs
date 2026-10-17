@@ -22,7 +22,7 @@ public class OpenOrdersProjectionTests
         var orderId = Guid.NewGuid();
         var customerId = Guid.NewGuid();
         var placedAt = DateTime.UtcNow;
-        
+
         var orderPlaced = new OrderPlaced
         {
             OrderId = orderId,
@@ -49,7 +49,7 @@ public class OpenOrdersProjectionTests
         var orderId = Guid.NewGuid();
         var productId = Guid.NewGuid();
         var orderLine = new OrderLine(productId, quantity: 2, unitPrice: 10.00m);
-        
+
         var current = new OpenOrderReadModel
         {
             Id = orderId,
@@ -105,7 +105,7 @@ public class OpenOrdersProjectionTests
         // Arrange
         var orderId = Guid.NewGuid();
         var productId = Guid.NewGuid();
-        
+
         var current = new OpenOrderReadModel
         {
             Id = orderId,
@@ -159,7 +159,7 @@ public class OpenOrdersProjectionTests
         // This test verifies that the projection is configured to delete
         // read models when the order is paid, cancelled, or rejected
         // The DeleteEvent configuration happens in the constructor
-        
+
         // Arrange & Act
         var projection = new OpenOrdersProjection();
 
@@ -167,7 +167,7 @@ public class OpenOrdersProjectionTests
         // We can't directly test the DeleteEvent configuration,
         // but we can verify the projection was created successfully
         projection.Should().NotBeNull();
-        
+
         // In actual usage, when OrderPaid, OrderCancelled, or OrderRejected events
         // are processed, Marten will automatically delete the read model
         // This is tested through integration tests with Marten

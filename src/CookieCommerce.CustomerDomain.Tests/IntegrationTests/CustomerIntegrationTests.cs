@@ -23,11 +23,11 @@ public class CustomerIntegrationTests : IClassFixture<TestWebApplicationFactory>
     {
         // Get the document store from DI
         _store = _factory.Services.GetRequiredService<IDocumentStore>();
-        
+
         // Create sessions for the test
         _session = _store.LightweightSession();
         _query = _store.QuerySession();
-        
+
         await Task.CompletedTask;
     }
 
@@ -44,14 +44,14 @@ public class CustomerIntegrationTests : IClassFixture<TestWebApplicationFactory>
     {
         // Arrange
         var id = Guid.NewGuid();
-        
+
         // Create encryption key and encrypt data for the customer
         using var scope = _factory.Services.CreateScope();
         var keyStore = scope.ServiceProvider.GetRequiredService<CookieCommerce.CustomerDomain.Application.Security.ICustomerKeyStore>();
         var encryptionService = scope.ServiceProvider.GetRequiredService<CookieCommerce.CustomerDomain.Application.Security.IEncryptionService>();
-        
+
         var customerKey = await keyStore.CreateKeyForCustomerAsync(id, CancellationToken.None);
-        
+
         var evt = new CustomerCreated
         {
             CustomerId = id,

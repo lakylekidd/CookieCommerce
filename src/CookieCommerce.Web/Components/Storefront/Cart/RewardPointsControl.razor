@@ -1,0 +1,48 @@
+@using CookieCommerce.Web.Services.Commerce
+@inject CartService Cart
+@inject StoreSettingsService Settings
+@implements IDisposable
+
+@if (visible && (balance > 0 || applied > 0))
+{
+    <section class="my-6 p-4 rounded-xl border border-amber-200">
+        <h3 class="font-bold">Reward points</h3>
+        @if (showBalance) { <p>@balance points available · 100 points = €1</p> }
+        <p class="text-sm">Use points or a promotion code on this order.</p>
+        @if (applied > 0)
+        {
+            <p class="mt-2">@applied points applied: −€@((applied * 0.01m).ToString("F2"))</p>
+            <button type="button" @onclick="RemoveAsync" class="text-primary underline">Remove points</button>
+        }
+        else
+        {
+            <label>Points to use <input type="number" @bind="points" min="0" max="@balance" class="w-24 rounded-xl" /></label>
+            <button type="button" @onclick="ApplyAsync" class="ml-2 text-primary underline">Apply points</button>
+        }
+        <p role="status">@message</p>
+    </section>
+}
+
+@code {
+    private int balance, points, applied;
+    private bool visible;
+    private bool showBalance;
+    private string? message;
+    protected override void OnInitialized() => Cart.OnCartUpdated += Refresh;
+    protected override async Task OnAfterRenderAsync(bool firstRender) { if (firstRender) await LoadAsync(); }
+    private void Refresh() => _ = InvokeAsync(LoadAsync);
+    private async Task LoadAsync()
+    {
+        var config = await Settings.GetAsync();
+        visible = config.Preference("allowPointRedemption", true);
+        showBalance = config.Preference("showPointsOnStorefront", true);
+        balance = await Cart.GetRewardBalanceAsync();
+        var cart = await Cart.GetCartAsync();
+        applied = cart.RewardPointsToRedeem;
+        if (points == 0) points = Math.Min(balance, (int)decimal.Floor(cart.SubTotalPrice * 100));
+        StateHasChanged();
+    }
+    private async Task ApplyAsync() { message = (await Cart.ApplyRewardPointsAsync(points)).Message; await LoadAsync(); }
+    private async Task RemoveAsync() { message = (await Cart.ApplyRewardPointsAsync(0)).Message; await LoadAsync(); }
+    public void Dispose() => Cart.OnCartUpdated -= Refresh;
+}

@@ -128,7 +128,7 @@ public class ProductControllerIntegrationTests : IClassFixture<TestWebApplicatio
     {
         // Arrange
         var client = _factory.CreateClient();
-        
+
         // Create a couple of products
         var product1 = new CreateProductRequest
         {

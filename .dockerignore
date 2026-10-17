@@ -19,6 +19,7 @@
 **/node_modules
 **/npm-debug.log
 **/obj
+**/.nuget
 **/secrets.dev.yaml
 **/values.dev.yaml
 LICENSE
@@ -28,3 +29,11 @@ README.md
 !.git/config
 !.git/packed-refs
 !.git/refs/heads/**
+# SpecKit verified essentials
+node_modules/
+.git/
+Dockerfile*
+.dockerignore
+*.log*
+.env*
+coverage/

@@ -5,7 +5,7 @@ namespace CookieCommerce.AppHost;
 
 internal static class ResourceBuilderExtensions
 {
-    internal static IResourceBuilder<T> WithScalarUi<T>(this IResourceBuilder<T> builder) 
+    internal static IResourceBuilder<T> WithScalarUi<T>(this IResourceBuilder<T> builder)
         where T : IResourceWithEndpoints
     {
         return builder.WithOpenApiDocs(
@@ -17,7 +17,7 @@ internal static class ResourceBuilderExtensions
     private static IResourceBuilder<T> WithOpenApiDocs<T>(this IResourceBuilder<T> builder,
         string name,
         string displayName,
-        string openApiUiPath) 
+        string openApiUiPath)
         where T : IResourceWithEndpoints
     {
         return builder.WithCommand(

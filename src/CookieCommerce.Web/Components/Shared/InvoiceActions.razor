@@ -1,0 +1,32 @@
+@using CookieCommerce.Web.Services.Communications
+@inject InvoiceService Invoices
+@inject CookieCommerce.Web.Services.IAuthService Auth
+@inject IJSRuntime JS
+
+<div class="my-4 space-y-3">
+    @if (error is not null) { <p role="alert" class="text-red-600">@error</p> }
+    @if (notice is not null) { <p role="status" class="text-green-600">@notice</p> }
+    <button class="bg-primary text-white px-4 py-2 rounded-xl" disabled="@busy" @onclick="DownloadAsync">Download PDF invoice</button>
+    @if (Auth.IsAdmin) { <button class="border px-4 py-2 rounded-xl ml-2" disabled="@busy" @onclick="SendAsync">Email invoice to customer</button> }
+</div>
+
+@code {
+    [Parameter] public Guid OrderId { get; set; }
+    private bool busy;
+    private string? error, notice;
+    private async Task RunAsync(Func<Task> action)
+    {
+        busy = true; error = notice = null;
+        try { await action(); }
+        catch (Exception ex) { error = ex is InvalidOperationException or UnauthorizedAccessException ? ex.Message : "The invoice could not be generated. Please retry shortly."; }
+        finally { busy = false; }
+    }
+    private Task DownloadAsync() => RunAsync(async () =>
+    {
+        var result = await Invoices.DownloadAsync(OrderId);
+        using var stream = new DotNetStreamReference(new MemoryStream(result.Pdf));
+        await JS.InvokeVoidAsync("downloadCommerceFile", result.Invoice.Number + ".pdf", "application/pdf", stream);
+        notice = result.Invoice.Number;
+    });
+    private Task SendAsync() => RunAsync(async () => { await Invoices.SendAsync(OrderId); notice = "Invoice email queued."; });
+}

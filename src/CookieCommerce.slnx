@@ -17,6 +17,13 @@
     <Project Path="CookieCommerce.ProductDomain.Infrastructure/CookieCommerce.ProductDomain.Infrastructure.csproj" />
     <Project Path="CookieCommerce.ProductDomain.Tests/CookieCommerce.ProductDomain.Tests.csproj" />
   </Folder>
+  <Folder Name="/Domains/AuthenticationManagement/">
+    <Project Path="CookieCommerce.AuthenticationManagement.Api/CookieCommerce.AuthenticationManagement.Api.csproj" />
+    <Project Path="CookieCommerce.AuthenticationManagement.Application/CookieCommerce.AuthenticationManagement.Application.csproj" />
+    <Project Path="CookieCommerce.AuthenticationManagement.Domain/CookieCommerce.AuthenticationManagement.Domain.csproj" />
+    <Project Path="CookieCommerce.AuthenticationManagement.Infrastructure/CookieCommerce.AuthenticationManagement.Infrastructure.csproj" />
+    <Project Path="CookieCommerce.AuthenticationManagement.Tests/CookieCommerce.AuthenticationManagement.Tests.csproj" />
+  </Folder>
   <Folder Name="/Domains/OrderDomain/">
     <Project Path="CookieCommerce.OrderDomain.Application/CookieCommerce.OrderDomain.Application.csproj" />
     <Project Path="CookieCommerce.OrderDomain.Domain/CookieCommerce.OrderDomain.Domain.csproj" />
@@ -31,7 +38,9 @@
     <File Path="../.github/copilot-instructions.md" />
   </Folder>
   <Project Path="CookieCommerce.AppHost/CookieCommerce.AppHost.csproj" />
+  <Project Path="CookieCommerce.DevBootstrap/CookieCommerce.DevBootstrap.csproj" />
   <Project Path="CookieCommerce.ServiceDefaults/CookieCommerce.ServiceDefaults.csproj" />
   <Project Path="CookieCommerce.Web/CookieCommerce.Web.csproj" />
+  <Project Path="CookieCommerce.Web.Tests/CookieCommerce.Web.Tests.csproj" />
   <Project Path="CookieCommerce/CookieCommerce.csproj" />
 </Solution>

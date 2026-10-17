@@ -1,0 +1,199 @@
+﻿@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Models.Cart
+@using CookieCommerce.Web.Services
+@using CookieCommerce.Web.Services.Products
+@rendermode InteractiveServer
+@implements IDisposable
+@inject ICartService CartService
+@inject ICookieService CookieService
+
+<div class="group bg-surface-light dark:bg-surface-dark rounded-2xl p-4 cookie-shadow hover:-translate-y-2 transition-transform duration-300 flex flex-col h-full border border-transparent dark:border-amber-900/50">
+    
+    <a href="/shop/cookie/@Id">
+        <div class="relative aspect-square rounded-xl overflow-hidden mb-4 bg-amber-50 dark:bg-black/20">
+            <div class="flex transition-transform duration-500 ease-in-out h-full"
+                 style="transform: translateX(-@(_currentVariantIndex * 100)%);">
+                @foreach (var imageUrl in AllImages)
+                {
+                    <div class="w-full h-full flex-shrink-0 overflow-hidden">
+                        <img alt="@CookieTitle"
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                             src="@imageUrl" />
+                    </div>
+                }
+            </div>
+
+            <div class="absolute top-3 right-3 flex flex-col gap-2 z-10">
+                @if (IsBestSeller)
+                {
+                    <div class="bg-white/90 dark:bg-black/60 backdrop-blur text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">Best Seller</div>
+                }
+                @if (IsLimitedEdition)
+                {
+                    <div class="bg-white/90 dark:bg-black/60 backdrop-blur text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">Limited</div>
+                }
+            </div>
+        </div>
+        <div class="flex-grow">
+            <h3 class="font-display font-bold text-xl mb-1 group-hover:text-primary transition-colors">@CookieTitle</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">@Description</p>
+        </div>
+    </a>
+
+    <div class="flex items-center justify-between mt-2 pt-4 border-t border-gray-100 dark:border-gray-700 gap-2">
+
+        @* Price - Keep it on the left *@
+        <span class="font-display font-bold text-lg flex-none leading-none">
+            @CurrencySymbol@DisplayPrice.ToString("F2")
+        </span>
+
+        @* 🐯 Compact Variant Selector - Matched to Button Height *@
+        @if (Variants != null && Variants.Count > 1)
+        {
+            <div class="flex-1 flex items-center justify-between bg-gray-50 dark:bg-black/20 rounded-full border border-gray-100 dark:border-white/5 h-9 overflow-hidden">
+
+                @* Left Arrow Button *@
+                <button @onclick="PrevVariant"
+                        class="h-full px-2 flex items-center justify-center hover:text-primary transition-colors cursor-pointer active:scale-90">
+                    <span class="material-icons-round text-sm leading-none">chevron_left</span>
+                </button>
+
+                @* Variant Title - flex-grow and centering *@
+                <span class="flex-1 text-[9px] font-black uppercase tracking-tighter opacity-60 text-center truncate leading-none pt-[1px]">
+                    @CurrentVariant?.Title
+                </span>
+
+                @* Right Arrow Button *@
+                <button @onclick="NextVariant"
+                        class="h-full px-2 flex items-center justify-center hover:text-primary transition-colors cursor-pointer active:scale-90">
+                    <span class="material-icons-round text-sm leading-none">chevron_right</span>
+                </button>
+            </div>
+        }
+
+        @* Add to Cart Button (Size-9) *@
+        <div class="relative flex-none">
+            <button @onclick="async () => await AddToCartAsync()"
+                    disabled="@(isAddingToCart || showCheckMark)"
+                    aria-label="Add to cart"
+                    class="cursor-pointer size-9 rounded-full transition-all duration-300 flex items-center justify-center shadow-md active:scale-90 disabled:cursor-not-allowed
+                       @(showCheckMark ? "bg-emerald-500 text-white shadow-emerald-200" : "bg-primary hover:bg-amber-700 text-white shadow-primary/30")">
+
+                @if (isAddingToCart)
+                {
+                    <svg class="animate-spin size-4 text-white" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                }
+                else if (showCheckMark)
+                {
+                    <span class="material-icons-round text-lg animate-in zoom-in duration-300">check</span>
+                }
+                else
+                {
+                    <span class="material-icons-round text-lg">add</span>
+                }
+            </button>
+            @if (CartQuantity > 0)
+            {
+                <span class="absolute -top-1.5 -right-1.5 bg-primary text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-0.5 shadow-sm ring-2 ring-white dark:ring-surface-dark animate-in zoom-in duration-200 pointer-events-none">
+                    @CartQuantity
+                </span>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public bool IsBestSeller { get; set; }
+    [Parameter] public bool IsLimitedEdition { get; set; }
+    [Parameter] public string ImageUrl { get; set; } = string.Empty;
+    [Parameter] public string CookieTitle { get; set; } = string.Empty;
+    [Parameter] public string Description { get; set; } = string.Empty;
+    [Parameter] public string CurrencySymbol { get; set; } = "$";
+    [Parameter] public decimal Price { get; set; }
+
+    private StorefrontProductDto? product = null;
+    private IReadOnlyList<StorefrontProductVariantDto> Variants =>
+        product?.Variants is ICollection<StorefrontProductVariantDto> collection
+            ? collection.ToList().AsReadOnly()
+            : Array.Empty<StorefrontProductVariantDto>().AsReadOnly();
+
+    private int _currentVariantIndex = 0;
+    private bool isAddingToCart = false;
+    private bool showCheckMark = false;
+    private List<CartItemDto> _cartItems = [];
+    private int CartQuantity => _cartItems
+        .Where(i => Variants.Any(v => v.Id == i.ProductVariantId))
+        .Sum(i => i.Quantity);
+
+    // Helper Properties
+    private List<string> AllImages => Variants != null && Variants.Any()
+        ? Variants.Select(v => v.ImageUrls.FirstOrDefault() ?? ImageUrl).ToList()
+        : new List<string> { ImageUrl };
+
+    private StorefrontProductVariantDto? CurrentVariant => Variants?.ElementAtOrDefault(_currentVariantIndex);
+    private decimal DisplayPrice => CurrentVariant?.Price ?? Price;
+    private string DisplayImage => CurrentVariant?.ImageUrls.FirstOrDefault() ?? ImageUrl;
+
+    protected override async Task OnInitializedAsync()
+    {
+        product = await CookieService.GetProductByIdAsync(Id);
+        CartService.OnCartUpdated += HandleCartUpdated;
+        await RefreshCartAsync();
+    }
+
+    private async void HandleCartUpdated()
+    {
+        await RefreshCartAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RefreshCartAsync()
+    {
+        var cart = await CartService.GetCartAsync();
+        _cartItems = cart.Items;
+    }
+
+    public void Dispose()
+    {
+        CartService.OnCartUpdated -= HandleCartUpdated;
+    }
+
+    private void NextVariant()
+    {
+        if (Variants.Count <= 1) return;
+        _currentVariantIndex = (_currentVariantIndex + 1) % Variants.Count;
+    }
+
+    private void PrevVariant()
+    {
+        if (Variants.Count <= 1) return;
+        _currentVariantIndex = (_currentVariantIndex - 1 + Variants.Count) % Variants.Count;
+    }
+
+    private async Task AddToCartAsync()
+    {
+        if (isAddingToCart || showCheckMark) return;
+        isAddingToCart = true;
+        try
+        {
+            if (CurrentVariant is not null)
+                await CartService.AddToCartAsync(Id, CurrentVariant.Id, 1);
+            else
+                await CartService.AddToCartAsync(Id, 1);
+            isAddingToCart = false;
+            showCheckMark = true;
+            StateHasChanged();
+            await Task.Delay(2000);
+        }
+        finally
+        {
+            showCheckMark = false;
+            isAddingToCart = false;
+            StateHasChanged();
+        }
+    }
+}

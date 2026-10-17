@@ -1,0 +1,43 @@
+@using CookieCommerce.Web.Services
+@inject IAccountService Account
+@inject IAuthService Auth
+@inject IBackofficeService Backoffice
+@implements IDisposable
+
+<a href="@(Auth.IsAdmin ? "/backoffice/orders" : "/account/orders")" title="Orders requiring attention"
+   class="group relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-amber-100 dark:hover:bg-white/10 transition-colors">
+    <span class="material-icons">@(count > 0 ? "notifications_active" : "notifications_none")</span>
+    @if (count > 0)
+    {
+        <span class="absolute top-0 right-0 rounded-full bg-red-500 text-white text-xs px-1">@count</span>
+    }
+</a>
+
+@code {
+    private int count;
+    private readonly CancellationTokenSource cancellation = new();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        await LoadAsync();
+        _ = WatchAsync();
+    }
+    private async Task LoadAsync()
+    {
+        await Auth.InitializeAsync();
+        count = Auth.IsAdmin
+            ? (await Backoffice.GetQuotaDateOrdersAsync(DateTime.Today)).Orders.Count(o => o.Status.StatusId == 2)
+            : await Account.GetOrderCountInNeedOfAttentionAsync();
+        StateHasChanged();
+    }
+    private async Task WatchAsync()
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+            while (await timer.WaitForNextTickAsync(cancellation.Token)) await InvokeAsync(LoadAsync);
+        }
+        catch (OperationCanceledException) { }
+    }
+    public void Dispose() { cancellation.Cancel(); cancellation.Dispose(); }
+}

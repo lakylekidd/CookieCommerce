@@ -1,55 +1,50 @@
-﻿<div>
+﻿@using CookieCommerce.Web.Models.Products
+@using CookieCommerce.Web.Services
+@using CookieCommerce.Web.Components.Storefront.Products
+
+@inject IAccountService AccountService
+
+<div>
     <h2 class="text-xl font-display font-bold text-gray-800 dark:text-white mb-4">
         Reorder Your Favorites
     </h2>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div class="bg-card-light dark:bg-card-dark p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow group cursor-pointer">
-            <div class="w-full h-32 bg-orange-50 dark:bg-gray-800 rounded-lg mb-4 relative overflow-hidden flex items-center justify-center">
-                <div class="text-6xl group-hover:scale-110 transition-transform duration-300">🍪</div>
-            </div>
-            <h3 class="font-bold text-gray-900 dark:text-white">Triple Choco Tiger</h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-3">
-                Dark, milk &amp; white chocolate
-                chunks
-            </p>
-            <div class="flex justify-between items-center">
-                <span class="font-bold text-primary">€3.50</span>
-                <button class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center hover:bg-orange-600 transition-colors">
-                    <span class="material-icons text-sm">add</span>
-                </button>
-            </div>
+    
+    @if (FavoriteProducts == null)
+    {
+        <div class="flex items-center justify-center p-12">
+            <div class="animate-spin size-8 border-4 border-primary border-t-transparent rounded-full"></div>
         </div>
-        <div class="bg-card-light dark:bg-card-dark p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow group cursor-pointer">
-            <div class="w-full h-32 bg-orange-50 dark:bg-gray-800 rounded-lg mb-4 relative overflow-hidden flex items-center justify-center">
-                <div class="text-6xl group-hover:scale-110 transition-transform duration-300">🥜</div>
-            </div>
-            <h3 class="font-bold text-gray-900 dark:text-white">Nutty Caramel Roar</h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-3">
-                Salted caramel with roasted
-                peanuts
-            </p>
-            <div class="flex justify-between items-center">
-                <span class="font-bold text-primary">€3.75</span>
-                <button class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center hover:bg-orange-600 transition-colors">
-                    <span class="material-icons text-sm">add</span>
-                </button>
-            </div>
+    }
+    else if (!FavoriteProducts.Any())
+    {
+        <div class="p-8 bg-surface-light dark:bg-card-dark rounded-2xl border border-dashed border-gray-100 dark:border-gray-800 text-center">
+            <p class="text-gray-500 dark:text-gray-400">You haven't added any favorites yet.</p>
         </div>
-        <div class="bg-card-light dark:bg-card-dark p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow group cursor-pointer">
-            <div class="w-full h-32 bg-orange-50 dark:bg-gray-800 rounded-lg mb-4 relative overflow-hidden flex items-center justify-center">
-                <div class="text-6xl group-hover:scale-110 transition-transform duration-300">🍓</div>
-            </div>
-            <h3 class="font-bold text-gray-900 dark:text-white">Berry Stripe Delight</h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-3">
-                White chocolate with dried
-                strawberries
-            </p>
-            <div class="flex justify-between items-center">
-                <span class="font-bold text-primary">€3.50</span>
-                <button class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center hover:bg-orange-600 transition-colors">
-                    <span class="material-icons text-sm">add</span>
-                </button>
-            </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            @foreach (var favorite in FavoriteProducts.Take(3))
+            {
+                <FeaturedCookieCard 
+                    Id="@favorite.Id"
+                    IsBestSeller="@favorite.IsBestSeller"
+                    IsLimitedEdition="@favorite.IsLimitedEdition"
+                    ImageUrl="@(favorite.ImageUrls.FirstOrDefault() ?? string.Empty)"
+                    CookieTitle="@favorite.Title"
+                    Description="@favorite.Description"
+                    CurrencySymbol="@favorite.CurrencySymbol"
+                    Price="@favorite.Price" />
+            }
         </div>
-    </div>
+    }
 </div>
+
+@code {
+    private ICollection<StorefrontProductDto>? FavoriteProducts { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        FavoriteProducts = await AccountService.GetFavoriteProductsAsync();
+    }
+}

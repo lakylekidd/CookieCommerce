@@ -1,0 +1,432 @@
+@using CookieCommerce.Web.Models.Addresses
+@using CookieCommerce.Web.Services
+@using CookieCommerce.Web.Components.Account
+@inject IAccountService AccountService
+
+<div class="@(CurrentStep < 2 ? "opacity-60" : "cookie-shadow") bg-white dark:bg-surface-dark rounded-2xl border border-amber-100 dark:border-amber-900/30 overflow-hidden cookie-shadow">
+    <div class="p-6 flex items-center gap-4 border-b border-amber-50 dark:border-amber-900/20 bg-amber-50/30 dark:bg-amber-900/10">
+        <span class="@(CurrentStep >= 2 ? "bg-primary text-white" : "bg-gray-200 text-gray-500") w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 flex items-center justify-center font-bold">2</span>
+        <h2 class="font-display font-bold text-xl dark:text-amber-50">Contact & Shipping</h2>
+
+        @if (CurrentStep > 2)
+        {
+            <button @onclick="() => GoToStep(2)" class="cursor-pointer ml-auto text-primary text-sm font-bold hover:underline">Edit</button>
+        }
+    </div>
+
+    @if (CurrentStep == 2)
+    {
+        <div class="p-8 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">First Name</label>
+                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                           placeholder="Roary"
+                           @bind="ShippingFirstNameInput"
+                           @bind:after="UpdateContactNamesAsync"
+                           @bind:event="oninput"
+                           type="text" />
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-amber-100/80">Last Name</label>
+                    <input class="w-full px-5 py-3 rounded-full border-amber-100 dark:border-amber-900/30 focus:border-primary focus:ring-primary bg-background-light/30 dark:bg-amber-900/10 dark:text-white dark:placeholder-gray-500"
+                           placeholder="Tiger"
+                           @bind="ShippingLastNameInput"
+                           @bind:after="UpdateContactNamesAsync"
+                           @bind:event="oninput"
+                           type="text" />
+                </div>
+            </div>
+
+            <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
+                <span class="material-symbols-outlined text-xl">local_shipping</span>
+                Shipping Address
+            </h3>
+
+            @if (HasExistingAccount)
+            {
+                @if (addresses == null)
+                {
+                    <div class="animate-pulse space-y-4">
+                        <div class="h-32 bg-amber-50/50 rounded-2xl border-2 border-amber-100"></div>
+                    </div>
+                }
+                else
+                {
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        @if (addresses.Count == 0)
+                        {
+                            <div class="sm:col-span-2 rounded-2xl border border-dashed border-amber-200 dark:border-amber-900/30 p-4 text-sm text-amber-800/70 dark:text-amber-100/60">
+                                You do not have saved addresses yet. Add a new spot to continue checkout with your account.
+                            </div>
+                        }
+                        @foreach (var address in addresses)
+                        {
+                            var isSelected = SelectedShippingAddress?.Id == address.Id;
+                            <AddressSelectorCard Address="address"
+                                         IsSelected="isSelected"
+                                         OnClick="() => SelectShippingAddress(address)" />
+                        }
+
+                        <button @onclick="() => showAddAddressModal = true"
+                                type="button"
+                                class="cursor-pointer p-4 rounded-2xl border-2 border-dashed border-amber-200 dark:border-amber-900/30 hover:border-primary hover:bg-amber-50/30 dark:hover:bg-amber-900/20 transition-all flex flex-col items-center justify-center gap-2 group min-h-[120px]">
+                            <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/20 group-hover:bg-primary/20 flex items-center justify-center transition-colors">
+                                <span class="material-symbols-outlined text-primary">add</span>
+                            </div>
+                            <span class="font-bold text-amber-800/80 dark:text-amber-100/60 group-hover:text-primary text-sm">Add New Spot</span>
+                        </button>
+
+                        @if (showAddAddressModal)
+                        {
+                            <AddAddressModal OnCancel="() => showAddAddressModal = false" OnSave="OnAddressAdded" />
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <DutchAddressLookup ShowResults="true"
+                                    OnAddressFound="HandleShippingAddressUpdated"
+                                    @bind-PostalCode="ShippingPostalCodeInput"
+                                    @bind-HouseNumber="ShippingHouseNumberInput"
+                                    @bind-HouseNumberAddition="ShippingHouseNumberAdditionInput" />
+            }
+
+            <div>
+                <label class="flex items-center gap-3 cursor-pointer group">
+                    <input type="checkbox"
+                           @bind="SameAsShipping"
+                           @bind:after="UpdateSameAsShipping"
+                           class="w-5 h-5 rounded-full border-amber-200 text-primary focus:ring-primary accent-primary cursor-pointer" />
+                    <span class="text-sm font-semibold text-gray-600 dark:text-amber-100/70 group-hover:text-primary transition-colors">
+                        Billing address same as Shipping?
+                    </span>
+                </label>
+            </div>
+
+            @if (!SameAsShipping)
+            {
+                <div class="h-px w-full bg-gradient-to-r from-transparent via-amber-200 dark:via-amber-900/50 to-transparent my-8"></div>
+                <h3 class="font-display text-lg text-primary uppercase tracking-widest flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xl">receipt_long</span>
+                    Billing Address
+                </h3>
+
+                @if (HasExistingAccount)
+                {
+                    @if (addresses != null)
+                    {
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            @if (addresses.Count == 0)
+                            {
+                                <div class="sm:col-span-2 rounded-2xl border border-dashed border-amber-200 dark:border-amber-900/30 p-4 text-sm text-amber-800/70 dark:text-amber-100/60">
+                                    No saved billing addresses are available.
+                                </div>
+                            }
+                            @foreach (var address in addresses)
+                            {
+                                var isSelected = SelectedBillingAddress?.Id == address.Id;
+                                <AddressSelectorCard Address="address"
+                                         IsSelected="isSelected"
+                                         OnClick="() => SelectBillingAddress(address)" />
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <DutchAddressLookup ShowResults="true"
+                                        OnAddressFound="HandleBillingAddressUpdated"
+                                        @bind-PostalCode="BillingPostalCodeInput"
+                                        @bind-HouseNumber="BillingHouseNumberInput"
+                                        @bind-HouseNumberAddition="BillingHouseNumberAdditionInput" />
+                }
+            }
+
+            <div class="flex justify-end pt-4">
+                <button @onclick="() => GoToStep(3)"
+                        disabled="@DisableContinueFromStep2()"
+                        class="px-8 py-3 rounded-full font-bold transition-all @(DisableContinueFromStep2() ? "bg-gray-300 cursor-not-allowed text-gray-500" : "bg-primary hover:bg-amber-700 shadow-xl cursor-pointer text-white")">
+                    Continue to Delivery Method
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int CurrentStep { get; set; }
+    [Parameter] public EventCallback<int> CurrentStepChanged { get; set; }
+
+    [Parameter] public AddressBookItemDto? SelectedShippingAddress { get; set; }
+    [Parameter] public EventCallback<AddressBookItemDto?> SelectedShippingAddressChanged { get; set; }
+
+    [Parameter] public AddressBookItemDto? SelectedBillingAddress { get; set; }
+    [Parameter] public EventCallback<AddressBookItemDto?> SelectedBillingAddressChanged { get; set; }
+
+    [Parameter] public bool SameAsShipping { get; set; } = true;
+    [Parameter] public EventCallback<bool> SameAsShippingChanged { get; set; }
+
+    [Parameter] public bool HasExistingAccount { get; set; }
+
+    private IList<AddressBookItemDto>? addresses;
+    private bool showAddAddressModal = false;
+    private bool? lastAccountMode;
+
+    private string ShippingPostalCodeInput { get; set; } = string.Empty;
+    private string ShippingHouseNumberInput { get; set; } = string.Empty;
+    private string ShippingHouseNumberAdditionInput { get; set; } = string.Empty;
+    private string ShippingFirstNameInput { get; set; } = string.Empty;
+    private string ShippingLastNameInput { get; set; } = string.Empty;
+
+    private string BillingPostalCodeInput { get; set; } = string.Empty;
+    private string BillingHouseNumberInput { get; set; } = string.Empty;
+    private string BillingHouseNumberAdditionInput { get; set; } = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (CurrentStep != 2)
+        {
+            lastAccountMode = null;
+            addresses = null;
+            return;
+        }
+
+        if (lastAccountMode != HasExistingAccount)
+        {
+            lastAccountMode = HasExistingAccount;
+            addresses = null;
+            showAddAddressModal = false;
+            await ClearSelectedAddressesAsync();
+            ClearLookupInputs();
+        }
+
+        if (!HasExistingAccount)
+        {
+            return;
+        }
+
+        if (addresses is not null)
+        {
+            return;
+        }
+
+        addresses = await AccountService.GetAddressesAsync();
+        await ClearSelectionsMissingFromAddressBookAsync();
+
+        if (addresses?.Any() == true && SelectedShippingAddress == null)
+        {
+            var defaultAddress = addresses.FirstOrDefault(a => a.IsDefault) ?? addresses.First();
+            await SelectShippingAddress(defaultAddress);
+        }
+    }
+
+    private async Task OnAddressAdded()
+    {
+        showAddAddressModal = false;
+        addresses = await AccountService.GetAddressesAsync();
+        await ClearSelectionsMissingFromAddressBookAsync();
+
+        if (addresses?.Any() == true)
+        {
+            var defaultAddress = addresses.FirstOrDefault(a => a.IsDefault) ?? addresses.First();
+            await SelectShippingAddress(defaultAddress);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task SelectShippingAddress(AddressBookItemDto address)
+    {
+        SelectedShippingAddress = address;
+        ApplyLookupInputsFromAddress(address, true);
+        await SelectedShippingAddressChanged.InvokeAsync(address);
+
+        if (SameAsShipping)
+        {
+            await SyncBillingToShipping();
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task SelectBillingAddress(AddressBookItemDto address)
+    {
+        SelectedBillingAddress = address;
+        ApplyLookupInputsFromAddress(address, false);
+        await SelectedBillingAddressChanged.InvokeAsync(address);
+        StateHasChanged();
+    }
+
+    private async Task SyncBillingToShipping()
+    {
+        SelectedBillingAddress = SelectedShippingAddress;
+        CopyShippingLookupInputsToBilling();
+        await SelectedBillingAddressChanged.InvokeAsync(SelectedBillingAddress);
+        StateHasChanged();
+    }
+
+    private async Task GoToStep(int step) => await CurrentStepChanged.InvokeAsync(step);
+
+    private async Task UpdateSameAsShipping()
+    {
+        await SameAsShippingChanged.InvokeAsync(SameAsShipping);
+
+        if (SameAsShipping)
+        {
+            await SyncBillingToShipping();
+        }
+        else
+        {
+            SelectedBillingAddress = null;
+            await SelectedBillingAddressChanged.InvokeAsync(null);
+        }
+    }
+
+    private void ClearLookupInputs()
+    {
+        ShippingPostalCodeInput = string.Empty;
+        ShippingHouseNumberInput = string.Empty;
+        ShippingHouseNumberAdditionInput = string.Empty;
+        ShippingFirstNameInput = string.Empty;
+        ShippingLastNameInput = string.Empty;
+        BillingPostalCodeInput = string.Empty;
+        BillingHouseNumberInput = string.Empty;
+        BillingHouseNumberAdditionInput = string.Empty;
+    }
+
+    private void ApplyLookupInputsFromAddress(AddressBookItemDto address, bool isShipping)
+    {
+        if (isShipping)
+        {
+            ShippingPostalCodeInput = address.PostalCode;
+            ShippingHouseNumberInput = address.HouseNumber;
+            ShippingHouseNumberAdditionInput = address.HouseNumberAddition;
+            return;
+        }
+
+        BillingPostalCodeInput = address.PostalCode;
+        BillingHouseNumberInput = address.HouseNumber;
+        BillingHouseNumberAdditionInput = address.HouseNumberAddition;
+    }
+
+    private void CopyShippingLookupInputsToBilling()
+    {
+        BillingPostalCodeInput = ShippingPostalCodeInput;
+        BillingHouseNumberInput = ShippingHouseNumberInput;
+        BillingHouseNumberAdditionInput = ShippingHouseNumberAdditionInput;
+    }
+
+    private async Task HandleShippingAddressUpdated(DutchAddressLookup.AddressUpdateEventArgs e)
+    {
+        SelectedShippingAddress = BuildAddressDto(e, true);
+        await SelectedShippingAddressChanged.InvokeAsync(SelectedShippingAddress);
+
+        if (SameAsShipping)
+        {
+            await SyncBillingToShipping();
+        }
+    }
+
+    private async Task HandleBillingAddressUpdated(DutchAddressLookup.AddressUpdateEventArgs e)
+    {
+        SelectedBillingAddress = BuildAddressDto(e, false);
+        await SelectedBillingAddressChanged.InvokeAsync(SelectedBillingAddress);
+    }
+
+    private AddressBookItemDto BuildAddressDto(DutchAddressLookup.AddressUpdateEventArgs e, bool isShipping)
+    {
+        var firstName = ShippingFirstNameInput;
+        var lastName = ShippingLastNameInput;
+        var label = isShipping ? "Shipping Address" : "Billing Address";
+
+        return new AddressBookItemDto
+        {
+            Index = 0,
+            Icon = "home",
+            Label = label,
+            FirstName = firstName,
+            LastName = lastName,
+            Street = e.Street,
+            HouseNumber = e.HouseNumber,
+            HouseNumberAddition = e.HouseNumberAddition ?? string.Empty,
+            City = e.City,
+            PostalCode = e.PostalCode,
+            Province = e.Province,
+            Country = "The Netherlands",
+            Phone = string.Empty,
+            IsDefault = isShipping && (SelectedShippingAddress?.IsDefault ?? false)
+        };
+    }
+
+    private bool DisableContinueFromStep2()
+    {
+        if (SelectedShippingAddress == null ||
+            string.IsNullOrWhiteSpace(SelectedShippingAddress.FirstName) ||
+            string.IsNullOrWhiteSpace(SelectedShippingAddress.LastName))
+        {
+            return true;
+        }
+
+        if (!SameAsShipping)
+        {
+            if (SelectedBillingAddress == null ||
+                string.IsNullOrWhiteSpace(SelectedBillingAddress.FirstName) ||
+                string.IsNullOrWhiteSpace(SelectedBillingAddress.LastName))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private async Task UpdateContactNamesAsync()
+    {
+        if (HasExistingAccount) return;
+        if (SelectedShippingAddress is not null)
+        {
+            SelectedShippingAddress.FirstName = ShippingFirstNameInput;
+            SelectedShippingAddress.LastName = ShippingLastNameInput;
+            await SelectedShippingAddressChanged.InvokeAsync(SelectedShippingAddress);
+        }
+        if (SelectedBillingAddress is not null)
+        {
+            SelectedBillingAddress.FirstName = ShippingFirstNameInput;
+            SelectedBillingAddress.LastName = ShippingLastNameInput;
+            await SelectedBillingAddressChanged.InvokeAsync(SelectedBillingAddress);
+        }
+    }
+
+    private async Task ClearSelectionsMissingFromAddressBookAsync()
+    {
+        if (addresses is null)
+        {
+            return;
+        }
+
+        var addressIds = addresses.Select(address => address.Id).ToHashSet();
+        if (SelectedShippingAddress is not null && !addressIds.Contains(SelectedShippingAddress.Id))
+        {
+            SelectedShippingAddress = null;
+            await SelectedShippingAddressChanged.InvokeAsync(null);
+        }
+
+        if (SelectedBillingAddress is not null && !addressIds.Contains(SelectedBillingAddress.Id))
+        {
+            SelectedBillingAddress = null;
+            await SelectedBillingAddressChanged.InvokeAsync(null);
+        }
+    }
+
+    private async Task ClearSelectedAddressesAsync()
+    {
+        SelectedShippingAddress = null;
+        SelectedBillingAddress = null;
+        await SelectedShippingAddressChanged.InvokeAsync(null);
+        await SelectedBillingAddressChanged.InvokeAsync(null);
+    }
+}
+
+

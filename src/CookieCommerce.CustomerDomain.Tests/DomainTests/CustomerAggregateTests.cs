@@ -184,7 +184,7 @@ public class CustomerAggregateTests
         foreach (var evt in events)
         {
             // Simulate event replay by calling When directly (in real scenarios, this would be handled by event store)
-            var whenMethod = typeof(CustomerAggregate).GetMethod("When", 
+            var whenMethod = typeof(CustomerAggregate).GetMethod("When",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             whenMethod?.Invoke(replayedAgg, new[] { evt });
         }
@@ -197,7 +197,7 @@ public class CustomerAggregateTests
         replayedAgg.EncryptedGender.Should().Be(originalAgg.EncryptedGender);
         replayedAgg.EncryptedDateOfBirth.Should().Be(originalAgg.EncryptedDateOfBirth);
         replayedAgg.ForgottenDateUtc.Should().NotBeNull();
-        
+
         // Verify addresses state including primary logic
         replayedAgg.Addresses.Should().HaveCount(2);
         replayedAgg.Addresses.Should().NotContain(a => a.Label == "home", "it was removed");

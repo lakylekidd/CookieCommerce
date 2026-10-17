@@ -16,7 +16,7 @@ public class GetCustomerByIdHandlerTests
         var query = new GetCustomerById(Guid.NewGuid());
         var session = Substitute.For<IQuerySession>();
 
-        var expected = new CustomerReadModel { Id = query.CustomerId, Email = "a@b.com", FirstName = "John", LastName = "Doe", Gender = Domain.ValueObjects.Gender.Male };
+        var expected = new CustomerReadModel { Id = query.CustomerId, Email = "a@b.com", FirstName = "John", LastName = "Doe", Gender = Domain.ValueObjects.CustomerProfileGender.Male };
 
         session.LoadAsync<CustomerReadModel>(query.CustomerId).Returns(Task.FromResult(expected));
 

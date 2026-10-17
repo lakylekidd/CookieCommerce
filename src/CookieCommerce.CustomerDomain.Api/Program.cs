@@ -13,7 +13,7 @@ builder.AddServiceDefaults();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-builder.Services.AddCookieMassTransit(builder.Configuration);
+builder.Services.AddCookieMassTransit(builder.Configuration, x => x.AddCustomerDomainConsumers());
 builder.Services.AddMartenConfiguration(builder.Configuration);
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -40,4 +40,4 @@ app.MapControllers();
 
 app.Run();
 
-public partial class  Program() { }
+public partial class Program() { }

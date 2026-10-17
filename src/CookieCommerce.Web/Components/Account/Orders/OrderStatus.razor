@@ -9,12 +9,32 @@
 
 @code {
     [Parameter] public OrderStatusDto Status { get; set; }
+
     private (string Container, string Dot, string Label) GetStatusStyles() => Status?.StatusId switch
     {
-        3 => ("bg-red-500 text-white shadow-sm", "bg-white", "Cancelled"),
-        2 => ("bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300", "bg-green-500", "Delivered"),
-        1 => ("bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300", "bg-blue-500", "In Transit"),
-        0 => ("bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300", "bg-amber-800 animate-pulse", "Processing"),
+        // --- Pre-Processing ---
+        1 => ("bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400", "bg-stone-400", "Pending"),
+        2 => ("bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 border border-blue-100 dark:border-blue-800", "bg-blue-500", "Confirmed"),
+        3 => ("bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400", "bg-orange-500 animate-bounce", "On Hold"),
+
+        // --- Fulfillment ---
+        4 => ("bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300", "bg-amber-600 animate-pulse", "Processing"),
+        5 => ("bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400 border border-yellow-200", "bg-yellow-500", "Ready to Ship"),
+
+        // --- Logistics ---
+        6 => ("bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300", "bg-indigo-500", "Shipped"),
+        7 => ("bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300", "bg-blue-500", "In Transit"),
+        8 => ("bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300 border border-sky-200", "bg-sky-500 animate-pulse", "Out for Delivery"),
+        9 => ("bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300", "bg-emerald-500", "Delivered"),
+
+        // --- Exceptions & Post Purchase ---
+        10 => ("bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400", "bg-rose-500", "Cancelled"),
+        11 => ("bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300", "bg-violet-500", "Backordered"),
+        12 => ("bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300", "bg-fuchsia-500", "Refunded"),
+
+        // --- Technical Errors ---
+        0 => ("bg-red-500 text-white shadow-md shadow-red-200 dark:shadow-none", "bg-white animate-ping", "Failed"),
+
         _ => ("bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300", "bg-gray-500", "Unknown")
     };
 }

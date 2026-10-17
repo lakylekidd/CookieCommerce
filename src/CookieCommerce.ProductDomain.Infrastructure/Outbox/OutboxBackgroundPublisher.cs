@@ -74,7 +74,7 @@ public class OutboxBackgroundPublisher : BackgroundService
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
-                    _logger.LogError(ex, "Error occurred while processing outbox messages.");
+                    _logger.LogError("Error occurred while processing outbox messages [failureType={FailureType}]", ex.GetType().Name);
                 }
             }
         }
@@ -136,8 +136,7 @@ public class OutboxBackgroundPublisher : BackgroundService
                 // Set up notification handler
                 _listenerConnection.Notification += (sender, args) =>
                 {
-                    _logger.LogDebug("Received PostgreSQL NOTIFY on channel '{Channel}' with payload: {Payload}",
-                        args.Channel, args.Payload);
+                    _logger.LogDebug("Received PostgreSQL NOTIFY on channel '{Channel}'", args.Channel);
 
                     // Signal the processing loop
                     _notificationChannel.Writer.TryWrite(true);
@@ -162,7 +161,7 @@ public class OutboxBackgroundPublisher : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in LISTEN/NOTIFY connection. Will retry in 30 seconds.");
+                _logger.LogError("Error in LISTEN/NOTIFY connection; retrying [failureType={FailureType}]", ex.GetType().Name);
 
                 // Clean up the connection
                 if (_listenerConnection != null)
@@ -215,7 +214,7 @@ public class OutboxBackgroundPublisher : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Error cleaning up LISTEN/NOTIFY connection.");
+                _logger.LogWarning("Error cleaning up LISTEN/NOTIFY connection [failureType={FailureType}]", ex.GetType().Name);
             }
             finally
             {
@@ -231,7 +230,7 @@ public class OutboxBackgroundPublisher : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Error waiting for listener task to complete.");
+                _logger.LogWarning("Error waiting for listener task to complete [failureType={FailureType}]", ex.GetType().Name);
             }
         }
     }
@@ -280,8 +279,8 @@ public class OutboxBackgroundPublisher : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to publish outbox message {MessageId} of type {EventType}.",
-                    message.Id, message.EventType);
+                _logger.LogError("Failed to publish outbox message {MessageId} of type {EventType} [failureType={FailureType}]",
+                    message.Id, message.EventType, ex.GetType().Name);
 
                 // Store error information but don't mark as processed (will retry)
                 message.Error = ex.Message;

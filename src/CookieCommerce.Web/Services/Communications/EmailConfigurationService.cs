@@ -75,7 +75,14 @@ public sealed class EmailConfigurationService(ICommerceStore store, EmailConfigu
     public async Task TestAsync(string recipient)
     {
         await access.RequireAdminAsync();
-        await mail.SendNowAsync(new OutboundMessage { To = recipient, Subject = "CookieCommerce test email", TextBody = "Your outbound email configuration works." });
+        await mail.SendNowAsync(new OutboundMessage
+        {
+            To = recipient,
+            TemplateKey = "backoffice-test",
+            Subject = "CookieCommerce test email",
+            TextBody = "Your outbound email configuration works.",
+            ExpiresAt = DateTimeOffset.MaxValue
+        });
     }
 
     public static void Validate(EmailSettings settings)

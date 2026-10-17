@@ -6,6 +6,13 @@ namespace CookieCommerce.Web.Services;
 
 public class FakeCustomerService : ICustomerService
 {
+    public Task<CustomerDto> CreateCustomerAsync(string firstName, string lastName, string email, bool sendWelcomeEmail)
+    {
+        var customer = new CustomerDto { Id = Guid.CreateVersion7(), FirstName = firstName, LastName = lastName, Email = email, MemberSince = DateTime.UtcNow };
+        MockCustomerData.Customers.Add(customer);
+        return Task.FromResult(customer);
+    }
+
     public async Task<ICollection<CustomerDto>> GetCustomersAsync()
     {
         await Task.Delay(600);

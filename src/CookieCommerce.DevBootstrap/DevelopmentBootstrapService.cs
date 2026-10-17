@@ -133,7 +133,7 @@ public sealed class DevelopmentBootstrapService(
             }
             catch (Exception ex) when (attempt < 15)
             {
-                logger.LogWarning(ex, "Development bootstrap could not ensure '{Email}' on attempt {Attempt}; retrying", email, attempt);
+                logger.LogWarning("Development bootstrap could not ensure a seed identity [attempt={Attempt}, failureType={FailureType}]; retrying", attempt, ex.GetType().Name);
                 await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
             }
         }

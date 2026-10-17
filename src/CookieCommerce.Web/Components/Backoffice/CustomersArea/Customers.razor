@@ -1,13 +1,19 @@
 @page "/backoffice/customers/"
 @using CookieCommerce.Web.Models.Customers
 @using CookieCommerce.Web.Services
+@using System.ComponentModel.DataAnnotations
 @rendermode InteractiveServer
 @layout BackofficeLayout
 @inject ICustomerService CustomerService
 @inject CookieCommerce.Web.Services.Communications.AccountAdministrationService Accounts
 
 <div class="transition-colors duration-300">
-    <button class="px-4 py-2 mb-4 rounded-xl border text-primary" disabled="@(isLoading || auditing)" @onclick="AuditAsync">Check customer login access</button>
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <button class="px-4 py-2 rounded-xl border text-primary" disabled="@(isLoading || auditing)" @onclick="AuditAsync">Check customer login access</button>
+        <button class="px-4 py-2 rounded-xl bg-primary text-white font-bold shadow-sm" @onclick="() => showCreate = true">
+            <span class="material-symbols-outlined align-middle text-base">person_add</span> Add customer
+        </button>
+    </div>
     @if (audit.Count > 0)
     {
         <section class="rounded-xl border p-4 mb-4 space-y-2">
@@ -18,10 +24,58 @@
     <CustomersTableCard Customers="customers" IsLoading="isLoading" />
 </div>
 
+@if (showCreate)
+{
+    <div class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="create-customer-title">
+        <div class="w-full max-w-xl bg-card-light dark:bg-card-dark rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 p-6 md:p-8">
+            <div class="flex items-start justify-between gap-4 mb-6">
+                <div>
+                    <h2 id="create-customer-title" class="font-display text-2xl font-bold">Add customer</h2>
+                    <p class="text-sm text-gray-500 mt-1">A login account without a password is created automatically.</p>
+                </div>
+                <button class="size-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Close" @onclick="CloseCreate">✕</button>
+            </div>
+            <EditForm Model="createForm" OnValidSubmit="CreateAsync" class="space-y-5">
+                <DataAnnotationsValidator />
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">First name</label>
+                        <InputText @bind-Value="createForm.FirstName" class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" />
+                        <ValidationMessage For="@(() => createForm.FirstName)" class="text-xs text-red-600" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Last name</label>
+                        <InputText @bind-Value="createForm.LastName" class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" />
+                        <ValidationMessage For="@(() => createForm.LastName)" class="text-xs text-red-600" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2">Email address</label>
+                    <InputText type="email" @bind-Value="createForm.Email" class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" />
+                    <ValidationMessage For="@(() => createForm.Email)" class="text-xs text-red-600" />
+                </div>
+                <label class="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/10 cursor-pointer">
+                    <InputCheckbox @bind-Value="createForm.SendWelcomeEmail" class="mt-1 size-5 rounded text-primary" />
+                    <span><strong class="block">Send welcome email</strong><span class="text-sm text-gray-500">Includes a secure, 30-minute link to choose a password.</span></span>
+                </label>
+                @if (createError is not null) { <p role="alert" class="text-sm text-red-600">@createError</p> }
+                <div class="flex justify-end gap-3">
+                    <button type="button" class="px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700" disabled="@creating" @onclick="CloseCreate">Cancel</button>
+                    <button type="submit" class="px-5 py-3 rounded-xl bg-primary text-white font-bold disabled:opacity-50" disabled="@creating">@(creating ? "Creating…" : "Create customer")</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
 @code {
     private ICollection<CustomerDto> customers = [];
     private bool isLoading = true;
     private bool auditing;
+    private bool showCreate;
+    private bool creating;
+    private string? createError;
+    private CreateCustomerForm createForm = new();
     private List<(Guid Id, string Email, string State)> audit = [];
     private async Task AuditAsync()
     {
@@ -42,5 +96,36 @@
         isLoading = true;
         customers = await CustomerService.GetCustomersAsync();
         isLoading = false;
+    }
+
+    private async Task CreateAsync()
+    {
+        creating = true;
+        createError = null;
+        try
+        {
+            await CustomerService.CreateCustomerAsync(createForm.FirstName, createForm.LastName, createForm.Email, createForm.SendWelcomeEmail);
+            customers = await CustomerService.GetCustomersAsync();
+            creating = false;
+            CloseCreate();
+        }
+        catch (Exception ex) { createError = ex is InvalidOperationException ? ex.Message : "The customer could not be created."; }
+        finally { creating = false; }
+    }
+
+    private void CloseCreate()
+    {
+        if (creating) return;
+        showCreate = false;
+        createError = null;
+        createForm = new();
+    }
+
+    private sealed class CreateCustomerForm
+    {
+        [Required] public string FirstName { get; set; } = string.Empty;
+        [Required] public string LastName { get; set; } = string.Empty;
+        [Required, EmailAddress] public string Email { get; set; } = string.Empty;
+        public bool SendWelcomeEmail { get; set; }
     }
 }

@@ -38,7 +38,7 @@ internal sealed class ProductionAdminBootstrapService(
             {
                 if (attempt == 15)
                 {
-                    logger.LogError(ex, "Production admin account '{Email}' could not be bootstrapped", admin.Email);
+                    logger.LogError("Production admin bootstrap failed [attempt={Attempt}, failureType={FailureType}]", attempt, ex.GetType().Name);
                     return;
                 }
 
@@ -70,10 +70,10 @@ internal sealed class ProductionAdminBootstrapService(
 
             identity = await identities.GetUserByEmailAsync(email, cancellationToken)
                 ?? throw new InvalidOperationException("The production admin identity was not available after registration.");
-            logger.LogInformation("Production admin account '{Email}' was created with its configured initial password", email);
+            logger.LogInformation("Production admin account was created with its configured initial password");
         }
 
         await identities.AssignRealmRoleAsync(identity.Id, "Admin", cancellationToken);
-        logger.LogInformation("Production admin account '{Email}' has the Admin role", email);
+        logger.LogInformation("Production admin account has the Admin role");
     }
 }

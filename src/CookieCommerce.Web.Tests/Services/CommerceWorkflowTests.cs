@@ -128,7 +128,7 @@ public sealed class CommerceWorkflowTests
         var cartId = Guid.CreateVersion7();
         await store.SaveAsync(cartKey, new StoredCart { Cart = new() { CartId = cartId, Items = [new() { Quantity = 2 }] }, PendingOrderId = orderId });
         await store.SaveAsync(orderId.ToString(), new CommerceOrder { Id = orderId, CartKey = cartKey, CartId = cartId, PaymentProvider = "Stripe", PaymentSessionId = "cs_test", Order = new() { Id = orderId, Total = 10.95m } });
-        var processor = new PaymentProcessor(store);
+        var processor = new PaymentProcessor(store, NullLogger<PaymentProcessor>.Instance);
         var invalid = () => processor.ApplyAsync("Stripe", new(orderId, "cs_test", "Paid", 1, "eur"));
         await invalid.Should().ThrowAsync<UnauthorizedAccessException>();
         (await store.LoadAsync<StoredCart>(cartKey))!.Cart.Items.Should().NotBeEmpty();

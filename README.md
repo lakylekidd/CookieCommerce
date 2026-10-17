@@ -15,6 +15,7 @@ This README provides an overview of the architecture, conventions, and developme
 - CQRS with MediatR
 - MassTransit for integration events (with Outbox pattern)
 - Blazor UI for customer‑facing and admin experiences
+- Backoffice customer creation with passwordless account provisioning, optional welcome invitations, and administrator role management
 - Field‑level encryption for sensitive PII
 - Vertical Slice Architecture for clean separation by feature
 - Aspire for orchestration, service discovery, and local infrastructure
@@ -101,6 +102,31 @@ Each domain is isolated and follows the same structure for consistency and maint
 - Events store only encrypted values
 - Projections decrypt using customer‑specific keys
 - GDPR “forget customer” supported via key shredding
+- Backoffice-created identities start without credentials; password setup uses a random, single-use token that expires after 30 minutes and is stored only as a SHA-256 hash by Authentication Management
+- Completing password setup sets the Keycloak credential and immediately returns a normal authenticated session
+- Administrator role changes are enforced by Authentication Management: administrators cannot downgrade themselves and the final administrator cannot be removed
+
+### Customer account administration
+
+The backoffice customer list provides an **Add customer** flow requiring first name, last name, and email. Creation writes the customer profile first and then provisions a linked Keycloak identity with the `User` role and no password. The optional welcome-email toggle queues the published `account-invitation` template through the normal outbound-email pipeline. The same invitation can be sent later from the customer detail page.
+
+Relevant Authentication Management endpoints (all account-administration endpoints require the `Admin` role):
+
+| Method | Route | Purpose |
+|---|---|---|
+| `POST` | `/api/admin/accounts/{customerId}/provision` | Idempotently provision the passwordless identity |
+| `POST` | `/api/admin/accounts/{customerId}/invite` | Revoke older unused setup tokens and issue a new 30-minute invitation |
+| `PUT` | `/api/admin/accounts/{customerId}/role/admin` | Upgrade a customer to administrator |
+| `DELETE` | `/api/admin/accounts/{customerId}/role/admin` | Downgrade an administrator, subject to self/last-admin safeguards |
+| `POST` | `/api/auth/password-setup` | Consume a setup token, set the password, and return login tokens |
+
+The customer-facing setup page is `/auth/password/setup/{token}`. Outbound email and `PublicStoreUrl` must be configured before an invitation can be queued.
+
+### Outbound email diagnostics
+
+The Web service sends backoffice test emails and queued customer communications directly to the configured SMTP server. It emits structured SMTP delivery logs with the delivery kind, SMTP host, port, connection security, and a sanitized failure reason. Recipients, email content, SMTP usernames and passwords, action tokens, and raw SMTP responses are never logged. Inspect the production Web service logs in Coolify when diagnosing an email-delivery failure.
+
+All services also use shared safe HTTP dependency logging and structured API failure logging. Production logs include a dependency host, HTTP method, status code, safe failure type, and request trace ID where applicable; URLs, request and response bodies, headers, credentials, and personal data are excluded.
 
 ---
 

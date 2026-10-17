@@ -34,13 +34,12 @@ public class DomainExceptionMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        _logger.LogError(exception, "An exception occurred: {ExceptionType}", exception.GetType().Name);
-
         context.Response.ContentType = "application/problem+json";
 
         if (exception is CustomerAddressValidationException addressValidation)
         {
             context.Response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
+            LogFailure(context, exception, HttpStatusCode.UnprocessableEntity);
             var vpd = new ValidationProblemDetails(addressValidation.Errors.ToDictionary(kv => kv.Key, kv => kv.Value))
             {
                 Status = (int)HttpStatusCode.UnprocessableEntity,
@@ -57,6 +56,7 @@ public class DomainExceptionMiddleware
             && profileValidation.FieldErrors.Count > 0)
         {
             context.Response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
+            LogFailure(context, exception, HttpStatusCode.UnprocessableEntity);
             var vpd = new ValidationProblemDetails(
                 profileValidation.FieldErrors.ToDictionary(
                     kv => kv.Key,
@@ -185,6 +185,7 @@ public class DomainExceptionMiddleware
             )
         };
 
+        LogFailure(context, exception, statusCode);
         context.Response.StatusCode = (int)statusCode;
 
         var json = JsonSerializer.Serialize(problemDetails, new JsonSerializerOptions
@@ -193,6 +194,21 @@ public class DomainExceptionMiddleware
         });
 
         await context.Response.WriteAsync(json);
+    }
+
+    private void LogFailure(HttpContext context, Exception exception, HttpStatusCode statusCode)
+    {
+        if ((int)statusCode >= 500)
+        {
+            _logger.LogError(
+                "Customer Domain API request failed [traceId={TraceId}, method={Method}, statusCode={StatusCode}, exceptionType={ExceptionType}]",
+                context.TraceIdentifier, context.Request.Method, (int)statusCode, exception.GetType().Name);
+            return;
+        }
+
+        _logger.LogWarning(
+            "Customer Domain API request was rejected [traceId={TraceId}, method={Method}, statusCode={StatusCode}, exceptionType={ExceptionType}]",
+            context.TraceIdentifier, context.Request.Method, (int)statusCode, exception.GetType().Name);
     }
 }
 

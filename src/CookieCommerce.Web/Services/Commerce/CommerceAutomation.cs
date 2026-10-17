@@ -36,7 +36,7 @@ public sealed class CommerceAutomation(ICommerceStore store, IHttpClientFactory 
                 await MigrateEmailsAsync();
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
-            catch (Exception ex) { logger.LogWarning(ex, "Commerce automation will retry on the next scan"); }
+            catch (Exception ex) { logger.LogWarning("Commerce automation will retry on the next scan [failureType={FailureType}]", ex.GetType().Name); }
         }
     }
 

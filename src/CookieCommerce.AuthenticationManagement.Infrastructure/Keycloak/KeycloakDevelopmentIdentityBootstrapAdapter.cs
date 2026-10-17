@@ -31,17 +31,17 @@ internal sealed class KeycloakDevelopmentIdentityBootstrapAdapter(
         try
         {
             await mediator.Send(new RegisterUser(email, password, firstName, lastName), cancellationToken);
-            logger.LogInformation("Seed identity user '{Email}' created", email);
+            logger.LogInformation("Seed identity user created");
         }
         catch (EmailAlreadyTakenException)
         {
-            logger.LogInformation("Seed identity user '{Email}' already exists — ensuring role", email);
+            logger.LogInformation("Seed identity user already exists — ensuring role");
         }
 
         var user = await keycloakAdmin.GetUserByEmailAsync(email, cancellationToken);
         if (user is null)
         {
-            logger.LogWarning("Seed identity user '{Email}' was not found after registration; role '{Role}' was not assigned", email, role);
+            logger.LogWarning("Seed identity user was not found after registration; role '{Role}' was not assigned", role);
             return;
         }
 
@@ -64,6 +64,6 @@ internal sealed class KeycloakDevelopmentIdentityBootstrapAdapter(
             } });
             await session.SaveChangesAsync(cancellationToken);
         }
-        logger.LogInformation("Seed identity user '{Email}' has Keycloak realm role '{Role}'", email, role);
+        logger.LogInformation("Seed identity user has Keycloak realm role '{Role}'", role);
     }
 }

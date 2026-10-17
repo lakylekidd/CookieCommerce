@@ -160,3 +160,62 @@ public class CustomerProjection : SingleStreamProjection<CustomerReadModel, Guid
 - Test method names: `{Method}_{Scenario}_{ExpectedResult}`
 - Use `IClassFixture<TestWebApplicationFactory>` for integration tests
 - FluentAssertions for readable assertions: `result.Should().Be(expected)`
+
+## Customer Account Lifecycle
+
+Backoffice customer creation spans the Customer and Authentication Management bounded contexts:
+
+1. The Web backoffice validates and creates the encrypted customer profile through Customer Domain.
+2. Web calls the administrator-only Authentication Management provisioning endpoint with the returned customer id.
+3. Authentication Management idempotently creates a linked Keycloak identity with the `User` realm role, the `UPDATE_PASSWORD` required action, and no credential.
+4. If requested, Authentication Management creates a cryptographically random, 30-minute, single-use password-setup token. Only its SHA-256 hash is stored in Marten.
+5. Web renders the published `account-invitation` template and queues it through the existing outbound-email pipeline. The link targets `/auth/password/setup/{token}`.
+6. The public password-setup endpoint validates and consumes the token under a PostgreSQL advisory lock, writes the permanent Keycloak password, clears the required action, and uses the regular login handler to return an authenticated session.
+
+Resending an invitation revokes all earlier unused invitations for that identity. Customer detail remains the recovery point when provisioning or initial delivery was skipped or failed.
+
+Keycloak remains the source of truth for realm roles. Authentication Management owns role mutation and enforces both invariants before removing `Admin`: the acting identity cannot be the target, and more than one administrator must currently exist. These rules are enforced server-side; disabled UI controls are only a convenience.
+
+## Logging
+
+All production code must include appropriate structured logging for important application behavior.
+
+When adding or modifying functionality:
+
+- Log meaningful lifecycle events, important state transitions, external calls, failures, and unexpected conditions.
+- Prefer structured logging with named properties instead of interpolated strings.
+- Use appropriate log levels:
+  - `Trace` / `Debug` — diagnostic information useful during development.
+  - `Information` — important normal application events.
+  - `Warning` — unexpected situations that are recoverable.
+  - `Error` — failed operations requiring investigation.
+  - `Critical` — failures that may prevent the application or service from operating.
+- Do not log passwords, tokens, API keys, connection strings, authentication headers, personal data, or other secrets.
+- Include useful context where available, such as request IDs, correlation IDs, entity IDs, operation names, service names, and external dependency names.
+- Avoid noisy logging inside tight loops or high-frequency operations unless using `Debug` or `Trace`.
+- Do not log the same exception multiple times at different layers unless each log adds meaningful context.
+- When catching an exception, either handle it meaningfully or log it with relevant context before propagating it.
+- Prefer logging at service boundaries and important business operations rather than logging every method invocation.
+- Existing project logging conventions and abstractions must be reused instead of introducing a new logging framework.
+
+Example:
+
+```csharp
+logger.LogInformation(
+    "Order {OrderId} created for customer {CustomerId}",
+    order.Id,
+    customer.Id);
+
+logger.LogError(
+    exception,
+    "Failed to process payment for order {OrderId}",
+    order.Id);
+```
+
+When implementing a new feature, consider logging part of the implementation rather than an optional follow-up.
+
+### Outbound email observability
+
+Outbound SMTP delivery is an external-service boundary owned by the Web service. It logs successful acceptance and failures once at that boundary. Email logs include the delivery kind, SMTP host, port, connection security, and a sanitized failure reason; they must never include recipient addresses, message content, SMTP credentials, action tokens, or raw SMTP server responses.
+
+All services use the shared `OperationalHttpLoggingHandler` for outbound HTTP dependencies. It logs only the dependency host, method, status code, and safe failure type; URLs, query strings, headers, request bodies, and response bodies are intentionally excluded. API exception middleware logs one safe, structured event per failed request using trace ID, method, status code, and exception type. Expected client rejections are warnings; unexpected server failures are errors.

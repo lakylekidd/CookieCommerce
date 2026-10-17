@@ -28,8 +28,7 @@ internal sealed partial class KeycloakBootstrapService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("KeycloakBootstrapService starting — BaseUrl={BaseUrl} Realm={Realm} AdminUser={AdminUser}",
-            _options.BaseUrl, _options.Realm, _options.AdminUser);
+        _logger.LogInformation("Keycloak realm bootstrap starting [realm={Realm}]", _options.Realm);
 
         try
         {
@@ -52,7 +51,7 @@ internal sealed partial class KeycloakBootstrapService : BackgroundService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Keycloak bootstrap failed");
+            _logger.LogError("Keycloak bootstrap failed [failureType={FailureType}]", ex.GetType().Name);
         }
     }
 
@@ -80,7 +79,7 @@ internal sealed partial class KeycloakBootstrapService : BackgroundService
             }
             catch (Exception ex) when (attempt < 15)
             {
-                _logger.LogWarning("Attempt {Attempt}/15 failed ({Message}). Retrying in 3s...", attempt, ex.Message);
+                _logger.LogWarning("Keycloak admin token request failed [attempt={Attempt}, failureType={FailureType}]; retrying", attempt, ex.GetType().Name);
                 await Task.Delay(3_000, ct);
             }
         }

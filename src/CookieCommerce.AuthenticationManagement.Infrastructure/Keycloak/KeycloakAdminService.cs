@@ -134,6 +134,30 @@ public partial class KeycloakAdminService : IKeycloakAdminService
         return roles?.Select(role => role.Name).ToArray() ?? [];
     }
 
+    public async Task RemoveRealmRoleAsync(string keycloakId, string roleName, CancellationToken ct = default)
+    {
+        using var client = await AdminClientAsync(ct);
+        var escapedRoleName = Uri.EscapeDataString(roleName);
+        var role = await client.GetFromJsonAsync<KeycloakRoleResponse>(
+            $"/admin/realms/{_options.Realm}/roles/{escapedRoleName}", ct)
+            ?? throw new InvalidOperationException($"Realm role '{roleName}' was not found.");
+        using var request = new HttpRequestMessage(HttpMethod.Delete,
+            $"/admin/realms/{_options.Realm}/users/{Uri.EscapeDataString(keycloakId)}/role-mappings/realm")
+        {
+            Content = JsonContent.Create(new[] { role })
+        };
+        using var response = await client.SendAsync(request, ct);
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<int> CountUsersInRealmRoleAsync(string roleName, CancellationToken ct = default)
+    {
+        using var client = await AdminClientAsync(ct);
+        var users = await client.GetFromJsonAsync<List<KeycloakUserResponse>>(
+            $"/admin/realms/{_options.Realm}/roles/{Uri.EscapeDataString(roleName)}/users?first=0&max=10000", ct);
+        return users?.Count ?? 0;
+    }
+
     public async Task<KeycloakUserInfo?> GetUserByEmailAsync(string email, CancellationToken ct = default)
     {
         var adminToken = await GetAdminTokenAsync(ct);

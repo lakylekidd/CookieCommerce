@@ -23,7 +23,7 @@ public static class CommerceEndpoints
             { return Results.BadRequest(); }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Stripe webhook could not be processed; provider should retry");
+                logger.LogError("Stripe webhook could not be processed; provider should retry [failureType={FailureType}]", ex.GetType().Name);
                 return Results.StatusCode(503);
             }
         }).DisableAntiforgery().WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(2 * 1024 * 1024));
@@ -40,7 +40,7 @@ public static class CommerceEndpoints
             catch (UnauthorizedAccessException) { return Results.BadRequest(); }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Mollie webhook could not be processed; provider should retry");
+                logger.LogError("Mollie webhook could not be processed; provider should retry [failureType={FailureType}]", ex.GetType().Name);
                 return Results.StatusCode(503);
             }
         }).DisableAntiforgery();

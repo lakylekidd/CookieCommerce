@@ -3,7 +3,7 @@ using System.Net.Mail;
 
 namespace CookieCommerce.Web.Services;
 
-public class SmtpContactService(CookieCommerce.Web.Services.Communications.OutboundEmailService sender, ILogger<SmtpContactService> logger) : IContactService
+public class SmtpContactService(CookieCommerce.Web.Services.Communications.OutboundEmailService sender) : IContactService
 {
     private const string RecipientEmail = "info@tigervancookie.nl";
 
@@ -20,9 +20,8 @@ public class SmtpContactService(CookieCommerce.Web.Services.Communications.Outbo
             });
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            logger.LogError(ex, "Failed to send contact email from {FromEmail}", fromEmail);
             return false;
         }
     }

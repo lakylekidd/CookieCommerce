@@ -175,3 +175,45 @@ Backoffice customer creation spans the Customer and Authentication Management bo
 Resending an invitation revokes all earlier unused invitations for that identity. Customer detail remains the recovery point when provisioning or initial delivery was skipped or failed.
 
 Keycloak remains the source of truth for realm roles. Authentication Management owns role mutation and enforces both invariants before removing `Admin`: the acting identity cannot be the target, and more than one administrator must currently exist. These rules are enforced server-side; disabled UI controls are only a convenience.
+
+## Logging
+
+All production code must include appropriate structured logging for important application behavior.
+
+When adding or modifying functionality:
+
+- Log meaningful lifecycle events, important state transitions, external calls, failures, and unexpected conditions.
+- Prefer structured logging with named properties instead of interpolated strings.
+- Use appropriate log levels:
+  - `Trace` / `Debug` — diagnostic information useful during development.
+  - `Information` — important normal application events.
+  - `Warning` — unexpected situations that are recoverable.
+  - `Error` — failed operations requiring investigation.
+  - `Critical` — failures that may prevent the application or service from operating.
+- Do not log passwords, tokens, API keys, connection strings, authentication headers, personal data, or other secrets.
+- Include useful context where available, such as request IDs, correlation IDs, entity IDs, operation names, service names, and external dependency names.
+- Avoid noisy logging inside tight loops or high-frequency operations unless using `Debug` or `Trace`.
+- Do not log the same exception multiple times at different layers unless each log adds meaningful context.
+- When catching an exception, either handle it meaningfully or log it with relevant context before propagating it.
+- Prefer logging at service boundaries and important business operations rather than logging every method invocation.
+- Existing project logging conventions and abstractions must be reused instead of introducing a new logging framework.
+
+Example:
+
+```csharp
+logger.LogInformation(
+    "Order {OrderId} created for customer {CustomerId}",
+    order.Id,
+    customer.Id);
+
+logger.LogError(
+    exception,
+    "Failed to process payment for order {OrderId}",
+    order.Id);
+```
+
+When implementing a new feature, consider logging part of the implementation rather than an optional follow-up.
+
+### Outbound email observability
+
+Outbound SMTP delivery is an external-service boundary owned by the Web service. It logs successful acceptance and failures once at that boundary. Email logs include the delivery kind, SMTP host, port, connection security, and a sanitized failure reason; they must never include recipient addresses, message content, SMTP credentials, action tokens, or raw SMTP server responses.

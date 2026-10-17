@@ -9,6 +9,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Moq;
 using PdfSharp.Pdf.IO;
 
@@ -170,5 +171,34 @@ public sealed class CommunicationTests
         await store.SaveAsync("smtp", new StoredEmailConfiguration { Settings = new() { Host = "saved-host" }, ProtectedPassword = encrypted });
         (await reader.ReadAsync()).Password.Should().Be("saved-secret");
         (await reader.ReadAsync()).Settings.Password.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SendNowAsync_When_smtp_is_not_configured_logs_sanitized_failure_context()
+    {
+        var secret = "smtp-password-that-must-not-be-logged";
+        var recipient = "private-recipient@example.com";
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Smtp:Host"] = "",
+            ["Smtp:Password"] = secret
+        }).Build();
+        var logger = new CapturingLogger<OutboundEmailService>();
+        var service = new OutboundEmailService(store, new EmailConfigurationReader(store, config, new EphemeralDataProtectionProvider()), logger);
+
+        await ((Func<Task>)(() => service.SendNowAsync(new OutboundMessage
+        {
+            To = recipient,
+            TemplateKey = "backoffice-test",
+            Subject = "Test",
+            TextBody = "Body",
+            ExpiresAt = DateTimeOffset.MaxValue
+        }))).Should().ThrowAsync<InvalidOperationException>();
+
+        logger.Entries.Should().ContainSingle(entry => entry.Level == LogLevel.Error);
+        logger.Entries.Single().Message.Should().Contain("deliveryKind=backoffice-test")
+            .And.Contain("failureReason=invalid-operation")
+            .And.NotContain(secret)
+            .And.NotContain(recipient);
     }
 }

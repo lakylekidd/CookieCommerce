@@ -122,6 +122,10 @@ Relevant Authentication Management endpoints (all account-administration endpoin
 
 The customer-facing setup page is `/auth/password/setup/{token}`. Outbound email and `PublicStoreUrl` must be configured before an invitation can be queued.
 
+### Outbound email diagnostics
+
+The Web service sends backoffice test emails and queued customer communications directly to the configured SMTP server. It emits structured SMTP delivery logs with the delivery kind, SMTP host, port, connection security, and a sanitized failure reason. Recipients, email content, SMTP usernames and passwords, action tokens, and raw SMTP responses are never logged. Inspect the production Web service logs in Coolify when diagnosing an email-delivery failure.
+
 ---
 
 ## 🔄 Outbox Pattern (Messaging)

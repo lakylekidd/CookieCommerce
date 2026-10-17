@@ -166,7 +166,7 @@ secrets:
   provider: infisical
   injection: coolify
   projectId: 4419e7da-4490-4e17-98c8-aae0efbf2af6
-  folders: [/shared, /customer, /product, /authentication, /web, /messaging, /keycloak]
+  folders: [/shared, /customer, /product, /authentication, /web, /messaging, /keycloak, /github]
   generated:
     COMMUNICATIONS_SERVICE_KEY: {folder: /shared, randomBytes: 48}
     CUSTOMER_DB_PASSWORD: {folder: /customer, randomBytes: 48}

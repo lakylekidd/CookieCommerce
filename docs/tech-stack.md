@@ -1,0 +1,166 @@
+
+## Technology Stack & Patterns
+
+### Event Sourcing with Marten
+- **Marten** is used as both event store and document database
+- Events stored in streams identified by aggregate ID
+- Use `session.Events.StartStream<TAggregate>(id, events)` for new aggregates
+- Use `session.Events.Append(id, events)` for existing aggregates
+- Rehydrate aggregates: `await session.Events.AggregateStreamAsync<TAggregate>(id)`
+- Inline projections for read models
+
+### CQRS with MediatR
+- **Commands** mutate state, return scalars (Guid, void)
+- **Queries** read data, return DTOs/ReadModels
+- Use `ISender` interface in controllers (not `IMediator`)
+- Handlers are registered automatically via assembly scanning
+
+### Dependency Injection
+- Each layer has `DependencyInjection.cs` with `AddXxx()` extension method
+- Register services with appropriate lifetime (Scoped for Marten sessions)
+- API layer calls: `services.AddApplication()`, `AddInfrastructure()`, `AddMartenConfiguration()`
+
+### Marten Configuration
+- Connection strings in `appsettings.json` under `ConnectionStrings:{Domain}Domain`
+- Projections registered with lifecycle: `ProjectionLifecycle.Inline`
+- Auto-create schema: `opts.AutoCreateSchemaObjects = JasperFx.AutoCreate.All`
+
+### Exception Handling
+- Custom domain exceptions in `{Domain}.Domain/Exceptions/`
+- Global exception middleware maps exceptions to HTTP status codes
+- Middleware returns **ProblemDetails** responses
+- Example: `CustomerNotFoundException` → 404, `DuplicateAddressLabelException` → 409
+
+### Security & Data Protection
+- **Field-level encryption** for sensitive PII (names, emails, DOB)
+- Encryption keys stored per customer in document store
+- Events store encrypted data only
+- Projections decrypt data using customer-specific keys
+- Key shredding for GDPR "right to be forgotten"
+
+## Coding Standards
+
+### C# Language & .NET
+- **Target Framework:** .NET 10 (`net10.0`)
+- **C# Version:** 14.0
+- **Nullable Reference Types:** Enabled
+- **Implicit Usings:** Enabled
+- Use **file-scoped namespaces**: `namespace CookieCommerce.CustomerDomain.Api;`
+- Use **primary constructors** for classes with DI
+- Use **records** for immutable DTOs, commands, queries
+- Use **init-only properties** (`{ get; init; }`) for immutable data
+- Use **null-forgiving operator** (`!`) carefully, prefer null checks
+
+### Naming Conventions
+- **Aggregates:** `{Name}Aggregate` (e.g., `CustomerAggregate`)
+- **Commands:** `{Verb}{Entity}` (e.g., `CreateCustomer`, `AddCustomerAddress`)
+- **Queries:** `Get{Entity}By{Criteria}` (e.g., `GetCustomerById`)
+- **Handlers:** `{Command/Query}Handler` (e.g., `CreateCustomerHandler`)
+- **Domain Events:** `{Entity}{PastTenseVerb}` (e.g., `CustomerCreated`, `CustomerAddressAdded`)
+- **Integration Events:** `{Entity}{PastTenseVerb}IntegrationEvent` (future)
+- **ReadModels:** `{Entity}ReadModel` (e.g., `CustomerReadModel`)
+- **Projections:** `{Entity}Projection` (e.g., `CustomerProjection`)
+- **Value Objects:** Descriptive noun (e.g., `Address`, `Gender`)
+- **Exceptions:** `{Entity}{Condition}Exception` (e.g., `CustomerNotFoundException`)
+
+### Code Organization
+- One class per file
+- File name matches type name
+- Group using statements (System, Third-party, Project)
+- Order class members: Fields → Properties → Constructors → Public Methods → Protected/Private Methods
+- Keep methods short and focused (< 20 lines ideal)
+
+### Comments & Documentation
+- **XML comments** for public APIs (especially handlers, aggregates, commands)
+- Avoid obvious comments (code should be self-documenting)
+- Use `// TODO:` for technical debt
+- Document **why**, not **what** (code shows what)
+
+### Error Handling
+- Throw domain exceptions with context for business rule violations
+- Use domain-specific exceptions (not generic `Exception` or `InvalidOperationException`)
+- Middleware handles exception-to-HTTP mapping
+- Log errors at appropriate levels (Error for exceptions, Warning for business rules)
+
+### Testing Best Practices
+- **Arrange-Act-Assert** pattern
+- **One assertion concept per test** (can have multiple assertion statements)
+- Test names should be readable: `AddAddress_DuplicateLabel_ReturnsConflict`
+- Integration tests should use real database (via Testcontainers)
+- Mock only external dependencies (use NSubstitute)
+- Use FluentAssertions for expressive assertions
+- Tests should be isolated and repeatable
+
+## MassTransit & Messaging (Future)
+- Integration events published via MassTransit
+- Use Outbox pattern for transactional messaging
+- Message contracts in `{Domain}.Contracts` project
+- RabbitMQ as message broker
+- Configure in `CookieCommerce.CookieMassTransit`
+
+## Aspire & Service Orchestration
+- Aspire AppHost orchestrates all services
+- Service discovery via Aspire
+- PostgreSQL and RabbitMQ managed by Aspire
+- Use `builder.AddServiceDefaults()` in each service
+- Dashboard at `http://localhost:15888` (default)
+
+## Common Pitfalls to Avoid
+
+### ❌ Don't
+- Don't use generic `Exception` - use custom domain exceptions
+- Don't inject `IServiceCollection` into projections
+- Don't mutate aggregates outside of event handlers
+- Don't build service providers in projections (`_services.BuildServiceProvider()`)
+- Don't return domain entities from queries - use ReadModels
+- Don't use `IMediator` - use `ISender` instead
+- Don't forget `CancellationToken` parameters in async methods
+- Don't store decrypted PII in events - encrypt first
+- Don't use `Task.Result` or `.Wait()` - use `await`
+- Don't forget to add new projects to the solution and register dependencies.
+- Do not use a lot of nesting in methods - keep them flat and focused. This includes if statements, loops, and try/catch blocks. Consider extracting methods if you find yourself nesting more than 2 levels deep. If the nested code can be converted into a one liner, consider doing that instead. For example, instead of:
+```csharp
+if (customer == null)
+{
+    throw new CustomerNotFoundException(customerId);
+}
+``` 
+You could write:
+```csharp
+customer ?? throw new CustomerNotFoundException(customerId);
+```
+
+### ✅ Do
+- Use custom exceptions with context properties
+- Inject dependencies directly into projections
+- Apply events via `Apply()` method in aggregates
+- Use `IQuerySession` to load data in projections
+- Return immutable DTOs/ReadModels from queries
+- Pass `ISender` to controllers for CQRS
+- Always accept and propagate `CancellationToken`
+- Encrypt sensitive data before storing in events
+- Use async/await for all I/O operations
+- Use `Guid.CreateVersion7()` for new IDs
+- Use primary constructors whenever possible for DI
+- Keep methods focused and under 20 lines
+- Write tests that clearly express the behavior being tested
+
+## Key Principles
+
+1. **Domain-Driven Design:** Model the business domain accurately
+2. **Event Sourcing:** All state changes captured as events
+3. **CQRS:** Separate read and write models
+4. **Vertical Slices:** Organize by feature, not layer
+5. **Explicit is Better:** Clear, verbose code over clever code
+6. **Test Behavior:** Test business rules, not implementation
+7. **Security by Design:** Encrypt PII at rest and in events
+8. **Eventual Consistency:** Projections may lag behind events
+
+## Resources & References
+
+- **Marten:** https://martendb.io/
+- **MediatR:** https://github.com/jbogard/MediatR
+- **MassTransit:** https://masstransit.io/
+- **.NET Aspire:** https://learn.microsoft.com/en-us/dotnet/aspire/
+- **DDD Patterns:** Domain-Driven Design by Eric Evans
+- **Event Sourcing:** https://martinfowler.com/eaaDev/EventSourcing.html

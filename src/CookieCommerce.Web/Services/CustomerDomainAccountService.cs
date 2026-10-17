@@ -62,7 +62,7 @@ public sealed class CustomerDomainAccountService(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to read CustomerDomain addresses for customer {CustomerId}", user.Id);
+            logger.LogError("Failed to read CustomerDomain addresses for customer {CustomerId} [failureType={FailureType}]", user.Id, ex.GetType().Name);
             return [];
         }
     }
@@ -110,7 +110,7 @@ public sealed class CustomerDomainAccountService(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to add CustomerDomain address for customer {CustomerId}", user.Id);
+            logger.LogError("Failed to add CustomerDomain address for customer {CustomerId} [failureType={FailureType}]", user.Id, ex.GetType().Name);
             return ResultDto.Fail("We could not save this address right now.");
         }
     }
@@ -139,7 +139,7 @@ public sealed class CustomerDomainAccountService(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to delete CustomerDomain address {AddressId} for customer {CustomerId}", addressId, user.Id);
+            logger.LogError("Failed to delete CustomerDomain address {AddressId} for customer {CustomerId} [failureType={FailureType}]", addressId, user.Id, ex.GetType().Name);
             return ResultDto.Fail("We could not delete this address right now.");
         }
     }
@@ -155,7 +155,7 @@ public sealed class CustomerDomainAccountService(
         }
         catch (HttpRequestException ex)
         {
-            logger.LogError(ex, "Failed to update default address");
+            logger.LogError("Failed to update default address [failureType={FailureType}]", ex.GetType().Name);
             return ResultDto.Fail("Unable to change your default address.");
         }
     }
@@ -187,7 +187,7 @@ public sealed class CustomerDomainAccountService(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to read CustomerDomain default address for customer {CustomerId}", user.Id);
+            logger.LogError("Failed to read CustomerDomain default address for customer {CustomerId} [failureType={FailureType}]", user.Id, ex.GetType().Name);
             return null;
         }
     }

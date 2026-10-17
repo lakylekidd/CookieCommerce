@@ -3,7 +3,7 @@ using CookieCommerce.Web.Services.Commerce;
 
 namespace CookieCommerce.Web.Services.Payments;
 
-public sealed class PaymentProcessor(ICommerceStore store)
+public sealed class PaymentProcessor(ICommerceStore store, ILogger<PaymentProcessor> logger)
 {
     public async Task ApplyAsync(string provider, PaymentNotification notification)
     {
@@ -51,5 +51,9 @@ public sealed class PaymentProcessor(ICommerceStore store)
             await tx.SaveAsync(order.Id.ToString(), order);
             return true;
         });
+
+        logger.LogInformation(
+            "Payment notification applied [provider={Provider}, orderId={OrderId}, paymentStatus={PaymentStatus}]",
+            provider, notification.OrderId, notification.Status);
     }
 }

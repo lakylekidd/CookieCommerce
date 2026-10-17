@@ -174,7 +174,7 @@ public sealed class CheckoutService(
         catch (InvalidOperationException ex) { return Fail(ex.Message); }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Unable to start checkout");
+            logger.LogError("Unable to start checkout [failureType={FailureType}]", ex.GetType().Name);
             return Fail("Unable to start checkout right now. Your cart has been kept; please try again.");
         }
     }

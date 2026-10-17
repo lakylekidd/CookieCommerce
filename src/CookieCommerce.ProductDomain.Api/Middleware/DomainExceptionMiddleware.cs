@@ -139,7 +139,7 @@ public class DomainExceptionMiddleware
             )
         };
 
-        _logger.LogError(exception, "An exception occurred: {ExceptionType}", exception.GetType().Name);
+        LogFailure(context, exception, statusCode);
 
         context.Response.ContentType = "application/problem+json";
         context.Response.StatusCode = (int)statusCode;
@@ -150,6 +150,21 @@ public class DomainExceptionMiddleware
         });
 
         await context.Response.WriteAsync(json);
+    }
+
+    private void LogFailure(HttpContext context, Exception exception, HttpStatusCode statusCode)
+    {
+        if ((int)statusCode >= 500)
+        {
+            _logger.LogError(
+                "Product Domain API request failed [traceId={TraceId}, method={Method}, statusCode={StatusCode}, exceptionType={ExceptionType}]",
+                context.TraceIdentifier, context.Request.Method, (int)statusCode, exception.GetType().Name);
+            return;
+        }
+
+        _logger.LogWarning(
+            "Product Domain API request was rejected [traceId={TraceId}, method={Method}, statusCode={StatusCode}, exceptionType={ExceptionType}]",
+            context.TraceIdentifier, context.Request.Method, (int)statusCode, exception.GetType().Name);
     }
 }
 

@@ -217,3 +217,5 @@ When implementing a new feature, consider logging part of the implementation rat
 ### Outbound email observability
 
 Outbound SMTP delivery is an external-service boundary owned by the Web service. It logs successful acceptance and failures once at that boundary. Email logs include the delivery kind, SMTP host, port, connection security, and a sanitized failure reason; they must never include recipient addresses, message content, SMTP credentials, action tokens, or raw SMTP server responses.
+
+All services use the shared `OperationalHttpLoggingHandler` for outbound HTTP dependencies. It logs only the dependency host, method, status code, and safe failure type; URLs, query strings, headers, request bodies, and response bodies are intentionally excluded. API exception middleware logs one safe, structured event per failed request using trace ID, method, status code, and exception type. Expected client rejections are warnings; unexpected server failures are errors.

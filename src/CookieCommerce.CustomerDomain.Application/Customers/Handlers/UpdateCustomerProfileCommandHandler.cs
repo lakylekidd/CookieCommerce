@@ -132,10 +132,11 @@ public class UpdateCustomerProfileCommandHandler(
             catch (Exception ex)
             {
                 // Log without PII — delivery failure must not roll back profile update
-                logger.LogWarning(ex,
-                    "Email verification delivery handoff failed for customer {CustomerId} [correlationId={CorrelationId}]",
+                logger.LogWarning(
+                    "Email verification delivery handoff failed for customer {CustomerId} [correlationId={CorrelationId}, failureType={FailureType}]",
                     request.CustomerId,
-                    request.CorrelationId);
+                    request.CorrelationId,
+                    ex.GetType().Name);
             }
         }
 

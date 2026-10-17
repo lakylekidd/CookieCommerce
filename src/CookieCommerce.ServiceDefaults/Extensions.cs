@@ -31,9 +31,13 @@ public static class Extensions
             // Turn on resilience by default
             http.AddStandardResilienceHandler();
 
+            // Log dependency outcomes without exposing request or response content.
+            http.AddHttpMessageHandler<OperationalHttpLoggingHandler>();
+
             // Turn on service discovery by default
             http.AddServiceDiscovery();
         });
+        builder.Services.AddTransient<OperationalHttpLoggingHandler>();
 
         // Uncomment the following to restrict the allowed schemes for service discovery.
         // builder.Services.Configure<ServiceDiscoveryOptions>(options =>

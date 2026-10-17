@@ -1,4 +1,5 @@
 using System.Text;
+using System.Net;
 using CookieCommerce.DevBootstrap;
 using CookieCommerce.Web.Models.Auth;
 using CookieCommerce.Web.Services;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using Moq;
 using PdfSharp.Pdf.IO;
 
@@ -200,5 +202,30 @@ public sealed class CommunicationTests
             .And.Contain("failureReason=invalid-operation")
             .And.NotContain(secret)
             .And.NotContain(recipient);
+    }
+
+    [Fact]
+    public async Task OperationalHttpLoggingHandler_When_dependency_returns_an_error_logs_safe_context()
+    {
+        var logger = new CapturingLogger<OperationalHttpLoggingHandler>();
+        using var handler = new OperationalHttpLoggingHandler(logger)
+        {
+            InnerHandler = new RespondingHttpMessageHandler(HttpStatusCode.BadGateway)
+        };
+        using var client = new HttpClient(handler);
+
+        await client.GetAsync("https://payments.example.test/private?token=must-not-be-logged");
+
+        logger.Entries.Should().ContainSingle(entry => entry.Level == LogLevel.Warning);
+        logger.Entries.Single().Message.Should().Contain("dependency=payments.example.test")
+            .And.Contain("statusCode=502")
+            .And.NotContain("private")
+            .And.NotContain("must-not-be-logged");
+    }
+
+    private sealed class RespondingHttpMessageHandler(HttpStatusCode statusCode) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            Task.FromResult(new HttpResponseMessage(statusCode));
     }
 }

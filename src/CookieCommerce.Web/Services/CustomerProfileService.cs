@@ -76,7 +76,7 @@ public sealed class CustomerProfileService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to load profile from CustomerDomain for customer {CustomerId}", user.Id);
+            _logger.LogError("Failed to load profile from CustomerDomain for customer {CustomerId} [failureType={FailureType}]", user.Id, ex.GetType().Name);
             return null;
         }
     }
@@ -148,7 +148,7 @@ public sealed class CustomerProfileService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "UpdateProfileAsync failed for customer {CustomerId}", user.Id);
+            _logger.LogError("UpdateProfileAsync failed for customer {CustomerId} [failureType={FailureType}]", user.Id, ex.GetType().Name);
             return ResultDto.Fail("Unable to save your profile at this time. Please try again shortly.");
         }
     }
@@ -175,7 +175,7 @@ public sealed class CustomerProfileService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "ResendEmailVerificationAsync failed for customer {CustomerId}", user.Id);
+            _logger.LogError("ResendEmailVerificationAsync failed for customer {CustomerId} [failureType={FailureType}]", user.Id, ex.GetType().Name);
             return ResultDto.Fail("Unable to send verification email at this time. Please try again shortly.");
         }
     }
@@ -219,7 +219,7 @@ public sealed class CustomerProfileService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "ConfirmEmailVerificationAsync failed for customer {CustomerId}", user.Id);
+            _logger.LogError("ConfirmEmailVerificationAsync failed for customer {CustomerId} [failureType={FailureType}]", user.Id, ex.GetType().Name);
             return ResultDto.Fail("We could not confirm this email verification link.");
         }
     }

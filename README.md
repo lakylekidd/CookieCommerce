@@ -126,6 +126,8 @@ The customer-facing setup page is `/auth/password/setup/{token}`. Outbound email
 
 The Web service sends backoffice test emails and queued customer communications directly to the configured SMTP server. It emits structured SMTP delivery logs with the delivery kind, SMTP host, port, connection security, and a sanitized failure reason. Recipients, email content, SMTP usernames and passwords, action tokens, and raw SMTP responses are never logged. Inspect the production Web service logs in Coolify when diagnosing an email-delivery failure.
 
+All services also use shared safe HTTP dependency logging and structured API failure logging. Production logs include a dependency host, HTTP method, status code, safe failure type, and request trace ID where applicable; URLs, request and response bodies, headers, credentials, and personal data are excluded.
+
 ---
 
 ## 🔄 Outbox Pattern (Messaging)

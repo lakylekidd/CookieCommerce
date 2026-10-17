@@ -72,10 +72,11 @@ public class ResendCustomerEmailVerificationCommandHandler(
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex,
-                "Email verification resend delivery failed for customer {CustomerId} [correlationId={CorrelationId}]",
+            logger.LogWarning(
+                "Email verification resend delivery failed for customer {CustomerId} [correlationId={CorrelationId}, failureType={FailureType}]",
                 request.CustomerId,
-                request.CorrelationId);
+                request.CorrelationId,
+                ex.GetType().Name);
 
             // Delivery failure is non-fatal for resend; callers can retry
             return new EmailVerificationDeliveryResult(

@@ -30,7 +30,7 @@ public sealed class DevelopmentCommerceBootstrapService(IServiceScopeFactory sco
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
-            catch (Exception ex) { logger.LogWarning(ex, "Development commerce seed waiting for APIs (attempt {Attempt})", attempt); }
+            catch (Exception ex) { logger.LogWarning("Development commerce seed waiting for APIs [attempt={Attempt}, failureType={FailureType}]", attempt, ex.GetType().Name); }
             await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
         }
         logger.LogError("Development commerce seed did not finish. Check identity bootstrap, customer integration events and product bootstrap logs.");

@@ -59,7 +59,7 @@ internal sealed class CustomerDevelopmentAddressBootstrapService(
 
         if (!await TryEnsureCustomerAddressesAsync(customer, cancellationToken))
         {
-            logger.LogWarning("Development bootstrap customer '{Email}' was not found; skipping address seed", customer.Email);
+            logger.LogWarning("Development bootstrap customer was not found; skipping address seed");
         }
     }
 

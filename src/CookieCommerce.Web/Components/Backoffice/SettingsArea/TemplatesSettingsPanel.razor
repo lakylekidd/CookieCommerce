@@ -49,7 +49,8 @@
                 </div>
                 @if (htmlEditorMode == HtmlEditorMode.Source)
                 {
-                    <textarea rows="16" class="template-html-source" value="@template.HtmlBody" @oninput="UpdateHtmlBody"></textarea>
+                    <div id="template-html-editor" class="template-code-editor" aria-label="HTML source editor"></div>
+                    <textarea id="template-html-source" class="template-html-source" value="@template.HtmlBody" @oninput="UpdateHtmlBody" aria-hidden="true" tabindex="-1"></textarea>
                     <div class="template-image-inserter">
                         <p class="template-image-inserter-title">Add an image</p>
                         <div class="template-image-inserter-fields">
@@ -109,16 +110,17 @@
     private string imageUrl = "", imageAltText = "", imageAlignment = "center";
     private HtmlEditorMode htmlEditorMode = HtmlEditorMode.Source;
     private bool busy;
+    private int editorSyncVersion;
     protected override async Task OnInitializedAsync() { try { templates = await Templates.ListAsync(); template = await Templates.DraftAsync(selected); branding = await Templates.GetEmailBrandingAsync(); invoiceSettings = await Invoices.SettingsAsync(); ResetSampleValues(); } catch { error = "Templates could not be loaded."; } }
-    private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); ResetSampleValues(); preview = null; invoiceHtmlPreview = null; htmlEditorMode = HtmlEditorMode.Source; notice = error = ""; }
+    private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); ResetSampleValues(); preview = null; invoiceHtmlPreview = null; htmlEditorMode = HtmlEditorMode.Source; editorSyncVersion++; notice = error = ""; }
     private async Task SaveAsync(bool publish)
     {
         busy = true; error = notice = "";
-        try { await Templates.SaveAsync(template!, publish); template = await Templates.DraftAsync(selected); notice = publish ? "Template published. Future emails and invoices use this version." : "Draft saved."; }
+        try { await Templates.SaveAsync(template!, publish); template = await Templates.DraftAsync(selected); editorSyncVersion++; notice = publish ? "Template published. Future emails and invoices use this version." : "Draft saved."; }
         catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Template could not be saved."; }
         finally { busy = false; }
     }
-    private void RestoreAsync() { template = TemplateService.Default(selected); ResetSampleValues(); preview = null; invoiceHtmlPreview = null; htmlEditorMode = HtmlEditorMode.Source; notice = "Default loaded as a draft. Publish to use it."; }
+    private void RestoreAsync() { template = TemplateService.Default(selected); ResetSampleValues(); preview = null; invoiceHtmlPreview = null; htmlEditorMode = HtmlEditorMode.Source; editorSyncVersion++; notice = "Default loaded as a draft. Publish to use it."; }
     private void ShowHtmlSource() => htmlEditorMode = HtmlEditorMode.Source;
     private void ShowHtmlPreview() { htmlEditorMode = HtmlEditorMode.Preview; RenderPreviewIfValid(); }
     private void UpdateHtmlBody(ChangeEventArgs args) { template!.HtmlBody = args.Value?.ToString() ?? ""; preview = null; invoiceHtmlPreview = null; }
@@ -160,6 +162,7 @@
             var currentTemplate = template ?? throw new InvalidOperationException("Select a template before adding an image.");
             currentTemplate.HtmlBody += (string.IsNullOrWhiteSpace(currentTemplate.HtmlBody) ? "" : Environment.NewLine) + TemplateService.CreateImageHtml(imageUrl, imageAltText, imageAlignment);
             imageUrl = imageAltText = "";
+            editorSyncVersion++;
             preview = null;
             notice = "Image markup added to the HTML source.";
         }
@@ -190,6 +193,11 @@
             Order = new() { OrderReference = values["order_reference"], Total = 24.95m, TaxRate = .09m, ShippingCharge = 4.95m,
                 BillingAddress = new() { FirstName = "Noor", LastName = "de Vries", Street = "Voorbeeldstraat", HouseNumber = "12", City = "Amsterdam", PostalCode = "1012 AB", Country = "Netherlands" },
                 Products = [new() { ProductName = "Chocolate Chunk", ProductVariantName = "5 Cookies Box", Quantity = 2, UnitPrice = 10m }] } };
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (template is not null && htmlEditorMode == HtmlEditorMode.Source)
+            await JS.InvokeVoidAsync("commerceTemplateEditor.sync", "template-html-editor", "template-html-source", template.HtmlBody, editorSyncVersion);
     }
     private enum HtmlEditorMode { Source, Preview }
 }

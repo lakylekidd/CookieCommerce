@@ -7,7 +7,10 @@
 .template-editor-tab, .template-editor-tab-active, .template-image-insert-button { border: 1px solid #9ca3af; border-radius: .65rem; cursor: pointer; padding: .45rem .8rem; }
 .template-editor-tab { background: transparent; color: inherit; }
 .template-editor-tab-active, .template-image-insert-button { background: #f97316; border-color: #f97316; color: white; }
-.template-html-source, .template-html-preview { min-height: 32rem; }
+.template-code-editor { min-height: 32rem; margin-top: .35rem; overflow: hidden; border: 1px solid #9ca3af; border-radius: .65rem; --template-editor-background: #ffffff; --template-editor-foreground: #111827; --template-editor-gutter: #f3f4f6; --template-editor-gutter-foreground: #6b7280; --template-editor-border: #d1d5db; --template-editor-active-line: #f9fafb; }
+.template-code-editor .cm-editor { min-height: 32rem; }
+.template-html-source { position: absolute; width: 1px !important; height: 1px !important; margin: -1px !important; padding: 0 !important; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0 !important; }
+.template-html-preview { min-height: 32rem; }
 .template-html-preview { display: block; width: 100%; margin-top: .35rem; }
 .template-preview-subject { margin: .5rem 0 0; }
 .template-sample-data { margin-top: 1rem; padding: 1rem; border: 1px solid #d1d5db; border-radius: .65rem; background: rgba(254, 243, 199, .35); }
@@ -39,3 +42,5 @@
     background-color: #111827;
     color: #e5e7eb;
 }
+
+.dark .template-code-editor { --template-editor-background: #111827; --template-editor-foreground: #e5e7eb; --template-editor-gutter: #1f2937; --template-editor-gutter-foreground: #9ca3af; --template-editor-border: #4b5563; --template-editor-active-line: #1f2937; }

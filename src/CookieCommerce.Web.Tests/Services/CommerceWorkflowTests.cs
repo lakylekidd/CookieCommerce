@@ -186,6 +186,27 @@ public sealed class CommerceWorkflowTests
     }
 
     [Fact]
+    public async Task Newsletter_subscription_is_published_to_listmonk()
+    {
+        var publisher = new CapturingNewsletterPublisher();
+        var service = new NewsletterService(store, publisher);
+
+        (await service.SubscribeAsync("jamie@example.com", "Jamie")).Success.Should().BeTrue();
+        publisher.Subscription.Should().Be(("jamie@example.com", "Jamie"));
+    }
+
+    private sealed class CapturingNewsletterPublisher : INewsletterPublisher
+    {
+        public (string Email, string Name) Subscription { get; private set; }
+
+        public Task PublishAsync(string email, string name, CancellationToken cancellationToken = default)
+        {
+            Subscription = (email, name);
+            return Task.CompletedTask;
+        }
+    }
+
+    [Fact]
     public async Task Rewards_are_valued_at_one_cent_and_cannot_stack_with_promotions()
     {
         var customerId = Guid.CreateVersion7();

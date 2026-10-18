@@ -13,7 +13,8 @@ namespace CookieCommerce.Web.Services.Commerce;
 public sealed class CheckoutService(
     ICommerceStore store, CartService carts, ICookieService catalog, IAuthService auth,
     StoreSettingsService settings, IEnumerable<IPaymentGateway> gateways,
-    IOptions<PaymentOptions> payments, ILogger<CheckoutService> logger, CustomerProfileService? profiles = null) : ICheckoutService
+    IOptions<PaymentOptions> payments, ILogger<CheckoutService> logger, CustomerProfileService? profiles = null,
+    INewsletterService? newsletter = null) : ICheckoutService
 {
     public async Task<IReadOnlyList<DeliveryInfoDto>> GetDeliveryMethodsAsync(AddressBookItemDto address)
     {
@@ -75,6 +76,7 @@ public sealed class CheckoutService(
                 if (!await auth.SignInAsync(signup.Email, signup.Password)) return Fail("Your account was created. Please sign in to complete checkout.");
                 request.CartId = (await carts.GetCartAsync()).CartId.ToString();
             }
+            await TrySubscribeNewsletterAsync(request, newsletter);
             var cartKey = await carts.GetKeyAsync();
             var dateOfBirth = config.Preference("doubleBirthdayPoints", false) && auth.CurrentUser is not null && profiles is not null
                 ? (await profiles.GetProfileAsync())?.DateOfBirth : null;
@@ -180,6 +182,19 @@ public sealed class CheckoutService(
     }
 
     private static CheckoutResult Fail(string message) => new() { Message = message };
+
+    private async Task TrySubscribeNewsletterAsync(AnonymousCheckoutRequest request, INewsletterService? newsletter)
+    {
+        if (!request.SubscribeNewsletter || newsletter is null) return;
+        try
+        {
+            await newsletter.SubscribeAsync(request.Email, $"{request.FristName} {request.LastName}");
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Newsletter opt-in could not be recorded for checkout {EmailHash}", NewsletterService.Key(request.Email));
+        }
+    }
     private static void Validate(AnonymousCheckoutRequest request)
     {
         if (!new EmailAddressAttribute().IsValid(request.Email) || string.IsNullOrWhiteSpace(request.FristName) || string.IsNullOrWhiteSpace(request.LastName))

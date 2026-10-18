@@ -102,6 +102,7 @@
 - Aspire AppHost orchestrates all services
 - Service discovery via Aspire
 - PostgreSQL and RabbitMQ managed by Aspire
+- Listmonk for newsletter subscriptions and campaign management, backed by a dedicated PostgreSQL database
 - Use `builder.AddServiceDefaults()` in each service
 - Dashboard at `http://localhost:15888` (default)
 

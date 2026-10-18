@@ -17,6 +17,7 @@
         <div class="lg:w-2/3 space-y-6">
             <CheckoutCustomerInformation CurrentStep="currentStep" User="User"
                 @bind-CheckoutEmail="CheckoutEmail" @bind-ShouldCreateAccount="shouldCreateAccount"
+                @bind-SubscribeNewsletter="subscribeNewsletter"
                 @bind-Password="Password" @bind-ConfirmPassword="ConfirmPassword"
                 CurrentStepChanged="step => currentStep = step" />
             <ContactAndShipping @bind-CurrentStep="currentStep" @bind-SelectedShippingAddress="shippingAddressDto"
@@ -47,6 +48,7 @@
     private int currentStep = 1;
     private UserDto? User;
     private bool shouldCreateAccount;
+    private bool subscribeNewsletter;
     private DeliveryInfoDto? selectedDelivery;
     private string Password = "";
     private string ConfirmPassword = "";
@@ -96,6 +98,7 @@
             request.FristName = shippingAddressDto.FirstName;
             request.LastName = shippingAddressDto.LastName;
             request.Email = User?.Email ?? CheckoutEmail;
+            request.SubscribeNewsletter = subscribeNewsletter;
             request.ShippingAddress = MapAddress(shippingAddressDto);
             request.BillingAddress = MapAddress(SameAsShipping ? shippingAddressDto : billingAddressDto!);
             request.DeliveryMethod = selectedDelivery.Title;

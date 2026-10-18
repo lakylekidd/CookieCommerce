@@ -11,6 +11,7 @@ SERVICES = (
     "authentication-management-api",
     "customer-api",
     "infra-keycloak",
+    "infra-listmonk",
     "product-api",
     "web",
 )

@@ -87,8 +87,8 @@ services:
     port: 8080
     health:
       path: /health
-    secretFolders: [/shared, /web]
-    dependsOn: [customer-api, product-api, authentication-management-api]
+    secretFolders: [/shared, /web, /newsletter]
+    dependsOn: [customer-api, product-api, authentication-management-api, listmonk]
     serviceUrls:
       ServiceEndpoints__CustomerApi: customer-api
       ServiceEndpoints__ProductApi: product-api
@@ -97,8 +97,12 @@ services:
       ConnectionStrings__Commerce: commerce-db
     variables:
       DataProtection__KeyPath: /app/.data-protection
+      Listmonk__BaseUrl: http://listmonk:9000
+      Listmonk__ListId: '1'
     secretVariables:
       Communications__ServiceKey: {folder: /shared, key: COMMUNICATIONS_SERVICE_KEY}
+      Listmonk__Username: {folder: /newsletter, key: LISTMONK_API_USERNAME}
+      Listmonk__Password: {folder: /newsletter, key: LISTMONK_API_PASSWORD}
     volumes:
       - name: web-data-protection
         mountPath: /app/.data-protection
@@ -155,6 +159,24 @@ infrastructure:
         KC_BOOTSTRAP_ADMIN_PASSWORD: {folder: /keycloak, key: KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD}
         COOKIECOMMERCE_SERVICE_KEY: {folder: /shared, key: COMMUNICATIONS_SERVICE_KEY}
         COOKIECOMMERCE_BACKEND_SECRET: {folder: /authentication, key: KEYCLOAK_BACKEND_SECRET}
+    listmonk-db:
+      kind: postgresql
+      image: docker.io/library/postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
+      database: listmonk
+      username: listmonk
+      password: {folder: /newsletter, key: LISTMONK_DB_PASSWORD}
+    listmonk:
+      kind: listmonk
+      image: docker.io/listmonk/listmonk:latest
+      domains:
+        production: newsletter.tigervancookie.nl
+      databaseResource: listmonk-db
+      variables:
+        LISTMONK_app__address: 0.0.0.0:9000
+      secretVariables:
+        LISTMONK_db__password: {folder: /newsletter, key: LISTMONK_DB_PASSWORD}
+        LISTMONK_admin__username: {folder: /newsletter, key: LISTMONK_API_USERNAME}
+        LISTMONK_admin__password: {folder: /newsletter, key: LISTMONK_API_PASSWORD}
 
 release:
   tagPattern: v*
@@ -165,7 +187,7 @@ secrets:
   provider: infisical
   injection: coolify
   projectId: 4419e7da-4490-4e17-98c8-aae0efbf2af6
-  folders: [/shared, /customer, /product, /authentication, /web, /messaging, /keycloak, /github]
+  folders: [/shared, /customer, /product, /authentication, /web, /messaging, /keycloak, /newsletter, /github]
   generated:
     COMMUNICATIONS_SERVICE_KEY: {folder: /shared, randomBytes: 48}
     CUSTOMER_DB_PASSWORD: {folder: /customer, randomBytes: 48}
@@ -177,3 +199,5 @@ secrets:
     KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD: {folder: /keycloak, randomBytes: 48}
     KEYCLOAK_BACKEND_SECRET: {folder: /authentication, randomBytes: 48}
     KEYCLOAK_ADMIN_SERVICE_SECRET: {folder: /authentication, randomBytes: 48}
+    LISTMONK_DB_PASSWORD: {folder: /newsletter, randomBytes: 48}
+    LISTMONK_API_PASSWORD: {folder: /newsletter, randomBytes: 48}

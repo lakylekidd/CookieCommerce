@@ -32,6 +32,8 @@ var kcAdminPassword = builder.AddParameter("keycloak-admin-password", "admin");
 var kcServiceSecret = builder.AddParameter("keycloak-admin-service-secret",
     builder.Configuration["Keycloak:AdminClientSecret"] ?? (builder.Environment.IsDevelopment()
         ? "cookiecommerce-development-admin-secret" : throw new InvalidOperationException("Configure Keycloak:AdminClientSecret.")), secret: true);
+var listmonkUsername = builder.AddParameter("listmonk-api-username", "admin");
+var listmonkPassword = builder.AddParameter("listmonk-api-password", "cookiecommerce-development-listmonk-password", secret: true);
 var communicationsKey = builder.AddParameter("communications-service-key",
     builder.Configuration["Communications:ServiceKey"] ?? (builder.Environment.IsDevelopment()
         ? "cookiecommerce-development-communications-key" : throw new InvalidOperationException("Configure Communications:ServiceKey for internal email delivery.")), secret: true);
@@ -45,6 +47,21 @@ var keycloak = builder.AddKeycloak(
     .WithDockerfile(Path.Combine(builder.AppHostDirectory, "..", "CookieCommerce.KeycloakEmailProvider"))
     .WithEnvironment("COOKIECOMMERCE_SERVICE_KEY", communicationsKey)
     .WithDataVolume(volumePrefix + "-keycloak-data").WithLifetime(ContainerLifetime.Persistent);
+
+var listmonkDb = postgres.AddDatabase("ListmonkDb");
+var listmonk = builder.AddContainer("listmonk", "listmonk/listmonk", "latest")
+    .WithHttpEndpoint(port: builder.Configuration.GetValue("DevelopmentStorage:ListmonkPort", 9000), targetPort: 9000, name: "http")
+    .WithEnvironment("LISTMONK_app__address", "0.0.0.0:9000")
+    .WithEnvironment("LISTMONK_db__host", listmonkDb.Resource.Name)
+    .WithEnvironment("LISTMONK_db__database", "ListmonkDb")
+    .WithEnvironment("LISTMONK_db__user", "postgres")
+    .WithEnvironment("LISTMONK_db__password", password)
+    .WithEnvironment("LISTMONK_admin__username", listmonkUsername)
+    .WithEnvironment("LISTMONK_admin__password", listmonkPassword)
+    .WithEntrypoint("sh")
+    .WithArgs("-c", "./listmonk --install --yes && ./listmonk")
+    .WithReference(listmonkDb).WaitFor(listmonkDb)
+    .WithLifetime(ContainerLifetime.Persistent);
 
 // Add the APIs
 var customerApi = builder.AddProject<CookieCommerce_CustomerDomain_Api>("customer-api")
@@ -77,6 +94,9 @@ var web = builder.AddProject<CookieCommerce_Web>("cookiecommerce-web")
     .WithReference(customerApi)
     .WithReference(productApi)
     .WithReference(authenticationManagementApi);
+web.WithEnvironment("Listmonk__BaseUrl", ReferenceExpression.Create($"{listmonk.GetEndpoint("http")}"))
+    .WithEnvironment("Listmonk__Username", listmonkUsername)
+    .WithEnvironment("Listmonk__Password", listmonkPassword);
 
 keycloak.WithEnvironment("COOKIECOMMERCE_TEMPLATE_URL", ReferenceExpression.Create($"{web.GetEndpoint("http")}/api/internal/email/render"));
 customerApi.WithEnvironment("EmailVerificationDelivery__ExternalDeliveryEndpoint", ReferenceExpression.Create($"{web.GetEndpoint("http")}/api/internal/email/verification"))

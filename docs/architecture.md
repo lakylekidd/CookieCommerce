@@ -195,6 +195,18 @@ PDF invoice templates use editable HTML stored on MessageTemplate. The HTML cont
 
 ## Logging
 
+## Newsletter delivery
+
+Newsletter subscriptions remain idempotent in the Web service's Commerce store,
+which is used for customer status and backoffice queries. After the local write,
+the Web service publishes the normalized email and name to Listmonk using its
+authenticated `/api/subscribers` endpoint and configured list id. Listmonk
+duplicates are treated as success. Listmonk is a separate PostgreSQL-backed
+resource in Aspire and Coolify so campaign data has an independent lifecycle.
+Checkout and registration pass an explicit opt-in flag through the request
+contract. Checkout records the subscription best-effort so a Listmonk outage
+does not prevent payment or account creation.
+
 All production code must include appropriate structured logging for important application behavior.
 
 When adding or modifying functionality:

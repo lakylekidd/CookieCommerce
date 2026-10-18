@@ -181,6 +181,14 @@ CookieCommerce uses a transactional outbox for reliable integration event publis
 - Add tests (domain, application, integration)
 - Run locally via Aspire AppHost
 
+Newsletter sign-up forms persist an idempotent local subscription and publish the
+same address to Listmonk through `POST /api/subscribers`. Configure
+`Listmonk__BaseUrl`, `Listmonk__Username`, `Listmonk__Password`, and
+`Listmonk__ListId` in production. Aspire starts Listmonk and its PostgreSQL
+database locally; Coolify provisions the equivalent persistent services.
+Checkout and account-registration forms expose an explicit newsletter opt-in;
+only opted-in customers are sent to Listmonk.
+
 ---
 
 ## 🔗 Cross-Domain Integration

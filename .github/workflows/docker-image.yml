@@ -73,6 +73,9 @@ jobs:
           - service: infra-keycloak
             context: .
             dockerfile: .platform/keycloak/Dockerfile
+          - service: infra-listmonk
+            context: .
+            dockerfile: .platform/listmonk/Dockerfile
           - service: product-api
             context: src
             dockerfile: src/CookieCommerce.ProductDomain.Api/Dockerfile

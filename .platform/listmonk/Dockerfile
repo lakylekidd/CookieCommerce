@@ -1,0 +1,1 @@
+FROM listmonk/listmonk:latest

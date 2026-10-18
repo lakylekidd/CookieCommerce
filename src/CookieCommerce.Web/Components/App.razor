@@ -14,7 +14,10 @@
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-body transition-colors duration-300">
-    <Routes @rendermode="InteractiveServer" />
+    @* Authentication is restored from ProtectedLocalStorage, which is unavailable during prerendering.
+       Starting the router only after the interactive circuit is connected prevents the launch gate from
+       briefly treating an authenticated refresh as anonymous and rendering the coming-soon page. *@
+    <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
     <ReconnectModal />
 
     <script src="js/global.js"></script>

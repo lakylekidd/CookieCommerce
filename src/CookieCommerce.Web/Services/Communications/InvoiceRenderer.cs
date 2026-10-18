@@ -1,14 +1,16 @@
 using System.Globalization;
-using MigraDoc.DocumentObjectModel;
-using MigraDoc.DocumentObjectModel.Tables;
-using MigraDoc.Rendering;
+using System.Net;
+using System.Text;
+using PdfSharp;
 using PdfSharp.Fonts;
+using TheArtOfDev.HtmlRenderer.PdfSharp;
 
 namespace CookieCommerce.Web.Services.Communications;
 
 public sealed class InvoiceRenderer(IWebHostEnvironment environment)
 {
     private static readonly object FontGate = new();
+
     public byte[] ReadLogo(string path)
     {
         var root = Path.GetFullPath(Path.Combine(environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot"), "images"));
@@ -17,73 +19,81 @@ public sealed class InvoiceRenderer(IWebHostEnvironment environment)
         return File.Exists(file) && new FileInfo(file).Length <= 2 * 1024 * 1024 ? File.ReadAllBytes(file) : [];
     }
 
-    public byte[] Render(InvoiceRecord invoice)
+    public string RenderHtml(InvoiceRecord invoice)
     {
         lock (FontGate) GlobalFontSettings.FontResolver ??= new InvoiceFontResolver();
-        var document = new Document();
-        document.Info.Title = invoice.Number;
-        document.Info.Author = invoice.Company.CompanyName;
-        document.Styles[StyleNames.Normal]!.Font.Name = "CookieCommerce";
-        document.Styles[StyleNames.Normal]!.Font.Size = 10;
-        document.Styles[StyleNames.Normal]!.ParagraphFormat.SpaceAfter = Unit.FromPoint(6);
-        var section = document.AddSection();
-        section.PageSetup.PageFormat = PageFormat.A4;
-        section.PageSetup.TopMargin = section.PageSetup.BottomMargin = Unit.FromCentimeter(2);
-        section.PageSetup.LeftMargin = section.PageSetup.RightMargin = Unit.FromCentimeter(2);
-        if (invoice.IsDevelopmentSeed)
-        {
-            var sample = section.AddParagraph("DEVELOPMENT SAMPLE — no payment was processed");
-            sample.Format.Font.Bold = true; sample.Format.Font.Color = Colors.DarkRed;
-        }
-        if (invoice.LogoBytes.Length > 0)
-        {
-            var logo = section.AddImage("base64:" + Convert.ToBase64String(invoice.LogoBytes));
-            logo.Width = Unit.FromCentimeter(3); logo.LockAspectRatio = true;
-        }
-        var title = section.AddParagraph(TemplateService.Replace(invoice.Template.Heading, InvoiceGenerator.Values(invoice), false));
-        title.Format.Font.Size = 24; title.Format.Font.Bold = true;
-        title.Format.Font.Color = Color.Parse(invoice.Template.AccentColor);
-        section.AddParagraph(invoice.Company.CompanyName).Format.Font.Bold = true;
-        if (invoice.Company.CompanyAddress.Length > 0) section.AddParagraph(invoice.Company.CompanyAddress);
-        if (invoice.Company.CompanyRegistration.Length > 0) section.AddParagraph("Registration: " + invoice.Company.CompanyRegistration);
-        if (invoice.Company.VatNumber.Length > 0) section.AddParagraph("VAT: " + invoice.Company.VatNumber);
-        section.AddParagraph($"Issued: {TimeZoneInfo.ConvertTimeBySystemTimeZoneId(invoice.IssuedAt, "Europe/Amsterdam"):yyyy-MM-dd}    Order: {invoice.Order.OrderReference}");
-        var address = invoice.Order.BillingAddress;
-        section.AddParagraph($"Bill to\n{address.FirstName} {address.LastName}\n{address.Street} {address.HouseNumber}{address.HouseNumberAddition}\n{address.PostalCode} {address.City}\n{address.Country}");
-        var table = section.AddTable();
-        table.Borders.Color = Colors.LightGray; table.Borders.Width = 0.5;
-        foreach (var width in new[] { 9.3, 1.8, 2.8, 3.1 }) table.AddColumn(Unit.FromCentimeter(width));
-        var header = table.AddRow(); header.HeadingFormat = true; header.Format.Font.Bold = true;
-        header.Shading.Color = Colors.LightGray;
-        header.Cells[0].AddParagraph("Item"); header.Cells[1].AddParagraph("Qty"); header.Cells[2].AddParagraph("Unit EUR"); header.Cells[3].AddParagraph("Total EUR");
-        foreach (var line in invoice.Order.Products)
-        {
-            var row = table.AddRow();
-            row.Cells[0].AddParagraph(line.ProductName + "\n" + line.ProductVariantName);
-            row.Cells[1].AddParagraph(line.Quantity.ToString(CultureInfo.InvariantCulture));
-            row.Cells[2].AddParagraph(Money(line.UnitPrice)); row.Cells[3].AddParagraph(Money(line.UnitPrice * line.Quantity));
-            for (var c = 1; c < 4; c++) row.Cells[c].Format.Alignment = ParagraphAlignment.Right;
-        }
-        section.AddParagraph().Format.SpaceAfter = Unit.FromPoint(10);
-        var totals = section.AddTable(); totals.AddColumn(Unit.FromCentimeter(12)); totals.AddColumn(Unit.FromCentimeter(5));
-        void Total(string label, decimal amount, bool bold = false)
-        {
-            var row = totals.AddRow(); row.Format.Font.Bold = bold;
-            row.Cells[0].AddParagraph(label); row.Cells[1].AddParagraph("EUR " + Money(amount)); row.Cells[1].Format.Alignment = ParagraphAlignment.Right;
-        }
-        Total("Items", invoice.Order.SubTotalPrice); Total("Shipping", invoice.Order.Shipping);
-        Total("Promotion discount", -invoice.Order.GetPromotionDiscount()); Total("Reward discount", -invoice.Order.RewardDiscount);
-        Total("Total excluding VAT", invoice.NetAmount); Total($"VAT {invoice.Order.TaxRate * 100:0.##}%", invoice.TaxAmount);
-        Total("Total paid", invoice.Order.Total, true);
-        section.AddParagraph(TemplateService.Replace(invoice.Template.Footer, InvoiceGenerator.Values(invoice), false)).Format.SpaceBefore = Unit.FromPoint(15);
-        var footer = section.Footers.Primary.AddParagraph(invoice.Number + " · Page ");
-        footer.AddPageField(); footer.AddText(" of "); footer.AddNumPagesField(); footer.Format.Alignment = ParagraphAlignment.Center;
-        var renderer = new PdfDocumentRenderer { Document = document };
-        renderer.RenderDocument();
-        using var output = new MemoryStream(); renderer.PdfDocument.Save(output, false); return output.ToArray();
+        var values = InvoiceGenerator.Values(invoice);
+        var html = string.IsNullOrWhiteSpace(invoice.Template.HtmlBody) ? TemplateService.DefaultInvoiceHtml : invoice.Template.HtmlBody;
+        html = TemplateService.Replace(html, values, true)
+            .Replace("__INVOICE_ACCENT__", SafeAccent(invoice.Template.AccentColor), StringComparison.Ordinal)
+            .Replace("__INVOICE_LOGO__", LogoHtml(invoice.LogoBytes), StringComparison.Ordinal)
+            .Replace("__INVOICE_HEADING__", TextHtml(TemplateService.Replace(invoice.Template.Heading, values, false)), StringComparison.Ordinal)
+            .Replace("__INVOICE_COMPANY__", CompanyHtml(invoice.Company), StringComparison.Ordinal)
+            .Replace("__INVOICE_ADDRESS__", AddressHtml(invoice), StringComparison.Ordinal)
+            .Replace("__INVOICE_ITEMS__", ItemsHtml(invoice), StringComparison.Ordinal)
+            .Replace("__INVOICE_TOTALS__", TotalsHtml(invoice), StringComparison.Ordinal)
+            .Replace("__INVOICE_FOOTER__", TextHtml(TemplateService.Replace(invoice.Template.Footer, values, false)), StringComparison.Ordinal);
+        return html;
     }
 
+    public byte[] Render(InvoiceRecord invoice)
+    {
+        var pdf = PdfGenerator.GeneratePdf(RenderHtml(invoice), PageSize.A4);
+        using var output = new MemoryStream();
+        pdf.Save(output, false);
+        return output.ToArray();
+    }
+
+    private static string LogoHtml(byte[] bytes) => bytes.Length == 0 ? "" : $"<img class=\"invoice-logo\" src=\"data:image/png;base64,{Convert.ToBase64String(bytes)}\" alt=\"Shop logo\" />";
+
+    private static string CompanyHtml(InvoiceSettings company)
+    {
+        var content = new StringBuilder($"<strong>{TextHtml(company.CompanyName)}</strong>");
+        if (!string.IsNullOrWhiteSpace(company.CompanyAddress)) content.Append("<br />").Append(TextHtml(company.CompanyAddress));
+        if (!string.IsNullOrWhiteSpace(company.CompanyRegistration)) content.Append("<br />Registration: ").Append(TextHtml(company.CompanyRegistration));
+        if (!string.IsNullOrWhiteSpace(company.VatNumber)) content.Append("<br />VAT: ").Append(TextHtml(company.VatNumber));
+        return content.ToString();
+    }
+
+    private static string AddressHtml(InvoiceRecord invoice)
+    {
+        var address = invoice.Order.BillingAddress;
+        return string.Join("<br />", new[]
+        {
+            TextHtml($"{address.Street} {address.HouseNumber}{address.HouseNumberAddition}"),
+            TextHtml($"{address.PostalCode} {address.City}"),
+            TextHtml(address.Country)
+        });
+    }
+
+    private static string ItemsHtml(InvoiceRecord invoice)
+    {
+        var rows = new StringBuilder();
+        foreach (var line in invoice.Order.Products)
+            rows.Append("<tr><td>").Append(TextHtml(line.ProductName + "\n" + line.ProductVariantName).Replace("\n", "<br />", StringComparison.Ordinal))
+                .Append("</td><td>").Append(line.Quantity.ToString(CultureInfo.InvariantCulture)).Append("</td><td>EUR ")
+                .Append(Money(line.UnitPrice)).Append("</td><td>EUR ").Append(Money(line.UnitPrice * line.Quantity)).Append("</td></tr>");
+        return rows.ToString();
+    }
+
+    private static string TotalsHtml(InvoiceRecord invoice)
+    {
+        var rows = new StringBuilder();
+        Total(rows, "Items", invoice.Order.SubTotalPrice);
+        Total(rows, "Shipping", invoice.Order.Shipping);
+        Total(rows, "Promotion discount", -invoice.Order.GetPromotionDiscount());
+        Total(rows, "Reward discount", -invoice.Order.RewardDiscount);
+        Total(rows, "Total excluding VAT", invoice.NetAmount);
+        Total(rows, $"VAT {invoice.Order.TaxRate * 100:0.##}%", invoice.TaxAmount);
+        rows.Append("<tr class=\"invoice-total\"><td colspan=\"1\">Total paid</td><td colspan=\"1\">EUR ").Append(Money(invoice.Order.Total)).Append("</td></tr>");
+        return rows.ToString();
+    }
+
+    private static void Total(StringBuilder rows, string label, decimal amount) => rows.Append("<tr><td>").Append(TextHtml(label)).Append("</td><td>EUR ").Append(Money(amount)).Append("</td></tr>");
+
+    private static string TextHtml(string value) => WebUtility.HtmlEncode(value).Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\n", "<br />", StringComparison.Ordinal);
     private static string Money(decimal value) => value.ToString("F2", CultureInfo.InvariantCulture);
+    private static string SafeAccent(string value) => System.Text.RegularExpressions.Regex.IsMatch(value, "^#[0-9a-fA-F]{6}$") ? value : "#D97706";
 
     private sealed class InvoiceFontResolver : IFontResolver
     {
@@ -92,7 +102,10 @@ public sealed class InvoiceRenderer(IWebHostEnvironment environment)
         {
             var assembly = typeof(InvoiceRenderer).Assembly;
             var name = assembly.GetManifestResourceNames().Single(n => n.EndsWith(faceName + ".ttf", StringComparison.Ordinal));
-            using var input = assembly.GetManifestResourceStream(name)!; using var output = new MemoryStream(); input.CopyTo(output); return output.ToArray();
+            using var input = assembly.GetManifestResourceStream(name)!;
+            using var output = new MemoryStream();
+            input.CopyTo(output);
+            return output.ToArray();
         }
     }
 }

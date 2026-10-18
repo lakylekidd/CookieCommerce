@@ -41,14 +41,65 @@ public sealed class CommunicationTests
     }
 
     [Fact]
+    public void Pdf_invoice_template_defaults_to_shop_primary_colour()
+    {
+        var template = TemplateService.Default("invoice-pdf");
+
+        template.Kind.Should().Be("Pdf");
+        template.AccentColor.Should().Be("#D97706");
+        template.HtmlBody.Should().Contain("__INVOICE_ITEMS__").And.Contain("__INVOICE_TOTALS__");
+        ((Action)(() => TemplateService.Validate(template))).Should().NotThrow();
+    }
+
+    [Fact]
+    public void Invoice_html_renderer_populates_editable_template_regions()
+    {
+        var template = TemplateService.Default("invoice-pdf");
+        template.Heading = "Invoice {{invoice_number}} test";
+        template.Footer = "Thank you, {{customer_name}}.";
+        var invoice = new InvoiceRecord
+        {
+            Number = "INV-TEST-1", IssuedAt = DateTimeOffset.UtcNow, Company = new InvoiceSettings { CompanyName = "Cookie House" }, Template = template,
+            NetAmount = 20m, TaxAmount = 4m,
+            LogoBytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="),
+            Order = new() { OrderReference = "ORDER-1", Total = 24m, TaxRate = .2m, ShippingCharge = 0m,
+                BillingAddress = new() { FirstName = "Noor", LastName = "de Vries", Street = "Main street", HouseNumber = "1", City = "Amsterdam", PostalCode = "1000 AA", Country = "NL" },
+                Products = [new() { ProductName = "Cookie box", ProductVariantName = "Large", Quantity = 2, UnitPrice = 10m }] }
+        };
+
+        var html = renderer.RenderHtml(invoice);
+
+        html.Should().Contain("Invoice INV-TEST-1 test").And.Contain("Cookie box")
+            .And.Contain("Total paid").And.Contain("Thank you, Noor de Vries.")
+            .And.NotContain("__INVOICE_ITEMS__").And.NotContain("{{invoice_number}}");
+        renderer.Render(invoice).Should().NotBeEmpty();
+    }
+
+    [Fact]
     public void Action_templates_require_links_and_escape_customer_values()
     {
         var template = TemplateService.Default("password-reset");
         var values = new Dictionary<string, string> { ["customer_name"] = "<script>alert(1)</script>", ["store_name"] = "Store", ["action_url"] = "https://example.com/reset?a=1&b=2", ["expiry_minutes"] = "30" };
         var rendered = TemplateService.Render(template, values);
         rendered.HtmlBody.Should().Contain("&lt;script&gt;").And.Contain("a=1&amp;b=2").And.NotContain("<script>");
+        rendered.HtmlBody.Should().Contain("<!doctype html>").And.Contain("background:#FFFBEB")
+            .And.Contain("font-family:Nunito, Arial, Helvetica, sans-serif")
+            .And.Contain("background:#D97706").And.Contain("role=\"presentation\"");
         template.TextBody = "No action link";
         ((Action)(() => TemplateService.Validate(template))).Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void Branded_email_shell_uses_saved_company_identity_and_absolute_logo_url()
+    {
+        var branding = EmailBranding.From(
+            new InvoiceSettings { CompanyName = "Cookie House", LogoPath = "/images/logo.png" },
+            "https://shop.example.test/store/");
+        var html = TemplateService.ApplyEmailBranding("<p>Welcome</p>", TemplateService.Default("order-confirmation"), branding);
+
+        html.Should().Contain("Cookie House")
+            .And.Contain("https://shop.example.test/images/logo.png")
+            .And.Contain("alt=\"Cookie House\"");
     }
 
     [Theory]
@@ -60,6 +111,41 @@ public sealed class CommunicationTests
     {
         var template = TemplateService.Default("order-confirmation"); template.HtmlBody = content;
         ((Action)(() => TemplateService.Validate(template))).Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void Template_image_markup_uses_https_and_email_friendly_centre_alignment()
+    {
+        var html = TemplateService.CreateImageHtml("https://images.example.test/cookie.jpg?flavour=chocolate&size=large", "Chocolate <cookie>", "center");
+
+        html.Should().Contain("align=\"center\"")
+            .And.Contain("text-align: center")
+            .And.Contain("src=\"https://images.example.test/cookie.jpg?flavour=chocolate&amp;size=large\"")
+            .And.Contain("alt=\"Chocolate &lt;cookie&gt;\"");
+
+        var template = TemplateService.Default("order-confirmation");
+        template.HtmlBody = html;
+        ((Action)(() => TemplateService.Validate(template))).Should().NotThrow();
+    }
+
+    [Theory]
+    [InlineData("left")]
+    [InlineData("center")]
+    [InlineData("right")]
+    public void Template_image_markup_uses_the_requested_alignment(string alignment)
+    {
+        var html = TemplateService.CreateImageHtml("https://images.example.test/cookie.jpg", "Cookie", alignment);
+
+        html.Should().Contain($"align=\"{alignment}\"").And.Contain($"text-align: {alignment}");
+    }
+
+    [Theory]
+    [InlineData("http://images.example.test/cookie.jpg")]
+    [InlineData("data:image/png;base64,abc")]
+    [InlineData("javascript:alert(1)")]
+    public void Template_image_markup_rejects_non_https_urls(string imageUrl)
+    {
+        ((Action)(() => TemplateService.CreateImageHtml(imageUrl, "Cookie", "center"))).Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
@@ -75,7 +161,9 @@ public sealed class CommunicationTests
         await service.SaveAsync(template, true);
         await store.ExecuteAsync("mail", async tx => { await OutboundEmailService.QueueTemplateAsync(tx, "mail", "noor@example.com", template.Key, values); return true; });
         (await store.ListAsync<OutboundMessage>()).Should().ContainSingle().Which.Subject.Should().Be("Original ABC");
-        (await store.LoadAsync<OutboundMessage>("mail"))!.TemplateVersion.Should().Be(2);
+        var queued = (await store.LoadAsync<OutboundMessage>("mail"))!;
+        queued.TemplateVersion.Should().Be(2);
+        queued.HtmlBody.Should().Contain("<!doctype html>").And.Contain("background:#FFFBEB").And.Contain("Tiger van Cookie");
     }
 
     [Fact]

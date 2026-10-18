@@ -42,11 +42,21 @@ window.notifyCommerceOrder = function (showNotification, sound) {
 window.downloadCommerceFile = async function (filename, contentType, streamReference) {
     const buffer = await streamReference.arrayBuffer();
     const url = URL.createObjectURL(new Blob([buffer], { type: contentType }));
+    window.downloadCommerceFileUrl(filename, url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+window.createCommerceFileUrl = async function (contentType, streamReference) {
+    const buffer = await streamReference.arrayBuffer();
+    return URL.createObjectURL(new Blob([buffer], { type: contentType }));
+};
+window.downloadCommerceFileUrl = function (filename, url) {
     const anchor = document.createElement('a');
     anchor.href = url;
     anchor.download = filename;
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+window.revokeCommerceFileUrl = function (url) {
+    if (url) URL.revokeObjectURL(url);
 };

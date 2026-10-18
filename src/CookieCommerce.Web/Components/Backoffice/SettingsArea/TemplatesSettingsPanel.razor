@@ -1,5 +1,6 @@
 @using CookieCommerce.Web.Services.Communications
 @inject TemplateService Templates
+@inject InvoiceService Invoices
 @inject InvoiceRenderer PdfRenderer
 @inject IJSRuntime JS
 
@@ -17,18 +18,72 @@
     {
         <p class="text-sm">Version @template.Version · @(template.PublishedAt is null ? "Default or draft" : "Published " + TimeZoneInfo.ConvertTimeBySystemTimeZoneId(template.PublishedAt.Value, "Europe/Amsterdam").ToString("g"))</p>
         <p class="text-sm">Available placeholders: @string.Join(", ", TemplateService.Allowed(template.Key).Select(p => "{{" + p + "}}"))</p>
-        @if (template.Kind == "Email")
+        <section class="template-sample-data" aria-label="Preview sample values">
+            <h3>Preview sample values</h3>
+            <p>These values are used by <em>Preview with sample data</em> and can be changed without editing the template.</p>
+            <div class="template-sample-fields">
+                @foreach (var placeholder in TemplateService.Allowed(template.Key))
+                {
+                    <label>
+                        <span>{{@placeholder}}</span>
+                        <input value="@SampleValue(placeholder)" @oninput="args => SetSampleValue(placeholder, args)" aria-label="@($"Sample value for {placeholder}")" />
+                    </label>
+                }
+            </div>
+        </section>
+        @if (template.Kind is "Email" or "Pdf")
         {
-            <label>Subject<input @bind="template.Subject" /></label>
-            <label>HTML body<textarea rows="8" @bind="template.HtmlBody"></textarea></label>
-            <label>Plain-text body<textarea rows="6" @bind="template.TextBody"></textarea></label>
-        }
-        else
-        {
-            <label>Invoice heading<input @bind="template.Heading" /></label>
-            <label>Footer<textarea rows="4" @bind="template.Footer"></textarea></label>
-            <label>Accent colour<input type="color" @bind="template.AccentColor" /></label>
-            <p class="text-sm">Company details and logo are configured under Invoices. Line items and totals are filled from each order.</p>
+            @if (template.Kind == "Email")
+            {
+                <label>Subject<input @bind="template.Subject" /></label>
+            }
+            <section class="template-html-section" aria-label="HTML body editor">
+                <label>HTML body</label>
+                <div class="template-editor-tabs" role="tablist" aria-label="HTML body view">
+                    <button type="button" role="tab" aria-selected="@(htmlEditorMode == HtmlEditorMode.Source)"
+                            class="@(htmlEditorMode == HtmlEditorMode.Source ? "template-editor-tab-active" : "template-editor-tab")"
+                            @onclick="ShowHtmlSource">Source</button>
+                    <button type="button" role="tab" aria-selected="@(htmlEditorMode == HtmlEditorMode.Preview)"
+                            class="@(htmlEditorMode == HtmlEditorMode.Preview ? "template-editor-tab-active" : "template-editor-tab")"
+                            @onclick="ShowHtmlPreview">Preview</button>
+                </div>
+                @if (htmlEditorMode == HtmlEditorMode.Source)
+                {
+                    <div id="template-html-editor" class="template-code-editor" aria-label="HTML source editor"></div>
+                    <textarea id="template-html-source" class="template-html-source" value="@template.HtmlBody" @oninput="UpdateHtmlBody" aria-hidden="true" tabindex="-1"></textarea>
+                    <div class="template-image-inserter">
+                        <p class="template-image-inserter-title">Add an image</p>
+                        <div class="template-image-inserter-fields">
+                            <input type="url" @bind="imageUrl" placeholder="https://images.example.com/cookie.jpg" aria-label="Image URL" />
+                            <input @bind="imageAltText" maxlength="500" placeholder="Alternative text" aria-label="Image alternative text" />
+                            <select @bind="imageAlignment" aria-label="Image alignment">
+                                <option value="left">Align left</option>
+                                <option value="center">Centre</option>
+                                <option value="right">Align right</option>
+                            </select>
+                            <button type="button" class="template-image-insert-button" @onclick="InsertImage">Insert image</button>
+                        </div>
+                        <p class="template-image-help">Images must use a public HTTPS URL. The inserted markup uses email-friendly inline alignment.</p>
+                    </div>
+                }
+                else
+                {
+                    <p class="template-preview-help">This is the current HTML with sample values rendered. Invoice regions marked with <code>__INVOICE_...__</code> are populated with the saved company, logo, order, line items, totals and footer.</p>
+                    @if (template.Kind == "Email" && preview is not null)
+                    {
+                        <p class="template-preview-subject"><strong>Sample subject: @preview.Subject</strong></p>
+                    }
+                    <iframe title="Current HTML preview" sandbox="" srcdoc="@(template.Kind == "Pdf" ? invoiceHtmlPreview ?? "" : preview?.HtmlBody ?? TemplateService.ApplyEmailBranding(template.HtmlBody, template, branding))" class="template-html-preview bg-white rounded-xl border"></iframe>
+                    @if (template.Kind == "Email" && preview is not null)
+                    {
+                        <pre class="whitespace-pre-wrap text-sm">@preview.TextBody</pre>
+                    }
+                }
+            </section>
+            @if (template.Kind == "Email")
+            {
+                <label>Plain-text body<textarea rows="6" @bind="template.TextBody"></textarea></label>
+            }
         }
         <div class="flex flex-wrap gap-3">
             <button class="border border-primary/30 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl hover:bg-primary hover:text-white hover:border-primary hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
@@ -40,48 +95,109 @@
             <button class="text-primary underline hover:text-primary/80 hover:-translate-y-0.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                     disabled="@busy" @onclick="RestoreAsync">Restore default draft</button>
         </div>
-        @if (preview is not null)
-        {
-            <p><strong>@preview.Subject</strong></p>
-            <iframe title="Email preview" sandbox="" srcdoc="@preview.HtmlBody" class="w-full h-64 bg-white rounded-xl border"></iframe>
-            <pre class="whitespace-pre-wrap text-sm">@preview.TextBody</pre>
-        }
     }
 </div>
 
 @code {
     private IReadOnlyList<MessageTemplate> templates = [];
     private MessageTemplate? template;
+    private InvoiceSettings? invoiceSettings;
     private RenderedEmail? preview;
+    private string? invoiceHtmlPreview;
+    private EmailBranding branding = EmailBranding.Default;
     private string selected = "password-reset", error = "", notice = "";
+    private Dictionary<string, string> sampleValues = [];
+    private string imageUrl = "", imageAltText = "", imageAlignment = "center";
+    private HtmlEditorMode htmlEditorMode = HtmlEditorMode.Source;
     private bool busy;
-    protected override async Task OnInitializedAsync() { try { templates = await Templates.ListAsync(); template = await Templates.DraftAsync(selected); } catch { error = "Templates could not be loaded."; } }
-    private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); preview = null; notice = error = ""; }
+    private int editorSyncVersion;
+    protected override async Task OnInitializedAsync() { try { templates = await Templates.ListAsync(); template = await Templates.DraftAsync(selected); branding = await Templates.GetEmailBrandingAsync(); invoiceSettings = await Invoices.SettingsAsync(); ResetSampleValues(); } catch { error = "Templates could not be loaded."; } }
+    private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); ResetSampleValues(); preview = null; invoiceHtmlPreview = null; htmlEditorMode = HtmlEditorMode.Source; editorSyncVersion++; notice = error = ""; }
     private async Task SaveAsync(bool publish)
     {
         busy = true; error = notice = "";
-        try { await Templates.SaveAsync(template!, publish); template = await Templates.DraftAsync(selected); notice = publish ? "Template published. Future emails and invoices use this version." : "Draft saved."; }
+        try { await Templates.SaveAsync(template!, publish); template = await Templates.DraftAsync(selected); editorSyncVersion++; notice = publish ? "Template published. Future emails and invoices use this version." : "Draft saved."; }
         catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Template could not be saved."; }
         finally { busy = false; }
     }
-    private void RestoreAsync() { template = TemplateService.Default(selected); preview = null; notice = "Default loaded as a draft. Publish to use it."; }
+    private void RestoreAsync() { template = TemplateService.Default(selected); ResetSampleValues(); preview = null; invoiceHtmlPreview = null; htmlEditorMode = HtmlEditorMode.Source; editorSyncVersion++; notice = "Default loaded as a draft. Publish to use it."; }
+    private void ShowHtmlSource() => htmlEditorMode = HtmlEditorMode.Source;
+    private void ShowHtmlPreview() { htmlEditorMode = HtmlEditorMode.Preview; RenderPreviewIfValid(); }
+    private void UpdateHtmlBody(ChangeEventArgs args) { template!.HtmlBody = args.Value?.ToString() ?? ""; preview = null; invoiceHtmlPreview = null; }
+    private string SampleValue(string placeholder) => sampleValues.TryGetValue(placeholder, out var value) ? value : "";
+    private void SetSampleValue(string placeholder, ChangeEventArgs args)
+    {
+        sampleValues[placeholder] = args.Value?.ToString() ?? "";
+        if (htmlEditorMode == HtmlEditorMode.Preview) RenderPreviewIfValid();
+        else { preview = null; invoiceHtmlPreview = null; }
+    }
+    private void RenderPreviewIfValid()
+    {
+        preview = null; invoiceHtmlPreview = null;
+        if (template is null) return;
+        try
+        {
+            if (template.Kind == "Email") preview = TemplateService.Render(template, new Dictionary<string, string>(sampleValues), branding);
+            else invoiceHtmlPreview = PdfRenderer.RenderHtml(BuildSampleInvoice(new Dictionary<string, string>(sampleValues)));
+        }
+        catch (InvalidOperationException) { }
+    }
+    private void ResetSampleValues() => sampleValues = TemplateService.Allowed(template?.Key ?? selected).ToDictionary(p => p, DefaultSampleValue);
+    private string DefaultSampleValue(string placeholder) => placeholder switch
+    {
+        "customer_name" => "Noor de Vries",
+        "store_name" => branding.StoreName,
+        "action_url" => "https://example.com/preview",
+        "expiry_minutes" => "30",
+        "order_reference" => "TGR-EXAMPLE",
+        "order_total" => "EUR 24.95",
+        "invoice_number" => "INV-2026-000001",
+        _ => ""
+    };
+    private void InsertImage()
+    {
+        try
+        {
+            error = "";
+            var currentTemplate = template ?? throw new InvalidOperationException("Select a template before adding an image.");
+            currentTemplate.HtmlBody += (string.IsNullOrWhiteSpace(currentTemplate.HtmlBody) ? "" : Environment.NewLine) + TemplateService.CreateImageHtml(imageUrl, imageAltText, imageAlignment);
+            imageUrl = imageAltText = "";
+            editorSyncVersion++;
+            preview = null;
+            notice = "Image markup added to the HTML source.";
+        }
+        catch (InvalidOperationException ex) { error = ex.Message; }
+    }
     private async Task PreviewAsync()
     {
         try
         {
             error = ""; TemplateService.Validate(template!);
-            var values = new Dictionary<string, string> { ["customer_name"] = "Noor de Vries", ["store_name"] = "Tiger van Cookie", ["action_url"] = "https://example.com/preview", ["expiry_minutes"] = "30", ["order_reference"] = "TGR-EXAMPLE", ["order_total"] = "EUR 24.95", ["invoice_number"] = "INV-2026-000001" };
-            if (template!.Kind == "Email") preview = TemplateService.Render(template, values);
+            var values = new Dictionary<string, string>(sampleValues);
+            if (template!.Kind == "Email") { preview = TemplateService.Render(template, values, branding); htmlEditorMode = HtmlEditorMode.Preview; }
             else
             {
-                var invoice = new InvoiceRecord { Id = Guid.NewGuid(), Number = values["invoice_number"], IssuedAt = DateTimeOffset.UtcNow, Template = template,
-                    NetAmount = 22.89m, TaxAmount = 2.06m, Order = new() { OrderReference = values["order_reference"], Total = 24.95m, TaxRate = .09m, ShippingCharge = 4.95m,
-                    BillingAddress = new() { FirstName = "Noor", LastName = "de Vries", Street = "Voorbeeldstraat", HouseNumber = "12", City = "Amsterdam", PostalCode = "1012 AB", Country = "Netherlands" },
-                    Products = [new() { ProductName = "Chocolate Chunk", ProductVariantName = "5 Cookies Box", Quantity = 2, UnitPrice = 10m }] } };
+                var invoice = BuildSampleInvoice(values);
+                invoiceHtmlPreview = PdfRenderer.RenderHtml(invoice); htmlEditorMode = HtmlEditorMode.Preview;
                 using var stream = new DotNetStreamReference(new MemoryStream(PdfRenderer.Render(invoice)));
                 await JS.InvokeVoidAsync("downloadCommerceFile", "invoice-preview.pdf", "application/pdf", stream);
             }
         }
         catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Preview could not be generated."; }
     }
+    private InvoiceRecord BuildSampleInvoice(Dictionary<string, string> values)
+    {
+        var company = invoiceSettings ?? new InvoiceSettings { CompanyName = branding.StoreName };
+        return new InvoiceRecord { Id = Guid.NewGuid(), Number = values["invoice_number"], IssuedAt = DateTimeOffset.UtcNow, Company = company, Template = template!,
+            LogoBytes = PdfRenderer.ReadLogo(company.LogoPath), NetAmount = 22.89m, TaxAmount = 2.06m,
+            Order = new() { OrderReference = values["order_reference"], Total = 24.95m, TaxRate = .09m, ShippingCharge = 4.95m,
+                BillingAddress = new() { FirstName = "Noor", LastName = "de Vries", Street = "Voorbeeldstraat", HouseNumber = "12", City = "Amsterdam", PostalCode = "1012 AB", Country = "Netherlands" },
+                Products = [new() { ProductName = "Chocolate Chunk", ProductVariantName = "5 Cookies Box", Quantity = 2, UnitPrice = 10m }] } };
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (template is not null && htmlEditorMode == HtmlEditorMode.Source)
+            await JS.InvokeVoidAsync("commerceTemplateEditor.sync", "template-html-editor", "template-html-source", template.HtmlBody, editorSyncVersion);
+    }
+    private enum HtmlEditorMode { Source, Preview }
 }

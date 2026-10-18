@@ -183,6 +183,16 @@ Resending an invitation revokes all earlier unused invitations for that identity
 
 Keycloak remains the source of truth for realm roles. Authentication Management owns role mutation and enforces both invariants before removing `Admin`: the acting identity cannot be the target, and more than one administrator must currently exist. These rules are enforced server-side; disabled UI controls are only a convenience.
 
+## Backoffice template authoring
+
+All rendered HTML email bodies pass through the shared email-safe branded shell. This keeps source previews and queued customer messages consistent with the shop's colours, logo URL, Fredoka/Nunito font fallbacks, responsive spacing, and inline action-button styling. Branding is derived from the persisted invoice company name/logo and configured public store URL, with safe defaults when those settings are unavailable.
+
+The template editor derives a sample-value input from TemplateService.Allowed(template.Key) for every supported placeholder. Preview rendering consumes those values directly, so administrators can inspect realistic content without changing the saved template or introducing a second template format.
+
+PDF invoice templates use editable HTML stored on MessageTemplate. The HTML contains protected invoice regions for the logo, company details, billing address, items, totals, and footer; InvoiceRenderer fills those regions from the immutable InvoiceRecord and renders the result through the managed HTML Renderer/PDFsharp pipeline. This keeps the source editor, browser preview, and generated PDF on one layout while preserving server-side pagination and the embedded invoice font. TemplateService validates the editable HTML and required invoice regions before draft or published templates are stored.
+
+`MessageTemplate.HtmlBody` remains the canonical, versioned source for email markup; the backoffice does not persist a separate WYSIWYG document model. The Templates settings panel provides a source/preview switch, with previews rendered inside a sandboxed iframe. The source view is a locally bundled CodeMirror 6 editor, which provides line numbers, HTML syntax highlighting, bracket matching, folding, autocomplete, and language-aware indentation while synchronizing edits back to the existing Blazor field. Its image helper only creates markup for public HTTPS URLs and uses escaped alternative text plus inline, email-compatible left, centre, or right alignment. Image files are not accepted or stored by the template feature, so no new media-upload API or persistence boundary is introduced. Existing template validation remains responsible for rejecting executable HTML and unsupported placeholders before drafts are saved or published.
+
 ## Logging
 
 All production code must include appropriate structured logging for important application behavior.

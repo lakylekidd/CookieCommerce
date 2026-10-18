@@ -132,6 +132,10 @@ The Web service sends backoffice test emails and queued customer communications 
 
 All services also use shared safe HTTP dependency logging and structured API failure logging. Production logs include a dependency host, HTTP method, status code, safe failure type, and request trace ID where applicable; URLs, request and response bodies, headers, credentials, and personal data are excluded.
 
+### Backoffice template authoring
+
+The **Settings → Templates** editor keeps HTML as the authoritative format for both email and PDF invoice templates. Its source view uses a locally bundled CodeMirror 6 editor with line numbers, HTML syntax highlighting, bracket matching, code folding, autocomplete, and HTML-aware indentation; it can switch to a sandboxed sample preview. Editable sample-value inputs are generated for each template's supported placeholder, and **Preview with sample data** resolves the body with those values. Invoice HTML uses protected regions for the logo, company details, billing address, line items, totals, and footer; the same HTML is rendered into the downloadable PDF with the managed HTML Renderer/PDFsharp pipeline. Email previews and queued messages use the same responsive branded email shell: logo (when a public store URL is configured), Tiger van Cookie colours, Fredoka/Nunito font fallbacks, responsive spacing, and inline-styled action buttons. The image inserter accepts a public HTTPS image URL, accessible alternative text, and left, centre, or right alignment. It adds responsive, inline email-safe markup rather than storing image bytes or introducing an upload endpoint. Draft and published templates remain subject to the existing placeholder, protected-region, and executable-content validation. Run `npm run build:template-editor` from `src/CookieCommerce.Web` after changing the editor entry point.
+
 ---
 
 ## 🔄 Outbox Pattern (Messaging)

@@ -9,13 +9,59 @@ public sealed class TemplateService(ICommerceStore store, CommerceAccess access)
 {
     public static readonly string[] EmailKeys = ["password-reset", "account-invitation", "email-verification", "order-confirmation", "invoice-email"];
     private static readonly Regex Tokens = new("\\{\\{([a-z_]+)\\}\\}", RegexOptions.Compiled);
+    private static readonly string[] ImageAlignments = ["left", "center", "right"];
     public static string[] Allowed(string key) => key == "invoice-pdf" ? ["store_name", "invoice_number", "order_reference", "customer_name"]
         : key is "password-reset" or "account-invitation" or "email-verification" ? ["customer_name", "store_name", "action_url", "expiry_minutes"]
         : ["customer_name", "store_name", "order_reference", "order_total", "invoice_number"];
 
+    public static string DefaultInvoiceHtml => """
+        <!doctype html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <style>
+            body { margin: 0; padding: 0; background: #ffffff; color: #451A03; font-family: CookieCommerce, Arial, sans-serif; font-size: 10pt; }
+            .invoice-page { padding: 42px; }
+            .invoice-logo { width: 110px; max-height: 90px; object-fit: contain; margin-bottom: 14px; }
+            .invoice-header { border-top: 5px solid __INVOICE_ACCENT__; padding-top: 14px; }
+            .invoice-header table, .invoice-items, .invoice-totals { width: 100%; border-collapse: collapse; }
+            .invoice-store { color: #451A03; font-size: 12pt; font-weight: bold; }
+            .invoice-label { color: #451A03; font-size: 10pt; font-weight: bold; text-align: right; text-transform: uppercase; }
+            h1 { margin: 20px 0 8px; color: __INVOICE_ACCENT__; font-size: 24pt; }
+            p { margin: 6px 0; }
+            .invoice-muted { color: #92400E; font-size: 8pt; }
+            .invoice-company { margin: 18px 0 12px; }
+            .invoice-address { margin: 14px 0 18px; line-height: 1.35; }
+            .invoice-items { border: 1px solid __INVOICE_ACCENT__; }
+            .invoice-items th { padding: 7px 6px; background: __INVOICE_ACCENT__; color: #FFFFFF; text-align: left; }
+            .invoice-items td { padding: 7px 6px; border: 1px solid __INVOICE_ACCENT__; vertical-align: top; }
+            .invoice-items th:nth-child(n+2), .invoice-items td:nth-child(n+2), .invoice-totals td:last-child { text-align: right; }
+            .invoice-totals { margin-top: 20px; }
+            .invoice-totals td { padding: 5px 6px; }
+            .invoice-totals .invoice-total { background: __INVOICE_ACCENT__; color: #FFFFFF; font-weight: bold; }
+            .invoice-footer { margin-top: 18px; color: #451A03; }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-page">
+            <div class="invoice-header">
+              <table><tr><td><span>__INVOICE_LOGO__</span><div class="invoice-store">{{store_name}}</div></td><td class="invoice-label">Invoice</td></tr></table>
+            </div>
+            <h1>__INVOICE_HEADING__</h1>
+            <p class="invoice-muted">Invoice {{invoice_number}} · Order {{order_reference}}</p>
+            <div class="invoice-company">__INVOICE_COMPANY__</div>
+            <div class="invoice-address"><strong>Bill to</strong><br />{{customer_name}}<br />__INVOICE_ADDRESS__</div>
+            <table class="invoice-items"><thead><tr><th>Item</th><th>Qty</th><th>Unit EUR</th><th>Total EUR</th></tr></thead><tbody>__INVOICE_ITEMS__</tbody></table>
+            <table class="invoice-totals"><tbody>__INVOICE_TOTALS__</tbody></table>
+            <p class="invoice-footer">__INVOICE_FOOTER__</p>
+          </div>
+        </body>
+        </html>
+        """;
+
     public static MessageTemplate Default(string key) => key switch
     {
-        "invoice-pdf" => new() { Key = key, Name = "PDF invoice", Kind = "Pdf", Version = 1 },
+        "invoice-pdf" => new() { Key = key, Name = "PDF invoice", Kind = "Pdf", Version = 1, HtmlBody = DefaultInvoiceHtml, AccentColor = "#D97706" },
         "password-reset" => Email(key, "Password reset", "Reset your password", "Reset password"),
         "account-invitation" => Email(key, "Account invitation", "Set up your password", "Set password"),
         "email-verification" => Email(key, "Email verification", "Verify your email address", "Verify email"),
@@ -42,11 +88,25 @@ public sealed class TemplateService(ICommerceStore store, CommerceAccess access)
     public async Task<MessageTemplate> DraftAsync(string key)
     {
         await access.RequireAdminAsync();
-        return await store.LoadAsync<MessageTemplate>(key + ":draft") ?? await PublishedAsync(store, key);
+        return EnsureInvoiceHtml(await store.LoadAsync<MessageTemplate>(key + ":draft") ?? await PublishedAsync(store, key));
     }
 
     public static async Task<MessageTemplate> PublishedAsync(ICommerceStore store, string key) =>
-        await store.LoadAsync<MessageTemplate>(key + ":published") ?? Default(key);
+        EnsureInvoiceHtml(await store.LoadAsync<MessageTemplate>(key + ":published") ?? Default(key));
+
+    public static MessageTemplate EnsureInvoiceHtml(MessageTemplate template)
+    {
+        if (template.Key == "invoice-pdf" && string.IsNullOrWhiteSpace(template.HtmlBody)) template.HtmlBody = DefaultInvoiceHtml;
+        return template;
+    }
+
+    public async Task<EmailBranding> GetEmailBrandingAsync()
+    {
+        await access.RequireAdminAsync();
+        var company = await store.LoadAsync<InvoiceSettings>("company") ?? new();
+        var smtp = await store.LoadAsync<StoredEmailConfiguration>("smtp");
+        return EmailBranding.From(company, smtp?.Settings.PublicStoreUrl);
+    }
 
     public async Task SaveAsync(MessageTemplate template, bool publish)
     {
@@ -71,7 +131,7 @@ public sealed class TemplateService(ICommerceStore store, CommerceAccess access)
     {
         var definition = Default(template.Key);
         if (definition.Kind != template.Kind) throw new InvalidOperationException("Template type cannot be changed.");
-        var fields = template.Kind == "Pdf" ? new[] { template.Heading, template.Footer } : new[] { template.Subject, template.HtmlBody, template.TextBody };
+        var fields = template.Kind == "Pdf" ? new[] { template.HtmlBody } : new[] { template.Subject, template.HtmlBody, template.TextBody };
         if (fields.Any(f => f.Length > 50000)) throw new InvalidOperationException("Template is too long.");
         foreach (var text in fields)
             if (Tokens.Matches(text).Any(m => !Allowed(template.Key).Contains(m.Groups[1].Value))
@@ -80,6 +140,8 @@ public sealed class TemplateService(ICommerceStore store, CommerceAccess access)
         if (template.Kind == "Email" && (string.IsNullOrWhiteSpace(template.Subject) || string.IsNullOrWhiteSpace(template.TextBody)
             || template.Subject.Contains('\r') || template.Subject.Contains('\n')))
             throw new InvalidOperationException("Enter a subject and plain-text email body.");
+        if (template.Kind == "Pdf" && (!template.HtmlBody.Contains("__INVOICE_ITEMS__", StringComparison.Ordinal) || !template.HtmlBody.Contains("__INVOICE_TOTALS__", StringComparison.Ordinal)))
+            throw new InvalidOperationException("Invoice templates must keep the invoice items and totals regions.");
         if (template.Key is "password-reset" or "account-invitation" or "email-verification")
             if (!template.TextBody.Contains("{{action_url}}") || !template.HtmlBody.Contains("{{action_url}}"))
                 throw new InvalidOperationException("Recovery and verification templates must contain the action URL in both bodies.");
@@ -88,13 +150,45 @@ public sealed class TemplateService(ICommerceStore store, CommerceAccess access)
         if (!Regex.IsMatch(template.AccentColor, "^#[0-9a-fA-F]{6}$")) throw new InvalidOperationException("Enter a six-digit hex accent colour.");
     }
 
+    public static string CreateImageHtml(string imageUrl, string altText, string alignment)
+    {
+        var trimmedUrl = imageUrl.Trim();
+        if (!Uri.TryCreate(trimmedUrl, UriKind.Absolute, out var imageUri) || imageUri.Scheme != Uri.UriSchemeHttps || !string.IsNullOrEmpty(imageUri.UserInfo))
+            throw new InvalidOperationException("Enter an absolute HTTPS image URL.");
+
+        var normalizedAlignment = alignment.Trim().ToLowerInvariant();
+        if (!ImageAlignments.Contains(normalizedAlignment, StringComparer.Ordinal))
+            throw new InvalidOperationException("Choose left, centre, or right image alignment.");
+
+        var trimmedAltText = altText.Trim();
+        if (trimmedAltText.Length > 500) throw new InvalidOperationException("Image alternative text is too long.");
+
+        return $"<p align=\"{normalizedAlignment}\" style=\"margin: 0; text-align: {normalizedAlignment};\"><img src=\"{WebUtility.HtmlEncode(imageUri.AbsoluteUri)}\" alt=\"{WebUtility.HtmlEncode(trimmedAltText)}\" style=\"display: inline-block; max-width: 100%; height: auto; border: 0;\" /></p>";
+    }
+
     public static string Replace(string template, IReadOnlyDictionary<string, string> values, bool html) => Tokens.Replace(template,
         m => values.TryGetValue(m.Groups[1].Value, out var value) ? html ? WebUtility.HtmlEncode(value) : value : throw new InvalidOperationException("Missing template value: " + m.Groups[1].Value));
 
-    public static RenderedEmail Render(MessageTemplate template, IReadOnlyDictionary<string, string> values)
+    public static string ApplyEmailBranding(string htmlBody, MessageTemplate template, EmailBranding? branding = null)
+    {
+        _ = template;
+        var brand = branding ?? EmailBranding.Default;
+        var storeName = WebUtility.HtmlEncode(brand.StoreName);
+        var logo = string.IsNullOrWhiteSpace(brand.LogoUrl)
+            ? ""
+            : $"<img src=\"{WebUtility.HtmlEncode(brand.LogoUrl)}\" alt=\"{storeName}\" width=\"56\" style=\"display:block;width:56px;height:56px;object-fit:contain;margin:0 auto 12px;border:0;\" />";
+        var content = Regex.Replace(htmlBody.Trim(),
+            @"<a\b(?![^>]*\bstyle\s*=)([^>]*)>",
+            $"<a$1 style=\"display:inline-block;background:{brand.PrimaryColor};color:#FFFFFF;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:999px;\">",
+            RegexOptions.IgnoreCase);
+        return $"<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>{storeName}</title><style>body{{margin:0!important;padding:0!important;background:{brand.BackgroundColor};}}a{{color:{brand.PrimaryColor};}}.email-shell{{width:100%;}}@media screen and (max-width:600px){{.email-card{{width:100%!important;}}.email-content{{padding:24px!important;}}}}</style></head><body style=\"margin:0;padding:0;background:{brand.BackgroundColor};font-family:{brand.BodyFont};color:{brand.TextColor};\"><table role=\"presentation\" class=\"email-shell\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;background:{brand.BackgroundColor};margin:0;padding:0;\"><tr><td align=\"center\" style=\"padding:32px 16px;\"><table role=\"presentation\" class=\"email-card\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;max-width:600px;background:{brand.SurfaceColor};border-radius:20px;overflow:hidden;box-shadow:0 8px 30px rgba(69,26,3,.12);\"><tr><td align=\"center\" style=\"padding:28px 32px;background:{brand.HeaderColor};color:#FFFFFF;font-family:{brand.HeadingFont};font-size:24px;font-weight:700;\">{logo}<span>{storeName}</span></td></tr><tr><td class=\"email-content\" style=\"padding:36px 40px;background:{brand.SurfaceColor};font-family:{brand.BodyFont};font-size:16px;line-height:1.6;color:{brand.TextColor};\">{content}</td></tr><tr><td align=\"center\" style=\"padding:20px 32px;background:{brand.BackgroundColor};font-family:{brand.BodyFont};font-size:12px;line-height:1.5;color:{brand.MutedTextColor};\">{storeName}</td></tr></table></td></tr></table></body></html>";
+    }
+
+    public static RenderedEmail Render(MessageTemplate template, IReadOnlyDictionary<string, string> values, EmailBranding? branding = null)
     {
         Validate(template);
-        var result = new RenderedEmail(Replace(template.Subject, values, false), Replace(template.TextBody, values, false), Replace(template.HtmlBody, values, true), template.Version);
+        var result = new RenderedEmail(Replace(template.Subject, values, false), Replace(template.TextBody, values, false),
+            ApplyEmailBranding(Replace(template.HtmlBody, values, true), template, branding), template.Version);
         if (result.Subject.Contains('\r') || result.Subject.Contains('\n')) throw new InvalidOperationException("Email subject cannot contain line breaks.");
         return result;
     }

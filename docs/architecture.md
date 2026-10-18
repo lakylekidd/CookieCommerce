@@ -185,6 +185,8 @@ Keycloak remains the source of truth for realm roles. Authentication Management 
 
 ## Backoffice template authoring
 
+All rendered HTML email bodies pass through the shared email-safe branded shell. This keeps source previews and queued customer messages consistent with the shop's colours, logo URL, Fredoka/Nunito font fallbacks, responsive spacing, and inline action-button styling. Branding is derived from the persisted invoice company name/logo and configured public store URL, with safe defaults when those settings are unavailable.
+
 `MessageTemplate.HtmlBody` remains the canonical, versioned source for email markup; the backoffice does not persist a separate WYSIWYG document model. The Templates settings panel provides a source/preview switch, with previews rendered inside a sandboxed iframe. Its image helper only creates markup for public HTTPS URLs and uses escaped alternative text plus inline, email-compatible left, centre, or right alignment. Image files are not accepted or stored by the template feature, so no new media-upload API or persistence boundary is introduced. Existing template validation remains responsible for rejecting executable HTML and unsupported placeholders before drafts are saved or published.
 
 ## Logging

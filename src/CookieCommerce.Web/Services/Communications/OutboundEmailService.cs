@@ -93,7 +93,9 @@ public sealed class OutboundEmailService(
         if (!System.Net.Mail.MailAddress.TryCreate(recipient, out _)) throw new InvalidOperationException("Email recipient is invalid.");
         if (await tx.LoadAsync<OutboundMessage>(key) is not null) return;
         var template = await tx.LoadAsync<MessageTemplate>(templateKey + ":published") ?? TemplateService.Default(templateKey);
-        var rendered = TemplateService.Render(template, values);
+        var company = await tx.LoadAsync<InvoiceSettings>("company") ?? new();
+        var smtp = await tx.LoadAsync<StoredEmailConfiguration>("smtp");
+        var rendered = TemplateService.Render(template, values, EmailBranding.From(company, smtp?.Settings.PublicStoreUrl));
         await tx.SaveAsync(key, new OutboundMessage
         {
             Id = key, To = recipient, Subject = rendered.Subject, HtmlBody = rendered.HtmlBody, TextBody = rendered.TextBody,

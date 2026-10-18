@@ -25,6 +25,32 @@ public sealed class StoredEmailConfiguration
 
 public sealed record SmtpConfiguration(EmailSettings Settings, string Password);
 
+public sealed record EmailBranding(
+    string StoreName,
+    string LogoUrl,
+    string PrimaryColor = "#D97706",
+    string HeaderColor = "#451A03",
+    string BackgroundColor = "#FFFBEB",
+    string SurfaceColor = "#FFFFFF",
+    string TextColor = "#451A03",
+    string MutedTextColor = "#92400E",
+    string BodyFont = "Nunito, Arial, Helvetica, sans-serif",
+    string HeadingFont = "Fredoka, Arial, Helvetica, sans-serif")
+{
+    public static EmailBranding Default { get; } = new("Tiger van Cookie", "");
+
+    public static EmailBranding From(InvoiceSettings company, string? publicStoreUrl)
+    {
+        var storeName = string.IsNullOrWhiteSpace(company.CompanyName) ? Default.StoreName : company.CompanyName.Trim();
+        var logoUrl = "";
+        if (Uri.TryCreate(publicStoreUrl, UriKind.Absolute, out var baseUri) && baseUri.Scheme is "http" or "https"
+            && string.IsNullOrEmpty(baseUri.UserInfo) && company.LogoPath.StartsWith("/images/", StringComparison.Ordinal)
+            && !company.LogoPath.Contains("..", StringComparison.Ordinal))
+            logoUrl = new Uri(baseUri, company.LogoPath).ToString();
+        return new(storeName, logoUrl);
+    }
+}
+
 public sealed class OutboundMessage
 {
     public string Id { get; set; } = "";

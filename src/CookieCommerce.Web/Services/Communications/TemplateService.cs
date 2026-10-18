@@ -49,6 +49,14 @@ public sealed class TemplateService(ICommerceStore store, CommerceAccess access)
     public static async Task<MessageTemplate> PublishedAsync(ICommerceStore store, string key) =>
         await store.LoadAsync<MessageTemplate>(key + ":published") ?? Default(key);
 
+    public async Task<EmailBranding> GetEmailBrandingAsync()
+    {
+        await access.RequireAdminAsync();
+        var company = await store.LoadAsync<InvoiceSettings>("company") ?? new();
+        var smtp = await store.LoadAsync<StoredEmailConfiguration>("smtp");
+        return EmailBranding.From(company, smtp?.Settings.PublicStoreUrl);
+    }
+
     public async Task SaveAsync(MessageTemplate template, bool publish)
     {
         await access.RequireAdminAsync();
@@ -108,10 +116,26 @@ public sealed class TemplateService(ICommerceStore store, CommerceAccess access)
     public static string Replace(string template, IReadOnlyDictionary<string, string> values, bool html) => Tokens.Replace(template,
         m => values.TryGetValue(m.Groups[1].Value, out var value) ? html ? WebUtility.HtmlEncode(value) : value : throw new InvalidOperationException("Missing template value: " + m.Groups[1].Value));
 
-    public static RenderedEmail Render(MessageTemplate template, IReadOnlyDictionary<string, string> values)
+    public static string ApplyEmailBranding(string htmlBody, MessageTemplate template, EmailBranding? branding = null)
+    {
+        _ = template;
+        var brand = branding ?? EmailBranding.Default;
+        var storeName = WebUtility.HtmlEncode(brand.StoreName);
+        var logo = string.IsNullOrWhiteSpace(brand.LogoUrl)
+            ? ""
+            : $"<img src=\"{WebUtility.HtmlEncode(brand.LogoUrl)}\" alt=\"{storeName}\" width=\"56\" style=\"display:block;width:56px;height:56px;object-fit:contain;margin:0 auto 12px;border:0;\" />";
+        var content = Regex.Replace(htmlBody.Trim(),
+            @"<a\b(?![^>]*\bstyle\s*=)([^>]*)>",
+            $"<a$1 style=\"display:inline-block;background:{brand.PrimaryColor};color:#FFFFFF;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:999px;\">",
+            RegexOptions.IgnoreCase);
+        return $"<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>{storeName}</title><style>body{{margin:0!important;padding:0!important;background:{brand.BackgroundColor};}}a{{color:{brand.PrimaryColor};}}.email-shell{{width:100%;}}@media screen and (max-width:600px){{.email-card{{width:100%!important;}}.email-content{{padding:24px!important;}}}}</style></head><body style=\"margin:0;padding:0;background:{brand.BackgroundColor};font-family:{brand.BodyFont};color:{brand.TextColor};\"><table role=\"presentation\" class=\"email-shell\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;background:{brand.BackgroundColor};margin:0;padding:0;\"><tr><td align=\"center\" style=\"padding:32px 16px;\"><table role=\"presentation\" class=\"email-card\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;max-width:600px;background:{brand.SurfaceColor};border-radius:20px;overflow:hidden;box-shadow:0 8px 30px rgba(69,26,3,.12);\"><tr><td align=\"center\" style=\"padding:28px 32px;background:{brand.HeaderColor};color:#FFFFFF;font-family:{brand.HeadingFont};font-size:24px;font-weight:700;\">{logo}<span>{storeName}</span></td></tr><tr><td class=\"email-content\" style=\"padding:36px 40px;background:{brand.SurfaceColor};font-family:{brand.BodyFont};font-size:16px;line-height:1.6;color:{brand.TextColor};\">{content}</td></tr><tr><td align=\"center\" style=\"padding:20px 32px;background:{brand.BackgroundColor};font-family:{brand.BodyFont};font-size:12px;line-height:1.5;color:{brand.MutedTextColor};\">{storeName}</td></tr></table></td></tr></table></body></html>";
+    }
+
+    public static RenderedEmail Render(MessageTemplate template, IReadOnlyDictionary<string, string> values, EmailBranding? branding = null)
     {
         Validate(template);
-        var result = new RenderedEmail(Replace(template.Subject, values, false), Replace(template.TextBody, values, false), Replace(template.HtmlBody, values, true), template.Version);
+        var result = new RenderedEmail(Replace(template.Subject, values, false), Replace(template.TextBody, values, false),
+            ApplyEmailBranding(Replace(template.HtmlBody, values, true), template, branding), template.Version);
         if (result.Subject.Contains('\r') || result.Subject.Contains('\n')) throw new InvalidOperationException("Email subject cannot contain line breaks.");
         return result;
     }

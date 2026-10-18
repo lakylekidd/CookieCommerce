@@ -23,11 +23,12 @@ public static class CommunicationEndpoints
                 || input.ExpiryMinutes is < 1 or > 1440 || !Uri.TryCreate(input.ActionUrl, UriKind.Absolute, out var url) || url.Scheme is not ("http" or "https")) return Results.BadRequest();
             var template = await TemplateService.PublishedAsync(store, input.TemplateKey);
             var company = await store.LoadAsync<InvoiceSettings>("company") ?? new();
+            var smtp = await store.LoadAsync<StoredEmailConfiguration>("smtp");
             var rendered = TemplateService.Render(template, new Dictionary<string, string>
             {
                 ["customer_name"] = input.CustomerName, ["store_name"] = company.CompanyName,
                 ["action_url"] = input.ActionUrl, ["expiry_minutes"] = input.ExpiryMinutes.ToString()
-            });
+            }, EmailBranding.From(company, smtp?.Settings.PublicStoreUrl));
             return Results.Ok(rendered);
         }).DisableAntiforgery().WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(65536));
 

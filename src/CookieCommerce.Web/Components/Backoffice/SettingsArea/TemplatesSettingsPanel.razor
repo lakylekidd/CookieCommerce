@@ -55,7 +55,7 @@
                     {
                         <p class="template-preview-subject"><strong>Sample subject: @preview.Subject</strong></p>
                     }
-                    <iframe title="Current HTML preview" sandbox="" srcdoc="@(preview?.HtmlBody ?? template.HtmlBody)" class="template-html-preview bg-white rounded-xl border"></iframe>
+                    <iframe title="Current HTML preview" sandbox="" srcdoc="@(preview?.HtmlBody ?? TemplateService.ApplyEmailBranding(template.HtmlBody, template, branding))" class="template-html-preview bg-white rounded-xl border"></iframe>
                     @if (preview is not null)
                     {
                         <pre class="whitespace-pre-wrap text-sm">@preview.TextBody</pre>
@@ -88,11 +88,12 @@
     private IReadOnlyList<MessageTemplate> templates = [];
     private MessageTemplate? template;
     private RenderedEmail? preview;
+    private EmailBranding branding = EmailBranding.Default;
     private string selected = "password-reset", error = "", notice = "";
     private string imageUrl = "", imageAltText = "", imageAlignment = "center";
     private HtmlEditorMode htmlEditorMode = HtmlEditorMode.Source;
     private bool busy;
-    protected override async Task OnInitializedAsync() { try { templates = await Templates.ListAsync(); template = await Templates.DraftAsync(selected); } catch { error = "Templates could not be loaded."; } }
+    protected override async Task OnInitializedAsync() { try { templates = await Templates.ListAsync(); template = await Templates.DraftAsync(selected); branding = await Templates.GetEmailBrandingAsync(); } catch { error = "Templates could not be loaded."; } }
     private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); preview = null; htmlEditorMode = HtmlEditorMode.Source; notice = error = ""; }
     private async Task SaveAsync(bool publish)
     {
@@ -124,7 +125,7 @@
         {
             error = ""; TemplateService.Validate(template!);
             var values = new Dictionary<string, string> { ["customer_name"] = "Noor de Vries", ["store_name"] = "Tiger van Cookie", ["action_url"] = "https://example.com/preview", ["expiry_minutes"] = "30", ["order_reference"] = "TGR-EXAMPLE", ["order_total"] = "EUR 24.95", ["invoice_number"] = "INV-2026-000001" };
-            if (template!.Kind == "Email") { preview = TemplateService.Render(template, values); htmlEditorMode = HtmlEditorMode.Preview; }
+            if (template!.Kind == "Email") { preview = TemplateService.Render(template, values, branding); htmlEditorMode = HtmlEditorMode.Preview; }
             else
             {
                 var invoice = new InvoiceRecord { Id = Guid.NewGuid(), Number = values["invoice_number"], IssuedAt = DateTimeOffset.UtcNow, Template = template,

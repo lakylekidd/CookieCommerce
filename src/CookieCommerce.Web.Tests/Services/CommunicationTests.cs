@@ -47,8 +47,24 @@ public sealed class CommunicationTests
         var values = new Dictionary<string, string> { ["customer_name"] = "<script>alert(1)</script>", ["store_name"] = "Store", ["action_url"] = "https://example.com/reset?a=1&b=2", ["expiry_minutes"] = "30" };
         var rendered = TemplateService.Render(template, values);
         rendered.HtmlBody.Should().Contain("&lt;script&gt;").And.Contain("a=1&amp;b=2").And.NotContain("<script>");
+        rendered.HtmlBody.Should().Contain("<!doctype html>").And.Contain("background:#FFFBEB")
+            .And.Contain("font-family:Nunito, Arial, Helvetica, sans-serif")
+            .And.Contain("background:#D97706").And.Contain("role=\"presentation\"");
         template.TextBody = "No action link";
         ((Action)(() => TemplateService.Validate(template))).Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void Branded_email_shell_uses_saved_company_identity_and_absolute_logo_url()
+    {
+        var branding = EmailBranding.From(
+            new InvoiceSettings { CompanyName = "Cookie House", LogoPath = "/images/logo.png" },
+            "https://shop.example.test/store/");
+        var html = TemplateService.ApplyEmailBranding("<p>Welcome</p>", TemplateService.Default("order-confirmation"), branding);
+
+        html.Should().Contain("Cookie House")
+            .And.Contain("https://shop.example.test/images/logo.png")
+            .And.Contain("alt=\"Cookie House\"");
     }
 
     [Theory]
@@ -110,7 +126,9 @@ public sealed class CommunicationTests
         await service.SaveAsync(template, true);
         await store.ExecuteAsync("mail", async tx => { await OutboundEmailService.QueueTemplateAsync(tx, "mail", "noor@example.com", template.Key, values); return true; });
         (await store.ListAsync<OutboundMessage>()).Should().ContainSingle().Which.Subject.Should().Be("Original ABC");
-        (await store.LoadAsync<OutboundMessage>("mail"))!.TemplateVersion.Should().Be(2);
+        var queued = (await store.LoadAsync<OutboundMessage>("mail"))!;
+        queued.TemplateVersion.Should().Be(2);
+        queued.HtmlBody.Should().Contain("<!doctype html>").And.Contain("background:#FFFBEB").And.Contain("Tiger van Cookie");
     }
 
     [Fact]

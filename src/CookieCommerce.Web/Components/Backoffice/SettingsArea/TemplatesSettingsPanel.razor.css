@@ -7,7 +7,7 @@
 .template-editor-tab, .template-editor-tab-active, .template-image-insert-button { border: 1px solid #9ca3af; border-radius: .65rem; cursor: pointer; padding: .45rem .8rem; }
 .template-editor-tab { background: transparent; color: inherit; }
 .template-editor-tab-active, .template-image-insert-button { background: #f97316; border-color: #f97316; color: white; }
-.template-html-source, .template-html-preview { min-height: 20rem; }
+.template-html-source, .template-html-preview { min-height: 32rem; }
 .template-html-preview { display: block; width: 100%; margin-top: .35rem; }
 .template-preview-subject { margin: .5rem 0 0; }
 .template-image-inserter { margin-top: .75rem; padding: .85rem; border: 1px solid #d1d5db; border-radius: .65rem; }

@@ -41,6 +41,15 @@ public sealed class CommunicationTests
     }
 
     [Fact]
+    public void Pdf_invoice_template_defaults_to_shop_primary_colour()
+    {
+        var template = TemplateService.Default("invoice-pdf");
+
+        template.Kind.Should().Be("Pdf");
+        template.AccentColor.Should().Be("#D97706");
+    }
+
+    [Fact]
     public void Action_templates_require_links_and_escape_customer_values()
     {
         var template = TemplateService.Default("password-reset");

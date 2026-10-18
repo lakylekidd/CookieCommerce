@@ -1,5 +1,6 @@
 @using CookieCommerce.Web.Services.Communications
 @inject TemplateService Templates
+@inject InvoiceService Invoices
 @inject InvoiceRenderer PdfRenderer
 @inject IJSRuntime JS
 
@@ -79,10 +80,30 @@
         }
         else
         {
-            <label>Invoice heading<input @bind="template.Heading" /></label>
-            <label>Footer<textarea rows="4" @bind="template.Footer"></textarea></label>
-            <label>Accent colour<input type="color" @bind="template.AccentColor" /></label>
-            <p class="text-sm">Company details and logo are configured under Invoices. Line items and totals are filled from each order.</p>
+            <section class="template-pdf-editor" aria-label="PDF invoice template editor">
+                <div>
+                    <h3>PDF invoice layout</h3>
+                    <p>Configure the editable invoice title, footer and accent colour. The generated PDF keeps the shop logo, company details, branded typography and order data in a fixed, print-safe layout.</p>
+                    <label>Invoice heading<textarea rows="3" @bind="template.Heading"></textarea></label>
+                    <label>Footer<textarea rows="4" @bind="template.Footer"></textarea></label>
+                    <label>Accent colour<input type="color" @bind="template.AccentColor" /></label>
+                </div>
+                <div class="template-pdf-preview-card" style="--template-accent:@PdfAccent" aria-label="PDF invoice style preview">
+                    <div class="template-pdf-preview-header">
+                        <span>@(invoiceSettings?.CompanyName ?? branding.StoreName)</span>
+                        <span>INVOICE</span>
+                    </div>
+                    <div class="template-pdf-preview-paper">
+                        <div class="template-pdf-preview-logo">@branding.StoreName.Substring(0, 1).ToUpperInvariant()</div>
+                        <h4>@PdfPreviewHeading()</h4>
+                        <p>Invoice @SampleValue("invoice_number") · Order @SampleValue("order_reference")</p>
+                        <div class="template-pdf-preview-lines"><span>Chocolate Chunk</span><span>EUR 20.00</span></div>
+                        <div class="template-pdf-preview-total"><span>Total paid</span><strong>EUR 24.95</strong></div>
+                        <small>@PdfPreviewFooter()</small>
+                    </div>
+                </div>
+            </section>
+            <p class="text-sm">Company details and logo are configured under Invoices. Use Preview with sample data to download a PDF using the same saved shop branding.</p>
         }
         <div class="flex flex-wrap gap-3">
             <button class="border border-primary/30 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl hover:bg-primary hover:text-white hover:border-primary hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
@@ -100,6 +121,7 @@
 @code {
     private IReadOnlyList<MessageTemplate> templates = [];
     private MessageTemplate? template;
+    private InvoiceSettings? invoiceSettings;
     private RenderedEmail? preview;
     private EmailBranding branding = EmailBranding.Default;
     private string selected = "password-reset", error = "", notice = "";
@@ -107,7 +129,7 @@
     private string imageUrl = "", imageAltText = "", imageAlignment = "center";
     private HtmlEditorMode htmlEditorMode = HtmlEditorMode.Source;
     private bool busy;
-    protected override async Task OnInitializedAsync() { try { templates = await Templates.ListAsync(); template = await Templates.DraftAsync(selected); branding = await Templates.GetEmailBrandingAsync(); ResetSampleValues(); } catch { error = "Templates could not be loaded."; } }
+    protected override async Task OnInitializedAsync() { try { templates = await Templates.ListAsync(); template = await Templates.DraftAsync(selected); branding = await Templates.GetEmailBrandingAsync(); invoiceSettings = await Invoices.SettingsAsync(); ResetSampleValues(); } catch { error = "Templates could not be loaded."; } }
     private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); ResetSampleValues(); preview = null; htmlEditorMode = HtmlEditorMode.Source; notice = error = ""; }
     private async Task SaveAsync(bool publish)
     {
@@ -146,6 +168,10 @@
         "invoice_number" => "INV-2026-000001",
         _ => ""
     };
+    private string PdfAccent => IsHexColor(template?.AccentColor) ? template!.AccentColor : "#D97706";
+    private string PdfPreviewHeading() => template is null ? "" : TemplateService.Replace(template.Heading, sampleValues, false);
+    private string PdfPreviewFooter() => template is null ? "" : TemplateService.Replace(template.Footer, sampleValues, false);
+    private static bool IsHexColor(string? value) => value is { Length: 7 } && value[0] == '#' && value.Skip(1).All(Uri.IsHexDigit);
     private void InsertImage()
     {
         try
@@ -168,7 +194,9 @@
             if (template!.Kind == "Email") { preview = TemplateService.Render(template, values, branding); htmlEditorMode = HtmlEditorMode.Preview; }
             else
             {
-                var invoice = new InvoiceRecord { Id = Guid.NewGuid(), Number = values["invoice_number"], IssuedAt = DateTimeOffset.UtcNow, Template = template,
+                var company = invoiceSettings ?? new InvoiceSettings { CompanyName = branding.StoreName };
+                var invoice = new InvoiceRecord { Id = Guid.NewGuid(), Number = values["invoice_number"], IssuedAt = DateTimeOffset.UtcNow, Company = company, Template = template,
+                    LogoBytes = PdfRenderer.ReadLogo(company.LogoPath),
                     NetAmount = 22.89m, TaxAmount = 2.06m, Order = new() { OrderReference = values["order_reference"], Total = 24.95m, TaxRate = .09m, ShippingCharge = 4.95m,
                     BillingAddress = new() { FirstName = "Noor", LastName = "de Vries", Street = "Voorbeeldstraat", HouseNumber = "12", City = "Amsterdam", PostalCode = "1012 AB", Country = "Netherlands" },
                     Products = [new() { ProductName = "Chocolate Chunk", ProductVariantName = "5 Cookies Box", Quantity = 2, UnitPrice = 10m }] } };

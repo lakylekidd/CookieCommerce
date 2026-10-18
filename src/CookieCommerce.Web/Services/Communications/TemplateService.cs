@@ -16,7 +16,7 @@ public sealed class TemplateService(ICommerceStore store, CommerceAccess access)
 
     public static MessageTemplate Default(string key) => key switch
     {
-        "invoice-pdf" => new() { Key = key, Name = "PDF invoice", Kind = "Pdf", Version = 1 },
+        "invoice-pdf" => new() { Key = key, Name = "PDF invoice", Kind = "Pdf", Version = 1, AccentColor = "#D97706" },
         "password-reset" => Email(key, "Password reset", "Reset your password", "Reset password"),
         "account-invitation" => Email(key, "Account invitation", "Set up your password", "Set password"),
         "email-verification" => Email(key, "Email verification", "Verify your email address", "Verify email"),

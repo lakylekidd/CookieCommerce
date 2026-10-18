@@ -40,10 +40,13 @@ public sealed class InvoiceRenderer(IWebHostEnvironment environment)
             var logo = section.AddImage("base64:" + Convert.ToBase64String(invoice.LogoBytes));
             logo.Width = Unit.FromCentimeter(3); logo.LockAspectRatio = true;
         }
+        var accent = Color.Parse(invoice.Template.AccentColor);
+        var shopHeader = Color.Parse("#451A03");
         var title = section.AddParagraph(TemplateService.Replace(invoice.Template.Heading, InvoiceGenerator.Values(invoice), false));
         title.Format.Font.Size = 24; title.Format.Font.Bold = true;
-        title.Format.Font.Color = Color.Parse(invoice.Template.AccentColor);
-        section.AddParagraph(invoice.Company.CompanyName).Format.Font.Bold = true;
+        title.Format.Font.Color = accent;
+        var companyName = section.AddParagraph(invoice.Company.CompanyName);
+        companyName.Format.Font.Bold = true; companyName.Format.Font.Color = shopHeader;
         if (invoice.Company.CompanyAddress.Length > 0) section.AddParagraph(invoice.Company.CompanyAddress);
         if (invoice.Company.CompanyRegistration.Length > 0) section.AddParagraph("Registration: " + invoice.Company.CompanyRegistration);
         if (invoice.Company.VatNumber.Length > 0) section.AddParagraph("VAT: " + invoice.Company.VatNumber);
@@ -51,10 +54,10 @@ public sealed class InvoiceRenderer(IWebHostEnvironment environment)
         var address = invoice.Order.BillingAddress;
         section.AddParagraph($"Bill to\n{address.FirstName} {address.LastName}\n{address.Street} {address.HouseNumber}{address.HouseNumberAddition}\n{address.PostalCode} {address.City}\n{address.Country}");
         var table = section.AddTable();
-        table.Borders.Color = Colors.LightGray; table.Borders.Width = 0.5;
+        table.Borders.Color = accent; table.Borders.Width = 0.5;
         foreach (var width in new[] { 9.3, 1.8, 2.8, 3.1 }) table.AddColumn(Unit.FromCentimeter(width));
         var header = table.AddRow(); header.HeadingFormat = true; header.Format.Font.Bold = true;
-        header.Shading.Color = Colors.LightGray;
+        header.Shading.Color = accent; header.Format.Font.Color = Colors.White;
         header.Cells[0].AddParagraph("Item"); header.Cells[1].AddParagraph("Qty"); header.Cells[2].AddParagraph("Unit EUR"); header.Cells[3].AddParagraph("Total EUR");
         foreach (var line in invoice.Order.Products)
         {
@@ -75,9 +78,12 @@ public sealed class InvoiceRenderer(IWebHostEnvironment environment)
         Total("Promotion discount", -invoice.Order.GetPromotionDiscount()); Total("Reward discount", -invoice.Order.RewardDiscount);
         Total("Total excluding VAT", invoice.NetAmount); Total($"VAT {invoice.Order.TaxRate * 100:0.##}%", invoice.TaxAmount);
         Total("Total paid", invoice.Order.Total, true);
-        section.AddParagraph(TemplateService.Replace(invoice.Template.Footer, InvoiceGenerator.Values(invoice), false)).Format.SpaceBefore = Unit.FromPoint(15);
+        var totalRow = totals.Rows[totals.Rows.Count - 1];
+        totalRow.Shading.Color = accent; totalRow.Format.Font.Color = Colors.White;
+        var footerText = section.AddParagraph(TemplateService.Replace(invoice.Template.Footer, InvoiceGenerator.Values(invoice), false));
+        footerText.Format.SpaceBefore = Unit.FromPoint(15); footerText.Format.Font.Color = shopHeader;
         var footer = section.Footers.Primary.AddParagraph(invoice.Number + " · Page ");
-        footer.AddPageField(); footer.AddText(" of "); footer.AddNumPagesField(); footer.Format.Alignment = ParagraphAlignment.Center;
+        footer.AddPageField(); footer.AddText(" of "); footer.AddNumPagesField(); footer.Format.Alignment = ParagraphAlignment.Center; footer.Format.Font.Color = accent;
         var renderer = new PdfDocumentRenderer { Document = document };
         renderer.RenderDocument();
         using var output = new MemoryStream(); renderer.PdfDocument.Save(output, false); return output.ToArray();

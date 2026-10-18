@@ -10,6 +10,13 @@
 .template-html-source, .template-html-preview { min-height: 32rem; }
 .template-html-preview { display: block; width: 100%; margin-top: .35rem; }
 .template-preview-subject { margin: .5rem 0 0; }
+.template-sample-data { margin-top: 1rem; padding: 1rem; border: 1px solid #d1d5db; border-radius: .65rem; background: rgba(254, 243, 199, .35); }
+.template-sample-data h3 { margin: 0; font-size: .95rem; font-weight: 700; }
+.template-sample-data p { margin: .35rem 0 .75rem; font-size: .75rem; font-weight: 400; }
+.template-sample-fields { display: grid; gap: .75rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.template-sample-fields label { font-size: .75rem; font-weight: 600; }
+.template-sample-fields label span { display: block; font-family: monospace; }
+.template-sample-fields input { margin-top: .25rem; }
 .template-image-inserter { margin-top: .75rem; padding: .85rem; border: 1px solid #d1d5db; border-radius: .65rem; }
 .template-image-inserter-title { margin: 0 0 .5rem; font-size: .875rem; font-weight: 600; }
 .template-image-inserter-fields { display: grid; gap: .5rem; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(8rem, .75fr) auto; }
@@ -18,6 +25,7 @@
 
 @media (max-width: 48rem) {
     .template-image-inserter-fields { grid-template-columns: 1fr; }
+    .template-sample-fields { grid-template-columns: 1fr; }
 }
 
 .communication-editor select,

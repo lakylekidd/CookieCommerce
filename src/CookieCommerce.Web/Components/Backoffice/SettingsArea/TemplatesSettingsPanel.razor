@@ -17,6 +17,19 @@
     {
         <p class="text-sm">Version @template.Version · @(template.PublishedAt is null ? "Default or draft" : "Published " + TimeZoneInfo.ConvertTimeBySystemTimeZoneId(template.PublishedAt.Value, "Europe/Amsterdam").ToString("g"))</p>
         <p class="text-sm">Available placeholders: @string.Join(", ", TemplateService.Allowed(template.Key).Select(p => "{{" + p + "}}"))</p>
+        <section class="template-sample-data" aria-label="Preview sample values">
+            <h3>Preview sample values</h3>
+            <p>These values are used by <em>Preview with sample data</em> and can be changed without editing the template.</p>
+            <div class="template-sample-fields">
+                @foreach (var placeholder in TemplateService.Allowed(template.Key))
+                {
+                    <label>
+                        <span>{{@placeholder}}</span>
+                        <input value="@SampleValue(placeholder)" @oninput="args => SetSampleValue(placeholder, args)" aria-label="@($"Sample value for {placeholder}")" />
+                    </label>
+                }
+            </div>
+        </section>
         @if (template.Kind == "Email")
         {
             <label>Subject<input @bind="template.Subject" /></label>
@@ -90,11 +103,12 @@
     private RenderedEmail? preview;
     private EmailBranding branding = EmailBranding.Default;
     private string selected = "password-reset", error = "", notice = "";
+    private Dictionary<string, string> sampleValues = [];
     private string imageUrl = "", imageAltText = "", imageAlignment = "center";
     private HtmlEditorMode htmlEditorMode = HtmlEditorMode.Source;
     private bool busy;
-    protected override async Task OnInitializedAsync() { try { templates = await Templates.ListAsync(); template = await Templates.DraftAsync(selected); branding = await Templates.GetEmailBrandingAsync(); } catch { error = "Templates could not be loaded."; } }
-    private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); preview = null; htmlEditorMode = HtmlEditorMode.Source; notice = error = ""; }
+    protected override async Task OnInitializedAsync() { try { templates = await Templates.ListAsync(); template = await Templates.DraftAsync(selected); branding = await Templates.GetEmailBrandingAsync(); ResetSampleValues(); } catch { error = "Templates could not be loaded."; } }
+    private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); ResetSampleValues(); preview = null; htmlEditorMode = HtmlEditorMode.Source; notice = error = ""; }
     private async Task SaveAsync(bool publish)
     {
         busy = true; error = notice = "";
@@ -102,10 +116,36 @@
         catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Template could not be saved."; }
         finally { busy = false; }
     }
-    private void RestoreAsync() { template = TemplateService.Default(selected); preview = null; htmlEditorMode = HtmlEditorMode.Source; notice = "Default loaded as a draft. Publish to use it."; }
+    private void RestoreAsync() { template = TemplateService.Default(selected); ResetSampleValues(); preview = null; htmlEditorMode = HtmlEditorMode.Source; notice = "Default loaded as a draft. Publish to use it."; }
     private void ShowHtmlSource() => htmlEditorMode = HtmlEditorMode.Source;
-    private void ShowHtmlPreview() { preview = null; htmlEditorMode = HtmlEditorMode.Preview; }
+    private void ShowHtmlPreview() { htmlEditorMode = HtmlEditorMode.Preview; RenderEmailPreviewIfValid(); }
     private void UpdateHtmlBody(ChangeEventArgs args) { template!.HtmlBody = args.Value?.ToString() ?? ""; preview = null; }
+    private string SampleValue(string placeholder) => sampleValues.TryGetValue(placeholder, out var value) ? value : "";
+    private void SetSampleValue(string placeholder, ChangeEventArgs args)
+    {
+        sampleValues[placeholder] = args.Value?.ToString() ?? "";
+        if (htmlEditorMode == HtmlEditorMode.Preview) RenderEmailPreviewIfValid();
+        else preview = null;
+    }
+    private void RenderEmailPreviewIfValid()
+    {
+        preview = null;
+        if (template?.Kind != "Email") return;
+        try { preview = TemplateService.Render(template, new Dictionary<string, string>(sampleValues), branding); }
+        catch (InvalidOperationException) { }
+    }
+    private void ResetSampleValues() => sampleValues = TemplateService.Allowed(template?.Key ?? selected).ToDictionary(p => p, DefaultSampleValue);
+    private string DefaultSampleValue(string placeholder) => placeholder switch
+    {
+        "customer_name" => "Noor de Vries",
+        "store_name" => branding.StoreName,
+        "action_url" => "https://example.com/preview",
+        "expiry_minutes" => "30",
+        "order_reference" => "TGR-EXAMPLE",
+        "order_total" => "EUR 24.95",
+        "invoice_number" => "INV-2026-000001",
+        _ => ""
+    };
     private void InsertImage()
     {
         try
@@ -124,7 +164,7 @@
         try
         {
             error = ""; TemplateService.Validate(template!);
-            var values = new Dictionary<string, string> { ["customer_name"] = "Noor de Vries", ["store_name"] = "Tiger van Cookie", ["action_url"] = "https://example.com/preview", ["expiry_minutes"] = "30", ["order_reference"] = "TGR-EXAMPLE", ["order_total"] = "EUR 24.95", ["invoice_number"] = "INV-2026-000001" };
+            var values = new Dictionary<string, string>(sampleValues);
             if (template!.Kind == "Email") { preview = TemplateService.Render(template, values, branding); htmlEditorMode = HtmlEditorMode.Preview; }
             else
             {

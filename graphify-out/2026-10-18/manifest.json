@@ -3162,28 +3162,28 @@
     "semantic_hash": "fc520158a0d4f4a99b9d917e9c09091f"
   },
   "src/CookieCommerce.Web/Components/Backoffice/SettingsArea/EmailSettingsPanel.razor": {
-    "mtime": 1792261607.666923,
-    "seen": 1792307754.1057184,
-    "ast_hash": "f8d02d227bfb8ce601d6afd17f20690f",
-    "semantic_hash": "f8d02d227bfb8ce601d6afd17f20690f"
+    "mtime": 1792310750.0447812,
+    "seen": 1792311043.8885965,
+    "ast_hash": "72230abf056a386407d2b9da27fbc22c",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Components/Backoffice/SettingsArea/InvoiceSettingsPanel.razor": {
-    "mtime": 1792261607.6687107,
-    "seen": 1792307754.1057184,
-    "ast_hash": "66f0ed5179c37150245bab21e0bd000c",
-    "semantic_hash": "66f0ed5179c37150245bab21e0bd000c"
+    "mtime": 1792310343.9622226,
+    "seen": 1792311043.8885965,
+    "ast_hash": "5b1665c25e0ea5c8ffdbc29edfb888af",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Components/Backoffice/SettingsArea/Settings.razor": {
-    "mtime": 1792261809.060591,
-    "seen": 1792307754.1057184,
-    "ast_hash": "9dc021188ca8c8766700dc75646c6b8e",
-    "semantic_hash": "9dc021188ca8c8766700dc75646c6b8e"
+    "mtime": 1792310811.719766,
+    "seen": 1792311043.8885965,
+    "ast_hash": "e9ed43cb5daa9e257566845112071409",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Components/Backoffice/SettingsArea/TemplatesSettingsPanel.razor": {
-    "mtime": 1792261607.6744676,
-    "seen": 1792307754.1057184,
-    "ast_hash": "ba1face9dd70178dc27d15b697eac681",
-    "semantic_hash": "ba1face9dd70178dc27d15b697eac681"
+    "mtime": 1792310750.0447812,
+    "seen": 1792311043.8885965,
+    "ast_hash": "1eeb775c70b7682ec833a8dda410557e",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Components/LaunchGate.razor": {
     "mtime": 1792307177.3627641,

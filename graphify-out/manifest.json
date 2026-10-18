@@ -1,9 +1,9 @@
 {
   ".platform/ci/github_release.py": {
-    "mtime": 1792261726.7441008,
-    "seen": 1792307754.1057184,
-    "ast_hash": "5ade30fb779424eb81a794bbcbc9f14e",
-    "semantic_hash": "5ade30fb779424eb81a794bbcbc9f14e"
+    "mtime": 1792322321.0075603,
+    "seen": 1792338841.7070172,
+    "ast_hash": "c98a1a2cfd184454491e13f6b686068e",
+    "semantic_hash": ""
   },
   ".platform/keycloak/cookiecommerce-realm.json": {
     "mtime": 1792261599.723897,
@@ -12,10 +12,10 @@
     "semantic_hash": "b431fb88cf3c521a30a032a11fd9a963"
   },
   "src/CookieCommerce.AppHost/AppHost.cs": {
-    "mtime": 1792307177.3465173,
-    "seen": 1792307754.1057184,
-    "ast_hash": "756c1e1a52553bce4340e933fd01710c",
-    "semantic_hash": "756c1e1a52553bce4340e933fd01710c"
+    "mtime": 1792322704.6254764,
+    "seen": 1792338841.7070172,
+    "ast_hash": "95feb376309fec2e3245d8b905108439",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.AppHost/CookieCommerce.AppHost.csproj": {
     "mtime": 1781103105.0671709,
@@ -2586,16 +2586,16 @@
     "semantic_hash": ""
   },
   "src/CookieCommerce.Web.Tests/Services/CommerceWorkflowTests.cs": {
-    "mtime": 1792307182.4409637,
-    "seen": 1792307754.1057184,
-    "ast_hash": "6d13aebac4cd1596b767ad13064a465c",
-    "semantic_hash": "6d13aebac4cd1596b767ad13064a465c"
+    "mtime": 1792322360.0858681,
+    "seen": 1792338841.7075605,
+    "ast_hash": "fd5b3b1a881df200da61a2a07bb45615",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web.Tests/Services/CommunicationTests.cs": {
-    "mtime": 1792307182.4424846,
-    "seen": 1792307754.1057184,
-    "ast_hash": "8490d971badbefc0157ec858313f20e6",
-    "semantic_hash": "8490d971badbefc0157ec858313f20e6"
+    "mtime": 1792320788.0476997,
+    "seen": 1792338841.7075605,
+    "ast_hash": "9eee8be8e89f7961092fdc136db1916c",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web.Tests/Services/CustomerAddressAddServiceTests.cs": {
     "mtime": 1792261607.5556202,
@@ -2814,9 +2814,9 @@
     "semantic_hash": "f5ea014ca2bc58233a23d6417dd4e5bc"
   },
   "src/CookieCommerce.Web/Components/App.razor": {
-    "mtime": 1792308962.9194987,
-    "seen": 1792309006.668658,
-    "ast_hash": "5cfda434b6284970846b0af2bc47acdb",
+    "mtime": 1792320788.0497985,
+    "seen": 1792338841.7075605,
+    "ast_hash": "ff0fff3879810de6ff5273c9de247fd7",
     "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Components/Auth/AuthLayout.razor": {
@@ -3162,27 +3162,27 @@
     "semantic_hash": "fc520158a0d4f4a99b9d917e9c09091f"
   },
   "src/CookieCommerce.Web/Components/Backoffice/SettingsArea/EmailSettingsPanel.razor": {
-    "mtime": 1792310750.0447812,
-    "seen": 1792311043.8885965,
+    "mtime": 1792311133.3030531,
+    "seen": 1792338841.7075605,
     "ast_hash": "72230abf056a386407d2b9da27fbc22c",
     "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Components/Backoffice/SettingsArea/InvoiceSettingsPanel.razor": {
-    "mtime": 1792310343.9622226,
-    "seen": 1792311043.8885965,
+    "mtime": 1792311133.304066,
+    "seen": 1792338841.7075605,
     "ast_hash": "5b1665c25e0ea5c8ffdbc29edfb888af",
     "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Components/Backoffice/SettingsArea/Settings.razor": {
-    "mtime": 1792310811.719766,
-    "seen": 1792311043.8885965,
+    "mtime": 1792311133.30609,
+    "seen": 1792338841.7075605,
     "ast_hash": "e9ed43cb5daa9e257566845112071409",
     "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Components/Backoffice/SettingsArea/TemplatesSettingsPanel.razor": {
-    "mtime": 1792310750.0447812,
-    "seen": 1792311043.8885965,
-    "ast_hash": "1eeb775c70b7682ec833a8dda410557e",
+    "mtime": 1792320788.052163,
+    "seen": 1792338841.7075605,
+    "ast_hash": "06bf0b5b6d88009d098c29857659179b",
     "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Components/LaunchGate.razor": {
@@ -3384,10 +3384,10 @@
     "semantic_hash": "6d70c5b1b8dcafdb26efe4abb13614b9"
   },
   "src/CookieCommerce.Web/Components/Storefront/Checkout/Checkout.razor": {
-    "mtime": 1792261607.6916075,
-    "seen": 1792307754.1057184,
-    "ast_hash": "9bf7a00c39cdb7305f5644f96445a6a9",
-    "semantic_hash": "9bf7a00c39cdb7305f5644f96445a6a9"
+    "mtime": 1792322609.5834758,
+    "seen": 1792338841.7075605,
+    "ast_hash": "90deaa7c1fb26d1ab2e9b56aa9916156",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Components/Storefront/Checkout/CheckoutComplete.razor": {
     "mtime": 1792261607.6936586,
@@ -3402,10 +3402,10 @@
     "semantic_hash": "d34e6a1c3a5abd86a74447cd13954807"
   },
   "src/CookieCommerce.Web/Components/Storefront/Checkout/CheckoutCustomerInformation.razor": {
-    "mtime": 1792261607.6970098,
-    "seen": 1792307754.1057184,
-    "ast_hash": "9c10455e2cba26aac1ef8cb9291efeca",
-    "semantic_hash": "9c10455e2cba26aac1ef8cb9291efeca"
+    "mtime": 1792322741.6966085,
+    "seen": 1792338841.7075605,
+    "ast_hash": "b6ba8580ad5dc6f5f4aba76186bb6f8f",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Components/Storefront/Checkout/CheckoutFooter.razor": {
     "mtime": 1781103105.324625,
@@ -3612,10 +3612,10 @@
     "semantic_hash": "42b9829dac9c1d5077d5a7b37d5fdb44"
   },
   "src/CookieCommerce.Web/CookieCommerce.Web.csproj": {
-    "mtime": 1792261607.7162576,
-    "seen": 1792307754.1057184,
-    "ast_hash": "ff641358d6b0bb403a5ef157aca542f5",
-    "semantic_hash": "ff641358d6b0bb403a5ef157aca542f5"
+    "mtime": 1792320788.055282,
+    "seen": 1792338841.7075605,
+    "ast_hash": "7946e4920d4d75791047ca269040784c",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Models/Account/UserProfileDto.cs": {
     "mtime": 1783428094.2601643,
@@ -3768,10 +3768,10 @@
     "semantic_hash": "1aef7d377c00797e23d9bd711f516563"
   },
   "src/CookieCommerce.Web/Models/Checkout/AnonymousCheckoutRequest.cs": {
-    "mtime": 1771915394.901514,
-    "seen": 1792307754.1057184,
-    "ast_hash": "3df83d155950e5424c3729c47c2e0790",
-    "semantic_hash": "3df83d155950e5424c3729c47c2e0790"
+    "mtime": 1792322609.5784707,
+    "seen": 1792338841.7075605,
+    "ast_hash": "5accd71f3d5ec781022959eaf7455367",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Models/Checkout/BaseCheckoutRequest.cs": {
     "mtime": 1771915394.902514,
@@ -3990,10 +3990,10 @@
     "semantic_hash": "23c383f89891e0e1ae0af55a826cdc55"
   },
   "src/CookieCommerce.Web/Program.cs": {
-    "mtime": 1792307177.3715389,
-    "seen": 1792307754.1057184,
-    "ast_hash": "33e2a7bbbcd89cb9cdee856f66f93eb2",
-    "semantic_hash": "33e2a7bbbcd89cb9cdee856f66f93eb2"
+    "mtime": 1792322320.996892,
+    "seen": 1792338841.7075605,
+    "ast_hash": "93a0f603124e4285ac0c8aa208520c0a",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Properties/launchSettings.json": {
     "mtime": 1771915394.9150953,
@@ -4020,10 +4020,10 @@
     "semantic_hash": "47ca8bd6911dc7307b5368dcbcec889e"
   },
   "src/CookieCommerce.Web/Services/Commerce/CheckoutService.cs": {
-    "mtime": 1792307182.4490051,
-    "seen": 1792307754.1057184,
-    "ast_hash": "a4f31584b9a04438fdf615928305888a",
-    "semantic_hash": "a4f31584b9a04438fdf615928305888a"
+    "mtime": 1792322609.5868485,
+    "seen": 1792338841.7081285,
+    "ast_hash": "1e81da12369594454eb0665f1a5c6863",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Services/Commerce/CommerceAccess.cs": {
     "mtime": 1792261607.7494276,
@@ -4086,10 +4086,10 @@
     "semantic_hash": "9cf8a3e4ff5c05a44e2f348293401ccf"
   },
   "src/CookieCommerce.Web/Services/Commerce/NewsletterService.cs": {
-    "mtime": 1792261607.7643032,
-    "seen": 1792307754.1057184,
-    "ast_hash": "10229ed308cbf6756edf4c681b3d9f32",
-    "semantic_hash": "10229ed308cbf6756edf4c681b3d9f32"
+    "mtime": 1792322329.925286,
+    "seen": 1792338841.7081285,
+    "ast_hash": "7b2b04911da995cf5744628d08a39f89",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Services/Commerce/StoreSettingsService.cs": {
     "mtime": 1792261809.0729704,
@@ -4104,10 +4104,10 @@
     "semantic_hash": "2158baddc38d33e3e1e72126d6776566"
   },
   "src/CookieCommerce.Web/Services/Communications/CommunicationEndpoints.cs": {
-    "mtime": 1792261607.7696443,
-    "seen": 1792307754.1057184,
-    "ast_hash": "be0c65ff57fc75a629a9c2cb7a126ac6",
-    "semantic_hash": "be0c65ff57fc75a629a9c2cb7a126ac6"
+    "mtime": 1792320788.058715,
+    "seen": 1792338841.7081285,
+    "ast_hash": "3ff98844ba46db134b5366ff6c030a7a",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Services/Communications/EmailConfigurationService.cs": {
     "mtime": 1792307182.4567816,
@@ -4116,10 +4116,10 @@
     "semantic_hash": "acbc37a7480833f25a710133280b5dc3"
   },
   "src/CookieCommerce.Web/Services/Communications/EmailModels.cs": {
-    "mtime": 1792261607.771652,
-    "seen": 1792307754.1057184,
-    "ast_hash": "15af48b52310cfda17d72653d4547692",
-    "semantic_hash": "15af48b52310cfda17d72653d4547692"
+    "mtime": 1792320788.0607247,
+    "seen": 1792338841.7081285,
+    "ast_hash": "90a590d1ebc0b53cd0ecba9421f68688",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Services/Communications/InvoiceModels.cs": {
     "mtime": 1792261607.771652,
@@ -4128,10 +4128,10 @@
     "semantic_hash": "c66206caae0990bc8ff634009706682d"
   },
   "src/CookieCommerce.Web/Services/Communications/InvoiceRenderer.cs": {
-    "mtime": 1792261607.7738464,
-    "seen": 1792307754.1057184,
-    "ast_hash": "db0fb254e6525f5f576a3a40c55a0900",
-    "semantic_hash": "db0fb254e6525f5f576a3a40c55a0900"
+    "mtime": 1792320788.0637407,
+    "seen": 1792338841.7081285,
+    "ast_hash": "158d6c268b83e1b52c283d93a6f9e760",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Services/Communications/InvoiceService.cs": {
     "mtime": 1792261607.7762628,
@@ -4140,16 +4140,16 @@
     "semantic_hash": "67d8938e80b2d05b153e70cde838397d"
   },
   "src/CookieCommerce.Web/Services/Communications/OutboundEmailService.cs": {
-    "mtime": 1792307182.4582856,
-    "seen": 1792307754.1057184,
-    "ast_hash": "0109bc9676b3ab76d395fcca3661d202",
-    "semantic_hash": "0109bc9676b3ab76d395fcca3661d202"
+    "mtime": 1792320788.0644495,
+    "seen": 1792338841.7081285,
+    "ast_hash": "6ff5c103cf0c92924b1db690caec23e0",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Services/Communications/TemplateService.cs": {
-    "mtime": 1792261607.7789483,
-    "seen": 1792307754.1057184,
-    "ast_hash": "797edba25ffa4e8e9e7414e257e36590",
-    "semantic_hash": "797edba25ffa4e8e9e7414e257e36590"
+    "mtime": 1792320788.067241,
+    "seen": 1792338841.7081285,
+    "ast_hash": "867a8fd1ac03ea501d908cfed46afd31",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Services/ContentService.cs": {
     "mtime": 1792261607.7809565,
@@ -4392,16 +4392,16 @@
     "semantic_hash": "804b473502a4c415cf75db61c56c32aa"
   },
   "src/CookieCommerce.Web/appsettings.json": {
-    "mtime": 1792261607.817984,
-    "seen": 1792307754.1057184,
-    "ast_hash": "abedf1462022e3132db98f0a0c6204d3",
-    "semantic_hash": "abedf1462022e3132db98f0a0c6204d3"
+    "mtime": 1792322320.9985254,
+    "seen": 1792338841.7081285,
+    "ast_hash": "ad35b0a2e328402260f9cb7a63d3a2c4",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/package.json": {
-    "mtime": 1781105078.7867556,
-    "seen": 1792307754.1057184,
-    "ast_hash": "9ec12ba286cfe7d3b6dadeea16b02f84",
-    "semantic_hash": "9ec12ba286cfe7d3b6dadeea16b02f84"
+    "mtime": 1792320788.0711818,
+    "seen": 1792338841.7081285,
+    "ast_hash": "b7774e43e1f133677b6082a5e96f3021",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/wwwroot/js/charting.js": {
     "mtime": 1781103106.2422137,
@@ -4410,10 +4410,10 @@
     "semantic_hash": "09605d4eee9eb2b4c01c34f5ac1ff4fe"
   },
   "src/CookieCommerce.Web/wwwroot/js/global.js": {
-    "mtime": 1792261607.8244233,
-    "seen": 1792307754.1057184,
-    "ast_hash": "423007a08346c39e017ca226dab96e91",
-    "semantic_hash": "423007a08346c39e017ca226dab96e91"
+    "mtime": 1792320788.073182,
+    "seen": 1792338841.7081285,
+    "ast_hash": "71888da166bef7f22189a25e7e3e4066",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/wwwroot/js/phone-helper.js": {
     "mtime": 1772806471.6679597,
@@ -4482,15 +4482,15 @@
     "semantic_hash": ""
   },
   ".github/workflows/docker-image.yml": {
-    "mtime": 1792261726.7420208,
-    "seen": 1792308378.5435424,
-    "ast_hash": "bda680563ea00ac261ed82e73d506b88",
+    "mtime": 1792322321.0166476,
+    "seen": 1792338841.7081285,
+    "ast_hash": "b67c0617c65b992bd7cefff5b0aed5df",
     "semantic_hash": ""
   },
   ".platform/project.yaml": {
-    "mtime": 1792261809.0534687,
-    "seen": 1792308378.5435424,
-    "ast_hash": "dadf0e97732dee882f1b391c1d01ee96",
+    "mtime": 1792322448.2548268,
+    "seen": 1792338841.7081285,
+    "ast_hash": "0933e7fcc1f7a92ca518b14781f29e25",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -4506,15 +4506,15 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1792308961.4605665,
-    "seen": 1792309006.6858354,
-    "ast_hash": "1ad063c13abf9403a5069803e3a491d3",
+    "mtime": 1792322609.5883875,
+    "seen": 1792338841.7081285,
+    "ast_hash": "7740afd450d69b70d1eebc3ee148a747",
     "semantic_hash": ""
   },
   "docs/architecture.md": {
-    "mtime": 1792308961.4625928,
-    "seen": 1792309006.6858354,
-    "ast_hash": "3faa67ff4d131437eef1ce973c027b18",
+    "mtime": 1792322609.5903897,
+    "seen": 1792338841.7081285,
+    "ast_hash": "aedb26209173e486909402e8a865803e",
     "semantic_hash": ""
   },
   "docs/gdpr-compliance.md": {
@@ -4530,9 +4530,9 @@
     "semantic_hash": ""
   },
   "docs/tech-stack.md": {
-    "mtime": 1792263360.6423652,
-    "seen": 1792308378.5435424,
-    "ast_hash": "142265f4f93a75689220c2774e883396",
+    "mtime": 1792322360.0906844,
+    "seen": 1792338841.7081285,
+    "ast_hash": "2a411c8e0ffadd0f4ff49856d71dcde5",
     "semantic_hash": ""
   },
   "src/CookieCommerce.AuthenticationManagement.Api/README.md": {
@@ -4797,6 +4797,18 @@
     "mtime": 1769185071.9855554,
     "seen": 1792308378.5435424,
     "ast_hash": "2dabb5dbd31e41d081c6e7d5785d0ae2",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/Scripts/template-editor.js": {
+    "mtime": 1792320788.0567045,
+    "seen": 1792338841.7075605,
+    "ast_hash": "3827a8e07e05c27b63c64284d7f1901b",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/js/template-editor.js": {
+    "mtime": 1792320788.0819871,
+    "seen": 1792338841.7081285,
+    "ast_hash": "6a3973a5e8082b8debc4fb5044cd4fcb",
     "semantic_hash": ""
   }
 }

@@ -10,14 +10,6 @@
 .template-html-source, .template-html-preview { min-height: 32rem; }
 .template-html-preview { display: block; width: 100%; margin-top: .35rem; }
 .template-preview-subject { margin: .5rem 0 0; }
-.template-pdf-editor { display: grid; gap: 1.25rem; grid-template-columns: minmax(0, 1fr) minmax(18rem, .8fr); margin-top: 1rem; padding: 1rem; border: 1px solid #d1d5db; border-radius: .75rem; background: rgba(255, 251, 235, .45); }
-.template-pdf-editor h3 { margin: 0; font-size: 1rem; font-weight: 700; }
-.template-pdf-editor p { margin: .35rem 0 .85rem; font-size: .75rem; font-weight: 400; }
-.template-pdf-preview-card { min-height: 32rem; overflow: hidden; border: 1px solid #d6d3d1; border-radius: .75rem; background: #f5f5f4; box-shadow: 0 8px 20px rgba(69, 26, 3, .12); }
-.template-pdf-preview-empty { display: grid; min-height: 32rem; padding: 2rem; place-content: center; gap: .75rem; color: #57534e; text-align: center; }
-.template-pdf-preview-empty strong { color: #451a03; font-size: 1rem; }
-.template-pdf-preview-empty span { max-width: 24rem; font-size: .8rem; }
-.template-pdf-preview-frame { display: block; width: 100%; min-height: 48rem; border: 0; background: white; }
 .template-sample-data { margin-top: 1rem; padding: 1rem; border: 1px solid #d1d5db; border-radius: .65rem; background: rgba(254, 243, 199, .35); }
 .template-sample-data h3 { margin: 0; font-size: .95rem; font-weight: 700; }
 .template-sample-data p { margin: .35rem 0 .75rem; font-size: .75rem; font-weight: 400; }
@@ -34,7 +26,6 @@
 @media (max-width: 48rem) {
     .template-image-inserter-fields { grid-template-columns: 1fr; }
     .template-sample-fields { grid-template-columns: 1fr; }
-    .template-pdf-editor { grid-template-columns: 1fr; }
 }
 
 .communication-editor select,

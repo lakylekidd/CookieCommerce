@@ -47,6 +47,32 @@ public sealed class CommunicationTests
 
         template.Kind.Should().Be("Pdf");
         template.AccentColor.Should().Be("#D97706");
+        template.HtmlBody.Should().Contain("__INVOICE_ITEMS__").And.Contain("__INVOICE_TOTALS__");
+        ((Action)(() => TemplateService.Validate(template))).Should().NotThrow();
+    }
+
+    [Fact]
+    public void Invoice_html_renderer_populates_editable_template_regions()
+    {
+        var template = TemplateService.Default("invoice-pdf");
+        template.Heading = "Invoice {{invoice_number}} test";
+        template.Footer = "Thank you, {{customer_name}}.";
+        var invoice = new InvoiceRecord
+        {
+            Number = "INV-TEST-1", IssuedAt = DateTimeOffset.UtcNow, Company = new InvoiceSettings { CompanyName = "Cookie House" }, Template = template,
+            NetAmount = 20m, TaxAmount = 4m,
+            LogoBytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="),
+            Order = new() { OrderReference = "ORDER-1", Total = 24m, TaxRate = .2m, ShippingCharge = 0m,
+                BillingAddress = new() { FirstName = "Noor", LastName = "de Vries", Street = "Main street", HouseNumber = "1", City = "Amsterdam", PostalCode = "1000 AA", Country = "NL" },
+                Products = [new() { ProductName = "Cookie box", ProductVariantName = "Large", Quantity = 2, UnitPrice = 10m }] }
+        };
+
+        var html = renderer.RenderHtml(invoice);
+
+        html.Should().Contain("Invoice INV-TEST-1 test").And.Contain("Cookie box")
+            .And.Contain("Total paid").And.Contain("Thank you, Noor de Vries.")
+            .And.NotContain("__INVOICE_ITEMS__").And.NotContain("{{invoice_number}}");
+        renderer.Render(invoice).Should().NotBeEmpty();
     }
 
     [Fact]

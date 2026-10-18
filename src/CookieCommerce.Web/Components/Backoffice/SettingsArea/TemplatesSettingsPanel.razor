@@ -31,9 +31,12 @@
                 }
             </div>
         </section>
-        @if (template.Kind == "Email")
+        @if (template.Kind is "Email" or "Pdf")
         {
-            <label>Subject<input @bind="template.Subject" /></label>
+            @if (template.Kind == "Email")
+            {
+                <label>Subject<input @bind="template.Subject" /></label>
+            }
             <section class="template-html-section" aria-label="HTML body editor">
                 <label>HTML body</label>
                 <div class="template-editor-tabs" role="tablist" aria-label="HTML body view">
@@ -64,45 +67,22 @@
                 }
                 else
                 {
-                    <p class="template-preview-help">This is the current HTML. Placeholders are shown as written; use sample preview to render them.</p>
-                    @if (preview is not null)
+                    <p class="template-preview-help">This is the current HTML with sample values rendered. Invoice regions marked with <code>__INVOICE_...__</code> are populated with the saved company, logo, order, line items, totals and footer.</p>
+                    @if (template.Kind == "Email" && preview is not null)
                     {
                         <p class="template-preview-subject"><strong>Sample subject: @preview.Subject</strong></p>
                     }
-                    <iframe title="Current HTML preview" sandbox="" srcdoc="@(preview?.HtmlBody ?? TemplateService.ApplyEmailBranding(template.HtmlBody, template, branding))" class="template-html-preview bg-white rounded-xl border"></iframe>
-                    @if (preview is not null)
+                    <iframe title="Current HTML preview" sandbox="" srcdoc="@(template.Kind == "Pdf" ? invoiceHtmlPreview ?? "" : preview?.HtmlBody ?? TemplateService.ApplyEmailBranding(template.HtmlBody, template, branding))" class="template-html-preview bg-white rounded-xl border"></iframe>
+                    @if (template.Kind == "Email" && preview is not null)
                     {
                         <pre class="whitespace-pre-wrap text-sm">@preview.TextBody</pre>
                     }
                 }
             </section>
-            <label>Plain-text body<textarea rows="6" @bind="template.TextBody"></textarea></label>
-        }
-        else
-        {
-            <section class="template-pdf-editor" aria-label="PDF invoice template editor">
-                <div>
-                    <h3>PDF invoice layout</h3>
-                    <p>Configure the editable invoice title, footer and accent colour. The generated PDF keeps the shop logo, company details, branded typography and order data in a fixed, print-safe layout.</p>
-                    <label>Invoice heading<textarea rows="3" @bind="template.Heading"></textarea></label>
-                    <label>Footer<textarea rows="4" @bind="template.Footer"></textarea></label>
-                    <label>Accent colour<input type="color" @bind="template.AccentColor" /></label>
-                </div>
-                <div class="template-pdf-preview-card" aria-label="Generated PDF invoice preview">
-                    @if (string.IsNullOrWhiteSpace(pdfPreviewUrl))
-                    {
-                        <div class="template-pdf-preview-empty">
-                            <strong>Generated PDF preview</strong>
-                            <span>Click “Preview with sample data” to see the exact invoice PDF, including the saved logo, layout, typography, and totals.</span>
-                        </div>
-                    }
-                    else
-                    {
-                        <iframe title="Generated PDF invoice preview" src="@pdfPreviewUrl" class="template-pdf-preview-frame"></iframe>
-                    }
-                </div>
-            </section>
-            <p class="text-sm">Company details and logo are configured under Invoices. Preview generates the same PDF that is downloaded, using the saved shop branding.</p>
+            @if (template.Kind == "Email")
+            {
+                <label>Plain-text body<textarea rows="6" @bind="template.TextBody"></textarea></label>
+            }
         }
         <div class="flex flex-wrap gap-3">
             <button class="border border-primary/30 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl hover:bg-primary hover:text-white hover:border-primary hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
@@ -122,7 +102,7 @@
     private MessageTemplate? template;
     private InvoiceSettings? invoiceSettings;
     private RenderedEmail? preview;
-    private string? pdfPreviewUrl;
+    private string? invoiceHtmlPreview;
     private EmailBranding branding = EmailBranding.Default;
     private string selected = "password-reset", error = "", notice = "";
     private Dictionary<string, string> sampleValues = [];
@@ -130,7 +110,7 @@
     private HtmlEditorMode htmlEditorMode = HtmlEditorMode.Source;
     private bool busy;
     protected override async Task OnInitializedAsync() { try { templates = await Templates.ListAsync(); template = await Templates.DraftAsync(selected); branding = await Templates.GetEmailBrandingAsync(); invoiceSettings = await Invoices.SettingsAsync(); ResetSampleValues(); } catch { error = "Templates could not be loaded."; } }
-    private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); ResetSampleValues(); preview = null; pdfPreviewUrl = null; htmlEditorMode = HtmlEditorMode.Source; notice = error = ""; }
+    private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); ResetSampleValues(); preview = null; invoiceHtmlPreview = null; htmlEditorMode = HtmlEditorMode.Source; notice = error = ""; }
     private async Task SaveAsync(bool publish)
     {
         busy = true; error = notice = "";
@@ -138,23 +118,26 @@
         catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Template could not be saved."; }
         finally { busy = false; }
     }
-    private void RestoreAsync() { template = TemplateService.Default(selected); ResetSampleValues(); preview = null; pdfPreviewUrl = null; htmlEditorMode = HtmlEditorMode.Source; notice = "Default loaded as a draft. Publish to use it."; }
+    private void RestoreAsync() { template = TemplateService.Default(selected); ResetSampleValues(); preview = null; invoiceHtmlPreview = null; htmlEditorMode = HtmlEditorMode.Source; notice = "Default loaded as a draft. Publish to use it."; }
     private void ShowHtmlSource() => htmlEditorMode = HtmlEditorMode.Source;
-    private void ShowHtmlPreview() { htmlEditorMode = HtmlEditorMode.Preview; RenderEmailPreviewIfValid(); }
-    private void UpdateHtmlBody(ChangeEventArgs args) { template!.HtmlBody = args.Value?.ToString() ?? ""; preview = null; }
+    private void ShowHtmlPreview() { htmlEditorMode = HtmlEditorMode.Preview; RenderPreviewIfValid(); }
+    private void UpdateHtmlBody(ChangeEventArgs args) { template!.HtmlBody = args.Value?.ToString() ?? ""; preview = null; invoiceHtmlPreview = null; }
     private string SampleValue(string placeholder) => sampleValues.TryGetValue(placeholder, out var value) ? value : "";
     private void SetSampleValue(string placeholder, ChangeEventArgs args)
     {
         sampleValues[placeholder] = args.Value?.ToString() ?? "";
-        if (template?.Kind == "Pdf") pdfPreviewUrl = null;
-        if (htmlEditorMode == HtmlEditorMode.Preview) RenderEmailPreviewIfValid();
-        else preview = null;
+        if (htmlEditorMode == HtmlEditorMode.Preview) RenderPreviewIfValid();
+        else { preview = null; invoiceHtmlPreview = null; }
     }
-    private void RenderEmailPreviewIfValid()
+    private void RenderPreviewIfValid()
     {
-        preview = null;
-        if (template?.Kind != "Email") return;
-        try { preview = TemplateService.Render(template, new Dictionary<string, string>(sampleValues), branding); }
+        preview = null; invoiceHtmlPreview = null;
+        if (template is null) return;
+        try
+        {
+            if (template.Kind == "Email") preview = TemplateService.Render(template, new Dictionary<string, string>(sampleValues), branding);
+            else invoiceHtmlPreview = PdfRenderer.RenderHtml(BuildSampleInvoice(new Dictionary<string, string>(sampleValues)));
+        }
         catch (InvalidOperationException) { }
     }
     private void ResetSampleValues() => sampleValues = TemplateService.Allowed(template?.Key ?? selected).ToDictionary(p => p, DefaultSampleValue);
@@ -191,19 +174,22 @@
             if (template!.Kind == "Email") { preview = TemplateService.Render(template, values, branding); htmlEditorMode = HtmlEditorMode.Preview; }
             else
             {
-                var company = invoiceSettings ?? new InvoiceSettings { CompanyName = branding.StoreName };
-                var invoice = new InvoiceRecord { Id = Guid.NewGuid(), Number = values["invoice_number"], IssuedAt = DateTimeOffset.UtcNow, Company = company, Template = template,
-                    LogoBytes = PdfRenderer.ReadLogo(company.LogoPath),
-                    NetAmount = 22.89m, TaxAmount = 2.06m, Order = new() { OrderReference = values["order_reference"], Total = 24.95m, TaxRate = .09m, ShippingCharge = 4.95m,
-                    BillingAddress = new() { FirstName = "Noor", LastName = "de Vries", Street = "Voorbeeldstraat", HouseNumber = "12", City = "Amsterdam", PostalCode = "1012 AB", Country = "Netherlands" },
-                    Products = [new() { ProductName = "Chocolate Chunk", ProductVariantName = "5 Cookies Box", Quantity = 2, UnitPrice = 10m }] } };
-                if (!string.IsNullOrWhiteSpace(pdfPreviewUrl)) await JS.InvokeVoidAsync("revokeCommerceFileUrl", pdfPreviewUrl);
+                var invoice = BuildSampleInvoice(values);
+                invoiceHtmlPreview = PdfRenderer.RenderHtml(invoice); htmlEditorMode = HtmlEditorMode.Preview;
                 using var stream = new DotNetStreamReference(new MemoryStream(PdfRenderer.Render(invoice)));
-                pdfPreviewUrl = await JS.InvokeAsync<string>("createCommerceFileUrl", "application/pdf", stream);
-                await JS.InvokeVoidAsync("downloadCommerceFileUrl", "invoice-preview.pdf", pdfPreviewUrl);
+                await JS.InvokeVoidAsync("downloadCommerceFile", "invoice-preview.pdf", "application/pdf", stream);
             }
         }
         catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Preview could not be generated."; }
+    }
+    private InvoiceRecord BuildSampleInvoice(Dictionary<string, string> values)
+    {
+        var company = invoiceSettings ?? new InvoiceSettings { CompanyName = branding.StoreName };
+        return new InvoiceRecord { Id = Guid.NewGuid(), Number = values["invoice_number"], IssuedAt = DateTimeOffset.UtcNow, Company = company, Template = template!,
+            LogoBytes = PdfRenderer.ReadLogo(company.LogoPath), NetAmount = 22.89m, TaxAmount = 2.06m,
+            Order = new() { OrderReference = values["order_reference"], Total = 24.95m, TaxRate = .09m, ShippingCharge = 4.95m,
+                BillingAddress = new() { FirstName = "Noor", LastName = "de Vries", Street = "Voorbeeldstraat", HouseNumber = "12", City = "Amsterdam", PostalCode = "1012 AB", Country = "Netherlands" },
+                Products = [new() { ProductName = "Chocolate Chunk", ProductVariantName = "5 Cookies Box", Quantity = 2, UnitPrice = 10m }] } };
     }
     private enum HtmlEditorMode { Source, Preview }
 }

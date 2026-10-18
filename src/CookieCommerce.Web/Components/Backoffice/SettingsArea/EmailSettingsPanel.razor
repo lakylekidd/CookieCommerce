@@ -14,7 +14,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label>SMTP host<input @bind="settings.Host" autocomplete="off" /></label>
             <label>Port<input type="number" min="1" max="65535" @bind="settings.Port" /></label>
-            <label>Connection security<select @bind="settings.Security"><option value="StartTls">STARTTLS</option><option value="Ssl">TLS from connection start</option><option value="None">None (local test server)</option></select></label>
+            <label>Connection security<div class="settings-select-wrapper"><select @bind="settings.Security"><option value="StartTls">STARTTLS</option><option value="Ssl">TLS from connection start</option><option value="None">None (local test server)</option></select><span class="material-symbols-outlined settings-select-chevron" aria-hidden="true">expand_more</span></div></label>
             <label>Username<input @bind="settings.Username" autocomplete="off" /></label>
             <label>Password<input type="password" @bind="settings.Password" autocomplete="new-password" placeholder="@(settings.HasPassword ? "Saved password — leave blank to keep" : "Enter SMTP password")" /></label>
             <label><input type="checkbox" @bind="settings.ClearPassword" /> Clear saved password</label>
@@ -24,8 +24,13 @@
             <label>Public store URL<input type="url" @bind="settings.PublicStoreUrl" /></label>
         </div>
         <p class="text-sm">Password recovery configuration: @settings.AuthenticationSync</p>
-        <button class="bg-primary text-white px-4 py-2 rounded-xl" disabled="@busy" @onclick="SaveAsync">Save email settings</button>
-        <div class="flex flex-wrap gap-3 items-end"><label>Test recipient<input type="email" @bind="recipient" /></label><button class="border px-4 py-2 rounded-xl" disabled="@busy" @onclick="TestAsync">Send test email</button></div>
+        <button class="bg-primary text-white px-4 py-2 rounded-xl hover:bg-primary/90 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                disabled="@busy" @onclick="SaveAsync">Save email settings</button>
+        <div class="flex flex-wrap gap-3 items-end">
+            <label>Test recipient<input type="email" @bind="recipient" /></label>
+            <button class="border border-primary/30 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl hover:bg-primary hover:text-white hover:border-primary hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled="@busy" @onclick="TestAsync">Send test email</button>
+        </div>
         <h3 class="font-bold pt-4">Recent customer emails</h3>
         <button class="text-primary underline text-sm" @onclick="RefreshAsync">Refresh delivery status</button>
         <table class="w-full text-sm"><thead><tr><th class="text-left">Recipient</th><th class="text-left">Subject</th><th>Status</th><th>Attempts</th><th></th></tr></thead><tbody>

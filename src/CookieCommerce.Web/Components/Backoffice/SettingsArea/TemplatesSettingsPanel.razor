@@ -6,9 +6,13 @@
 <div class="communication-editor bg-card-light dark:bg-card-dark rounded-2xl p-6 space-y-4">
     @if (!string.IsNullOrEmpty(error)) { <p role="alert" class="text-red-600">@error</p> }
     @if (!string.IsNullOrEmpty(notice)) { <p role="status" class="text-green-600">@notice</p> }
-    <label>Template<select value="@selected" @onchange="SelectAsync">
-        @foreach (var item in templates) { <option value="@item.Key">@item.Name (@item.Kind)</option> }
-    </select></label>
+    <label>Template<div class="settings-select-wrapper">
+        <select value="@selected" @onchange="SelectAsync"
+                class="px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer">
+            @foreach (var item in templates) { <option value="@item.Key">@item.Name (@item.Kind)</option> }
+        </select>
+        <span class="material-symbols-outlined settings-select-chevron" aria-hidden="true">expand_more</span>
+    </div></label>
     @if (template is not null)
     {
         <p class="text-sm">Version @template.Version · @(template.PublishedAt is null ? "Default or draft" : "Published " + TimeZoneInfo.ConvertTimeBySystemTimeZoneId(template.PublishedAt.Value, "Europe/Amsterdam").ToString("g"))</p>
@@ -27,10 +31,14 @@
             <p class="text-sm">Company details and logo are configured under Invoices. Line items and totals are filled from each order.</p>
         }
         <div class="flex flex-wrap gap-3">
-            <button class="border px-4 py-2 rounded-xl" disabled="@busy" @onclick="() => SaveAsync(false)">Save draft</button>
-            <button class="bg-primary text-white px-4 py-2 rounded-xl" disabled="@busy" @onclick="() => SaveAsync(true)">Publish</button>
-            <button class="border px-4 py-2 rounded-xl" disabled="@busy" @onclick="PreviewAsync">Preview with sample data</button>
-            <button class="text-primary underline" disabled="@busy" @onclick="RestoreAsync">Restore default draft</button>
+            <button class="border border-primary/30 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl hover:bg-primary hover:text-white hover:border-primary hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled="@busy" @onclick="() => SaveAsync(false)">Save draft</button>
+            <button class="bg-primary text-white px-4 py-2 rounded-xl hover:bg-primary/90 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled="@busy" @onclick="() => SaveAsync(true)">Publish</button>
+            <button class="border border-primary/30 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl hover:bg-primary hover:text-white hover:border-primary hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled="@busy" @onclick="PreviewAsync">Preview with sample data</button>
+            <button class="text-primary underline hover:text-primary/80 hover:-translate-y-0.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled="@busy" @onclick="RestoreAsync">Restore default draft</button>
         </div>
         @if (preview is not null)
         {

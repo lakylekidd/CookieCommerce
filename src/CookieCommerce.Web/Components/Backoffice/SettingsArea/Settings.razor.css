@@ -1,0 +1,90 @@
+.settings-row {
+    min-height: 72px;
+}
+
+.settings-control {
+    display: flex;
+    align-items: center;
+    flex: 0 0 112px;
+    justify-content: flex-end;
+    width: 112px;
+    height: 40px;
+}
+
+.settings-control--prefix {
+    gap: 8px;
+}
+
+.settings-control--wide {
+    flex-basis: 136px;
+    width: 136px;
+    gap: 4px;
+}
+
+.settings-symbol {
+    flex: 0 0 16px;
+    color: rgb(107 114 128);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+}
+
+.settings-symbol--placeholder {
+    visibility: hidden;
+}
+
+.settings-unit {
+    flex: 0 0 44px;
+    color: rgb(156 163 175);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    text-align: right;
+}
+
+.settings-unit--placeholder {
+    visibility: hidden;
+}
+
+.settings-input {
+    min-width: 0;
+    flex: 0 0 88px;
+    width: 88px;
+    height: 40px;
+    border: 1px solid rgb(229 231 235);
+    border-radius: 0.75rem;
+    background: rgb(255 255 255);
+    color: rgb(55 65 81);
+    font-size: 0.875rem;
+    padding: 0 0.75rem;
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.settings-control--prefix .settings-input {
+    flex: 0 0 88px;
+}
+
+.settings-input:focus {
+    border-color: rgb(217 119 6);
+    box-shadow: 0 0 0 3px rgb(217 119 6 / 0.2);
+}
+
+.dark .settings-input {
+    border-color: rgb(55 65 81);
+    background: rgb(17 24 39);
+    color: rgb(229 231 235);
+}
+
+@media (max-width: 640px) {
+    .settings-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .settings-control {
+        align-self: flex-end;
+    }
+}

@@ -1,3 +1,15 @@
 .communication-editor label { display: block; font-size: .875rem; font-weight: 600; }
 .communication-editor input, .communication-editor select, .communication-editor textarea { display: block; width: 100%; margin-top: .35rem; padding: .6rem; border: 1px solid #9ca3af; border-radius: .65rem; background: transparent; }
 .communication-editor textarea { font-family: monospace; }
+
+.communication-editor select,
+.communication-editor select option {
+    background-color: #ffffff;
+    color: #374151;
+}
+
+.dark .communication-editor select,
+.dark .communication-editor select option {
+    background-color: #111827;
+    color: #e5e7eb;
+}

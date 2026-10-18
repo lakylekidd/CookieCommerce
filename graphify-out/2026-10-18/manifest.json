@@ -2580,10 +2580,10 @@
     "semantic_hash": "2e95303a1008c02cdca1ce41d8812f70"
   },
   "src/CookieCommerce.Web.Tests/Services/CommerceHttpTests.cs": {
-    "mtime": 1792261809.060591,
-    "seen": 1792307754.1057184,
-    "ast_hash": "a304cb0a9e0c4c798414ac20ef2088de",
-    "semantic_hash": "a304cb0a9e0c4c798414ac20ef2088de"
+    "mtime": 1792308962.91749,
+    "seen": 1792309006.668658,
+    "ast_hash": "0c3c31fc53f5f5d66a43d01e855a2ea9",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web.Tests/Services/CommerceWorkflowTests.cs": {
     "mtime": 1792307182.4409637,
@@ -2814,10 +2814,10 @@
     "semantic_hash": "f5ea014ca2bc58233a23d6417dd4e5bc"
   },
   "src/CookieCommerce.Web/Components/App.razor": {
-    "mtime": 1783335493.9017746,
-    "seen": 1792307754.1057184,
-    "ast_hash": "b7f6766e54eac8c86c6281ed98c1b304",
-    "semantic_hash": "b7f6766e54eac8c86c6281ed98c1b304"
+    "mtime": 1792308962.9194987,
+    "seen": 1792309006.668658,
+    "ast_hash": "5cfda434b6284970846b0af2bc47acdb",
+    "semantic_hash": ""
   },
   "src/CookieCommerce.Web/Components/Auth/AuthLayout.razor": {
     "mtime": 1781103105.1727684,
@@ -4468,5 +4468,335 @@
     "seen": 1792307754.1057184,
     "ast_hash": "f7e65dde4e5533740a0d57ac9355c0e8",
     "semantic_hash": "f7e65dde4e5533740a0d57ac9355c0e8"
+  },
+  "src/CookieCommerce.Web.Tests/Components/AppRenderingTests.cs": {
+    "mtime": 1792308962.9154809,
+    "seen": 1792309006.668658,
+    "ast_hash": "892f1530b5297498ae146f3fb23ee1c9",
+    "semantic_hash": ""
+  },
+  ".github/copilot-instructions.md": {
+    "mtime": 1792263360.6319697,
+    "seen": 1792308378.5435424,
+    "ast_hash": "c94f16ec79066ade5a0f816edc778df9",
+    "semantic_hash": ""
+  },
+  ".github/workflows/docker-image.yml": {
+    "mtime": 1792261726.7420208,
+    "seen": 1792308378.5435424,
+    "ast_hash": "bda680563ea00ac261ed82e73d506b88",
+    "semantic_hash": ""
+  },
+  ".platform/project.yaml": {
+    "mtime": 1792261809.0534687,
+    "seen": 1792308378.5435424,
+    "ast_hash": "dadf0e97732dee882f1b391c1d01ee96",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1792308961.4583516,
+    "seen": 1792309006.6858354,
+    "ast_hash": "e8452ee96ff1f55445ffeb149eb5eed1",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1792263360.6404707,
+    "seen": 1792308378.5435424,
+    "ast_hash": "fa5fd7ddfe5aa49519a95e1b8ea89692",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1792308961.4605665,
+    "seen": 1792309006.6858354,
+    "ast_hash": "1ad063c13abf9403a5069803e3a491d3",
+    "semantic_hash": ""
+  },
+  "docs/architecture.md": {
+    "mtime": 1792308961.4625928,
+    "seen": 1792309006.6858354,
+    "ast_hash": "3faa67ff4d131437eef1ce973c027b18",
+    "semantic_hash": ""
+  },
+  "docs/gdpr-compliance.md": {
+    "mtime": 1792263360.6423652,
+    "seen": 1792308378.5435424,
+    "ast_hash": "140c1976ef33d6950a90c02328564960",
+    "semantic_hash": ""
+  },
+  "docs/roadmap.md": {
+    "mtime": 1792307182.3872848,
+    "seen": 1792308378.5435424,
+    "ast_hash": "126ff116392eb1cfa9e4668a695fe9da",
+    "semantic_hash": ""
+  },
+  "docs/tech-stack.md": {
+    "mtime": 1792263360.6423652,
+    "seen": 1792308378.5435424,
+    "ast_hash": "142265f4f93a75689220c2774e883396",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.AuthenticationManagement.Api/README.md": {
+    "mtime": 1792307182.3954532,
+    "seen": 1792308378.5435424,
+    "ast_hash": "cac6e1147efc293b58408ff26b71bd22",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.OrderDomain.Application/README.md": {
+    "mtime": 1771915394.7149749,
+    "seen": 1792308378.5435424,
+    "ast_hash": "4bb3580e4e4991fabb472491d08335cb",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.OrderDomain.Domain/README.md": {
+    "mtime": 1771915394.7354088,
+    "seen": 1792308378.5435424,
+    "ast_hash": "fc5556bfb09b1bd8a4c55b1f6e3e7688",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.OrderDomain.Infrastructure/README.md": {
+    "mtime": 1771915394.7466316,
+    "seen": 1792308378.5435424,
+    "ast_hash": "a37e16dc9441f89fa00fc638070b84ec",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/Assets/Fonts/LICENSE.txt": {
+    "mtime": 1792261607.571086,
+    "seen": 1792308378.5435424,
+    "ast_hash": "548b1ba12749ba642a382890c1acdb20",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/chocolate-chip.png": {
+    "mtime": 1772806471.649122,
+    "seen": 1792308378.5435424,
+    "ast_hash": "a8fe650018894efc828990b648540e64",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cocoa-chocolate-chip.png": {
+    "mtime": 1772806471.6531222,
+    "seen": 1792308378.5435424,
+    "ast_hash": "66af124e829e0279308a636fba7c6471",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie001/12-pack.png": {
+    "mtime": 1781103105.5159912,
+    "seen": 1792308378.5435424,
+    "ast_hash": "5145afb00247842a8d1355902cd459fc",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie001/5-pack.png": {
+    "mtime": 1781103105.547694,
+    "seen": 1792308378.5435424,
+    "ast_hash": "1a52c49e32ca415c7cd1090dbab45dea",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie001/single.png": {
+    "mtime": 1781103105.5741384,
+    "seen": 1792308378.5435424,
+    "ast_hash": "8b6138b53a5c0e38558f726c245f4936",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie001/top-tr.png": {
+    "mtime": 1781103105.5918593,
+    "seen": 1792308378.5435424,
+    "ast_hash": "dc249cb66c0a9cbed233a69682384aad",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie001/top.png": {
+    "mtime": 1781103105.6170344,
+    "seen": 1792308378.5435424,
+    "ast_hash": "f224d949ac1385c7aa5741d5cd5378aa",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie002/12-pack.png": {
+    "mtime": 1781103105.6527054,
+    "seen": 1792308378.5435424,
+    "ast_hash": "17e2c4022aacff8caec9f4c743dc5f5e",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie002/5-pack.png": {
+    "mtime": 1781103105.6877756,
+    "seen": 1792308378.5435424,
+    "ast_hash": "c4edd1849955fa04936a5557e3355a6b",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie002/single.png": {
+    "mtime": 1781103105.7193768,
+    "seen": 1792308378.5435424,
+    "ast_hash": "17856938200eb436d3b21a084449abc9",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie002/top-tr.png": {
+    "mtime": 1781103105.7193768,
+    "seen": 1792308378.5435424,
+    "ast_hash": "f128d96b28912f90481c8343d5cc3fb4",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie002/top.png": {
+    "mtime": 1781103105.7439082,
+    "seen": 1792308378.5435424,
+    "ast_hash": "6799ef37adc6b32b743b93b0d03c694a",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie003/12-pack.png": {
+    "mtime": 1781103105.7704568,
+    "seen": 1792308378.5435424,
+    "ast_hash": "6883cdadd29ace3ea525b7f168dde140",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie003/5-pack.png": {
+    "mtime": 1781103105.8011987,
+    "seen": 1792308378.5435424,
+    "ast_hash": "75c2ed02f13802929e869a28ea6cf080",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie003/single.png": {
+    "mtime": 1781103105.829914,
+    "seen": 1792308378.5435424,
+    "ast_hash": "932ef78f0eb882e9ddb3e2212804fb6f",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie003/top-tr.png": {
+    "mtime": 1781103105.8348906,
+    "seen": 1792308378.5435424,
+    "ast_hash": "f189830a9dddecb466e9a166bda2d88a",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie003/top.png": {
+    "mtime": 1781103105.8566408,
+    "seen": 1792308378.5435424,
+    "ast_hash": "33114f7ad4931f6c3ca850b81d4dc834",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie004/12-pack.png": {
+    "mtime": 1781103105.8835044,
+    "seen": 1792308378.5435424,
+    "ast_hash": "f377ad20388132a82ade085eb1840637",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie004/5-pack.png": {
+    "mtime": 1781103105.9250457,
+    "seen": 1792308378.5435424,
+    "ast_hash": "357d3d5c0d88422fdf09bc8f1e4d6271",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie004/single.png": {
+    "mtime": 1781103105.958086,
+    "seen": 1792308378.5435424,
+    "ast_hash": "ade00549a92aec25f27997f2df2d6039",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie004/top-tr.png": {
+    "mtime": 1781103105.9622867,
+    "seen": 1792308378.5435424,
+    "ast_hash": "1167950456325f7448f521ebfec75363",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie004/top.png": {
+    "mtime": 1781103105.9929578,
+    "seen": 1792308378.5435424,
+    "ast_hash": "1b37c767547b522ac0aace36f5c63bfb",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie005/12-pack.png": {
+    "mtime": 1781103106.0205245,
+    "seen": 1792308378.5435424,
+    "ast_hash": "dda1c8c355408ac8abd78f26a8ab0d5d",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie005/5-pack.png": {
+    "mtime": 1781103106.047223,
+    "seen": 1792308378.5435424,
+    "ast_hash": "5ddff0fd2ec0b03452e1fef0e4de6f22",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie005/single.png": {
+    "mtime": 1781103106.0718012,
+    "seen": 1792308378.5435424,
+    "ast_hash": "ef03a4e55ee603d441a9718ab18f644d",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie005/top-tr.png": {
+    "mtime": 1781103106.0851605,
+    "seen": 1792308378.5435424,
+    "ast_hash": "a0eb7b3714296b209b2c92b7b971fa73",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie005/top.png": {
+    "mtime": 1781103106.1033516,
+    "seen": 1792308378.5435424,
+    "ast_hash": "9b8086c41427f352eb60fca0d8066bb2",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie006/12-pack.png": {
+    "mtime": 1781103106.1310673,
+    "seen": 1792308378.5435424,
+    "ast_hash": "71f52c20677cffb5ac29fe3379d75f92",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie006/5-pack.png": {
+    "mtime": 1781103106.1556578,
+    "seen": 1792308378.5435424,
+    "ast_hash": "0d3028a65f655737c9efb0661a4fc070",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie006/single.png": {
+    "mtime": 1781103106.1827736,
+    "seen": 1792308378.5435424,
+    "ast_hash": "d6627e0d020cbcf11639357b00459e26",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie006/top-tr.png": {
+    "mtime": 1781103106.1903973,
+    "seen": 1792308378.5435424,
+    "ast_hash": "9642c483f8c4fcdb8ba9a0232130da6c",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/cookies/cookie006/top.png": {
+    "mtime": 1781103106.2151027,
+    "seen": 1792308378.5435424,
+    "ast_hash": "03d785bb75a2eb582845238150080a7d",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/matcha.png": {
+    "mtime": 1772806471.655121,
+    "seen": 1792308378.5435424,
+    "ast_hash": "10927ae65f04946bc65659711e7593c2",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/oatmeal-raisin.png": {
+    "mtime": 1772806471.6659644,
+    "seen": 1792308378.5435424,
+    "ast_hash": "f3ca71a93de6bfe7fab867e8febe6197",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/fake-images/peanut-butter.png": {
+    "mtime": 1772806471.6669595,
+    "seen": 1792308378.5435424,
+    "ast_hash": "310fbbde365d282df92da73ab868014a",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/favicon.png": {
+    "mtime": 1769111017.0782094,
+    "seen": 1792308378.5435424,
+    "ast_hash": "7537377b8bd2856b0b09e7da3319bf90",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/images/instagram_qr.png": {
+    "mtime": 1781103106.240215,
+    "seen": 1792308378.5435424,
+    "ast_hash": "3bd1885664f4276904f556f341eb0e11",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/images/logo.png": {
+    "mtime": 1769111326.7450707,
+    "seen": 1792308378.5435424,
+    "ast_hash": "a1b69fb9d1623f0a39db0641847fc729",
+    "semantic_hash": ""
+  },
+  "src/CookieCommerce.Web/wwwroot/images/social-instagram.svg": {
+    "mtime": 1769185071.9855554,
+    "seen": 1792308378.5435424,
+    "ast_hash": "2dabb5dbd31e41d081c6e7d5785d0ae2",
+    "semantic_hash": ""
   }
 }

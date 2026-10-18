@@ -75,7 +75,7 @@
                 <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
 
                     @* Store availability *@
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Coming Soon Mode</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">When enabled, visitors only see the coming-soon and sign-in pages. Signed-in users retain full access.</p>
@@ -84,66 +84,72 @@
                     </div>
 
                     @* Order prefix *@
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Order Reference Prefix</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Short prefix prepended to every order number (e.g. @orderReferencePrefix-1234).</p>
                         </div>
-                        <input type="text" @bind="orderReferencePrefix" maxlength="8"
-                               class="w-28 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 font-mono uppercase focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                        <div class="settings-control">
+                            <span class="settings-symbol settings-symbol--placeholder" aria-hidden="true"></span>
+                            <input type="text" @bind="orderReferencePrefix" maxlength="8"
+                                   class="settings-input font-mono uppercase" />
+                        </div>
                     </div>
 
                     @* Free shipping threshold *@
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Free Shipping Threshold</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Customers who spend above this amount receive free shipping.</p>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <span class="text-sm font-bold text-gray-500 dark:text-gray-400">€</span>
+                        <div class="settings-control settings-control--prefix">
+                            <span class="settings-symbol">€</span>
                             <input type="number" @bind="freeShippingThreshold" min="0" step="5"
-                                   class="w-24 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                                   class="settings-input" />
                         </div>
                     </div>
 
                     @* Shipping cost *@
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Standard Shipping Cost</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Flat shipping fee applied to orders below the free shipping threshold.</p>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <span class="text-sm font-bold text-gray-500 dark:text-gray-400">€</span>
+                        <div class="settings-control settings-control--prefix">
+                            <span class="settings-symbol">€</span>
                             <input type="number" @bind="standardShippingCost" min="0" step="0.5"
-                                   class="w-24 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                                   class="settings-input" />
                         </div>
                     </div>
 
                     @* VAT *@
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">VAT Rate</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Applied to all product sales. Currently @vatRate% is the Dutch reduced rate for food.</p>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <div class="settings-control settings-control--prefix">
+                            <span class="settings-symbol">%</span>
                             <input type="number" @bind="vatRate" min="0" max="100" step="0.5"
-                                   class="w-20 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
-                            <span class="text-sm font-bold text-gray-500 dark:text-gray-400">%</span>
+                                   class="settings-input" />
                         </div>
                     </div>
 
                     @* Delivery cutoff *@
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Next-Day Delivery Cutoff</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Orders placed before this time qualify for next-day delivery.</p>
                         </div>
-                        <input type="time" @bind="nextDayDeliveryCutoff"
-                               class="px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                        <div class="settings-control">
+                            <span class="settings-symbol settings-symbol--placeholder" aria-hidden="true"></span>
+                            <input type="time" @bind="nextDayDeliveryCutoff"
+                                   class="settings-input" />
+                        </div>
                     </div>
 
                     @* Guest checkout *@
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Allow Guest Checkout</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Let customers complete purchases without creating an account.</p>
@@ -152,7 +158,7 @@
                     </div>
 
                     @* Order notes *@
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Allow Order Notes</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Show a free-text field during checkout for special delivery instructions.</p>
@@ -161,13 +167,16 @@
                     </div>
 
                     @* Max quantity *@
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Max Items per Order</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Hard limit on the total number of cookie items a single order can contain.</p>
                         </div>
-                        <input type="number" @bind="maxItemsPerOrder" min="1" max="500" step="1"
-                               class="w-24 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                        <div class="settings-control">
+                            <span class="settings-symbol settings-symbol--placeholder" aria-hidden="true"></span>
+                            <input type="number" @bind="maxItemsPerOrder" min="1" max="500" step="1"
+                                   class="settings-input" />
+                        </div>
                     </div>
                 </div>
             }
@@ -288,43 +297,43 @@
             {
                 <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
 
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Points Earned per €1 Spent</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">How many reward points a customer earns for every euro they spend.</p>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <div class="settings-control settings-control--wide">
+                            <span class="settings-unit">pts / €</span>
                             <input type="number" @bind="pointsPerEuro" min="1" max="100" step="1"
-                                   class="w-20 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
-                            <span class="text-xs font-medium text-gray-400">pts / €</span>
+                                   class="settings-input" />
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Minimum Order to Earn Points</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Orders below this value do not earn reward points. Set to 0 for any order.</p>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <span class="text-sm font-bold text-gray-500 dark:text-gray-400">€</span>
+                        <div class="settings-control settings-control--wide">
+                            <span class="settings-unit">€</span>
                             <input type="number" @bind="minOrderToEarnPoints" min="0" step="1"
-                                   class="w-24 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
+                                   class="settings-input" />
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Minimum Points to Redeem</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Customers need at least this many points before they can redeem them at checkout.</p>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <div class="settings-control settings-control--wide">
+                            <span class="settings-unit settings-unit--placeholder" aria-hidden="true"></span>
                             <input type="number" @bind="minPointsToRedeem" min="0" step="50"
-                                   class="w-24 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
-                            <span class="text-xs font-medium text-gray-400">pts</span>
+                                   class="settings-input" />
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Allow Points Redemption at Checkout</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Let customers apply accumulated points as a discount during checkout.</p>
@@ -332,7 +341,7 @@
                         <Toggle @bind-Value="allowPointRedemption" />
                     </div>
 
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Show Reward Points on Storefront</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Display the reward points balance on the customer account page and in the cart.</p>
@@ -340,7 +349,7 @@
                         <Toggle @bind-Value="showPointsOnStorefront" />
                     </div>
 
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Double Points on Birthday</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Customers earn 2× reward points on all orders placed on their birthday.</p>
@@ -357,67 +366,67 @@
             {
                 <div class="bg-card-light dark:bg-card-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
 
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Default Baking Temperature</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Pre-filled temperature when creating a new batch. Bakers can still override per-batch.</p>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <div class="settings-control settings-control--wide">
+                            <span class="settings-unit">°C</span>
                             <input type="number" @bind="defaultBakingTemp" min="100" max="300" step="5"
-                                   class="w-20 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
-                            <span class="text-xs font-medium text-gray-400">°C</span>
+                                   class="settings-input" />
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Default Baking Duration</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Pre-filled bake time when creating a new batch run.</p>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <div class="settings-control settings-control--wide">
+                            <span class="settings-unit">min</span>
                             <input type="number" @bind="defaultBakingDuration" min="1" max="120" step="1"
-                                   class="w-20 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
-                            <span class="text-xs font-medium text-gray-400">min</span>
+                                   class="settings-input" />
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Daily Production Quota</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Target number of cookies to bake each day. Shown on the inventory dashboard progress bar.</p>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <div class="settings-control settings-control--wide">
+                            <span class="settings-unit">cookies</span>
                             <input type="number" @bind="dailyQuotaTarget" min="1" step="10"
-                                   class="w-24 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
-                            <span class="text-xs font-medium text-gray-400">cookies</span>
+                                   class="settings-input" />
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Low Stock Alert Threshold</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">A notification is triggered when any SKU's stock drops below this number of units.</p>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <div class="settings-control settings-control--wide">
+                            <span class="settings-unit">units</span>
                             <input type="number" @bind="lowStockThreshold" min="1" step="5"
-                                   class="w-20 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
-                            <span class="text-xs font-medium text-gray-400">units</span>
+                                   class="settings-input" />
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Max Defect Rate Warning</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Flag a batch in the dashboard when its defective cookie percentage exceeds this threshold.</p>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <div class="settings-control settings-control--wide">
+                            <span class="settings-unit">%</span>
                             <input type="number" @bind="maxDefectRatePercent" min="0" max="100" step="1"
-                                   class="w-20 px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" />
-                            <span class="text-xs font-medium text-gray-400">%</span>
+                                   class="settings-input" />
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between gap-6 px-6 py-4">
+                    <div class="settings-row flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Auto-Schedule Batch on Low Stock</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Automatically create a pending batch when a product's stock falls below the alert threshold.</p>
@@ -534,25 +543,30 @@
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Flavor of the Month</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Product featured in the countdown timer section on the storefront homepage.</p>
                         </div>
-                        <select @bind="flavorOfTheMonth"
-                                class="px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer">
-                            @foreach (var cookie in CookieOptions)
-                            {
-                                <option value="@cookie.Ref">@cookie.Name</option>
-                            }
-                        </select>
+                        <div class="settings-select-wrapper">
+                            <select @bind="flavorOfTheMonth"
+                                    class="px-3 py-2 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer">
+                                @foreach (var cookie in CookieOptions)
+                                {
+                                    <option value="@cookie.Ref">@cookie.Name</option>
+                                }
+                            </select>
+                        </div>
                     </div>
                     <div class="flex items-center justify-between gap-6 px-6 py-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Featured Products to Display</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Number of products shown in the "Featured" grid on the storefront.</p>
                         </div>
-                        <select @bind="featuredProductCount"
-                                class="min-w-[5rem] px-3 py-2 pr-8 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer">
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="6">6</option>
-                        </select>
+                        <div class="settings-select-wrapper">
+                            <select @bind="featuredProductCount"
+                                    class="min-w-[5rem] px-3 py-2 pr-8 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all cursor-pointer">
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="6">6</option>
+                            </select>
+                            <span class="material-symbols-outlined settings-select-chevron" aria-hidden="true">expand_more</span>
+                        </div>
                     </div>
                 </div>
 

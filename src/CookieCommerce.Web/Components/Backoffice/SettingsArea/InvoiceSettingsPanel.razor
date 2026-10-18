@@ -14,10 +14,12 @@
         <label>Logo path<input @bind="settings.LogoPath" /></label>
         <label><input type="checkbox" @bind="settings.EmailInvoices" /> Automatically email invoices after payment</label>
         <p class="text-sm">Invoices are issued once payment is confirmed. Issued documents retain their original details and template.</p>
-        <button class="bg-primary text-white px-4 py-2 rounded-xl" disabled="@busy" @onclick="SaveAsync">Save invoice settings</button>
+        <button class="bg-primary text-white px-4 py-2 rounded-xl hover:bg-primary/90 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                disabled="@busy" @onclick="SaveAsync">Save invoice settings</button>
         <hr />
         <p class="text-sm">Generate missing invoices for existing paid orders. Repeating this keeps existing invoice numbers and PDFs.</p>
-        <button class="border px-4 py-2 rounded-xl" disabled="@busy" @onclick="BackfillAsync">Generate invoices for existing paid orders</button>
+        <button class="border border-primary/30 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl hover:bg-primary hover:text-white hover:border-primary hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                disabled="@busy" @onclick="BackfillAsync">Generate invoices for existing paid orders</button>
     }
 </div>
 

@@ -88,22 +88,21 @@
                     <label>Footer<textarea rows="4" @bind="template.Footer"></textarea></label>
                     <label>Accent colour<input type="color" @bind="template.AccentColor" /></label>
                 </div>
-                <div class="template-pdf-preview-card" style="--template-accent:@PdfAccent" aria-label="PDF invoice style preview">
-                    <div class="template-pdf-preview-header">
-                        <span>@(invoiceSettings?.CompanyName ?? branding.StoreName)</span>
-                        <span>INVOICE</span>
-                    </div>
-                    <div class="template-pdf-preview-paper">
-                        <div class="template-pdf-preview-logo">@branding.StoreName.Substring(0, 1).ToUpperInvariant()</div>
-                        <h4>@PdfPreviewHeading()</h4>
-                        <p>Invoice @SampleValue("invoice_number") · Order @SampleValue("order_reference")</p>
-                        <div class="template-pdf-preview-lines"><span>Chocolate Chunk</span><span>EUR 20.00</span></div>
-                        <div class="template-pdf-preview-total"><span>Total paid</span><strong>EUR 24.95</strong></div>
-                        <small>@PdfPreviewFooter()</small>
-                    </div>
+                <div class="template-pdf-preview-card" aria-label="Generated PDF invoice preview">
+                    @if (string.IsNullOrWhiteSpace(pdfPreviewUrl))
+                    {
+                        <div class="template-pdf-preview-empty">
+                            <strong>Generated PDF preview</strong>
+                            <span>Click “Preview with sample data” to see the exact invoice PDF, including the saved logo, layout, typography, and totals.</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <iframe title="Generated PDF invoice preview" src="@pdfPreviewUrl" class="template-pdf-preview-frame"></iframe>
+                    }
                 </div>
             </section>
-            <p class="text-sm">Company details and logo are configured under Invoices. Use Preview with sample data to download a PDF using the same saved shop branding.</p>
+            <p class="text-sm">Company details and logo are configured under Invoices. Preview generates the same PDF that is downloaded, using the saved shop branding.</p>
         }
         <div class="flex flex-wrap gap-3">
             <button class="border border-primary/30 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl hover:bg-primary hover:text-white hover:border-primary hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
@@ -123,6 +122,7 @@
     private MessageTemplate? template;
     private InvoiceSettings? invoiceSettings;
     private RenderedEmail? preview;
+    private string? pdfPreviewUrl;
     private EmailBranding branding = EmailBranding.Default;
     private string selected = "password-reset", error = "", notice = "";
     private Dictionary<string, string> sampleValues = [];
@@ -130,7 +130,7 @@
     private HtmlEditorMode htmlEditorMode = HtmlEditorMode.Source;
     private bool busy;
     protected override async Task OnInitializedAsync() { try { templates = await Templates.ListAsync(); template = await Templates.DraftAsync(selected); branding = await Templates.GetEmailBrandingAsync(); invoiceSettings = await Invoices.SettingsAsync(); ResetSampleValues(); } catch { error = "Templates could not be loaded."; } }
-    private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); ResetSampleValues(); preview = null; htmlEditorMode = HtmlEditorMode.Source; notice = error = ""; }
+    private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); ResetSampleValues(); preview = null; pdfPreviewUrl = null; htmlEditorMode = HtmlEditorMode.Source; notice = error = ""; }
     private async Task SaveAsync(bool publish)
     {
         busy = true; error = notice = "";
@@ -138,7 +138,7 @@
         catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Template could not be saved."; }
         finally { busy = false; }
     }
-    private void RestoreAsync() { template = TemplateService.Default(selected); ResetSampleValues(); preview = null; htmlEditorMode = HtmlEditorMode.Source; notice = "Default loaded as a draft. Publish to use it."; }
+    private void RestoreAsync() { template = TemplateService.Default(selected); ResetSampleValues(); preview = null; pdfPreviewUrl = null; htmlEditorMode = HtmlEditorMode.Source; notice = "Default loaded as a draft. Publish to use it."; }
     private void ShowHtmlSource() => htmlEditorMode = HtmlEditorMode.Source;
     private void ShowHtmlPreview() { htmlEditorMode = HtmlEditorMode.Preview; RenderEmailPreviewIfValid(); }
     private void UpdateHtmlBody(ChangeEventArgs args) { template!.HtmlBody = args.Value?.ToString() ?? ""; preview = null; }
@@ -146,6 +146,7 @@
     private void SetSampleValue(string placeholder, ChangeEventArgs args)
     {
         sampleValues[placeholder] = args.Value?.ToString() ?? "";
+        if (template?.Kind == "Pdf") pdfPreviewUrl = null;
         if (htmlEditorMode == HtmlEditorMode.Preview) RenderEmailPreviewIfValid();
         else preview = null;
     }
@@ -168,10 +169,6 @@
         "invoice_number" => "INV-2026-000001",
         _ => ""
     };
-    private string PdfAccent => IsHexColor(template?.AccentColor) ? template!.AccentColor : "#D97706";
-    private string PdfPreviewHeading() => template is null ? "" : TemplateService.Replace(template.Heading, sampleValues, false);
-    private string PdfPreviewFooter() => template is null ? "" : TemplateService.Replace(template.Footer, sampleValues, false);
-    private static bool IsHexColor(string? value) => value is { Length: 7 } && value[0] == '#' && value.Skip(1).All(Uri.IsHexDigit);
     private void InsertImage()
     {
         try
@@ -200,8 +197,10 @@
                     NetAmount = 22.89m, TaxAmount = 2.06m, Order = new() { OrderReference = values["order_reference"], Total = 24.95m, TaxRate = .09m, ShippingCharge = 4.95m,
                     BillingAddress = new() { FirstName = "Noor", LastName = "de Vries", Street = "Voorbeeldstraat", HouseNumber = "12", City = "Amsterdam", PostalCode = "1012 AB", Country = "Netherlands" },
                     Products = [new() { ProductName = "Chocolate Chunk", ProductVariantName = "5 Cookies Box", Quantity = 2, UnitPrice = 10m }] } };
+                if (!string.IsNullOrWhiteSpace(pdfPreviewUrl)) await JS.InvokeVoidAsync("revokeCommerceFileUrl", pdfPreviewUrl);
                 using var stream = new DotNetStreamReference(new MemoryStream(PdfRenderer.Render(invoice)));
-                await JS.InvokeVoidAsync("downloadCommerceFile", "invoice-preview.pdf", "application/pdf", stream);
+                pdfPreviewUrl = await JS.InvokeAsync<string>("createCommerceFileUrl", "application/pdf", stream);
+                await JS.InvokeVoidAsync("downloadCommerceFileUrl", "invoice-preview.pdf", pdfPreviewUrl);
             }
         }
         catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Preview could not be generated."; }

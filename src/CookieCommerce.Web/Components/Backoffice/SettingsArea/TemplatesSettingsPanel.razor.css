@@ -13,14 +13,11 @@
 .template-pdf-editor { display: grid; gap: 1.25rem; grid-template-columns: minmax(0, 1fr) minmax(18rem, .8fr); margin-top: 1rem; padding: 1rem; border: 1px solid #d1d5db; border-radius: .75rem; background: rgba(255, 251, 235, .45); }
 .template-pdf-editor h3 { margin: 0; font-size: 1rem; font-weight: 700; }
 .template-pdf-editor p { margin: .35rem 0 .85rem; font-size: .75rem; font-weight: 400; }
-.template-pdf-preview-card { overflow: hidden; border: 1px solid #d6d3d1; border-radius: .75rem; background: #f5f5f4; box-shadow: 0 8px 20px rgba(69, 26, 3, .12); }
-.template-pdf-preview-header { display: flex; justify-content: space-between; gap: .75rem; padding: .85rem 1rem; background: #451a03; color: white; font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.template-pdf-preview-paper { margin: 1rem; padding: 1rem; border-top: .3rem solid var(--template-accent); background: white; color: #451a03; box-shadow: 0 2px 8px rgba(0, 0, 0, .08); }
-.template-pdf-preview-logo { display: grid; width: 2rem; height: 2rem; margin-bottom: .6rem; place-items: center; border-radius: .5rem; background: var(--template-accent); color: white; font-weight: 800; }
-.template-pdf-preview-paper h4 { margin: 0; font-family: Fredoka, sans-serif; font-size: 1.15rem; }
-.template-pdf-preview-paper p, .template-pdf-preview-paper small { display: block; margin: .35rem 0 .8rem; color: #92400e; font-size: .65rem; }
-.template-pdf-preview-lines, .template-pdf-preview-total { display: flex; justify-content: space-between; gap: .5rem; padding: .55rem 0; border-bottom: 1px solid #e7e5e4; font-size: .7rem; }
-.template-pdf-preview-total { border-bottom: 0; color: var(--template-accent); font-weight: 700; }
+.template-pdf-preview-card { min-height: 32rem; overflow: hidden; border: 1px solid #d6d3d1; border-radius: .75rem; background: #f5f5f4; box-shadow: 0 8px 20px rgba(69, 26, 3, .12); }
+.template-pdf-preview-empty { display: grid; min-height: 32rem; padding: 2rem; place-content: center; gap: .75rem; color: #57534e; text-align: center; }
+.template-pdf-preview-empty strong { color: #451a03; font-size: 1rem; }
+.template-pdf-preview-empty span { max-width: 24rem; font-size: .8rem; }
+.template-pdf-preview-frame { display: block; width: 100%; min-height: 48rem; border: 0; background: white; }
 .template-sample-data { margin-top: 1rem; padding: 1rem; border: 1px solid #d1d5db; border-radius: .65rem; background: rgba(254, 243, 199, .35); }
 .template-sample-data h3 { margin: 0; font-size: .95rem; font-weight: 700; }
 .template-sample-data p { margin: .35rem 0 .75rem; font-size: .75rem; font-weight: 400; }

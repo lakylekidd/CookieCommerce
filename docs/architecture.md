@@ -18,6 +18,13 @@ CookieCommerce/
 │   └── CookieCommerce.Web/                    # Frontend (Blazor)
 ```
 
+### Frontend startup and authentication
+
+The routed Blazor UI runs with interactive server rendering and prerendering disabled. The web client restores
+authentication from `ProtectedLocalStorage`, which cannot be accessed during server prerendering. Disabling
+prerendering ensures the launch gate evaluates the current authentication state before choosing between the
+requested page and the coming-soon page, avoiding an incorrect coming-soon flash on refresh.
+
 ### Layer Responsibilities
 
 #### **[Domain].Api**

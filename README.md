@@ -20,6 +20,10 @@ This README provides an overview of the architecture, conventions, and developme
 - Vertical Slice Architecture for clean separation by feature
 - Aspire for orchestration, service discovery, and local infrastructure
 
+The routed Blazor UI uses interactive-server rendering without prerendering. Authentication is restored from
+protected browser storage, so evaluating the launch gate during server prerender would temporarily treat an
+authenticated refresh as anonymous and show the coming-soon page.
+
 ---
 
 ## 🧱 Solution Structure

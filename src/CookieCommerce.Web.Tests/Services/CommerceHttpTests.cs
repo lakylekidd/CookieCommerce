@@ -28,26 +28,25 @@ public sealed class CommerceHttpTests
     [InlineData("/backoffice/products")]
     [InlineData("/auth/signup")]
     [InlineData("/auth/password/reset/expired-token")]
-    public async Task Anonymous_pages_are_hidden_while_coming_soon_mode_is_enabled(string route)
+    public async Task Anonymous_routes_are_deferred_until_the_interactive_launch_gate_runs(string route)
     {
         await using var factory = new SiteFactory();
         using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
         using var response = await client.GetAsync(route);
         var html = await response.Content.ReadAsStringAsync();
         response.StatusCode.Should().Be(HttpStatusCode.OK, html);
-        html.Should().Contain("COMING SOON");
+        html.Should().NotContain("COMING SOON");
     }
 
     [Fact]
-    public async Task Signin_remains_available_while_coming_soon_mode_is_enabled()
+    public async Task Signin_route_is_deferred_until_the_interactive_router_starts()
     {
         await using var factory = new SiteFactory();
         using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
 
         var html = await client.GetStringAsync("/auth/signin");
 
-        html.Should().Contain("Welcome Back");
-        html.Should().NotContain("Create an Account");
+        html.Should().NotContain("Welcome Back");
     }
 
     [Fact]

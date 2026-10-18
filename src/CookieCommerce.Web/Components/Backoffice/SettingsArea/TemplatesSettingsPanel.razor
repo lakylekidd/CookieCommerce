@@ -20,7 +20,48 @@
         @if (template.Kind == "Email")
         {
             <label>Subject<input @bind="template.Subject" /></label>
-            <label>HTML body<textarea rows="8" @bind="template.HtmlBody"></textarea></label>
+            <section class="template-html-section" aria-label="HTML body editor">
+                <label>HTML body</label>
+                <div class="template-editor-tabs" role="tablist" aria-label="HTML body view">
+                    <button type="button" role="tab" aria-selected="@(htmlEditorMode == HtmlEditorMode.Source)"
+                            class="@(htmlEditorMode == HtmlEditorMode.Source ? "template-editor-tab-active" : "template-editor-tab")"
+                            @onclick="ShowHtmlSource">Source</button>
+                    <button type="button" role="tab" aria-selected="@(htmlEditorMode == HtmlEditorMode.Preview)"
+                            class="@(htmlEditorMode == HtmlEditorMode.Preview ? "template-editor-tab-active" : "template-editor-tab")"
+                            @onclick="ShowHtmlPreview">Preview</button>
+                </div>
+                @if (htmlEditorMode == HtmlEditorMode.Source)
+                {
+                    <textarea rows="16" class="template-html-source" value="@template.HtmlBody" @oninput="UpdateHtmlBody"></textarea>
+                    <div class="template-image-inserter">
+                        <p class="template-image-inserter-title">Add an image</p>
+                        <div class="template-image-inserter-fields">
+                            <input type="url" @bind="imageUrl" placeholder="https://images.example.com/cookie.jpg" aria-label="Image URL" />
+                            <input @bind="imageAltText" maxlength="500" placeholder="Alternative text" aria-label="Image alternative text" />
+                            <select @bind="imageAlignment" aria-label="Image alignment">
+                                <option value="left">Align left</option>
+                                <option value="center">Centre</option>
+                                <option value="right">Align right</option>
+                            </select>
+                            <button type="button" class="template-image-insert-button" @onclick="InsertImage">Insert image</button>
+                        </div>
+                        <p class="template-image-help">Images must use a public HTTPS URL. The inserted markup uses email-friendly inline alignment.</p>
+                    </div>
+                }
+                else
+                {
+                    <p class="template-preview-help">This is the current HTML. Placeholders are shown as written; use sample preview to render them.</p>
+                    @if (preview is not null)
+                    {
+                        <p class="template-preview-subject"><strong>Sample subject: @preview.Subject</strong></p>
+                    }
+                    <iframe title="Current HTML preview" sandbox="" srcdoc="@(preview?.HtmlBody ?? template.HtmlBody)" class="template-html-preview bg-white rounded-xl border"></iframe>
+                    @if (preview is not null)
+                    {
+                        <pre class="whitespace-pre-wrap text-sm">@preview.TextBody</pre>
+                    }
+                }
+            </section>
             <label>Plain-text body<textarea rows="6" @bind="template.TextBody"></textarea></label>
         }
         else
@@ -40,12 +81,6 @@
             <button class="text-primary underline hover:text-primary/80 hover:-translate-y-0.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                     disabled="@busy" @onclick="RestoreAsync">Restore default draft</button>
         </div>
-        @if (preview is not null)
-        {
-            <p><strong>@preview.Subject</strong></p>
-            <iframe title="Email preview" sandbox="" srcdoc="@preview.HtmlBody" class="w-full h-64 bg-white rounded-xl border"></iframe>
-            <pre class="whitespace-pre-wrap text-sm">@preview.TextBody</pre>
-        }
     }
 </div>
 
@@ -54,9 +89,11 @@
     private MessageTemplate? template;
     private RenderedEmail? preview;
     private string selected = "password-reset", error = "", notice = "";
+    private string imageUrl = "", imageAltText = "", imageAlignment = "center";
+    private HtmlEditorMode htmlEditorMode = HtmlEditorMode.Source;
     private bool busy;
     protected override async Task OnInitializedAsync() { try { templates = await Templates.ListAsync(); template = await Templates.DraftAsync(selected); } catch { error = "Templates could not be loaded."; } }
-    private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); preview = null; notice = error = ""; }
+    private async Task SelectAsync(ChangeEventArgs args) { selected = args.Value?.ToString() ?? "password-reset"; template = await Templates.DraftAsync(selected); preview = null; htmlEditorMode = HtmlEditorMode.Source; notice = error = ""; }
     private async Task SaveAsync(bool publish)
     {
         busy = true; error = notice = "";
@@ -64,14 +101,30 @@
         catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Template could not be saved."; }
         finally { busy = false; }
     }
-    private void RestoreAsync() { template = TemplateService.Default(selected); preview = null; notice = "Default loaded as a draft. Publish to use it."; }
+    private void RestoreAsync() { template = TemplateService.Default(selected); preview = null; htmlEditorMode = HtmlEditorMode.Source; notice = "Default loaded as a draft. Publish to use it."; }
+    private void ShowHtmlSource() => htmlEditorMode = HtmlEditorMode.Source;
+    private void ShowHtmlPreview() { preview = null; htmlEditorMode = HtmlEditorMode.Preview; }
+    private void UpdateHtmlBody(ChangeEventArgs args) { template!.HtmlBody = args.Value?.ToString() ?? ""; preview = null; }
+    private void InsertImage()
+    {
+        try
+        {
+            error = "";
+            var currentTemplate = template ?? throw new InvalidOperationException("Select a template before adding an image.");
+            currentTemplate.HtmlBody += (string.IsNullOrWhiteSpace(currentTemplate.HtmlBody) ? "" : Environment.NewLine) + TemplateService.CreateImageHtml(imageUrl, imageAltText, imageAlignment);
+            imageUrl = imageAltText = "";
+            preview = null;
+            notice = "Image markup added to the HTML source.";
+        }
+        catch (InvalidOperationException ex) { error = ex.Message; }
+    }
     private async Task PreviewAsync()
     {
         try
         {
             error = ""; TemplateService.Validate(template!);
             var values = new Dictionary<string, string> { ["customer_name"] = "Noor de Vries", ["store_name"] = "Tiger van Cookie", ["action_url"] = "https://example.com/preview", ["expiry_minutes"] = "30", ["order_reference"] = "TGR-EXAMPLE", ["order_total"] = "EUR 24.95", ["invoice_number"] = "INV-2026-000001" };
-            if (template!.Kind == "Email") preview = TemplateService.Render(template, values);
+            if (template!.Kind == "Email") { preview = TemplateService.Render(template, values); htmlEditorMode = HtmlEditorMode.Preview; }
             else
             {
                 var invoice = new InvoiceRecord { Id = Guid.NewGuid(), Number = values["invoice_number"], IssuedAt = DateTimeOffset.UtcNow, Template = template,
@@ -84,4 +137,5 @@
         }
         catch (Exception ex) { error = ex is InvalidOperationException ? ex.Message : "Preview could not be generated."; }
     }
+    private enum HtmlEditorMode { Source, Preview }
 }

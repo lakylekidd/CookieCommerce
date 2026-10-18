@@ -183,6 +183,10 @@ Resending an invitation revokes all earlier unused invitations for that identity
 
 Keycloak remains the source of truth for realm roles. Authentication Management owns role mutation and enforces both invariants before removing `Admin`: the acting identity cannot be the target, and more than one administrator must currently exist. These rules are enforced server-side; disabled UI controls are only a convenience.
 
+## Backoffice template authoring
+
+`MessageTemplate.HtmlBody` remains the canonical, versioned source for email markup; the backoffice does not persist a separate WYSIWYG document model. The Templates settings panel provides a source/preview switch, with previews rendered inside a sandboxed iframe. Its image helper only creates markup for public HTTPS URLs and uses escaped alternative text plus inline, email-compatible left, centre, or right alignment. Image files are not accepted or stored by the template feature, so no new media-upload API or persistence boundary is introduced. Existing template validation remains responsible for rejecting executable HTML and unsupported placeholders before drafts are saved or published.
+
 ## Logging
 
 All production code must include appropriate structured logging for important application behavior.

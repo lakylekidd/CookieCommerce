@@ -2,6 +2,24 @@
 .communication-editor input, .communication-editor select, .communication-editor textarea { display: block; width: 100%; margin-top: .35rem; padding: .6rem; border: 1px solid #9ca3af; border-radius: .65rem; background: transparent; }
 .communication-editor textarea { font-family: monospace; }
 
+.template-html-section { margin-top: 1rem; }
+.template-editor-tabs { display: flex; gap: .5rem; margin-top: .5rem; }
+.template-editor-tab, .template-editor-tab-active, .template-image-insert-button { border: 1px solid #9ca3af; border-radius: .65rem; cursor: pointer; padding: .45rem .8rem; }
+.template-editor-tab { background: transparent; color: inherit; }
+.template-editor-tab-active, .template-image-insert-button { background: #f97316; border-color: #f97316; color: white; }
+.template-html-source, .template-html-preview { min-height: 20rem; }
+.template-html-preview { display: block; width: 100%; margin-top: .35rem; }
+.template-preview-subject { margin: .5rem 0 0; }
+.template-image-inserter { margin-top: .75rem; padding: .85rem; border: 1px solid #d1d5db; border-radius: .65rem; }
+.template-image-inserter-title { margin: 0 0 .5rem; font-size: .875rem; font-weight: 600; }
+.template-image-inserter-fields { display: grid; gap: .5rem; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(8rem, .75fr) auto; }
+.template-image-inserter-fields input, .template-image-inserter-fields select { margin-top: 0; }
+.template-image-help, .template-preview-help { margin: .5rem 0 0; font-size: .75rem; font-weight: 400; }
+
+@media (max-width: 48rem) {
+    .template-image-inserter-fields { grid-template-columns: 1fr; }
+}
+
 .communication-editor select,
 .communication-editor select option {
     background-color: #ffffff;

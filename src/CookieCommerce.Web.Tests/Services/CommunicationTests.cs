@@ -63,6 +63,41 @@ public sealed class CommunicationTests
     }
 
     [Fact]
+    public void Template_image_markup_uses_https_and_email_friendly_centre_alignment()
+    {
+        var html = TemplateService.CreateImageHtml("https://images.example.test/cookie.jpg?flavour=chocolate&size=large", "Chocolate <cookie>", "center");
+
+        html.Should().Contain("align=\"center\"")
+            .And.Contain("text-align: center")
+            .And.Contain("src=\"https://images.example.test/cookie.jpg?flavour=chocolate&amp;size=large\"")
+            .And.Contain("alt=\"Chocolate &lt;cookie&gt;\"");
+
+        var template = TemplateService.Default("order-confirmation");
+        template.HtmlBody = html;
+        ((Action)(() => TemplateService.Validate(template))).Should().NotThrow();
+    }
+
+    [Theory]
+    [InlineData("left")]
+    [InlineData("center")]
+    [InlineData("right")]
+    public void Template_image_markup_uses_the_requested_alignment(string alignment)
+    {
+        var html = TemplateService.CreateImageHtml("https://images.example.test/cookie.jpg", "Cookie", alignment);
+
+        html.Should().Contain($"align=\"{alignment}\"").And.Contain($"text-align: {alignment}");
+    }
+
+    [Theory]
+    [InlineData("http://images.example.test/cookie.jpg")]
+    [InlineData("data:image/png;base64,abc")]
+    [InlineData("javascript:alert(1)")]
+    public void Template_image_markup_rejects_non_https_urls(string imageUrl)
+    {
+        ((Action)(() => TemplateService.CreateImageHtml(imageUrl, "Cookie", "center"))).Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
     public async Task Queued_emails_keep_their_published_content_and_are_deduplicated()
     {
         var service = new TemplateService(store, new(auth.Object));

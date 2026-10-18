@@ -9,6 +9,7 @@ public sealed class TemplateService(ICommerceStore store, CommerceAccess access)
 {
     public static readonly string[] EmailKeys = ["password-reset", "account-invitation", "email-verification", "order-confirmation", "invoice-email"];
     private static readonly Regex Tokens = new("\\{\\{([a-z_]+)\\}\\}", RegexOptions.Compiled);
+    private static readonly string[] ImageAlignments = ["left", "center", "right"];
     public static string[] Allowed(string key) => key == "invoice-pdf" ? ["store_name", "invoice_number", "order_reference", "customer_name"]
         : key is "password-reset" or "account-invitation" or "email-verification" ? ["customer_name", "store_name", "action_url", "expiry_minutes"]
         : ["customer_name", "store_name", "order_reference", "order_total", "invoice_number"];
@@ -86,6 +87,22 @@ public sealed class TemplateService(ICommerceStore store, CommerceAccess access)
         if (Regex.IsMatch(template.HtmlBody, @"<\s*(script|iframe|object|embed|form)|\bon\w+\s*=|javascript\s*:|data\s*:", RegexOptions.IgnoreCase))
             throw new InvalidOperationException("Email templates cannot contain scripts, forms or executable content.");
         if (!Regex.IsMatch(template.AccentColor, "^#[0-9a-fA-F]{6}$")) throw new InvalidOperationException("Enter a six-digit hex accent colour.");
+    }
+
+    public static string CreateImageHtml(string imageUrl, string altText, string alignment)
+    {
+        var trimmedUrl = imageUrl.Trim();
+        if (!Uri.TryCreate(trimmedUrl, UriKind.Absolute, out var imageUri) || imageUri.Scheme != Uri.UriSchemeHttps || !string.IsNullOrEmpty(imageUri.UserInfo))
+            throw new InvalidOperationException("Enter an absolute HTTPS image URL.");
+
+        var normalizedAlignment = alignment.Trim().ToLowerInvariant();
+        if (!ImageAlignments.Contains(normalizedAlignment, StringComparer.Ordinal))
+            throw new InvalidOperationException("Choose left, centre, or right image alignment.");
+
+        var trimmedAltText = altText.Trim();
+        if (trimmedAltText.Length > 500) throw new InvalidOperationException("Image alternative text is too long.");
+
+        return $"<p align=\"{normalizedAlignment}\" style=\"margin: 0; text-align: {normalizedAlignment};\"><img src=\"{WebUtility.HtmlEncode(imageUri.AbsoluteUri)}\" alt=\"{WebUtility.HtmlEncode(trimmedAltText)}\" style=\"display: inline-block; max-width: 100%; height: auto; border: 0;\" /></p>";
     }
 
     public static string Replace(string template, IReadOnlyDictionary<string, string> values, bool html) => Tokens.Replace(template,

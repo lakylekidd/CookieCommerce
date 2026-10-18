@@ -132,6 +132,10 @@ The Web service sends backoffice test emails and queued customer communications 
 
 All services also use shared safe HTTP dependency logging and structured API failure logging. Production logs include a dependency host, HTTP method, status code, safe failure type, and request trace ID where applicable; URLs, request and response bodies, headers, credentials, and personal data are excluded.
 
+### Backoffice template authoring
+
+The **Settings → Templates** editor keeps HTML as the authoritative template format. Its HTML source area is 16 rows high and can switch between source and a sandboxed preview of the current markup; **Preview with sample data** additionally resolves the supported placeholders. The image inserter accepts a public HTTPS image URL, accessible alternative text, and left, centre, or right alignment. It adds responsive, inline email-safe markup rather than storing image bytes or introducing an upload endpoint. Draft and published templates remain subject to the existing placeholder and executable-content validation.
+
 ---
 
 ## 🔄 Outbox Pattern (Messaging)
